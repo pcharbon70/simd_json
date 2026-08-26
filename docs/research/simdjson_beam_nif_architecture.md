@@ -1328,9 +1328,13 @@ The **scheduler latency** benchmark matters as much as GB/s.
 
 If I were starting the library, I would build it in this order:
 
+[Consolidated implementation roadmap](../milestones/README.md)
+
+## Milestone 1 — Native Foundation and Opaque Document Resource
+
+[Detailed milestone reference](../milestones/01-native-foundation.md)
+
 ```text
-Milestone 1
-────────────────────────
 C++ simdjson
 +
 tiny C ABI
@@ -1338,18 +1342,24 @@ tiny C ABI
 Zigler NIF
 +
 opaque Document resource
+```
 
+## Milestone 2 — Projection with `SimdJson.select/2`
 
-Milestone 2
-────────────────────────
+[Detailed milestone reference](../milestones/02-projection-api.md)
+
+```text
 SimdJson.select/2
 
 one native traversal
 one BEAM result
+```
 
+## Milestone 3 — Batched Array Streaming
 
-Milestone 3
-────────────────────────
+[Detailed milestone reference](../milestones/03-batched-array-streaming.md)
+
+```text
 batched streaming arrays
 
 native cursor
@@ -1357,18 +1367,24 @@ native cursor
 batch of projected rows
        ↓
 Elixir Enumerable
+```
 
+## Milestone 4 — Worker Pool and Operations
 
-Milestone 4
-────────────────────────
+[Detailed milestone reference](../milestones/04-worker-pool-and-operations.md)
+
+```text
 worker pool
 cancellation
 backpressure
 telemetry
+```
 
+## Milestone 5 — Jason-Compatible Decode API
 
-Milestone 5
-────────────────────────
+[Detailed milestone reference](../milestones/05-compatible-decode-api.md)
+
+```text
 Jason-compatible decode API
 ```
 
