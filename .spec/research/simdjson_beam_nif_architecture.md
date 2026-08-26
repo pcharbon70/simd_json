@@ -17,15 +17,15 @@ The crucial observation is that simdjson’s On-Demand API and the BEAM have ver
 I would expose an Elixir API roughly like this:
 
 ```elixir
-{:ok, doc} = Simdjson.open(json)
+{:ok, doc} = SimdJson.open(json)
 
 {:ok, name} =
   doc
-  |> Simdjson.get("customer")
-  |> Simdjson.get("name")
-  |> Simdjson.string()
+  |> SimdJson.get("customer")
+  |> SimdJson.get("name")
+  |> SimdJson.string()
 
-Simdjson.close(doc)
+SimdJson.close(doc)
 ```
 
 But internally:
@@ -34,7 +34,7 @@ But internally:
 Elixir
    │
    ▼
-%Simdjson.Document{resource: ref}
+%SimdJson.Document{resource: ref}
    │
    ▼
 BEAM Resource
@@ -71,7 +71,7 @@ So I would categorize operations.
 Something like:
 
 ```elixir
-Simdjson.type(cursor)
+SimdJson.type(cursor)
 ```
 
 might safely execute synchronously **if we can prove it is bounded**.
@@ -83,11 +83,11 @@ Initially, however, I would favor safety over cleverness.
 These should never be ordinary synchronous NIFs:
 
 ```elixir
-Simdjson.open(json)
-Simdjson.find(doc, path)
-Simdjson.array(doc, ...)
-Simdjson.materialize(doc)
-Simdjson.each(...)
+SimdJson.open(json)
+SimdJson.find(doc, path)
+SimdJson.array(doc, ...)
+SimdJson.materialize(doc)
+SimdJson.each(...)
 ```
 
 There are two reasonable implementation strategies:
@@ -111,7 +111,7 @@ A dirty CPU NIF protects the **normal schedulers**, but it can still occupy one 
 Imagine 32 clients simultaneously doing:
 
 ```elixir
-Simdjson.scan(2_gb_json)
+SimdJson.scan(2_gb_json)
 ```
 
 If all of them become dirty CPU jobs:
@@ -229,7 +229,7 @@ This is the most important part.
 I would **not** make the primary API:
 
 ```elixir
-Simdjson.decode(json)
+SimdJson.decode(json)
 ```
 
 because that immediately turns:
@@ -253,10 +253,10 @@ GC pressure
 Instead, the primary abstraction should be a **native document handle**.
 
 ```elixir
-{:ok, doc} = Simdjson.parse(json)
+{:ok, doc} = SimdJson.parse(json)
 
-{:ok, user} = Simdjson.at(doc, ["users", 125])
-{:ok, name} = Simdjson.at(user, "name")
+{:ok, user} = SimdJson.at(doc, ["users", 125])
+{:ok, name} = SimdJson.at(user, "name")
 ```
 
 Internally, `doc` could conceptually resemble:
@@ -309,7 +309,7 @@ Document resource
 Then:
 
 ```text
-%Simdjson.Document{}
+%SimdJson.Document{}
 ```
 
 keeps:
@@ -343,7 +343,7 @@ This gives natural lifetime semantics.
 Ideally:
 
 ```elixir
-Simdjson.parse(binary)
+SimdJson.parse(binary)
 ```
 
 should become:
@@ -422,9 +422,9 @@ iterator through structural index
 Therefore something like:
 
 ```elixir
-a = Simdjson.get(doc, "a")
-b = Simdjson.get(doc, "b")
-c = Simdjson.get(doc, "a")
+a = SimdJson.get(doc, "a")
+b = SimdJson.get(doc, "b")
+c = SimdJson.get(doc, "a")
 ```
 
 may not map cleanly to the underlying semantics.
@@ -434,9 +434,9 @@ I would make this explicit in the API.
 Possibly:
 
 ```elixir
-Simdjson.cursor(doc, fn cursor ->
-  {:ok, name} = Simdjson.field(cursor, "name")
-  {:ok, age} = Simdjson.field(cursor, "age")
+SimdJson.cursor(doc, fn cursor ->
+  {:ok, name} = SimdJson.field(cursor, "name")
+  {:ok, age} = SimdJson.field(cursor, "age")
 
   {name, age}
 end)
@@ -445,7 +445,7 @@ end)
 or:
 
 ```elixir
-Simdjson.select(doc, [
+SimdJson.select(doc, [
   ["customer", "name"],
   ["customer", "address", "city"],
   ["order", "total"]
@@ -462,7 +462,7 @@ Imagine:
 
 ```elixir
 {:ok, result} =
-  Simdjson.select(json, %{
+  SimdJson.select(json, %{
     id: ["customer", "id"],
     name: ["customer", "name"],
     total: ["order", "total"]
@@ -531,7 +531,7 @@ I would model the Elixir API more like a query engine.
 For example:
 
 ```elixir
-Simdjson.query(json,
+SimdJson.query(json,
   customer_name: "$.customer.name",
   amount: "$.order.total"
 )
@@ -540,7 +540,7 @@ Simdjson.query(json,
 or, preferably without introducing JSONPath initially:
 
 ```elixir
-Simdjson.query(json, [
+SimdJson.query(json, [
   {:customer_name, ["customer", "name"]},
   {:amount, ["order", "total"]}
 ])
@@ -588,13 +588,13 @@ with ten million objects.
 You do not want:
 
 ```elixir
-Simdjson.decode(json)
+SimdJson.decode(json)
 ```
 
 You want something closer to:
 
 ```elixir
-Simdjson.stream(json, ["customers"])
+SimdJson.stream(json, ["customers"])
 |> Stream.map(&extract_customer/1)
 |> Stream.run()
 ```
@@ -630,7 +630,7 @@ next 1,000
 So something like:
 
 ```elixir
-Simdjson.stream_array(json, ["customers"],
+SimdJson.stream_array(json, ["customers"],
   batch_size: 1_000,
   fields: [
     id: ["id"],
@@ -690,7 +690,7 @@ I would make a document/cursor owned by one Elixir process by default.
 Something like:
 
 ```elixir
-{:ok, doc} = Simdjson.open(json)
+{:ok, doc} = SimdJson.open(json)
 ```
 
 records:
@@ -744,15 +744,15 @@ Document
 For example:
 
 ```elixir
-{:ok, doc} = Simdjson.open(json)
-{:ok, cursor} = Simdjson.cursor(doc)
+{:ok, doc} = SimdJson.open(json)
+{:ok, cursor} = SimdJson.cursor(doc)
 ```
 
 with types:
 
 ```elixir
-%Simdjson.Document{}
-%Simdjson.Cursor{}
+%SimdJson.Document{}
+%SimdJson.Cursor{}
 ```
 
 This makes the statefulness explicit.
@@ -865,7 +865,7 @@ Default:
 For projections:
 
 ```elixir
-Simdjson.select(json,
+SimdJson.select(json,
   name: ["customer", "name"]
 )
 ```
@@ -883,8 +883,8 @@ I think there should be three layers.
 ## Layer 1 — Compatibility
 
 ```elixir
-Simdjson.decode(json)
-Simdjson.decode!(json)
+SimdJson.decode(json)
+SimdJson.decode!(json)
 ```
 
 Jason-like convenience.
@@ -896,7 +896,7 @@ Useful for adoption, but **not the flagship API**.
 ## Layer 2 — Projection
 
 ```elixir
-Simdjson.select(json, [
+SimdJson.select(json, [
   {:id, ["user", "id"]},
   {:name, ["user", "name"]}
 ])
@@ -907,7 +907,7 @@ This should be the primary high-performance API.
 ## Layer 3 — Streaming
 
 ```elixir
-Simdjson.stream(json,
+SimdJson.stream(json,
   path: ["users"],
   fields: [
     id: ["id"],
@@ -1087,10 +1087,10 @@ My preferred stack would be:
 ┌────────────────────────────┐
 │          Elixir            │
 │                            │
-│ Simdjson                   │
-│ Simdjson.Document          │
-│ Simdjson.Cursor            │
-│ Simdjson.Stream            │
+│ SimdJson                   │
+│ SimdJson.Document          │
+│ SimdJson.Cursor            │
+│ SimdJson.Stream            │
 └─────────────┬──────────────┘
               │
               ▼
@@ -1163,7 +1163,7 @@ The NIF crossing is relatively cheap, but repeated thousands or millions of time
 Instead:
 
 ```elixir
-Simdjson.at(doc, ["foo", "bar", 3, "baz"])
+SimdJson.at(doc, ["foo", "bar", 3, "baz"])
 ```
 
 should cross the boundary **once**.
@@ -1171,7 +1171,7 @@ should cross the boundary **once**.
 Even better:
 
 ```elixir
-Simdjson.select(doc, %{
+SimdJson.select(doc, %{
   baz: ["foo", "bar", 3, "baz"],
   qux: ["foo", "bar", 3, "qux"]
 })
@@ -1188,7 +1188,7 @@ For a large job:
 ```elixir
 task =
   Task.async(fn ->
-    Simdjson.select(huge_json, spec)
+    SimdJson.select(huge_json, spec)
   end)
 ```
 
@@ -1243,7 +1243,7 @@ BEAM tuple
 Elixir:
 
 ```elixir
-{:error, %Simdjson.Error{
+{:error, %SimdJson.Error{
   reason: :incorrect_type,
   byte_offset: 123_442
 }}
@@ -1269,7 +1269,7 @@ Potential categories:
 I would **not** begin by benchmarking only:
 
 ```text
-Simdjson.decode()
+SimdJson.decode()
 vs
 Jason.decode()
 ```
@@ -1342,7 +1342,7 @@ opaque Document resource
 
 Phase 2
 ────────────────────────
-Simdjson.select/2
+SimdJson.select/2
 
 one native traversal
 one BEAM result
@@ -1423,13 +1423,13 @@ A compiled projection API could eventually be especially powerful:
 
 ```elixir
 projection =
-  Simdjson.compile(%{
+  SimdJson.compile(%{
     id: ["customer", "id"],
     name: ["customer", "name"],
     total: ["order", "total"]
   })
 
-Simdjson.select(json, projection)
+SimdJson.select(json, projection)
 ```
 
 That would allow a projection specification to be prepared once and applied efficiently to millions of JSON documents without repeatedly rebuilding path metadata.
