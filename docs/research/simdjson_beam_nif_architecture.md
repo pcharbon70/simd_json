@@ -1324,12 +1324,12 @@ The **scheduler latency** benchmark matters as much as GB/s.
 
 ---
 
-# Proposed Implementation Phases
+# Proposed Implementation Milestones
 
 If I were starting the library, I would build it in this order:
 
 ```text
-Phase 1
+Milestone 1
 ────────────────────────
 C++ simdjson
 +
@@ -1340,7 +1340,7 @@ Zigler NIF
 opaque Document resource
 
 
-Phase 2
+Milestone 2
 ────────────────────────
 SimdJson.select/2
 
@@ -1348,7 +1348,7 @@ one native traversal
 one BEAM result
 
 
-Phase 3
+Milestone 3
 ────────────────────────
 batched streaming arrays
 
@@ -1359,7 +1359,7 @@ batch of projected rows
 Elixir Enumerable
 
 
-Phase 4
+Milestone 4
 ────────────────────────
 worker pool
 cancellation
@@ -1367,7 +1367,7 @@ backpressure
 telemetry
 
 
-Phase 5
+Milestone 5
 ────────────────────────
 Jason-compatible decode API
 ```
