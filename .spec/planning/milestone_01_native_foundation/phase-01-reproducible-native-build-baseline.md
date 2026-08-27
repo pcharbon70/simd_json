@@ -23,34 +23,34 @@ Back to plan: [README](./README.md)
 
 ## 1.1 Section — Toolchain and Target Baseline
 
-- [ ] 1.1 Section - Select and record the complete ABI-relevant toolchain and the first qualification target.
+- [x] 1.1 Section - Select and record the complete ABI-relevant toolchain and the first qualification target.
 
   This section turns implicit workstation state into reviewed repository inputs.
   It defines which versions are immutable package inputs, which host tools have
   explicit supported ranges, and which operating-system and architecture pair
   is the primary Milestone 1 release target.
 
-  - [ ] 1.1.1 Task - Record the native toolchain manifest.
+  - [x] 1.1.1 Task - Record the native toolchain manifest.
 
     The task defines one authoritative manifest for the Elixir/OTP, Zigler, Zig,
     C++ compiler and standard library, simdjson, build profile, and sanitizer
     versions used to qualify the NIF.
 
-    - [ ] 1.1.1.1 Subtask - Select a Zigler release or immutable commit whose supported Zig version and `:threaded` concurrency behavior can satisfy the accepted execution ADR.
-    - [ ] 1.1.1.2 Subtask - Pin Zigler in `mix.exs` and `mix.lock`, record its compatible Zig version, and ensure dependency resolution cannot follow a mutable branch.
-    - [ ] 1.1.1.3 Subtask - Record the supported Elixir and OTP range plus the exact CI versions used for qualification.
-    - [ ] 1.1.1.4 Subtask - Record the C++ compiler family, version or supported range, C++ language standard, standard-library implementation, target triple, and release/sanitizer profiles.
-    - [ ] 1.1.1.5 Subtask - Add a single human-readable native dependency manifest that links every pin to its verification source and upgrade procedure.
+    - [x] 1.1.1.1 Subtask - Select a Zigler release or immutable commit whose supported Zig version and `:threaded` concurrency behavior can satisfy the accepted execution ADR.
+    - [x] 1.1.1.2 Subtask - Pin Zigler in `mix.exs` and `mix.lock`, record its compatible Zig version, and ensure dependency resolution cannot follow a mutable branch.
+    - [x] 1.1.1.3 Subtask - Record the supported Elixir and OTP range plus the exact CI versions used for qualification.
+    - [x] 1.1.1.4 Subtask - Record the C++ compiler family, version or supported range, C++ language standard, standard-library implementation, target triple, and release/sanitizer profiles.
+    - [x] 1.1.1.5 Subtask - Add a single human-readable native dependency manifest that links every pin to its verification source and upgrade procedure.
 
-  - [ ] 1.1.2 Task - Define the initial target and CPU-dispatch matrix.
+  - [x] 1.1.2 Task - Define the initial target and CPU-dispatch matrix.
 
     The task creates an explicit support table so compilation on an unknown host
     never implies that the resulting artifact is supported.
 
-    - [ ] 1.1.2.1 Subtask - Name one primary CI operating-system and architecture target that must close Milestone 1.
-    - [ ] 1.1.2.2 Subtask - Record the target's minimum OTP, Elixir, Zig, libc or platform runtime, C++ runtime, and expected simdjson runtime-dispatch implementations.
-    - [ ] 1.1.2.3 Subtask - Classify every other intended target as unsupported or experimental until equivalent conformance, sanitizer, and scheduler evidence exists.
-    - [ ] 1.1.2.4 Subtask - Define an explicit unsupported-target diagnostic containing the target triple and a link to the support matrix without silently changing compilers or parser implementations.
+    - [x] 1.1.2.1 Subtask - Name one primary CI operating-system and architecture target that must close Milestone 1.
+    - [x] 1.1.2.2 Subtask - Record the target's minimum OTP, Elixir, Zig, libc or platform runtime, C++ runtime, and expected simdjson runtime-dispatch implementations.
+    - [x] 1.1.2.3 Subtask - Classify every other intended target as unsupported or experimental until equivalent conformance, sanitizer, and scheduler evidence exists.
+    - [x] 1.1.2.4 Subtask - Define an explicit unsupported-target diagnostic containing the target triple and a link to the support matrix without silently changing compilers or parser implementations.
 
 ## 1.2 Section — Vendored simdjson Provenance
 

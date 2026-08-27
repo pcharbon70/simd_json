@@ -12,6 +12,7 @@ kind: subsystem
 status: planned
 summary: Milestone 1 builds a reproducible native stack around an opaque, exception-safe C ABI.
 surface:
+  - .tool-versions
   - mix.exs
   - mix.lock
   - native/**
@@ -164,6 +165,32 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
 - exported-symbol inspection proving only the private C ABI is visible;
 - provenance and license checks for the vendored simdjson source;
 - runtime CPU-dispatch qualification.
+
+## Verification
+
+```spec-verification
+- kind: source_file
+  target: .tool-versions
+  covers:
+    - simd_json.native_build_and_abi.pinned_toolchain
+
+- kind: source_file
+  target: mix.exs
+  covers:
+    - simd_json.native_build_and_abi.pinned_toolchain
+
+- kind: source_file
+  target: native/manifest.exs
+  covers:
+    - simd_json.native_build_and_abi.pinned_toolchain
+    - simd_json.native_build_and_abi.target_qualification
+
+- kind: source_file
+  target: native/README.md
+  covers:
+    - simd_json.native_build_and_abi.pinned_toolchain
+    - simd_json.native_build_and_abi.target_qualification
+```
 
 ## Exceptions
 

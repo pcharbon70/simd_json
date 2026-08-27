@@ -496,6 +496,14 @@
       },
       {
         "file": ".spec/specs/package.spec.md",
+        "id": "simd_json.package.native_build_tooling",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "The Mix project shall pin Zigler as a compile-time-only dependency and shall record compatible BEAM, Zig, C++, simdjson, build-profile, and target inputs in the repository native manifest.",
+        "subject_id": "simd_json.package"
+      },
+      {
+        "file": ".spec/specs/package.spec.md",
         "id": "simd_json.package.specled_tooling",
         "priority": "must",
         "stability": "evolving",
@@ -1120,6 +1128,7 @@
           "status": "planned",
           "summary": "Milestone 1 builds a reproducible native stack around an opaque, exception-safe C ABI.",
           "surface": [
+            ".tool-versions",
             "mix.exs",
             "mix.lock",
             "native/**",
@@ -1161,10 +1170,14 @@
           "id": "simd_json.package",
           "kind": "package",
           "status": "active",
-          "summary": "Elixir library scaffold, local specification tooling, and implementation roadmap.",
+          "summary": "Elixir library scaffold, pinned native build tooling, local specification tooling, and implementation roadmap.",
           "surface": [
+            ".tool-versions",
             "mix.exs",
+            "mix.lock",
             "lib/**/*.ex",
+            "native/manifest.exs",
+            "native/README.md",
             "test/**/*.exs",
             "docs/milestones/*.md",
             ".spec/research/*.md"
@@ -1198,13 +1211,79 @@
     "verifications": [
       {
         "covers": [
+          "simd_json.native_build_and_abi.pinned_toolchain"
+        ],
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "source_file",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": ".tool-versions"
+      },
+      {
+        "covers": [
+          "simd_json.native_build_and_abi.pinned_toolchain"
+        ],
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "source_file",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "mix.exs"
+      },
+      {
+        "covers": [
+          "simd_json.native_build_and_abi.pinned_toolchain",
+          "simd_json.native_build_and_abi.target_qualification"
+        ],
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "source_file",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "native/manifest.exs"
+      },
+      {
+        "covers": [
+          "simd_json.native_build_and_abi.pinned_toolchain",
+          "simd_json.native_build_and_abi.target_qualification"
+        ],
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "source_file",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "native/README.md"
+      },
+      {
+        "covers": [
           "simd_json.package.mix_library",
-          "simd_json.package.specled_tooling"
+          "simd_json.package.specled_tooling",
+          "simd_json.package.native_build_tooling"
         ],
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
         "subject_id": "simd_json.package",
         "target": "mix.exs"
+      },
+      {
+        "covers": [
+          "simd_json.package.native_build_tooling"
+        ],
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "subject_id": "simd_json.package",
+        "target": ".tool-versions"
+      },
+      {
+        "covers": [
+          "simd_json.package.native_build_tooling"
+        ],
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "subject_id": "simd_json.package",
+        "target": "native/manifest.exs"
+      },
+      {
+        "covers": [
+          "simd_json.package.native_build_tooling"
+        ],
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "subject_id": "simd_json.package",
+        "target": "native/README.md"
       },
       {
         "covers": [
@@ -1296,15 +1375,92 @@
     "decisions": 3,
     "exceptions": 4,
     "findings": 0,
-    "requirements": 50,
+    "requirements": 51,
     "scenarios": 26,
     "subjects": 6,
-    "verifications": 10
+    "verifications": 17
   },
   "verification": {
     "claims": [
       {
+        "cover_id": "simd_json.native_build_and_abi.pinned_toolchain",
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": ".tool-versions",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.native_build_and_abi.pinned_toolchain",
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "mix.exs",
+        "verification_index": 1
+      },
+      {
+        "cover_id": "simd_json.native_build_and_abi.pinned_toolchain",
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "native/manifest.exs",
+        "verification_index": 2
+      },
+      {
+        "cover_id": "simd_json.native_build_and_abi.target_qualification",
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "native/manifest.exs",
+        "verification_index": 2
+      },
+      {
+        "cover_id": "simd_json.native_build_and_abi.pinned_toolchain",
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "native/README.md",
+        "verification_index": 3
+      },
+      {
+        "cover_id": "simd_json.native_build_and_abi.target_qualification",
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "native/README.md",
+        "verification_index": 3
+      },
+      {
         "cover_id": "simd_json.package.mix_library",
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.package",
+        "target": "mix.exs",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.package.native_build_tooling",
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
         "meets_minimum": true,
@@ -1326,6 +1482,39 @@
         "verification_index": 0
       },
       {
+        "cover_id": "simd_json.package.native_build_tooling",
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.package",
+        "target": ".tool-versions",
+        "verification_index": 1
+      },
+      {
+        "cover_id": "simd_json.package.native_build_tooling",
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.package",
+        "target": "native/manifest.exs",
+        "verification_index": 2
+      },
+      {
+        "cover_id": "simd_json.package.native_build_tooling",
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.package",
+        "target": "native/README.md",
+        "verification_index": 3
+      },
+      {
         "cover_id": "simd_json.package.mix_library",
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
@@ -1334,7 +1523,7 @@
         "strength": "linked",
         "subject_id": "simd_json.package",
         "target": "lib/simd_json.ex",
-        "verification_index": 1
+        "verification_index": 4
       },
       {
         "cover_id": "simd_json.package.documentation_layout",
@@ -1345,7 +1534,7 @@
         "strength": "linked",
         "subject_id": "simd_json.package",
         "target": "docs/milestones/README.md",
-        "verification_index": 2
+        "verification_index": 5
       },
       {
         "cover_id": "simd_json.package.documentation_layout",
@@ -1356,7 +1545,7 @@
         "strength": "linked",
         "subject_id": "simd_json.package",
         "target": ".spec/research/simdjson_beam_nif_architecture.md",
-        "verification_index": 3
+        "verification_index": 6
       },
       {
         "cover_id": "simd_json.package.mix_library",
@@ -1367,7 +1556,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.package",
         "target": "mix test",
-        "verification_index": 4
+        "verification_index": 7
       },
       {
         "cover_id": "spec.workspace.readme_present",
@@ -1441,7 +1630,7 @@
     "strength_summary": {
       "claimed": 3,
       "executed": 0,
-      "linked": 9
+      "linked": 19
     },
     "threshold_failures": 0
   },
