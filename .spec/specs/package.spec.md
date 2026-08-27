@@ -14,6 +14,7 @@ surface:
   - lib/**/*.ex
   - native/manifest.exs
   - native/README.md
+  - native/vendor/simdjson/**
   - test/**/*.exs
   - docs/milestones/*.md
   - .spec/research/*.md
@@ -36,6 +37,11 @@ surface:
   statement: The Mix project shall pin Zigler as a compile-time-only dependency and shall record compatible BEAM, Zig, C++, simdjson, build-profile, and target inputs in the repository native manifest.
   priority: must
   stability: evolving
+
+- id: simd_json.package.native_source_distribution
+  statement: Hex package metadata shall include the exact vendored simdjson source, provenance manifest, patch declaration, and upstream license files required for an offline consumer build.
+  priority: must
+  stability: stable
 
 - id: simd_json.package.documentation_layout
   statement: Architecture research shall live under .spec/research, while actionable wrapper milestone documents shall live under docs/milestones and reference the supporting research.
@@ -67,6 +73,16 @@ surface:
   target: native/README.md
   covers:
     - simd_json.package.native_build_tooling
+
+- kind: source_file
+  target: native/vendor/simdjson/README.md
+  covers:
+    - simd_json.package.native_source_distribution
+
+- kind: command
+  target: mix simd_json.verify_vendor
+  covers:
+    - simd_json.package.native_source_distribution
 
 - kind: source_file
   target: lib/simd_json.ex

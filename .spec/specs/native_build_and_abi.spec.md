@@ -190,6 +190,16 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
   covers:
     - simd_json.native_build_and_abi.pinned_toolchain
     - simd_json.native_build_and_abi.target_qualification
+
+- kind: source_file
+  target: native/vendor/simdjson/README.md
+  covers:
+    - simd_json.native_build_and_abi.official_vendored_source
+
+- kind: command
+  target: mix simd_json.verify_vendor
+  covers:
+    - simd_json.native_build_and_abi.official_vendored_source
 ```
 
 ## Exceptions

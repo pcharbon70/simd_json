@@ -54,32 +54,32 @@ Back to plan: [README](./README.md)
 
 ## 1.2 Section — Vendored simdjson Provenance
 
-- [ ] 1.2 Section - Vendor one exact official simdjson release with independently verifiable provenance.
+- [x] 1.2 Section - Vendor one exact official simdjson release with independently verifiable provenance.
 
   This section makes the parser source part of the package rather than mutable
   host or network state. It retains upstream licensing and keeps any future
   local deviation separate and reviewable.
 
-  - [ ] 1.2.1 Task - Select and import the official source release.
+  - [x] 1.2.1 Task - Select and import the official source release.
 
     The task chooses the smallest official simdjson release that meets the
     On-Demand, padding, runtime-dispatch, compiler, and supported-target needs of
     the accepted architecture.
 
-    - [ ] 1.2.1.1 Subtask - Record the upstream release tag, immutable commit, canonical archive URL, and cryptographic archive digest before importing files.
-    - [ ] 1.2.1.2 Subtask - Vendor only the upstream source and build metadata needed by this package while preserving the ability to compare the tree to the verified archive.
-    - [ ] 1.2.1.3 Subtask - Store the upstream license and required notices in the distributed package and identify their inclusion in Hex package metadata.
-    - [ ] 1.2.1.4 Subtask - Record the release's exact padding constant, supported C++ standard, supported compilers, and runtime CPU-dispatch contract for use in later phases.
+    - [x] 1.2.1.1 Subtask - Record the upstream release tag, immutable commit, canonical archive URL, and cryptographic archive digest before importing files.
+    - [x] 1.2.1.2 Subtask - Vendor only the upstream source and build metadata needed by this package while preserving the ability to compare the tree to the verified archive.
+    - [x] 1.2.1.3 Subtask - Store the upstream license and required notices in the distributed package and identify their inclusion in Hex package metadata.
+    - [x] 1.2.1.4 Subtask - Record the release's exact padding constant, supported C++ standard, supported compilers, and runtime CPU-dispatch contract for use in later phases.
 
-  - [ ] 1.2.2 Task - Establish a no-hidden-patch policy.
+  - [x] 1.2.2 Task - Establish a no-hidden-patch policy.
 
     The task ensures local modifications cannot be mistaken for official
     upstream source and that a future dependency update regenerates all affected
     qualification evidence.
 
-    - [ ] 1.2.2.1 Subtask - Keep each required local change as a separate patch with rationale, upstream reference, and digest rather than editing the vendor snapshot invisibly.
-    - [ ] 1.2.2.2 Subtask - Add a verification command that reconstructs or checks the vendored tree against the upstream archive plus the declared patch series.
-    - [ ] 1.2.2.3 Subtask - Document the dependency-upgrade gate requiring provenance, license, clean-build, C ABI, sanitizer, CPU-dispatch, and scheduler evidence to be regenerated.
+    - [x] 1.2.2.1 Subtask - Keep each required local change as a separate patch with rationale, upstream reference, and digest rather than editing the vendor snapshot invisibly.
+    - [x] 1.2.2.2 Subtask - Add a verification command that reconstructs or checks the vendored tree against the upstream archive plus the declared patch series.
+    - [x] 1.2.2.3 Subtask - Document the dependency-upgrade gate requiring provenance, license, clean-build, C ABI, sanitizer, CPU-dispatch, and scheduler evidence to be regenerated.
 
 ## 1.3 Section — Offline Native Build Graph
 

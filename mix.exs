@@ -8,6 +8,7 @@ defmodule SimdJson.MixProject do
       version: "0.1.0",
       elixir: "~> 1.18.4",
       start_permanent: Mix.env() == :prod,
+      package: package(),
       deps: deps()
     ]
   end
@@ -27,5 +28,11 @@ defmodule SimdJson.MixProject do
        only: [:dev, :test],
        runtime: false}
     ]
+  end
+
+  defp package do
+    # The native directory deliberately includes the upstream source, its
+    # provenance manifest, and both upstream license files in Hex artifacts.
+    [files: ["lib", "native", ".formatter.exs", "mix.exs", "README.md"]]
   end
 end

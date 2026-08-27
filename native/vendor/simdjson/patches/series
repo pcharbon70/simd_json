@@ -1,0 +1,2 @@
+# Ordered patch manifest. Each active line must be: <sha256> <filename.patch>
+# There are no local patches for simdjson v4.6.9.

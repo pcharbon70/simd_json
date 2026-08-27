@@ -5,6 +5,7 @@ date: 2026-08-27
 affects:
   - simd_json.native_build_and_abi
   - simd_json.document_api
+  - simd_json.package
 ---
 
 # Native Stack and C ABI Boundary
@@ -44,6 +45,12 @@ The vendored dependency record must include:
 - the simdjson license and notices;
 - the Zig, Zigler, C++ toolchain, and build-profile versions used for qualification;
 - any local patch as a separate, reviewable patch with its own rationale and digest.
+
+The distributed package includes the verified source snapshot, provenance
+manifest, ordered patch declaration, and upstream license files. A repository
+verification command checks the snapshot without network access and, when
+given an already-downloaded official archive, reconstructs the vendored source
+by applying only the declared patch series.
 
 Upgrading simdjson or any ABI-relevant toolchain component is an explicit dependency update with clean-build, conformance, sanitizer, and scheduler-safety evidence.
 
