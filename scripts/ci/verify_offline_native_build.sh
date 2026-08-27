@@ -11,6 +11,7 @@ first_build_root="${scratch_root}/build-one"
 second_build_root="${scratch_root}/build-two"
 first_diagnostic="${scratch_root}/diagnostic-one"
 second_diagnostic="${scratch_root}/diagnostic-two"
+namespace_uses_sudo=false
 diagnostic_expression='
   info = SimdJson.Native.Diagnostics.build()
 
@@ -28,8 +29,18 @@ diagnostic_expression='
 '
 
 cleanup() {
+  local original_status=$?
+
+  set +e
+
+  if [[ "${namespace_uses_sudo}" == true ]]; then
+    sudo -n chown -R "${UID}:$(id -g)" "${scratch_root}"
+  fi
+
   chmod -R u+w "${scratch_root}" 2>/dev/null || true
   rm -rf -- "${scratch_root}"
+
+  return "${original_status}"
 }
 
 trap cleanup EXIT
@@ -49,6 +60,7 @@ if unshare --user --map-root-user --net true 2>/dev/null; then
   namespace_command=(unshare --user --map-root-user --net --)
 elif sudo -n unshare --net true 2>/dev/null; then
   namespace_command=(sudo -n unshare --net --)
+  namespace_uses_sudo=true
 else
   printf 'cannot create the network namespace required for the offline build test\n' >&2
   exit 1
