@@ -83,31 +83,31 @@ Back to plan: [README](./README.md)
 
 ## 1.3 Section — Offline Native Build Graph
 
-- [ ] 1.3 Section - Compile and link a smoke native artifact without a system simdjson installation or build-time download.
+- [x] 1.3 Section - Compile and link a smoke native artifact without a system simdjson installation or build-time download.
 
   This section establishes the Elixir-to-Zigler-to-Zig-to-C++ build chain in its
   final direction while keeping the native behavior intentionally trivial until
   the C ABI phase defines its contract.
 
-  - [ ] 1.3.1 Task - Add the Zigler and native compilation scaffold.
+  - [x] 1.3.1 Task - Add the Zigler and native compilation scaffold.
 
     The task wires the pinned build inputs into Mix and produces a loadable smoke
     NIF from the repository's own source tree.
 
-    - [ ] 1.3.1.1 Subtask - Add the Zigler build configuration and native source layout used by all later C, C++, and Zig files.
-    - [ ] 1.3.1.2 Subtask - Compile a minimal Zig entry module and C++ translation unit using the recorded target, language standard, include paths, and release profile.
-    - [ ] 1.3.1.3 Subtask - Link only repository-vendored simdjson objects and fail the build if an ambient simdjson library would satisfy the link instead.
-    - [ ] 1.3.1.4 Subtask - Ensure `mix compile` packages every required vendored source, header, license, and native build input for a clean consumer build.
+    - [x] 1.3.1.1 Subtask - Add the Zigler build configuration and native source layout used by all later C, C++, and Zig files.
+    - [x] 1.3.1.2 Subtask - Compile a minimal Zig entry module and C++ translation unit using the recorded target, language standard, include paths, and release profile.
+    - [x] 1.3.1.3 Subtask - Link only repository-vendored simdjson objects and fail the build if an ambient simdjson library would satisfy the link instead.
+    - [x] 1.3.1.4 Subtask - Ensure `mix compile` packages every required vendored source, header, license, and native build input for a clean consumer build.
 
-  - [ ] 1.3.2 Task - Add deterministic build guards and diagnostics.
+  - [x] 1.3.2 Task - Add deterministic build guards and diagnostics.
 
     The task makes unsupported or incomplete native environments fail early with
     actionable diagnostics rather than producing a subtly different artifact.
 
-    - [ ] 1.3.2.1 Subtask - Validate the host target and ABI-relevant tool versions before native compilation begins.
-    - [ ] 1.3.2.2 Subtask - Reject missing vendor files, checksum drift, undeclared patches, and incompatible tool versions before invoking the C++ compiler.
-    - [ ] 1.3.2.3 Subtask - Add a test-only diagnostic that reports the target triple and simdjson runtime implementation without changing the public Elixir API.
-    - [ ] 1.3.2.4 Subtask - Configure CI caches so they key on every ABI-relevant source digest and toolchain pin rather than reusing an artifact across incompatible inputs.
+    - [x] 1.3.2.1 Subtask - Validate the host target and ABI-relevant tool versions before native compilation begins.
+    - [x] 1.3.2.2 Subtask - Reject missing vendor files, checksum drift, undeclared patches, and incompatible tool versions before invoking the C++ compiler.
+    - [x] 1.3.2.3 Subtask - Add a test-only diagnostic that reports the target triple and simdjson runtime implementation without changing the public Elixir API.
+    - [x] 1.3.2.4 Subtask - Configure CI caches so they key on every ABI-relevant source digest and toolchain pin rather than reusing an artifact across incompatible inputs.
 
 ## 1.4 Section — Phase 1 Integration Tests
 

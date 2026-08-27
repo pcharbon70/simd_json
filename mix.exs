@@ -1,5 +1,5 @@
 defmodule SimdJson.MixProject do
-  # covers: simd_json.package.mix_library simd_json.package.specled_tooling simd_json.package.native_build_tooling simd_json.native_build_and_abi.pinned_toolchain
+  # covers: simd_json.package.mix_library simd_json.package.specled_tooling simd_json.package.native_build_tooling simd_json.package.native_source_distribution simd_json.native_build_and_abi.pinned_toolchain
   use Mix.Project
 
   def project do
@@ -33,6 +33,16 @@ defmodule SimdJson.MixProject do
   defp package do
     # The native directory deliberately includes the upstream source, its
     # provenance manifest, and both upstream license files in Hex artifacts.
-    [files: ["lib", "native", ".formatter.exs", "mix.exs", "README.md"]]
+    [
+      files: [
+        "lib",
+        "native",
+        ".formatter.exs",
+        ".tool-versions",
+        "mix.exs",
+        "mix.lock",
+        "README.md"
+      ]
+    ]
   end
 end

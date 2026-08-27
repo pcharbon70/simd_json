@@ -200,6 +200,28 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
   target: mix simd_json.verify_vendor
   covers:
     - simd_json.native_build_and_abi.official_vendored_source
+
+- kind: source_file
+  target: lib/simd_json/native/build_guard.ex
+  covers:
+    - simd_json.native_build_and_abi.clean_checkout_build
+    - simd_json.native_build_and_abi.target_qualification
+
+- kind: source_file
+  target: lib/simd_json/native/build_smoke.ex
+  covers:
+    - simd_json.native_build_and_abi.clean_checkout_build
+
+- kind: source_file
+  target: .github/workflows/ci.yml
+  covers:
+    - simd_json.native_build_and_abi.pinned_toolchain
+    - simd_json.native_build_and_abi.clean_checkout_build
+
+- kind: command
+  target: mix compile --force
+  covers:
+    - simd_json.native_build_and_abi.clean_checkout_build
 ```
 
 ## Exceptions

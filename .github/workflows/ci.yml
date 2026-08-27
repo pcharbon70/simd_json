@@ -1,0 +1,54 @@
+name: CI
+
+# covers: simd_json.native_build_and_abi.pinned_toolchain simd_json.native_build_and_abi.clean_checkout_build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  native-baseline:
+    name: Native baseline (x86_64 Linux)
+    runs-on: ubuntu-24.04
+    env:
+      MIX_ENV: test
+      ZIGLER_RELEASE_MODE: safe
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Install the qualified BEAM toolchain
+        uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1
+        with:
+          otp-version: "27.3"
+          elixir-version: "1.18.4"
+
+      - name: Restore ABI-keyed build inputs
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            deps
+            _build
+            ~/.cache/zigler
+          key: >-
+            native-${{ runner.os }}-x86_64-${{ env.MIX_ENV }}-${{ env.ZIGLER_RELEASE_MODE }}-${{ hashFiles('.tool-versions', 'mix.exs', 'mix.lock', 'lib/simd_json/native/**', 'native/**') }}
+
+      - name: Install Mix tooling and dependencies
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+          mix deps.get
+          mix zig.get --version 0.16.0
+
+      - name: Verify and compile repository-native sources
+        run: |
+          mix simd_json.verify_vendor
+          mix compile --force
+
+      - name: Run tests
+        run: mix test

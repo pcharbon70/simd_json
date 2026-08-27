@@ -58,6 +58,7 @@ surface:
     - simd_json.package.mix_library
     - simd_json.package.specled_tooling
     - simd_json.package.native_build_tooling
+    - simd_json.package.native_source_distribution
 
 - kind: source_file
   target: .tool-versions

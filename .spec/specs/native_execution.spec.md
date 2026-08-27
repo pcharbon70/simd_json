@@ -6,6 +6,11 @@ Current-truth contract for scheduler isolation, threaded request correlation, ca
 
 This subject ensures that proving the native parser never makes unrelated BEAM processes pay an input-dependent scheduling cost and that asynchronous completion cannot outlive the resources it uses.
 
+Phase 1 currently contributes only bounded, test-only build diagnostics beneath
+this subject's broad native surface. It performs no input-dependent parsing or
+cleanup and does not yet exercise Zigler's threaded mode; the bootstrap
+exception remains in force.
+
 ```spec-meta
 id: simd_json.native_execution
 kind: subsystem

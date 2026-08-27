@@ -4,6 +4,9 @@
 # Dependency sources fetched by Mix.
 /deps/
 
+# Zigler's generated copy of an external Zig module.
+/lib/**/.Elixir.*.zig
+
 # Generated documentation.
 /doc/
 

@@ -1,7 +1,7 @@
 # This is the authoritative, executable record of every ABI-relevant input for
 # the Milestone 1 native build. Build guards read this file; update it only via
 # the upgrade procedure in native/README.md.
-# covers: simd_json.package.native_build_tooling simd_json.native_build_and_abi.pinned_toolchain simd_json.native_build_and_abi.target_qualification
+# covers: simd_json.package.native_build_tooling simd_json.native_build_and_abi.pinned_toolchain simd_json.native_build_and_abi.target_qualification simd_json.native_build_and_abi.clean_checkout_build
 [
   schema_version: 1,
   qualified_on: ~D[2026-08-27],
@@ -24,27 +24,36 @@
     primary_archive_sha256: "70e49664a74374b48b51e6f3fdfbf437f6395d42509050588bd49abe52ba3d00"
   ],
   cxx: [
-    family: "GCC",
-    qualified_version: "13.3.0",
-    accepted_major: 13,
+    driver: "zig c++",
+    family: "Zig-bundled Clang/LLVM",
+    qualified_version: "21.1.0",
     language_standard: "c++17",
-    standard_library: "libstdc++.so.6",
+    standard_library: "Zig-bundled libc++",
+    linkage: "linked into the NIF by Zig",
     profiles: [
-      development: ["-std=c++17", "-O0", "-g", "-fvisibility=hidden"],
-      release: [
+      development: [
+        "Zig Debug",
         "-std=c++17",
-        "-O3",
+        "-DSIMDJSON_AVX512_ALLOWED=0",
+        "-fvisibility=hidden",
+        "-fvisibility-inlines-hidden"
+      ],
+      release: [
+        "Zig ReleaseSafe",
+        "-std=c++17",
+        "-DSIMDJSON_AVX512_ALLOWED=0",
         "-DNDEBUG",
         "-fvisibility=hidden",
         "-fvisibility-inlines-hidden"
       ],
       sanitizer: [
+        "Zig Debug",
         "-std=c++17",
-        "-O1",
-        "-g",
+        "-DSIMDJSON_AVX512_ALLOWED=0",
         "-fno-omit-frame-pointer",
         "-fsanitize=address,undefined",
-        "-fvisibility=hidden"
+        "-fvisibility=hidden",
+        "-fvisibility-inlines-hidden"
       ]
     ]
   ],
@@ -67,7 +76,7 @@
     padding_bytes: 64,
     language_standard: "c++17",
     supported_compilers: ["Clang 6 or newer", "GCC 7 or newer", "MSVC 2017 or newer"],
-    expected_x86_64_runtime_dispatch: ["icelake", "haswell", "westmere", "fallback"],
+    expected_x86_64_runtime_dispatch: ["haswell", "westmere", "fallback"],
     license: "Apache-2.0",
     license_files: ["LICENSE", "LICENSE-MIT"]
   ],
@@ -76,11 +85,27 @@
     operating_system: "Ubuntu 24.04 LTS",
     architecture: "x86_64",
     libc: "glibc 2.39",
-    cxx_runtime: "libstdc++.so.6 from GCC 13.3.0",
+    cxx_runtime: "Zig 0.16.0 bundled libc++ linked into the NIF",
     minimum_otp: "27.3",
     minimum_elixir: "1.18.4",
-    expected_simdjson_implementations: ["icelake", "haswell", "westmere", "fallback"]
+    expected_simdjson_implementations: ["haswell", "westmere", "fallback"]
   ],
   unsupported_target_diagnostic:
-    "unsupported native target %{target}; see native/README.md#target-and-cpu-dispatch-matrix"
+    "unsupported native target %{target}; see native/README.md#target-and-cpu-dispatch-matrix",
+  cache_inputs: [
+    ".tool-versions",
+    "mix.exs",
+    "mix.lock",
+    "lib/simd_json/native/build_guard.ex",
+    "lib/simd_json/native/build_smoke.ex",
+    "native/manifest.exs",
+    "native/include/simd_json_build_smoke.h",
+    "native/src/build_smoke.cpp",
+    "native/zig/build_smoke.zig",
+    "native/vendor/simdjson/simdjson.cpp",
+    "native/vendor/simdjson/simdjson.h",
+    "native/vendor/simdjson/LICENSE",
+    "native/vendor/simdjson/LICENSE-MIT",
+    "native/vendor/simdjson/patches/series"
+  ]
 ]
