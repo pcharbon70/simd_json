@@ -6,6 +6,10 @@ Current-truth contract for the deliberately narrow Milestone 1 Elixir API and it
 
 This subject gives callers one safe way to open and deterministically close an opaque native document while preventing native codes, pointers, JSON content, or future cursor operations from leaking into the initial public contract.
 
+Phase 1 currently contributes only an internal build-smoke NIF beneath this
+subject's broad source surface. It does not add `open/1`, `close/1`, a document
+type, or any public API; the bootstrap exception therefore remains in force.
+
 ```spec-meta
 id: simd_json.document_api
 kind: api

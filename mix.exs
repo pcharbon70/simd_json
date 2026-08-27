@@ -1,13 +1,14 @@
 defmodule SimdJson.MixProject do
-  # covers: simd_json.package.mix_library simd_json.package.specled_tooling
+  # covers: simd_json.package.mix_library simd_json.package.specled_tooling simd_json.package.native_build_tooling simd_json.package.native_source_distribution simd_json.native_build_and_abi.pinned_toolchain
   use Mix.Project
 
   def project do
     [
       app: :simd_json,
       version: "0.1.0",
-      elixir: "~> 1.18",
+      elixir: "~> 1.18.4",
       start_permanent: Mix.env() == :prod,
+      package: package(),
       deps: deps()
     ]
   end
@@ -20,11 +21,28 @@ defmodule SimdJson.MixProject do
 
   defp deps do
     [
+      {:zigler, "== 0.16.0", runtime: false},
       {:spec_led_ex,
        github: "specleddev/specled_ex",
        ref: "f0d20dba6786a8f1dff0d7365a113b23db696fc1",
        only: [:dev, :test],
        runtime: false}
+    ]
+  end
+
+  defp package do
+    # The native directory deliberately includes the upstream source, its
+    # provenance manifest, and both upstream license files in Hex artifacts.
+    [
+      files: [
+        "lib",
+        "native",
+        ".formatter.exs",
+        ".tool-versions",
+        "mix.exs",
+        "mix.lock",
+        "README.md"
+      ]
     ]
   end
 end
