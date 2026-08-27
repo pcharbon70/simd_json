@@ -1,6 +1,6 @@
 # Milestone 4 — Worker Pool, Cancellation, Backpressure, and Telemetry
 
-[Back to the architecture overview](../research/simdjson_beam_nif_architecture.md#proposed-implementation-milestones)
+[Back to the architecture overview](../../.spec/research/simdjson_beam_nif_architecture.md#proposed-implementation-milestones)
 
 ## Outcome
 

@@ -1,12 +1,31 @@
 # Milestone 1 — Native Foundation and Opaque Document Resource
 
-[Back to the architecture overview](../research/simdjson_beam_nif_architecture.md#proposed-implementation-milestones)
+[Back to the architecture overview](../../.spec/research/simdjson_beam_nif_architecture.md#proposed-implementation-milestones)
 
 ## Outcome
 
 This milestone establishes the smallest safe vertical slice from Elixir to simdjson. At its end, Elixir can open a JSON binary as an opaque `SimdJson.Document`, report parse errors consistently, and release every native allocation safely.
 
 The purpose is architectural confidence, not a broad user-facing API or headline performance. Every later milestone depends on the resource, ownership, build, error, and scheduler boundaries established here.
+
+## Normative decisions and specifications
+
+Milestone 1 is governed by these accepted architecture decisions:
+
+- [Native Stack and C ABI Boundary](../../.spec/decisions/0001-native-stack-and-c-abi.md)
+- [Document Resource and Input Buffer Ownership](../../.spec/decisions/0002-document-resource-and-buffer-ownership.md)
+- [Off-Scheduler Native Execution](../../.spec/decisions/0003-off-scheduler-native-execution.md)
+
+Its implementation and closure evidence are defined by these planned specifications:
+
+- [Native Build and ABI](../../.spec/specs/native_build_and_abi.spec.md)
+- [Document Resource](../../.spec/specs/document_resource.spec.md)
+- [Native Execution](../../.spec/specs/native_execution.spec.md)
+- [Document API and Errors](../../.spec/specs/document_api.spec.md)
+
+Implementation is sequenced by the [Milestone 1 Native Foundation Implementation Plan](../../.spec/planning/milestone_01_native_foundation/README.md).
+
+The planned specifications use explicit bootstrap exceptions while the native foundation is absent. Milestone 1 is not complete until those exceptions are removed and replaced by the executed build, API, ownership, failure-injection, sanitizer, and scheduler evidence required by each specification.
 
 ## Scope
 

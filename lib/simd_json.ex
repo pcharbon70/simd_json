@@ -1,4 +1,5 @@
 defmodule SimdJson do
+  # covers: simd_json.package.mix_library
   @moduledoc """
   A library for working with JSON using SIMD-accelerated parsing.
 
