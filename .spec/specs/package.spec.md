@@ -85,6 +85,11 @@ surface:
   covers:
     - simd_json.package.native_source_distribution
 
+- kind: test_file
+  target: test/native/native_build_policy_test.exs
+  covers:
+    - simd_json.package.native_source_distribution
+
 - kind: source_file
   target: lib/simd_json.ex
   covers:

@@ -1,6 +1,6 @@
 name: CI
 
-# covers: simd_json.native_build_and_abi.pinned_toolchain simd_json.native_build_and_abi.clean_checkout_build
+# covers: simd_json.native_build_and_abi.official_vendored_source simd_json.native_build_and_abi.pinned_toolchain simd_json.native_build_and_abi.clean_checkout_build simd_json.native_build_and_abi.target_qualification simd_json.native_build_and_abi.clean_supported_build simd_json.native_build_and_abi.unsupported_target_rejection
 
 on:
   push:
@@ -45,6 +45,13 @@ jobs:
           mix deps.get
           mix zig.get --version 0.16.0
 
+      - name: Verify the official simdjson archive
+        run: |
+          curl --fail --silent --show-error --location \
+            https://github.com/simdjson/simdjson/releases/download/v4.6.9/singleheader.zip \
+            --output "${RUNNER_TEMP}/simdjson-singleheader.zip"
+          mix simd_json.verify_vendor --archive "${RUNNER_TEMP}/simdjson-singleheader.zip"
+
       - name: Verify and compile repository-native sources
         run: |
           mix simd_json.verify_vendor
@@ -52,3 +59,6 @@ jobs:
 
       - name: Run tests
         run: mix test
+
+      - name: Repeat clean builds with network disabled
+        run: bash scripts/ci/verify_offline_native_build.sh

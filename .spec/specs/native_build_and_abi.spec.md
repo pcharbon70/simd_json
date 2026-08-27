@@ -215,13 +215,56 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
 - kind: source_file
   target: .github/workflows/ci.yml
   covers:
+    - simd_json.native_build_and_abi.official_vendored_source
     - simd_json.native_build_and_abi.pinned_toolchain
     - simd_json.native_build_and_abi.clean_checkout_build
+    - simd_json.native_build_and_abi.target_qualification
+    - simd_json.native_build_and_abi.clean_supported_build
+    - simd_json.native_build_and_abi.unsupported_target_rejection
 
 - kind: command
   target: mix compile --force
   covers:
     - simd_json.native_build_and_abi.clean_checkout_build
+
+- kind: test_file
+  target: test/native/build_smoke_test.exs
+  covers:
+    - simd_json.native_build_and_abi.clean_checkout_build
+    - simd_json.native_build_and_abi.target_qualification
+    - simd_json.native_build_and_abi.clean_supported_build
+
+- kind: test_file
+  target: test/native/build_guard_test.exs
+  covers:
+    - simd_json.native_build_and_abi.official_vendored_source
+    - simd_json.native_build_and_abi.pinned_toolchain
+    - simd_json.native_build_and_abi.target_qualification
+    - simd_json.native_build_and_abi.unsupported_target_rejection
+
+- kind: test_file
+  target: test/native/native_build_policy_test.exs
+  covers:
+    - simd_json.native_build_and_abi.pinned_toolchain
+    - simd_json.native_build_and_abi.clean_checkout_build
+
+- kind: command
+  target: mix test test/native
+  covers:
+    - simd_json.native_build_and_abi.official_vendored_source
+    - simd_json.native_build_and_abi.pinned_toolchain
+    - simd_json.native_build_and_abi.clean_checkout_build
+    - simd_json.native_build_and_abi.target_qualification
+    - simd_json.native_build_and_abi.clean_supported_build
+    - simd_json.native_build_and_abi.unsupported_target_rejection
+
+- kind: command
+  target: bash scripts/ci/verify_offline_native_build.sh
+  covers:
+    - simd_json.native_build_and_abi.pinned_toolchain
+    - simd_json.native_build_and_abi.clean_checkout_build
+    - simd_json.native_build_and_abi.target_qualification
+    - simd_json.native_build_and_abi.clean_supported_build
 ```
 
 ## Exceptions

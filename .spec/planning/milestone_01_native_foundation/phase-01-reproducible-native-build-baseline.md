@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 1 Phase - Establish immutable native inputs and a clean-checkout build before parser behavior is implemented.
+- [x] 1 Phase - Establish immutable native inputs and a clean-checkout build before parser behavior is implemented.
 
   This phase creates the supply-chain and build foundation consumed by every
   later phase. It selects compatible versions, vendors an exact official
@@ -111,27 +111,27 @@ Back to plan: [README](./README.md)
 
 ## 1.4 Section — Phase 1 Integration Tests
 
-- [ ] 1.4 Section - Prove the native build is reproducible, self-contained, and target-gated.
+- [x] 1.4 Section - Prove the native build is reproducible, self-contained, and target-gated.
 
   This section closes the build baseline with clean-environment evidence before
   any parser or resource code depends on it.
 
-  - [ ] 1.4.1 Task - Run provenance and offline clean-build acceptance tests.
+  - [x] 1.4.1 Task - Run provenance and offline clean-build acceptance tests.
 
     The task verifies the `clean_supported_build` contract from a fresh checkout
     using only declared dependencies and the vendored official source.
 
-    - [ ] 1.4.1.1 Subtask - Verify the simdjson archive digest, vendored-tree comparison, license files, notices, and patch manifest in CI.
-    - [ ] 1.4.1.2 Subtask - After ordinary Mix dependencies are fetched, build from a clean workspace with network access disabled and no system simdjson installation.
-    - [ ] 1.4.1.3 Subtask - Repeat the clean build and prove both runs consumed the same recorded source, target, compiler, Zig, Zigler, flags, and build profile.
-    - [ ] 1.4.1.4 Subtask - Load the smoke NIF and assert its test-only target and runtime-dispatch diagnostics match the qualification matrix.
+    - [x] 1.4.1.1 Subtask - Verify the simdjson archive digest, vendored-tree comparison, license files, notices, and patch manifest in CI.
+    - [x] 1.4.1.2 Subtask - After ordinary Mix dependencies are fetched, build from a clean workspace with network access disabled and no system simdjson installation.
+    - [x] 1.4.1.3 Subtask - Repeat the clean build and prove both runs consumed the same recorded source, target, compiler, Zig, Zigler, flags, and build profile.
+    - [x] 1.4.1.4 Subtask - Load the smoke NIF and assert its test-only target and runtime-dispatch diagnostics match the qualification matrix.
 
-  - [ ] 1.4.2 Task - Run negative target and dependency-drift tests.
+  - [x] 1.4.2 Task - Run negative target and dependency-drift tests.
 
     The task proves unsupported environments and mutable dependency changes fail
     closed instead of silently changing the native implementation.
 
-    - [ ] 1.4.2.1 Subtask - Exercise an unsupported-target test seam and assert the explicit target diagnostic is returned before compilation or load.
-    - [ ] 1.4.2.2 Subtask - Corrupt a vendor checksum and alter an ABI-relevant pin in isolated fixtures, then assert both changes fail their guards.
-    - [ ] 1.4.2.3 Subtask - Verify no native build script performs a network fetch, searches a system simdjson package, or follows a mutable Git reference.
-    - [ ] 1.4.2.4 Subtask - Run the focused build tests, `mix test`, `mix spec.next`, and the reported `mix spec.check --base ...` command before marking Phase 1 complete.
+    - [x] 1.4.2.1 Subtask - Exercise an unsupported-target test seam and assert the explicit target diagnostic is returned before compilation or load.
+    - [x] 1.4.2.2 Subtask - Corrupt a vendor checksum and alter an ABI-relevant pin in isolated fixtures, then assert both changes fail their guards.
+    - [x] 1.4.2.3 Subtask - Verify no native build script performs a network fetch, searches a system simdjson package, or follows a mutable Git reference.
+    - [x] 1.4.2.4 Subtask - Run the focused build tests, `mix test`, `mix spec.next`, and the reported `mix spec.check --base ...` command before marking Phase 1 complete.
