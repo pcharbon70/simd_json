@@ -1,5 +1,7 @@
 # Designing a simdjson On-Demand NIF for Elixir / BEAM
 
+<!-- covers: simd_json.package.documentation_layout -->
+
 ## Overview
 
 For Elixir, I would design a simdjson wrapper around **three constraints**:
@@ -1328,11 +1330,11 @@ The **scheduler latency** benchmark matters as much as GB/s.
 
 If I were starting the library, I would build it in this order:
 
-[Consolidated implementation roadmap](../milestones/README.md)
+[Consolidated implementation roadmap](../../docs/milestones/README.md)
 
 ## Milestone 1 — Native Foundation and Opaque Document Resource
 
-[Detailed milestone reference](../milestones/01-native-foundation.md)
+[Detailed milestone reference](../../docs/milestones/01-native-foundation.md)
 
 ```text
 C++ simdjson
@@ -1346,7 +1348,7 @@ opaque Document resource
 
 ## Milestone 2 — Projection with `SimdJson.select/2`
 
-[Detailed milestone reference](../milestones/02-projection-api.md)
+[Detailed milestone reference](../../docs/milestones/02-projection-api.md)
 
 ```text
 SimdJson.select/2
@@ -1357,7 +1359,7 @@ one BEAM result
 
 ## Milestone 3 — Batched Array Streaming
 
-[Detailed milestone reference](../milestones/03-batched-array-streaming.md)
+[Detailed milestone reference](../../docs/milestones/03-batched-array-streaming.md)
 
 ```text
 batched streaming arrays
@@ -1371,7 +1373,7 @@ Elixir Enumerable
 
 ## Milestone 4 — Worker Pool and Operations
 
-[Detailed milestone reference](../milestones/04-worker-pool-and-operations.md)
+[Detailed milestone reference](../../docs/milestones/04-worker-pool-and-operations.md)
 
 ```text
 worker pool
@@ -1382,7 +1384,7 @@ telemetry
 
 ## Milestone 5 — Jason-Compatible Decode API
 
-[Detailed milestone reference](../milestones/05-compatible-decode-api.md)
+[Detailed milestone reference](../../docs/milestones/05-compatible-decode-api.md)
 
 ```text
 Jason-compatible decode API
