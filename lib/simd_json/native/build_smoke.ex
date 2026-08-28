@@ -34,7 +34,9 @@ defmodule SimdJson.Native.BuildSmoke do
       threaded_context_smoke: [concurrency: :threaded],
       threaded_document_open: [concurrency: :threaded],
       threaded_document_cleanup: [concurrency: :threaded],
+      threaded_document_probe: [concurrency: :threaded],
       document_lifecycle: [],
+      document_owner_state: [],
       execution_generation: [],
       execution_begin_shutdown: [],
       execution_resume: [],
@@ -43,7 +45,7 @@ defmodule SimdJson.Native.BuildSmoke do
     ],
     c: [
       include_dirs: ["./native/include", "./native/vendor/simdjson"],
-      headers: [simd_json_abi: "./native/include/simd_json_abi.h"],
+      headers: [simd_json_abi: "./native/include/simd_json_nif_internal.h"],
       src: [
         {"../../../native/src/build_smoke.cpp",
          [

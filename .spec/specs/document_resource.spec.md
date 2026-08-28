@@ -15,9 +15,16 @@ a Zigler worker, publishes an internal parsed document resource, and uses a
 threaded explicit/orphan cleanup operation. GC callbacks now detach an
 intrusive control block into a cleanup-only dispatcher, failed handoff retains
 ownership for retry, and concurrent internal cleanup joins exactly-once native
-destruction. The public document type, owner enforcement, and public
-idempotent close remain Phase 5 work, so the bootstrap exception stays in
-force.
+destruction. Phase 5 publishes that resource only inside
+an opaque redacted document, check its immutable owner before both open and
+closed lifecycle state, and give the owner an idempotent close that waits for
+threaded destruction. Public documentation and API allowlists preserve that
+authority model. Its public integration matrix now drops the original BEAM
+input before threaded native revalidation, crosses open and closed terms between
+processes, queues repeated owner closes, isolates concurrent owners, and returns
+explicit and GC cleanup batches to native gauge baselines. Final sanitizer and
+cross-target qualification remain in Phase 6, so the bootstrap exception stays
+in force.
 
 ```spec-meta
 id: simd_json.document_resource
@@ -225,6 +232,28 @@ decisions:
     - simd_json.document_resource.gc_cleanup
     - simd_json.document_resource.native_memory_baseline
 
+- kind: test_file
+  target: test/simd_json/document_api_test.exs
+  covers:
+    - simd_json.document_resource.opaque_handle
+    - simd_json.document_resource.single_owner
+    - simd_json.document_resource.lifecycle
+    - simd_json.document_resource.idempotent_close
+    - simd_json.document_resource.repeated_close
+    - simd_json.document_resource.non_owner_rejection
+
+- kind: test_file
+  target: test/simd_json/phase_5_integration_test.exs
+  covers:
+    - simd_json.document_resource.padded_owned_copy
+    - simd_json.document_resource.single_owner
+    - simd_json.document_resource.idempotent_close
+    - simd_json.document_resource.test_accounting
+    - simd_json.document_resource.input_lifetime
+    - simd_json.document_resource.repeated_close
+    - simd_json.document_resource.non_owner_rejection
+    - simd_json.document_resource.native_memory_baseline
+
 - kind: command
   target: bash scripts/native/run_zig_resource_tests.sh ordinary
   covers:
@@ -279,5 +308,5 @@ Before activation, replace the bootstrap exception with executed resource tests,
     - simd_json.document_resource.partial_open_failure
     - simd_json.document_resource.gc_cleanup
     - simd_json.document_resource.native_memory_baseline
-  reason: Phase 3 implements and tests the native ownership/resource foundation, but the parsed resource is not production-reachable until threaded execution, owner enforcement, explicit and GC close, shutdown, and full qualification evidence arrive in later phases.
+  reason: Phases 3 and 4 implement native ownership plus threaded explicit/GC teardown, and Phase 5 adds opaque public reachability, owner-first open/closed validation, deterministic repeated close, original-input lifetime revalidation, concurrent-owner isolation, and explicit/GC gauge-baseline proof; retain the exception until Phase 6 completes final sanitizer and supported-target qualification.
 ```

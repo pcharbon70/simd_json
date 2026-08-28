@@ -30,9 +30,12 @@ defmodule SimdJson.Native.DocumentResourceRegistrationTest do
     end
   end
 
-  test "does not expose a production document constructor" do
-    refute function_exported?(SimdJson, :open, 1)
+  test "exposes only the Phase 5 document constructor at the root" do
+    assert Code.ensure_loaded?(SimdJson)
+    assert function_exported?(SimdJson, :open, 1)
+    assert function_exported?(SimdJson, :close, 1)
     refute function_exported?(SimdJson, :parse, 1)
-    refute Code.ensure_loaded?(SimdJson.Document)
+    assert Code.ensure_loaded?(SimdJson.Document)
+    assert Code.ensure_loaded?(SimdJson.Error)
   end
 end

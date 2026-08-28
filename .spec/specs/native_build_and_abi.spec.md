@@ -16,9 +16,12 @@ join, and cancellation constraints. The qualified path now reaches the private
 C ABI from a retained Zigler worker and returns only an opaque resource or
 bounded status metadata. Callback-safe GC teardown and application/unload
 drain are implemented; repeated shared-object unload remains explicitly
-unqualified on OTP 27.3. Public document APIs and final target qualification
-remain incomplete, so the Milestone 1 bootstrap exception and `planned` status
-remain in force.
+unqualified on OTP 27.3. Phase 5 adds a bounded Zig resource type/owner check,
+the Elixir document wrapper, and two hidden NIF-internal conformance functions
+that revalidate owned input without changing ABI version 1 or its exported
+symbol allowlist. Release checks prove native injection controls remain absent.
+Final supported-target qualification remains incomplete, so the Milestone 1
+bootstrap exception and `planned` status remain in force.
 
 ```spec-meta
 id: simd_json.native_build_and_abi
@@ -233,9 +236,22 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
     - simd_json.native_build_and_abi.clean_checkout_build
 
 - kind: source_file
+  target: lib/simd_json.ex
+  covers:
+    - simd_json.native_build_and_abi.layered_boundary
+
+- kind: source_file
   target: native/include/simd_json_abi.h
   covers:
     - simd_json.native_build_and_abi.opaque_c_contract
+
+- kind: source_file
+  target: native/include/simd_json_nif_internal.h
+  covers:
+    - simd_json.native_build_and_abi.layered_boundary
+    - simd_json.native_build_and_abi.opaque_c_contract
+    - simd_json.native_build_and_abi.exception_containment
+    - simd_json.native_build_and_abi.symbol_visibility
 
 - kind: source_file
   target: native/src/simd_json_abi.cpp
@@ -375,5 +391,5 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
     - simd_json.native_build_and_abi.release_symbol_surface
     - simd_json.native_build_and_abi.unsupported_target_rejection
     - simd_json.native_build_and_abi.dependency_upgrade_gate
-  reason: Phases 1 through 3 provide build, provenance, C ABI, Zig ownership, lifecycle, sanitizer, and symbol evidence, but the exception remains until later phases add threaded execution, the public API, supported-target qualification, and full Milestone 1 closure evidence before activation.
+  reason: Phases 1 through 5 provide reproducible build, provenance, C ABI, Zig ownership, threaded execution, public API, lifetime, sanitizer, and unchanged release-symbol evidence; retain the exception until Phase 6 completes the supported-target matrix and full Milestone 1 closure qualification.
 ```

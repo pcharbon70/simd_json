@@ -5,10 +5,13 @@ Current package and documentation contract for the `SimdJson` library.
 The package currently distributes the pinned native build inputs, private C
 ABI, C++ shim, Zig ownership/resource sources, symbol policy, native
 conformance harnesses, and Phase 4's internal correlated threaded operation
-runtime, stable coordinator, and cleanup-only dispatcher. The internal adapter
-can construct and explicitly or automatically clean a parsed BEAM resource for
-qualification tests, but no document-opening public API or public document type
-is exposed yet.
+runtime, stable coordinator, and cleanup-only dispatcher. Phase 5 adds the
+narrow binary `open/1` and owner-safe `close/1` root API
+with an opaque document and a closed, redacted structured-error vocabulary.
+README, module, milestone, export, typespec, and protocol checks establish that
+no decode, projection, streaming, cursor, transfer, or raw native-handle
+surface is exposed. Public corpora, ownership, lifetime, concurrency, and
+native-baseline tests now exercise the packaged vertical slice.
 
 ```spec-meta
 id: simd_json.package
@@ -17,6 +20,7 @@ status: active
 summary: Elixir library scaffold, pinned native build tooling, local specification tooling, and implementation roadmap.
 surface:
   - .tool-versions
+  - README.md
   - mix.exs
   - mix.lock
   - lib/**/*.ex

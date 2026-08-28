@@ -539,26 +539,40 @@ pub fn Implementation(comptime c: type) type {
                 return @intFromPtr(owned.ptr) % input_alignment_bytes == 0;
             }
 
-            /// Test-only structural probes. They compile only when called from
-            /// a root that imported the guarded C test header.
-            pub fn cDocumentUsesOwnedInputForTest(self: *const DocumentState) bool {
+            /// Native conformance probes use the hidden NIF declarations in a
+            /// BEAM build and the guarded test declarations in native tests.
+            pub fn cDocumentUsesOwnedInputForProbe(self: *const DocumentState) bool {
                 const owned = self.padded_input orelse return false;
                 const document = self.document_handle orelse return false;
-                if (!@hasDecl(c, "simd_json_test_document_uses_input"))
-                    @compileError("test hooks are not present in this build");
-                return c.simd_json_test_document_uses_input(
-                    document,
-                    owned.ptr,
-                    @intCast(self.logical_length),
-                ) == 1;
+
+                if (comptime @hasDecl(c, "simd_json_nif_document_uses_owned_input")) {
+                    return c.simd_json_nif_document_uses_owned_input(
+                        document,
+                        owned.ptr,
+                        @intCast(self.logical_length),
+                    ) == 1;
+                } else if (comptime @hasDecl(c, "simd_json_test_document_uses_input")) {
+                    return c.simd_json_test_document_uses_input(
+                        document,
+                        owned.ptr,
+                        @intCast(self.logical_length),
+                    ) == 1;
+                } else {
+                    @compileError("document input probe is not present in this build");
+                }
             }
 
-            pub fn revalidateForTest(self: *const DocumentState) NativeStatus {
+            pub fn revalidateForProbe(self: *const DocumentState) NativeStatus {
                 const document = self.document_handle orelse
                     return statusWithoutDiagnostics(.invalid_argument);
-                if (!@hasDecl(c, "simd_json_test_document_revalidate"))
-                    @compileError("test hooks are not present in this build");
-                return adaptStatus(c.simd_json_test_document_revalidate(document));
+
+                if (comptime @hasDecl(c, "simd_json_nif_document_revalidate")) {
+                    return adaptStatus(c.simd_json_nif_document_revalidate(document));
+                } else if (comptime @hasDecl(c, "simd_json_test_document_revalidate")) {
+                    return adaptStatus(c.simd_json_test_document_revalidate(document));
+                } else {
+                    @compileError("document revalidation probe is not present in this build");
+                }
             }
         };
 

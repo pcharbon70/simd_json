@@ -479,6 +479,32 @@ pub const DocumentCleanupResult = struct {
     worker_context: ExecutionContext,
 };
 
+pub const DocumentProbeStatus = enum(u8) {
+    ok,
+    closed,
+    not_owner,
+    execution_unavailable,
+    test_unavailable,
+    internal_failure,
+};
+
+pub const DocumentProbeResult = struct {
+    status: DocumentProbeStatus,
+    kind: OperationKind,
+    generation: u64,
+    worker_context: ExecutionContext,
+    uses_owned_input: bool,
+    valid: bool,
+    ready_for_delivery: bool,
+};
+
+pub const DocumentOwnerState = enum(u8) {
+    open,
+    closing,
+    closed,
+    not_owner,
+};
+
 var module_loaded = std.atomic.Value(bool).init(false);
 var module_generation = std.atomic.Value(u64).init(0);
 
@@ -544,6 +570,24 @@ fn failedDocumentOpen(
         .out_of_memory => |diagnostics| documentOpenResult(.out_of_memory, operation, diagnostics, null),
         .invalid_argument => |diagnostics| documentOpenResult(.invalid_argument, operation, diagnostics, null),
         .internal_failure => |diagnostics| documentOpenResult(.internal_failure, operation, diagnostics, null),
+    };
+}
+
+fn finishDocumentProbe(
+    record: *OperationRecord,
+    status: DocumentProbeStatus,
+    uses_owned_input: bool,
+    valid: bool,
+) DocumentProbeResult {
+    const ready = record.markReadyForDelivery();
+    return .{
+        .status = if (ready) status else .internal_failure,
+        .kind = record.kind,
+        .generation = record.generation,
+        .worker_context = executionContext(),
+        .uses_owned_input = uses_owned_input,
+        .valid = valid,
+        .ready_for_delivery = ready,
     };
 }
 
@@ -922,9 +966,95 @@ pub fn threaded_document_cleanup(
     };
 }
 
+/// Test conformance entry for the complete public-document lifetime. The
+/// generated join is threaded, document admission blocks concurrent cleanup,
+/// and a hidden NIF-internal C function traverses the existing On-Demand
+/// document again. The high-level Elixir helper is compiled only in tests;
+/// production imports no failure-injection or native-accounting hooks.
+pub fn threaded_document_probe(
+    operation: OperationResource,
+    document: DocumentResource,
+) DocumentProbeResult {
+    const record = operation.unpack();
+    if (!record.beginRunning()) {
+        return .{
+            .status = .execution_unavailable,
+            .kind = record.kind,
+            .generation = record.generation,
+            .worker_context = executionContext(),
+            .uses_owned_input = false,
+            .valid = false,
+            .ready_for_delivery = false,
+        };
+    }
+
+    var worker_finished = false;
+    defer if (!worker_finished) record.abortRunning();
+
+    const control = document.__payload.control orelse {
+        const result = finishDocumentProbe(record, .internal_failure, false, false);
+        worker_finished = true;
+        return result;
+    };
+
+    // The operation owner is captured synchronously from the probing caller.
+    // Check it before reading lifecycle state, matching every document entry.
+    if (!pidsEqual(record.owner, control.owner)) {
+        const result = finishDocumentProbe(record, .not_owner, false, false);
+        worker_finished = true;
+        return result;
+    }
+
+    if (!module_loaded.load(.acquire) or
+        record.generation != module_generation.load(.acquire) or
+        control.module_generation != record.generation)
+    {
+        const result = finishDocumentProbe(record, .execution_unavailable, false, false);
+        worker_finished = true;
+        return result;
+    }
+
+    const admission = control.native.tryAdmit() orelse {
+        const result = finishDocumentProbe(record, .closed, false, false);
+        worker_finished = true;
+        return result;
+    };
+    defer control.native.releaseAdmission(admission);
+
+    if (comptime @hasDecl(c, "simd_json_nif_document_revalidate")) {
+        const uses_owned_input = control.native.cDocumentUsesOwnedInputForProbe();
+        const valid = control.native.revalidateForProbe() == .ok;
+        const status: DocumentProbeStatus = if (uses_owned_input and valid)
+            .ok
+        else
+            .internal_failure;
+        const result = finishDocumentProbe(record, status, uses_owned_input, valid);
+        worker_finished = true;
+        return result;
+    } else {
+        const result = finishDocumentProbe(record, .test_unavailable, false, false);
+        worker_finished = true;
+        return result;
+    }
+}
+
 pub fn document_lifecycle(document: DocumentResource) document_resource.Lifecycle {
     const control = document.__payload.control orelse return .closed;
     return control.native.lifecycleState();
+}
+
+/// Public wrappers use this bounded entry before admitting cleanup. Ownership
+/// is deliberately checked before lifecycle so another process cannot learn
+/// whether the document has already been closed.
+pub fn document_owner_state(document: DocumentResource) !DocumentOwnerState {
+    const control = document.__payload.control orelse return .closed;
+    if (!pidsEqual(try beam.self(.{}), control.owner)) return .not_owner;
+
+    return switch (control.native.lifecycleState()) {
+        .open => .open,
+        .closing => .closing,
+        .closed => .closed,
+    };
 }
 
 pub fn execution_generation() u64 {
