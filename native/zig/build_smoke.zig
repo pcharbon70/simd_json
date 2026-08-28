@@ -18,7 +18,7 @@ const DocumentResourceCallbacks = struct {
         // Phase 3 deliberately publishes no resource containing parse state.
         // The callback therefore performs no input-dependent work or native
         // destruction. Phase 4 will attach the off-scheduler cleanup queue.
-        _ = payload.native.lifecycle.load(.acquire);
+        _ = payload.native.detachForDeferredCleanup();
     }
 };
 
@@ -73,9 +73,11 @@ pub fn document_resource_fixture() !DocumentResource {
 
 fn retainParent(parent: DocumentResource) void {
     parent.keep();
+    document_resource.noteParentRetained();
 }
 
 fn releaseParent(parent: DocumentResource) void {
+    document_resource.noteParentReleased();
     parent.release();
 }
 
@@ -111,4 +113,4 @@ pub fn resource_on_unload(env: beam.env, private_data: ?*anyopaque) callconv(.c)
     module_loaded.store(false, .release);
 }
 
-// covers: simd_json.document_resource.opaque_handle simd_json.document_resource.complete_ownership simd_json.document_resource.parent_retention
+// covers: simd_json.document_resource.opaque_handle simd_json.document_resource.complete_ownership simd_json.document_resource.lifecycle simd_json.document_resource.reverse_destruction simd_json.document_resource.parent_retention

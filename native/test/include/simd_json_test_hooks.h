@@ -35,6 +35,7 @@ uint32_t simd_json_test_document_uses_input(
     uint64_t logical_length) SIMD_JSON_TEST_NOEXCEPT;
 simd_json_status simd_json_test_document_revalidate(
     simd_json_document *document) SIMD_JSON_TEST_NOEXCEPT;
+uint32_t simd_json_test_sanitizer_build(void) SIMD_JSON_TEST_NOEXCEPT;
 
 #undef SIMD_JSON_TEST_NOEXCEPT
 

@@ -180,6 +180,35 @@ the end of a readable page, with the following page inaccessible. The ordinary
 and AddressSanitizer/UndefinedBehaviorSanitizer profiles exercise zero-length,
 small, alignment-boundary, padding-boundary, malformed, and overflow cases.
 
+### Lifecycle and cleanup
+
+Published native state moves only from `open` to `closing` to `closed`. One
+compare-and-exchange selects the cleanup owner and increments the generation;
+every other close path observes `closing` or `closed`. Operation admission first
+increments a bounded counter and then rechecks lifecycle and generation, so a
+close can reject new work while preserving already-admitted work. The deferred
+executor may release ownership only after that counter reaches zero, and a
+second atomic guard makes completion exactly once.
+
+Release order is fixed: document, parser, padded buffer, then resource-record
+accounting. Each field is cleared as ownership ends. Construction remains
+unpublished until all fields are ready, and every failure edge—after buffer,
+parser, document, resource initialization, or immediately before
+publication—uses the same reverse rollback. A successfully closed state cannot
+be reopened because its invalidated generation is retained.
+
+The BEAM destructor calls only the bounded close-detach transition. Phase 3 has
+no production path that can place parsed state in a resource; Phase 4 will
+attach the cleanup owner to its off-scheduler executor before any such path is
+published.
+
+Native test builds add aggregate counters for padded buffers, parser/document
+handles, resource records, retained parents, admissions, object destruction,
+and completed cleanup. Their snapshot and bounded quiescence poll contain no
+pointers, allocation contents, or JSON. Failure controls and accounting are
+selected only when the guarded C test header is present; release symbol and
+string inspection proves they are absent from the NIF and standalone ABI.
+
 ## Native ABI conformance
 
 The standalone harness in [`test/c_abi_conformance.c`](./test/c_abi_conformance.c)

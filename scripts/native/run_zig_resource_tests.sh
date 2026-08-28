@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# covers: simd_json.document_resource.opaque_handle simd_json.document_resource.complete_ownership simd_json.document_resource.padded_owned_copy simd_json.document_resource.zero_copy_disabled simd_json.document_resource.input_lifetime
+# covers: simd_json.document_resource.opaque_handle simd_json.document_resource.complete_ownership simd_json.document_resource.padded_owned_copy simd_json.document_resource.zero_copy_disabled simd_json.document_resource.lifecycle simd_json.document_resource.reverse_destruction simd_json.document_resource.parent_retention simd_json.document_resource.test_accounting simd_json.document_resource.input_lifetime simd_json.document_resource.partial_open_failure
 
 repository_root="$(git rev-parse --show-toplevel)"
 profile="${1:-ordinary}"
@@ -30,7 +30,13 @@ case "${profile}" in
     runtime_environment=()
     ;;
   sanitizer)
-    profile_flags=(-O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined)
+    profile_flags=(
+      -O1
+      -g
+      -fno-omit-frame-pointer
+      -fsanitize=address,undefined
+      -DSIMD_JSON_SANITIZER_TESTING=1
+    )
     asan_library="$("${zig_executable}" c++ -print-file-name=libasan.so)"
     asan_preinit="$("${zig_executable}" c++ -print-file-name=libasan_preinit.o)"
     sanitizer_runtime_dir="$(dirname "${asan_library}")"

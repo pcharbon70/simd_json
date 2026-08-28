@@ -45,7 +45,6 @@ test "owned padded input is aligned, initialized, and independent of its source"
 
         var state = resource.DocumentState.empty();
         try std.testing.expect(state.openOwned(std.testing.allocator, source) == .ok);
-        defer state.destroyOwned();
 
         try std.testing.expect(state.inputIsAligned());
         try std.testing.expect(state.ownedInputMatches(source));
@@ -59,6 +58,7 @@ test "owned padded input is aligned, initialized, and independent of its source"
 
         @memset(source, 'x');
         try std.testing.expect(state.revalidateForTest() == .ok);
+        try std.testing.expect(state.closeAndDestroy());
     }
 }
 
@@ -128,9 +128,161 @@ test "guard page follows the exact initialized capacity" {
                 @intFromPtr(mapping.ptr) + page_size,
                 @intFromPtr(state.padded_input.?.ptr) + state.padded_input.?.len,
             );
-            state.destroyOwned();
+            try std.testing.expect(state.closeAndDestroy());
         }
     }
 }
 
-// covers: simd_json.document_resource.opaque_handle simd_json.document_resource.complete_ownership simd_json.document_resource.padded_owned_copy simd_json.document_resource.zero_copy_disabled simd_json.document_resource.input_lifetime
+test "construction failures roll back every completed ownership edge" {
+    const points = [_]resource.testing.FailurePoint{
+        .after_buffer_allocation,
+        .after_parser_creation,
+        .after_document_creation,
+        .after_resource_initialization,
+        .before_resource_publication,
+    };
+
+    inline for (points) |point| {
+        try std.testing.expect(resource.testing.reset());
+        var state = resource.DocumentState.empty();
+        const status = resource.testing.openWithFailure(
+            &state,
+            std.testing.allocator,
+            "{\"owned\":true}",
+            point,
+        );
+
+        try std.testing.expect(status == .internal_failure);
+        try std.testing.expectEqual(resource.Lifecycle.closed, state.lifecycleState());
+        try std.testing.expectEqual(@as(u64, 0), state.generation.load(.acquire));
+        try std.testing.expect(!state.hasOwnedNativeState());
+        try std.testing.expect(resource.testing.waitForQuiescence(1_024));
+
+        const snapshot = resource.testing.snapshot();
+        const expected_destructions: usize = switch (point) {
+            .after_buffer_allocation => 2,
+            .after_parser_creation => 3,
+            .after_document_creation,
+            .after_resource_initialization,
+            .before_resource_publication,
+            => 4,
+            .none => unreachable,
+        };
+        try std.testing.expectEqual(expected_destructions, snapshot.completed_destruction_events);
+        try std.testing.expectEqual(@as(usize, 1), snapshot.completed_cleanup_events);
+        try std.testing.expect(snapshot.isQuiescent());
+        try std.testing.expect(snapshot.last_buffer_release_step > 0);
+
+        switch (point) {
+            .after_buffer_allocation => {
+                try std.testing.expectEqual(@as(usize, 0), snapshot.last_parser_destruction_step);
+                try std.testing.expectEqual(@as(usize, 0), snapshot.last_document_destruction_step);
+            },
+            .after_parser_creation => {
+                try std.testing.expectEqual(@as(usize, 0), snapshot.last_document_destruction_step);
+                try std.testing.expect(
+                    snapshot.last_parser_destruction_step < snapshot.last_buffer_release_step,
+                );
+            },
+            .after_document_creation,
+            .after_resource_initialization,
+            .before_resource_publication,
+            => {
+                try std.testing.expect(
+                    snapshot.last_document_destruction_step <
+                        snapshot.last_parser_destruction_step,
+                );
+                try std.testing.expect(
+                    snapshot.last_parser_destruction_step < snapshot.last_buffer_release_step,
+                );
+            },
+            .none => unreachable,
+        }
+    }
+}
+
+test "close blocks admission and waits for already admitted work" {
+    try std.testing.expect(resource.testing.reset());
+    var state = resource.DocumentState.empty();
+    try std.testing.expect(state.openOwned(std.testing.allocator, "[1,2,3]") == .ok);
+
+    const admission = state.tryAdmit().?;
+    try std.testing.expectEqual(@as(u64, 1), admission.generation);
+    try std.testing.expectEqual(@as(usize, 1), resource.testing.snapshot().admitted_operations);
+
+    try std.testing.expectEqual(resource.CloseClaim.cleanup_owner, state.beginClose());
+    try std.testing.expectEqual(resource.Lifecycle.closing, state.lifecycleState());
+    try std.testing.expectEqual(@as(u64, 2), state.generation.load(.acquire));
+    try std.testing.expect(state.tryAdmit() == null);
+    try std.testing.expect(!state.completeCleanup());
+
+    state.releaseAdmission(admission);
+    try std.testing.expectEqual(@as(usize, 0), state.admitted_operations.load(.acquire));
+    try std.testing.expect(state.completeCleanup());
+    try std.testing.expectEqual(resource.Lifecycle.closed, state.lifecycleState());
+    try std.testing.expect(state.completeCleanup());
+
+    const snapshot = resource.testing.snapshot();
+    try std.testing.expectEqual(@as(usize, 4), snapshot.completed_destruction_events);
+    try std.testing.expectEqual(@as(usize, 1), snapshot.completed_cleanup_events);
+    try std.testing.expect(snapshot.isQuiescent());
+    try std.testing.expect(
+        snapshot.last_document_destruction_step < snapshot.last_parser_destruction_step,
+    );
+    try std.testing.expect(
+        snapshot.last_parser_destruction_step < snapshot.last_buffer_release_step,
+    );
+
+    try std.testing.expect(state.openOwned(std.testing.allocator, "null") == .invalid_argument);
+}
+
+test "concurrent close has one winner and exactly-once object destruction" {
+    // GCC's preloaded ASan runtime cannot unmap Zig 0.16's custom thread
+    // stacks. The ordinary profile owns the race proof; sanitizer coverage
+    // still runs every single-threaded destruction and guard-page case.
+    if (c.simd_json_test_sanitizer_build() != 0) return error.SkipZigTest;
+
+    try std.testing.expect(resource.testing.reset());
+    var state = resource.DocumentState.empty();
+    try std.testing.expect(state.openOwned(std.testing.allocator, "{\"race\":true}") == .ok);
+
+    var winners = std.atomic.Value(usize).init(0);
+    const Race = struct {
+        fn run(target: *resource.DocumentState, winner_count: *std.atomic.Value(usize)) void {
+            if (target.beginClose() == .cleanup_owner) {
+                _ = winner_count.fetchAdd(1, .acq_rel);
+            }
+        }
+    };
+
+    var threads: [16]std.Thread = undefined;
+    for (&threads) |*thread| {
+        thread.* = try std.Thread.spawn(.{}, Race.run, .{ &state, &winners });
+    }
+    for (&threads) |*thread| thread.join();
+
+    try std.testing.expectEqual(@as(usize, 1), winners.load(.acquire));
+    try std.testing.expectEqual(resource.Lifecycle.closing, state.lifecycleState());
+    try std.testing.expectEqual(@as(u64, 2), state.generation.load(.acquire));
+    try std.testing.expect(state.completeCleanup());
+    try std.testing.expect(state.closeAndDestroy());
+
+    const snapshot = resource.testing.snapshot();
+    try std.testing.expectEqual(@as(usize, 4), snapshot.completed_destruction_events);
+    try std.testing.expectEqual(@as(usize, 1), snapshot.completed_cleanup_events);
+    try std.testing.expect(snapshot.isQuiescent());
+}
+
+test "parent retention and bounded accounting expose no resource contents" {
+    try std.testing.expect(resource.testing.reset());
+    resource.testing.retainParent();
+    try std.testing.expectEqual(@as(usize, 1), resource.testing.snapshot().retained_parents);
+    try std.testing.expect(!resource.testing.waitForQuiescence(8));
+
+    resource.testing.releaseParent();
+    try std.testing.expect(resource.testing.waitForQuiescence(1_024));
+    const snapshot = resource.testing.snapshot();
+    try std.testing.expect(snapshot.isQuiescent());
+}
+
+// covers: simd_json.document_resource.opaque_handle simd_json.document_resource.complete_ownership simd_json.document_resource.padded_owned_copy simd_json.document_resource.zero_copy_disabled simd_json.document_resource.lifecycle simd_json.document_resource.reverse_destruction simd_json.document_resource.parent_retention simd_json.document_resource.test_accounting simd_json.document_resource.input_lifetime simd_json.document_resource.partial_open_failure

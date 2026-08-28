@@ -82,42 +82,42 @@ Back to plan: [README](./README.md)
 
 ## 3.3 Section — Lifecycle and Exactly-Once Cleanup Primitives
 
-- [ ] 3.3 Section - Define monotonic resource state and one dependency-safe cleanup operation before scheduling is attached.
+- [x] 3.3 Section - Define monotonic resource state and one dependency-safe cleanup operation before scheduling is attached.
 
   This section separates cleanup correctness from where cleanup runs. Phase 3
   proves the state machine and destruction order natively; Phase 4 supplies the
   off-scheduler executor required for production parse and teardown.
 
-  - [ ] 3.3.1 Task - Implement the document lifecycle state machine.
+  - [x] 3.3.1 Task - Implement the document lifecycle state machine.
 
     The task ensures concurrent close, failure, GC, and shutdown paths can
     converge without double ownership or resurrection.
 
-    - [ ] 3.3.1.1 Subtask - Represent the only lifecycle progression as `open → closing → closed` and prevent backward or skipped publication of usable state.
-    - [ ] 3.3.1.2 Subtask - Use one atomic compare-and-transition so exactly one caller becomes cleanup owner and all other close paths observe or join the same operation.
-    - [ ] 3.3.1.3 Subtask - Increment or invalidate the generation when closing starts so future retained children cannot use stale parser state.
-    - [ ] 3.3.1.4 Subtask - Define bounded admission bookkeeping so close can prevent new operations and determine when already-admitted native work is safe to release.
+    - [x] 3.3.1.1 Subtask - Represent the only lifecycle progression as `open → closing → closed` and prevent backward or skipped publication of usable state.
+    - [x] 3.3.1.2 Subtask - Use one atomic compare-and-transition so exactly one caller becomes cleanup owner and all other close paths observe or join the same operation.
+    - [x] 3.3.1.3 Subtask - Increment or invalidate the generation when closing starts so future retained children cannot use stale parser state.
+    - [x] 3.3.1.4 Subtask - Define bounded admission bookkeeping so close can prevent new operations and determine when already-admitted native work is safe to release.
 
-  - [ ] 3.3.2 Task - Implement reverse destruction and partial-open rollback.
+  - [x] 3.3.2 Task - Implement reverse destruction and partial-open rollback.
 
     The task creates one idempotence guard around the actual release sequence and
     uses the same sequence for explicit close, GC, construction failure, caller
     loss, and unload.
 
-    - [ ] 3.3.2.1 Subtask - Prevent new work and invalidate the active generation before destroying native parser state.
-    - [ ] 3.3.2.2 Subtask - Destroy the On-Demand document before its parser, release the padded buffer afterward, and clear each field as its ownership ends.
-    - [ ] 3.3.2.3 Subtask - Route failure after every allocation or handle-construction step through dependency-safe rollback with no usable resource publication.
-    - [ ] 3.3.2.4 Subtask - Keep the resource destructor bounded to atomic detach/enqueue preparation; do not run potentially large destruction on a normal scheduler.
+    - [x] 3.3.2.1 Subtask - Prevent new work and invalidate the active generation before destroying native parser state.
+    - [x] 3.3.2.2 Subtask - Destroy the On-Demand document before its parser, release the padded buffer afterward, and clear each field as its ownership ends.
+    - [x] 3.3.2.3 Subtask - Route failure after every allocation or handle-construction step through dependency-safe rollback with no usable resource publication.
+    - [x] 3.3.2.4 Subtask - Keep the resource destructor bounded to atomic detach/enqueue preparation; do not run potentially large destruction on a normal scheduler.
 
-  - [ ] 3.3.3 Task - Add bounded test-only resource accounting.
+  - [x] 3.3.3 Task - Add bounded test-only resource accounting.
 
     The task supplies enough observability to prove baseline recovery and
     exactly-once behavior without exposing pointers, input bytes, or unbounded
     per-document data.
 
-    - [ ] 3.3.3.1 Subtask - Count live padded buffers, parser handles, document handles, resource records, retained parents, admitted operations, and completed destruction events in test builds.
-    - [ ] 3.3.3.2 Subtask - Provide a bounded snapshot and quiescence wait usable only by tests, with no native addresses, allocation contents, or caller JSON.
-    - [ ] 3.3.3.3 Subtask - Compile accounting entrypoints and failure injection out of the release artifact and verify their absence by symbol inspection.
+    - [x] 3.3.3.1 Subtask - Count live padded buffers, parser handles, document handles, resource records, retained parents, admitted operations, and completed destruction events in test builds.
+    - [x] 3.3.3.2 Subtask - Provide a bounded snapshot and quiescence wait usable only by tests, with no native addresses, allocation contents, or caller JSON.
+    - [x] 3.3.3.3 Subtask - Compile accounting entrypoints and failure injection out of the release artifact and verify their absence by symbol inspection.
 
 ## 3.4 Section — Phase 3 Integration Tests
 

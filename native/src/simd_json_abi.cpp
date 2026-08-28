@@ -1,7 +1,7 @@
 #include "../include/simd_json_abi.h"
 #include "../vendor/simdjson/simdjson.h"
 
-/* covers: simd_json.native_build_and_abi.opaque_c_contract simd_json.native_build_and_abi.exception_containment simd_json.native_build_and_abi.partial_failure_cleanup simd_json.native_build_and_abi.symbol_visibility */
+/* covers: simd_json.native_build_and_abi.opaque_c_contract simd_json.native_build_and_abi.exception_containment simd_json.native_build_and_abi.partial_failure_cleanup simd_json.native_build_and_abi.symbol_visibility simd_json.document_resource.padded_owned_copy simd_json.document_resource.zero_copy_disabled simd_json.document_resource.input_lifetime simd_json.document_resource.partial_open_failure */
 
 #include <cstddef>
 #include <cstdint>
@@ -532,5 +532,22 @@ extern "C" simd_json_status simd_json_test_document_revalidate(
   } catch (...) {
     return status_from_current_exception();
   }
+}
+
+extern "C" uint32_t simd_json_test_sanitizer_build(void) noexcept {
+#if defined(SIMD_JSON_SANITIZER_TESTING)
+  return UINT32_C(1);
+#else
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+  return UINT32_C(1);
+#endif
+#endif
+#if defined(__SANITIZE_ADDRESS__)
+  return UINT32_C(1);
+#else
+  return UINT32_C(0);
+#endif
+#endif
 }
 #endif
