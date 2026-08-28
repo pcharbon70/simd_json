@@ -6,10 +6,11 @@ Current-truth contract for the deliberately narrow Milestone 1 Elixir API and it
 
 This subject gives callers one safe way to open and deterministically close an opaque native document while preventing native codes, pointers, JSON content, or future cursor operations from leaking into the initial public contract.
 
-Phases 1 and 2 currently contribute the reproducible NIF build and an
-independently tested private C parser ABI beneath this subject's broad source
-surface. They do not add `open/1`, `close/1`, a document type, or any public API;
-the bootstrap exception therefore remains in force.
+Phases 1 through 3 contribute the reproducible NIF, private C parser ABI, and
+an internal opaque resource fixture beneath this subject's broad source
+surface. The fixture cannot parse input and is not a `SimdJson.Document` public
+type. There is still no `open/1`, `close/1`, structured error, or public
+document API, so the bootstrap exception remains in force.
 
 ```spec-meta
 id: simd_json.document_api
@@ -187,6 +188,15 @@ decisions:
   then:
     - Only the document open, close, type, and structured error surface is present
     - Decode, projection, streaming, cursor, transfer, and native-handle operations are absent
+```
+
+## Verification
+
+```spec-verification
+- kind: test_file
+  target: test/native/document_resource_policy_test.exs
+  covers:
+    - simd_json.document_api.milestone_scope
 ```
 
 ## Required Closure Evidence

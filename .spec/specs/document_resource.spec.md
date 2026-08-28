@@ -6,11 +6,14 @@ Current-truth contract for the opaque `SimdJson.Document` resource, padded input
 
 This subject prevents use-after-free, unsafe simdjson over-read, double destruction, and incoherent cross-process access while leaving a stable parent-resource model for later cursor and streaming milestones.
 
-Phases 1 and 2 currently contribute the vendored parser, internal NIF build,
-and private opaque C parser/document handles beneath this subject's broad
-native surface. The C document borrows its caller-owned padded input and parser;
-no Zig-owned buffer or BEAM resource exists yet, so the bootstrap exception
-remains in force.
+Phases 1 through 3 now contribute the vendored parser, private opaque C
+parser/document handles, Zig-owned aligned padded input, registered opaque BEAM
+resource storage, monotonic lifecycle primitives, reverse rollback, parent
+retention helpers, and bounded test-only accounting. Native tests exercise that
+ownership graph through C++ in ordinary and sanitizer profiles. No production
+parse path, off-scheduler cleanup executor, public document type, owner check,
+or close API exists until later phases, so the bootstrap exception remains in
+force.
 
 ```spec-meta
 id: simd_json.document_resource
@@ -166,6 +169,65 @@ decisions:
     - Native leak and double-destruction checks remain clean
 ```
 
+## Verification
+
+```spec-verification
+- kind: test_file
+  target: test/native/document_resource_registration_test.exs
+  covers:
+    - simd_json.document_resource.opaque_handle
+    - simd_json.document_resource.complete_ownership
+    - simd_json.document_resource.parent_retention
+
+- kind: test_file
+  target: test/native/zig_resource_test.exs
+  covers:
+    - simd_json.document_resource.padded_owned_copy
+    - simd_json.document_resource.zero_copy_disabled
+    - simd_json.document_resource.lifecycle
+    - simd_json.document_resource.reverse_destruction
+    - simd_json.document_resource.test_accounting
+    - simd_json.document_resource.input_lifetime
+    - simd_json.document_resource.partial_open_failure
+
+- kind: test_file
+  target: test/native/document_resource_policy_test.exs
+  covers:
+    - simd_json.document_resource.padded_owned_copy
+    - simd_json.document_resource.zero_copy_disabled
+    - simd_json.document_resource.lifecycle
+    - simd_json.document_resource.deferred_large_cleanup
+    - simd_json.document_resource.test_accounting
+    - simd_json.document_resource.input_lifetime
+
+- kind: command
+  target: bash scripts/native/run_zig_resource_tests.sh ordinary
+  covers:
+    - simd_json.document_resource.padded_owned_copy
+    - simd_json.document_resource.zero_copy_disabled
+    - simd_json.document_resource.lifecycle
+    - simd_json.document_resource.reverse_destruction
+    - simd_json.document_resource.parent_retention
+    - simd_json.document_resource.test_accounting
+    - simd_json.document_resource.input_lifetime
+    - simd_json.document_resource.partial_open_failure
+
+- kind: command
+  target: bash scripts/native/run_zig_resource_tests.sh sanitizer
+  covers:
+    - simd_json.document_resource.padded_owned_copy
+    - simd_json.document_resource.zero_copy_disabled
+    - simd_json.document_resource.reverse_destruction
+    - simd_json.document_resource.test_accounting
+    - simd_json.document_resource.input_lifetime
+    - simd_json.document_resource.partial_open_failure
+
+- kind: command
+  target: bash scripts/native/verify_release_symbols.sh
+  covers:
+    - simd_json.document_resource.test_accounting
+```
+
 ## Required Closure Evidence
 
 Before activation, replace the bootstrap exception with executed resource tests, allocation-failure injection, process-ownership tests, garbage-collection tests, repeated close races, native memory baseline checks, and sanitizer coverage for use-after-free, leaks, and double destruction.
@@ -192,5 +254,5 @@ Before activation, replace the bootstrap exception with executed resource tests,
     - simd_json.document_resource.partial_open_failure
     - simd_json.document_resource.gc_cleanup
     - simd_json.document_resource.native_memory_baseline
-  reason: The opaque native resource is a planned Milestone 1 surface; remove this exception and replace it with executed lifecycle, ownership, failure-injection, scheduler, and sanitizer proof before activation.
+  reason: Phase 3 implements and tests the native ownership/resource foundation, but the parsed resource is not production-reachable until threaded execution, owner enforcement, explicit and GC close, shutdown, and full qualification evidence arrive in later phases.
 ```

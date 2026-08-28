@@ -6,12 +6,13 @@ Current-truth contract for the reproducible native toolchain, official simdjson 
 
 This subject ensures that every native artifact can be traced to pinned source and toolchain inputs and that C++ implementation details terminate at one small C ABI before Zig or BEAM ownership begins.
 
-Phases 1 and 2 now provide the reproducible vendored build plus an independently
-tested opaque C11 ABI. The official On-Demand parser is contained behind a C++
-shim with stable statuses, total exception translation, partial-failure
-cleanup, release symbol allowlists, and ordinary/sanitizer native harnesses.
-Zig resource ownership and the public document API remain unimplemented, so
-the Milestone 1 bootstrap exception and `planned` status remain in force.
+Phases 1 through 3 now provide the reproducible vendored build, independently
+tested opaque C11 ABI, and canonical-header Zig ownership layer. The official
+On-Demand parser remains behind a C++ shim with stable statuses, total exception
+translation, reverse partial-failure cleanup, release symbol allowlists, and
+ordinary/sanitizer C and Zig harnesses. Threaded production execution, public
+document APIs, and final target qualification remain unimplemented, so the
+Milestone 1 bootstrap exception and `planned` status remain in force.
 
 ```spec-meta
 id: simd_json.native_build_and_abi
@@ -317,6 +318,18 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
     - simd_json.native_build_and_abi.cpp_exception_translation
     - simd_json.native_build_and_abi.c_abi_conformance
 
+- kind: command
+  target: bash scripts/native/run_zig_resource_tests.sh ordinary
+  covers:
+    - simd_json.native_build_and_abi.layered_boundary
+    - simd_json.native_build_and_abi.partial_failure_cleanup
+
+- kind: command
+  target: bash scripts/native/run_zig_resource_tests.sh sanitizer
+  covers:
+    - simd_json.native_build_and_abi.layered_boundary
+    - simd_json.native_build_and_abi.partial_failure_cleanup
+
 - kind: test_file
   target: test/native/release_symbol_test.exs
   covers:
@@ -350,5 +363,5 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
     - simd_json.native_build_and_abi.release_symbol_surface
     - simd_json.native_build_and_abi.unsupported_target_rejection
     - simd_json.native_build_and_abi.dependency_upgrade_gate
-  reason: Phases 1 and 2 provide build, provenance, C ABI, sanitizer, and symbol evidence, but the exception remains until later phases add Zig resource, scheduler, lifecycle, supported-target qualification, and full Milestone 1 closure evidence before activation.
+  reason: Phases 1 through 3 provide build, provenance, C ABI, Zig ownership, lifecycle, sanitizer, and symbol evidence, but the exception remains until later phases add threaded execution, the public API, supported-target qualification, and full Milestone 1 closure evidence before activation.
 ```

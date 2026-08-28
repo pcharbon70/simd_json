@@ -17,6 +17,19 @@ defmodule SimdJson.Native.DocumentResourceRegistrationTest do
     assert fixture == nil
   end
 
+  test "repeated bounded fixtures can be abandoned to garbage collection" do
+    fixtures = for _ <- 1..256, do: BuildSmoke.document_resource_fixture()
+    assert Enum.all?(fixtures, &is_reference/1)
+
+    fixtures = nil
+    :erlang.garbage_collect(self())
+    assert fixtures == nil
+
+    for _ <- 1..256 do
+      assert BuildSmoke.document_resource_registration_smoke()
+    end
+  end
+
   test "does not expose a production document constructor" do
     refute function_exported?(SimdJson, :open, 1)
     refute function_exported?(SimdJson, :parse, 1)

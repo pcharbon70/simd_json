@@ -68,6 +68,21 @@ Destruction occurs in this order:
 
 The resource destructor is a safety net, not a second cleanup implementation. Large or otherwise unbounded teardown is deferred to the accepted off-scheduler cleanup path.
 
+### Phase 3 implementation checkpoint
+
+Phase 3 realizes the decision below the public API. Zig imports the canonical C
+header, owns one 64-byte-aligned input copy with the pinned 64 initialized
+padding bytes, registers the opaque resource, and implements admission,
+generation invalidation, reverse rollback, and exactly-once cleanup guards.
+Ordinary and sanitizer native tests cover source-buffer independence, guard
+pages, every construction edge, concurrent close, parent-retention accounting,
+and quiescence without exposing pointers or JSON.
+
+This checkpoint does not alter the decision or make parsed resources
+production-reachable. The BEAM fixture contains only destructible empty state;
+threaded construction and deferred cleanup arrive in Phase 4, while owner
+enforcement and public idempotent close arrive in Phase 5.
+
 ## Consequences
 
 The input remains valid for the complete parser lifetime and zero-copy ambiguity cannot cause an over-read. Explicit close releases large native allocations deterministically, while garbage collection safely handles abandoned documents.

@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 3 Phase - Build the native ownership graph that keeps simdjson state and padded input valid for exactly one opaque document lifetime.
+- [x] 3 Phase - Build the native ownership graph that keeps simdjson state and padded input valid for exactly one opaque document lifetime.
 
   This phase imports the proven C ABI into Zig, implements the always-copy input
   policy, registers the opaque BEAM resource type, and defines lifecycle and
@@ -121,29 +121,29 @@ Back to plan: [README](./README.md)
 
 ## 3.4 Section — Phase 3 Integration Tests
 
-- [ ] 3.4 Section - Prove the Zig, C ABI, padded-memory, and resource-lifecycle layers compose without scheduler-unsafe parsing.
+- [x] 3.4 Section - Prove the Zig, C ABI, padded-memory, and resource-lifecycle layers compose without scheduler-unsafe parsing.
 
   This section validates the ownership foundation through native tests and only
   bounded BEAM resource-registration smoke checks. Production open remains
   unavailable until Phase 4 supplies threaded admission.
 
-  - [ ] 3.4.1 Task - Run padded-input and cross-language ownership tests.
+  - [x] 3.4.1 Task - Run padded-input and cross-language ownership tests.
 
     The task proves the Zig allocation is the memory parsed by C++ and remains
     valid independently of the source binary.
 
-    - [ ] 3.4.1.1 Subtask - Exercise zero-length, small, alignment-boundary, padding-boundary, and overflow-length cases through Zig into the C ABI.
-    - [ ] 3.4.1.2 Subtask - Release or overwrite the source test buffer after copying and prove the native document continues reading only its owned padded allocation.
-    - [ ] 3.4.1.3 Subtask - Verify logical byte offsets never include initialized padding and guard-page tests remain clean under AddressSanitizer and UndefinedBehaviorSanitizer.
-    - [ ] 3.4.1.4 Subtask - Assert no borrowed or zero-copy parser-input path is reachable in the Milestone 1 native build.
+    - [x] 3.4.1.1 Subtask - Exercise zero-length, small, alignment-boundary, padding-boundary, and overflow-length cases through Zig into the C ABI.
+    - [x] 3.4.1.2 Subtask - Release or overwrite the source test buffer after copying and prove the native document continues reading only its owned padded allocation.
+    - [x] 3.4.1.3 Subtask - Verify logical byte offsets never include initialized padding and guard-page tests remain clean under AddressSanitizer and UndefinedBehaviorSanitizer.
+    - [x] 3.4.1.4 Subtask - Assert no borrowed or zero-copy parser-input path is reachable in the Milestone 1 native build.
 
-  - [ ] 3.4.2 Task - Run resource rollback and destruction-order tests.
+  - [x] 3.4.2 Task - Run resource rollback and destruction-order tests.
 
     The task executes `partial_open_failure` and the lifecycle primitives across
     every construction edge before asynchronous scheduling adds more races.
 
-    - [ ] 3.4.2.1 Subtask - Inject failure after buffer allocation, parser creation, document creation, resource initialization, and immediately before resource publication.
-    - [ ] 3.4.2.2 Subtask - Assert each case releases completed allocations in reverse order, publishes no usable resource, and returns all test counters to baseline.
-    - [ ] 3.4.2.3 Subtask - Race native lifecycle transitions and prove one cleanup winner, monotonic state, one generation invalidation, and one destruction event per owned object.
-    - [ ] 3.4.2.4 Subtask - Load the NIF, register and release a bounded empty resource fixture, and confirm ordinary NIF callbacks perform no input-dependent copy, parse, or large teardown.
-    - [ ] 3.4.2.5 Subtask - Run the focused native/resource tests, `mix test`, `mix spec.next`, and the reported `mix spec.check --base ...` command before marking Phase 3 complete.
+    - [x] 3.4.2.1 Subtask - Inject failure after buffer allocation, parser creation, document creation, resource initialization, and immediately before resource publication.
+    - [x] 3.4.2.2 Subtask - Assert each case releases completed allocations in reverse order, publishes no usable resource, and returns all test counters to baseline.
+    - [x] 3.4.2.3 Subtask - Race native lifecycle transitions and prove one cleanup winner, monotonic state, one generation invalidation, and one destruction event per owned object.
+    - [x] 3.4.2.4 Subtask - Load the NIF, register and release a bounded empty resource fixture, and confirm ordinary NIF callbacks perform no input-dependent copy, parse, or large teardown.
+    - [x] 3.4.2.5 Subtask - Run the focused native/resource tests, `mix test`, `mix spec.next`, and the reported `mix spec.check --base ...` command before marking Phase 3 complete.

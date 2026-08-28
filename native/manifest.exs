@@ -105,6 +105,7 @@
     "native/src/build_smoke.cpp",
     "native/src/simd_json_abi.cpp",
     "native/test/document_resource_test.zig",
+    "native/test/include/simd_json_test_hooks.h",
     "native/symbols/c_abi.allowlist",
     "native/symbols/c_abi.version",
     "native/symbols/nif.allowlist",
@@ -114,6 +115,7 @@
     "native/vendor/simdjson/simdjson.h",
     "native/vendor/simdjson/LICENSE",
     "native/vendor/simdjson/LICENSE-MIT",
-    "native/vendor/simdjson/patches/series"
+    "native/vendor/simdjson/patches/series",
+    "scripts/native/run_zig_resource_tests.sh"
   ]
 ]

@@ -6,10 +6,11 @@ Current-truth contract for scheduler isolation, threaded request correlation, ca
 
 This subject ensures that proving the native parser never makes unrelated BEAM processes pay an input-dependent scheduling cost and that asynchronous completion cannot outlive the resources it uses.
 
-Phases 1 and 2 contribute bounded build diagnostics plus parser work exercised
-only by the standalone native C harness. No input-dependent parsing or cleanup
-is reachable through a BEAM NIF, and Zigler's threaded mode is not yet used;
-the bootstrap exception remains in force.
+Phases 1 through 3 contribute bounded build/resource diagnostics and native
+ownership tests outside the BEAM. Resource destruction callbacks perform only
+an atomic close-detach transition, and no production NIF can copy input, parse,
+or own large parser state. Zigler's threaded parse and deferred-cleanup
+executors are attached in Phase 4, so the bootstrap exception remains in force.
 
 ```spec-meta
 id: simd_json.native_execution
@@ -170,6 +171,16 @@ decisions:
     - Every retained resource and operation allocation is eventually released exactly once
 ```
 
+## Verification
+
+```spec-verification
+- kind: test_file
+  target: test/native/document_resource_policy_test.exs
+  covers:
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.threaded_cleanup
+```
+
 ## Required Closure Evidence
 
 Before activation, replace the bootstrap exception with executed scheduler heartbeat, request-correlation, caller-death, late-result, submission-failure, garbage-collection, application-shutdown, and NIF-unload tests. Evidence must include normal and dirty scheduler utilization plus the qualification environment and latency budget.
@@ -196,5 +207,5 @@ Before activation, replace the bootstrap exception with executed scheduler heart
     - simd_json.native_execution.threaded_submission_failure
     - simd_json.native_execution.large_gc_teardown
     - simd_json.native_execution.reload_cleanup
-  reason: Threaded native execution is not implemented; remove this exception and add executed correlation, cancellation, teardown, shutdown, and scheduler-qualification proof before activation.
+  reason: Phase 3 proves that the ordinary resource callback is bounded and exposes no production parse path, but threaded admission and cleanup are not implemented; add correlation, cancellation, teardown, shutdown, and scheduler-qualification proof before activation.
 ```
