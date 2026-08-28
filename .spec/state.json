@@ -65,7 +65,7 @@
         ],
         "file": ".spec/specs/document_api.spec.md",
         "id": "simd_json.document_api.milestone_01_bootstrap",
-        "reason": "The Milestone 1 public document API is not implemented; remove this exception and replace it with executed API, corpus, redaction, ownership, and scope-verification tests before activation.",
+        "reason": "Phase 5 Section 5.1 implements the binary open, opaque document, argument validation, owner-first close, and idempotent deterministic cleanup surface; complete stable error/corpus/redaction proof, public-scope documentation, and Phase 5 integration evidence before activation.",
         "subject_id": "simd_json.document_api"
       },
       {
@@ -90,7 +90,7 @@
         ],
         "file": ".spec/specs/document_resource.spec.md",
         "id": "simd_json.document_resource.milestone_01_bootstrap",
-        "reason": "Phase 3 implements and tests the native ownership/resource foundation, but the parsed resource is not production-reachable until threaded execution, owner enforcement, explicit and GC close, shutdown, and full qualification evidence arrive in later phases.",
+        "reason": "Phases 3 and 4 implement native ownership plus threaded explicit/GC teardown, and Phase 5 Section 5.1 adds opaque public reachability, owner-first validation, and idempotent deterministic close; retain the exception until the full public lifetime/baseline integration matrix and Phase 6 qualification execute.",
         "subject_id": "simd_json.document_resource"
       },
       {
@@ -1221,6 +1221,24 @@
     "verifications": [
       {
         "covers": [
+          "simd_json.document_api.open_contract",
+          "simd_json.document_api.binary_only",
+          "simd_json.document_api.close_contract",
+          "simd_json.document_api.document_argument_validation",
+          "simd_json.document_api.opaque_document_type",
+          "simd_json.document_api.structured_error",
+          "simd_json.document_api.open_and_close",
+          "simd_json.document_api.non_binary_argument",
+          "simd_json.document_api.invalid_document_argument",
+          "simd_json.document_api.close_and_non_owner"
+        ],
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/document_api_test.exs"
+      },
+      {
+        "covers": [
           "simd_json.document_api.milestone_scope"
         ],
         "file": ".spec/specs/document_api.spec.md",
@@ -1296,6 +1314,20 @@
         "kind": "test_file",
         "subject_id": "simd_json.document_resource",
         "target": "test/native/threaded_teardown_test.exs"
+      },
+      {
+        "covers": [
+          "simd_json.document_resource.opaque_handle",
+          "simd_json.document_resource.single_owner",
+          "simd_json.document_resource.lifecycle",
+          "simd_json.document_resource.idempotent_close",
+          "simd_json.document_resource.repeated_close",
+          "simd_json.document_resource.non_owner_rejection"
+        ],
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/simd_json/document_api_test.exs"
       },
       {
         "covers": [
@@ -1420,6 +1452,15 @@
         "kind": "source_file",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "lib/simd_json/native/build_smoke.ex"
+      },
+      {
+        "covers": [
+          "simd_json.native_build_and_abi.layered_boundary"
+        ],
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "source_file",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "lib/simd_json.ex"
       },
       {
         "covers": [
@@ -1710,6 +1751,15 @@
       },
       {
         "covers": [
+          "simd_json.native_execution.bounded_nif_entry"
+        ],
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/simd_json/document_api_test.exs"
+      },
+      {
+        "covers": [
           "simd_json.package.mix_library",
           "simd_json.package.specled_tooling",
           "simd_json.package.native_build_tooling",
@@ -1885,10 +1935,120 @@
     "requirements": 52,
     "scenarios": 26,
     "subjects": 6,
-    "verifications": 60
+    "verifications": 64
   },
   "verification": {
     "claims": [
+      {
+        "cover_id": "simd_json.document_api.binary_only",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.document_api.close_and_non_owner",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.document_api.close_contract",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.document_api.document_argument_validation",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.document_api.invalid_document_argument",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.document_api.non_binary_argument",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.document_api.opaque_document_type",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.document_api.open_and_close",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.document_api.open_contract",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.document_api.structured_error",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 0
+      },
       {
         "cover_id": "simd_json.document_api.milestone_scope",
         "file": ".spec/specs/document_api.spec.md",
@@ -1898,7 +2058,7 @@
         "strength": "linked",
         "subject_id": "simd_json.document_api",
         "target": "test/native/document_resource_policy_test.exs",
-        "verification_index": 0
+        "verification_index": 1
       },
       {
         "cover_id": "simd_json.document_resource.complete_ownership",
@@ -2220,6 +2380,72 @@
         "verification_index": 4
       },
       {
+        "cover_id": "simd_json.document_resource.idempotent_close",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 5
+      },
+      {
+        "cover_id": "simd_json.document_resource.lifecycle",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 5
+      },
+      {
+        "cover_id": "simd_json.document_resource.non_owner_rejection",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 5
+      },
+      {
+        "cover_id": "simd_json.document_resource.opaque_handle",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 5
+      },
+      {
+        "cover_id": "simd_json.document_resource.repeated_close",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 5
+      },
+      {
+        "cover_id": "simd_json.document_resource.single_owner",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 5
+      },
+      {
         "cover_id": "simd_json.document_resource.input_lifetime",
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
@@ -2228,7 +2454,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
-        "verification_index": 5
+        "verification_index": 6
       },
       {
         "cover_id": "simd_json.document_resource.lifecycle",
@@ -2239,7 +2465,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
-        "verification_index": 5
+        "verification_index": 6
       },
       {
         "cover_id": "simd_json.document_resource.padded_owned_copy",
@@ -2250,7 +2476,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
-        "verification_index": 5
+        "verification_index": 6
       },
       {
         "cover_id": "simd_json.document_resource.parent_retention",
@@ -2261,7 +2487,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
-        "verification_index": 5
+        "verification_index": 6
       },
       {
         "cover_id": "simd_json.document_resource.partial_open_failure",
@@ -2272,7 +2498,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
-        "verification_index": 5
+        "verification_index": 6
       },
       {
         "cover_id": "simd_json.document_resource.reverse_destruction",
@@ -2283,7 +2509,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
-        "verification_index": 5
+        "verification_index": 6
       },
       {
         "cover_id": "simd_json.document_resource.test_accounting",
@@ -2294,7 +2520,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
-        "verification_index": 5
+        "verification_index": 6
       },
       {
         "cover_id": "simd_json.document_resource.zero_copy_disabled",
@@ -2305,7 +2531,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
-        "verification_index": 5
+        "verification_index": 6
       },
       {
         "cover_id": "simd_json.document_resource.input_lifetime",
@@ -2316,7 +2542,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
-        "verification_index": 6
+        "verification_index": 7
       },
       {
         "cover_id": "simd_json.document_resource.padded_owned_copy",
@@ -2327,7 +2553,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
-        "verification_index": 6
+        "verification_index": 7
       },
       {
         "cover_id": "simd_json.document_resource.partial_open_failure",
@@ -2338,7 +2564,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
-        "verification_index": 6
+        "verification_index": 7
       },
       {
         "cover_id": "simd_json.document_resource.reverse_destruction",
@@ -2349,7 +2575,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
-        "verification_index": 6
+        "verification_index": 7
       },
       {
         "cover_id": "simd_json.document_resource.test_accounting",
@@ -2360,7 +2586,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
-        "verification_index": 6
+        "verification_index": 7
       },
       {
         "cover_id": "simd_json.document_resource.zero_copy_disabled",
@@ -2371,7 +2597,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
-        "verification_index": 6
+        "verification_index": 7
       },
       {
         "cover_id": "simd_json.document_resource.test_accounting",
@@ -2382,7 +2608,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/verify_release_symbols.sh",
-        "verification_index": 7
+        "verification_index": 8
       },
       {
         "cover_id": "simd_json.native_build_and_abi.pinned_toolchain",
@@ -2528,6 +2754,17 @@
         "verification_index": 8
       },
       {
+        "cover_id": "simd_json.native_build_and_abi.layered_boundary",
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "lib/simd_json.ex",
+        "verification_index": 9
+      },
+      {
         "cover_id": "simd_json.native_build_and_abi.opaque_c_contract",
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "source_file",
@@ -2536,7 +2773,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "native/include/simd_json_abi.h",
-        "verification_index": 9
+        "verification_index": 10
       },
       {
         "cover_id": "simd_json.native_build_and_abi.exception_containment",
@@ -2547,7 +2784,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "native/src/simd_json_abi.cpp",
-        "verification_index": 10
+        "verification_index": 11
       },
       {
         "cover_id": "simd_json.native_build_and_abi.opaque_c_contract",
@@ -2558,7 +2795,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "native/src/simd_json_abi.cpp",
-        "verification_index": 10
+        "verification_index": 11
       },
       {
         "cover_id": "simd_json.native_build_and_abi.partial_failure_cleanup",
@@ -2569,7 +2806,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "native/src/simd_json_abi.cpp",
-        "verification_index": 10
+        "verification_index": 11
       },
       {
         "cover_id": "simd_json.native_build_and_abi.symbol_visibility",
@@ -2580,7 +2817,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "native/src/simd_json_abi.cpp",
-        "verification_index": 10
+        "verification_index": 11
       },
       {
         "cover_id": "simd_json.native_build_and_abi.clean_checkout_build",
@@ -2591,7 +2828,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": ".github/workflows/ci.yml",
-        "verification_index": 11
+        "verification_index": 12
       },
       {
         "cover_id": "simd_json.native_build_and_abi.clean_supported_build",
@@ -2602,7 +2839,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": ".github/workflows/ci.yml",
-        "verification_index": 11
+        "verification_index": 12
       },
       {
         "cover_id": "simd_json.native_build_and_abi.official_vendored_source",
@@ -2613,7 +2850,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": ".github/workflows/ci.yml",
-        "verification_index": 11
+        "verification_index": 12
       },
       {
         "cover_id": "simd_json.native_build_and_abi.pinned_toolchain",
@@ -2624,7 +2861,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": ".github/workflows/ci.yml",
-        "verification_index": 11
+        "verification_index": 12
       },
       {
         "cover_id": "simd_json.native_build_and_abi.target_qualification",
@@ -2635,7 +2872,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": ".github/workflows/ci.yml",
-        "verification_index": 11
+        "verification_index": 12
       },
       {
         "cover_id": "simd_json.native_build_and_abi.unsupported_target_rejection",
@@ -2646,7 +2883,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": ".github/workflows/ci.yml",
-        "verification_index": 11
+        "verification_index": 12
       },
       {
         "cover_id": "simd_json.native_build_and_abi.clean_checkout_build",
@@ -2657,7 +2894,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "mix compile --force",
-        "verification_index": 12
+        "verification_index": 13
       },
       {
         "cover_id": "simd_json.native_build_and_abi.clean_checkout_build",
@@ -2668,7 +2905,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "test/native/build_smoke_test.exs",
-        "verification_index": 13
+        "verification_index": 14
       },
       {
         "cover_id": "simd_json.native_build_and_abi.clean_supported_build",
@@ -2679,7 +2916,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "test/native/build_smoke_test.exs",
-        "verification_index": 13
+        "verification_index": 14
       },
       {
         "cover_id": "simd_json.native_build_and_abi.target_qualification",
@@ -2690,7 +2927,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "test/native/build_smoke_test.exs",
-        "verification_index": 13
+        "verification_index": 14
       },
       {
         "cover_id": "simd_json.native_build_and_abi.official_vendored_source",
@@ -2701,7 +2938,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "test/native/build_guard_test.exs",
-        "verification_index": 14
+        "verification_index": 15
       },
       {
         "cover_id": "simd_json.native_build_and_abi.pinned_toolchain",
@@ -2712,7 +2949,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "test/native/build_guard_test.exs",
-        "verification_index": 14
+        "verification_index": 15
       },
       {
         "cover_id": "simd_json.native_build_and_abi.target_qualification",
@@ -2723,7 +2960,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "test/native/build_guard_test.exs",
-        "verification_index": 14
+        "verification_index": 15
       },
       {
         "cover_id": "simd_json.native_build_and_abi.unsupported_target_rejection",
@@ -2734,7 +2971,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "test/native/build_guard_test.exs",
-        "verification_index": 14
+        "verification_index": 15
       },
       {
         "cover_id": "simd_json.native_build_and_abi.clean_checkout_build",
@@ -2745,7 +2982,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "test/native/native_build_policy_test.exs",
-        "verification_index": 15
+        "verification_index": 16
       },
       {
         "cover_id": "simd_json.native_build_and_abi.pinned_toolchain",
@@ -2756,7 +2993,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "test/native/native_build_policy_test.exs",
-        "verification_index": 15
+        "verification_index": 16
       },
       {
         "cover_id": "simd_json.native_build_and_abi.clean_checkout_build",
@@ -2767,7 +3004,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "mix test test/native",
-        "verification_index": 16
+        "verification_index": 17
       },
       {
         "cover_id": "simd_json.native_build_and_abi.clean_supported_build",
@@ -2778,7 +3015,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "mix test test/native",
-        "verification_index": 16
+        "verification_index": 17
       },
       {
         "cover_id": "simd_json.native_build_and_abi.official_vendored_source",
@@ -2789,7 +3026,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "mix test test/native",
-        "verification_index": 16
+        "verification_index": 17
       },
       {
         "cover_id": "simd_json.native_build_and_abi.pinned_toolchain",
@@ -2800,7 +3037,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "mix test test/native",
-        "verification_index": 16
+        "verification_index": 17
       },
       {
         "cover_id": "simd_json.native_build_and_abi.target_qualification",
@@ -2811,7 +3048,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "mix test test/native",
-        "verification_index": 16
+        "verification_index": 17
       },
       {
         "cover_id": "simd_json.native_build_and_abi.unsupported_target_rejection",
@@ -2822,7 +3059,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "mix test test/native",
-        "verification_index": 16
+        "verification_index": 17
       },
       {
         "cover_id": "simd_json.native_build_and_abi.clean_checkout_build",
@@ -2833,7 +3070,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/verify_offline_native_build.sh",
-        "verification_index": 17
+        "verification_index": 18
       },
       {
         "cover_id": "simd_json.native_build_and_abi.clean_supported_build",
@@ -2844,7 +3081,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/verify_offline_native_build.sh",
-        "verification_index": 17
+        "verification_index": 18
       },
       {
         "cover_id": "simd_json.native_build_and_abi.pinned_toolchain",
@@ -2855,7 +3092,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/verify_offline_native_build.sh",
-        "verification_index": 17
+        "verification_index": 18
       },
       {
         "cover_id": "simd_json.native_build_and_abi.target_qualification",
@@ -2866,28 +3103,6 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/verify_offline_native_build.sh",
-        "verification_index": 17
-      },
-      {
-        "cover_id": "simd_json.native_build_and_abi.c_abi_conformance",
-        "file": ".spec/specs/native_build_and_abi.spec.md",
-        "kind": "test_file",
-        "meets_minimum": true,
-        "required_strength": "claimed",
-        "strength": "linked",
-        "subject_id": "simd_json.native_build_and_abi",
-        "target": "test/native/c_abi_header_test.exs",
-        "verification_index": 18
-      },
-      {
-        "cover_id": "simd_json.native_build_and_abi.opaque_c_contract",
-        "file": ".spec/specs/native_build_and_abi.spec.md",
-        "kind": "test_file",
-        "meets_minimum": true,
-        "required_strength": "claimed",
-        "strength": "linked",
-        "subject_id": "simd_json.native_build_and_abi",
-        "target": "test/native/c_abi_header_test.exs",
         "verification_index": 18
       },
       {
@@ -2898,8 +3113,30 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
-        "target": "test/native/c_abi_conformance_test.exs",
+        "target": "test/native/c_abi_header_test.exs",
         "verification_index": 19
+      },
+      {
+        "cover_id": "simd_json.native_build_and_abi.opaque_c_contract",
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "test/native/c_abi_header_test.exs",
+        "verification_index": 19
+      },
+      {
+        "cover_id": "simd_json.native_build_and_abi.c_abi_conformance",
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "test/native/c_abi_conformance_test.exs",
+        "verification_index": 20
       },
       {
         "cover_id": "simd_json.native_build_and_abi.cpp_exception_translation",
@@ -2910,7 +3147,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "test/native/c_abi_conformance_test.exs",
-        "verification_index": 19
+        "verification_index": 20
       },
       {
         "cover_id": "simd_json.native_build_and_abi.exception_containment",
@@ -2921,7 +3158,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "test/native/c_abi_conformance_test.exs",
-        "verification_index": 19
+        "verification_index": 20
       },
       {
         "cover_id": "simd_json.native_build_and_abi.partial_failure_cleanup",
@@ -2932,7 +3169,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "test/native/c_abi_conformance_test.exs",
-        "verification_index": 19
+        "verification_index": 20
       },
       {
         "cover_id": "simd_json.native_build_and_abi.c_abi_conformance",
@@ -2943,7 +3180,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/native/run_c_abi_conformance.sh ordinary",
-        "verification_index": 20
+        "verification_index": 21
       },
       {
         "cover_id": "simd_json.native_build_and_abi.cpp_exception_translation",
@@ -2954,7 +3191,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/native/run_c_abi_conformance.sh ordinary",
-        "verification_index": 20
+        "verification_index": 21
       },
       {
         "cover_id": "simd_json.native_build_and_abi.exception_containment",
@@ -2965,7 +3202,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/native/run_c_abi_conformance.sh ordinary",
-        "verification_index": 20
+        "verification_index": 21
       },
       {
         "cover_id": "simd_json.native_build_and_abi.opaque_c_contract",
@@ -2976,7 +3213,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/native/run_c_abi_conformance.sh ordinary",
-        "verification_index": 20
+        "verification_index": 21
       },
       {
         "cover_id": "simd_json.native_build_and_abi.partial_failure_cleanup",
@@ -2987,7 +3224,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/native/run_c_abi_conformance.sh ordinary",
-        "verification_index": 20
+        "verification_index": 21
       },
       {
         "cover_id": "simd_json.native_build_and_abi.c_abi_conformance",
@@ -2998,7 +3235,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/native/run_c_abi_conformance.sh sanitizer",
-        "verification_index": 21
+        "verification_index": 22
       },
       {
         "cover_id": "simd_json.native_build_and_abi.cpp_exception_translation",
@@ -3009,7 +3246,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/native/run_c_abi_conformance.sh sanitizer",
-        "verification_index": 21
+        "verification_index": 22
       },
       {
         "cover_id": "simd_json.native_build_and_abi.exception_containment",
@@ -3020,7 +3257,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/native/run_c_abi_conformance.sh sanitizer",
-        "verification_index": 21
+        "verification_index": 22
       },
       {
         "cover_id": "simd_json.native_build_and_abi.partial_failure_cleanup",
@@ -3031,28 +3268,6 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/native/run_c_abi_conformance.sh sanitizer",
-        "verification_index": 21
-      },
-      {
-        "cover_id": "simd_json.native_build_and_abi.layered_boundary",
-        "file": ".spec/specs/native_build_and_abi.spec.md",
-        "kind": "command",
-        "meets_minimum": true,
-        "required_strength": "claimed",
-        "strength": "claimed",
-        "subject_id": "simd_json.native_build_and_abi",
-        "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
-        "verification_index": 22
-      },
-      {
-        "cover_id": "simd_json.native_build_and_abi.partial_failure_cleanup",
-        "file": ".spec/specs/native_build_and_abi.spec.md",
-        "kind": "command",
-        "meets_minimum": true,
-        "required_strength": "claimed",
-        "strength": "claimed",
-        "subject_id": "simd_json.native_build_and_abi",
-        "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
         "verification_index": 22
       },
       {
@@ -3063,7 +3278,7 @@
         "required_strength": "claimed",
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
-        "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
+        "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
         "verification_index": 23
       },
       {
@@ -3074,10 +3289,32 @@
         "required_strength": "claimed",
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
-        "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
+        "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
         "verification_index": 23
       },
       {
+        "cover_id": "simd_json.native_build_and_abi.layered_boundary",
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
+        "verification_index": 24
+      },
+      {
+        "cover_id": "simd_json.native_build_and_abi.partial_failure_cleanup",
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
+        "verification_index": 24
+      },
+      {
         "cover_id": "simd_json.native_build_and_abi.release_symbol_surface",
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "test_file",
@@ -3086,7 +3323,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "test/native/release_symbol_test.exs",
-        "verification_index": 24
+        "verification_index": 25
       },
       {
         "cover_id": "simd_json.native_build_and_abi.symbol_visibility",
@@ -3097,7 +3334,7 @@
         "strength": "linked",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "test/native/release_symbol_test.exs",
-        "verification_index": 24
+        "verification_index": 25
       },
       {
         "cover_id": "simd_json.native_build_and_abi.release_symbol_surface",
@@ -3108,7 +3345,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/native/verify_release_symbols.sh",
-        "verification_index": 25
+        "verification_index": 26
       },
       {
         "cover_id": "simd_json.native_build_and_abi.symbol_visibility",
@@ -3119,7 +3356,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/native/verify_release_symbols.sh",
-        "verification_index": 25
+        "verification_index": 26
       },
       {
         "cover_id": "simd_json.native_execution.bounded_nif_entry",
@@ -3573,6 +3810,17 @@
         "verification_index": 6
       },
       {
+        "cover_id": "simd_json.native_execution.bounded_nif_entry",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/simd_json/document_api_test.exs",
+        "verification_index": 7
+      },
+      {
         "cover_id": "simd_json.package.mix_library",
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
@@ -3820,7 +4068,7 @@
     "strength_summary": {
       "claimed": 46,
       "executed": 0,
-      "linked": 129
+      "linked": 147
     },
     "threshold_failures": 0
   },

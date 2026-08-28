@@ -35,6 +35,7 @@ defmodule SimdJson.Native.BuildSmoke do
       threaded_document_open: [concurrency: :threaded],
       threaded_document_cleanup: [concurrency: :threaded],
       document_lifecycle: [],
+      document_owner_state: [],
       execution_generation: [],
       execution_begin_shutdown: [],
       execution_resume: [],

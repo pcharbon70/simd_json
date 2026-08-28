@@ -5,10 +5,10 @@ Current package and documentation contract for the `SimdJson` library.
 The package currently distributes the pinned native build inputs, private C
 ABI, C++ shim, Zig ownership/resource sources, symbol policy, native
 conformance harnesses, and Phase 4's internal correlated threaded operation
-runtime, stable coordinator, and cleanup-only dispatcher. The internal adapter
-can construct and explicitly or automatically clean a parsed BEAM resource for
-qualification tests, but no document-opening public API or public document type
-is exposed yet.
+runtime, stable coordinator, and cleanup-only dispatcher. Phase 5 Section 5.1
+adds the narrow binary `open/1` and owner-safe `close/1` root API with opaque
+document and structured error modules; no decode, projection, streaming,
+cursor, transfer, or raw native-handle surface is exposed.
 
 ```spec-meta
 id: simd_json.package

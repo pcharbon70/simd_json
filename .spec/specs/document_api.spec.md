@@ -6,14 +6,15 @@ Current-truth contract for the deliberately narrow Milestone 1 Elixir API and it
 
 This subject gives callers one safe way to open and deterministically close an opaque native document while preventing native codes, pointers, JSON content, or future cursor operations from leaking into the initial public contract.
 
-Phases 1 through 3 contribute the reproducible NIF, private C parser ABI, and
-an internal opaque resource fixture beneath this subject's broad source
-surface. Phase 4 adds a private threaded-operation adapter that can construct
-and deterministically or automatically clean an internal parsed resource with
-bounded native status metadata, but neither it nor the resource is a
-`SimdJson.Document` public API. There is still no `SimdJson.open/1`,
-`SimdJson.close/1`, owner enforcement, or public structured error, so the
-bootstrap exception remains in force.
+Phases 1 through 4 contribute the reproducible NIF, private C parser ABI,
+opaque resource, and correlated threaded construction and cleanup runtime.
+Phase 5 Section 5.1 now exposes binary-only `SimdJson.open/1`, owner-safe and
+idempotent `SimdJson.close/1`, an opaque redacted `SimdJson.Document`, and the
+typed `SimdJson.Error` shape. Forged values fail the registered native resource
+check before cleanup admission, and a bounded native check rejects non-owners
+before revealing lifecycle state. The complete error corpus, documentation,
+scope allowlist, and integration evidence remain before the bootstrap exception
+can be removed.
 
 ```spec-meta
 id: simd_json.document_api
@@ -197,6 +198,20 @@ decisions:
 
 ```spec-verification
 - kind: test_file
+  target: test/simd_json/document_api_test.exs
+  covers:
+    - simd_json.document_api.open_contract
+    - simd_json.document_api.binary_only
+    - simd_json.document_api.close_contract
+    - simd_json.document_api.document_argument_validation
+    - simd_json.document_api.opaque_document_type
+    - simd_json.document_api.structured_error
+    - simd_json.document_api.open_and_close
+    - simd_json.document_api.non_binary_argument
+    - simd_json.document_api.invalid_document_argument
+    - simd_json.document_api.close_and_non_owner
+
+- kind: test_file
   target: test/native/document_resource_policy_test.exs
   covers:
     - simd_json.document_api.milestone_scope
@@ -230,5 +245,5 @@ Before activation, replace the bootstrap exception with executed public API, typ
     - simd_json.document_api.redacted_failure
     - simd_json.document_api.close_and_non_owner
     - simd_json.document_api.no_future_surface
-  reason: The Milestone 1 public document API is not implemented; remove this exception and replace it with executed API, corpus, redaction, ownership, and scope-verification tests before activation.
+  reason: Phase 5 Section 5.1 implements the binary open, opaque document, argument validation, owner-first close, and idempotent deterministic cleanup surface; complete stable error/corpus/redaction proof, public-scope documentation, and Phase 5 integration evidence before activation.
 ```

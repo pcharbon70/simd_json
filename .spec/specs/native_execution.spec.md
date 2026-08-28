@@ -23,8 +23,12 @@ shared-object unload is not supported by the qualified OTP harness. Controlled
 parse and cleanup submission rejection, repeated application generations,
 correlation races, large-resource GC, and a preliminary heartbeat plus
 normal/dirty scheduler-utilization profile now close the Phase 4 integration
-section. The formal Phase 6 scheduler profile and the recorded repeated-unload
-qualification gap keep the bootstrap exception in force.
+section. Phase 5 Section 5.1 routes the binary public open and accepted owner
+close directly through that coordinator. Non-binary, forged-document, and
+non-owner calls stop before threaded admission; the bounded owner NIF reads no
+input-dependent state and checks owner before lifecycle. The formal Phase 6
+scheduler profile and the recorded repeated-unload qualification gap keep the
+bootstrap exception in force.
 
 ```spec-meta
 id: simd_json.native_execution
@@ -256,6 +260,11 @@ decisions:
   covers:
     - simd_json.native_execution.bounded_nif_entry
     - simd_json.native_execution.threaded_cleanup
+
+- kind: test_file
+  target: test/simd_json/document_api_test.exs
+  covers:
+    - simd_json.native_execution.bounded_nif_entry
 ```
 
 ## Required Closure Evidence

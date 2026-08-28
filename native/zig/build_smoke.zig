@@ -479,6 +479,13 @@ pub const DocumentCleanupResult = struct {
     worker_context: ExecutionContext,
 };
 
+pub const DocumentOwnerState = enum(u8) {
+    open,
+    closing,
+    closed,
+    not_owner,
+};
+
 var module_loaded = std.atomic.Value(bool).init(false);
 var module_generation = std.atomic.Value(u64).init(0);
 
@@ -925,6 +932,20 @@ pub fn threaded_document_cleanup(
 pub fn document_lifecycle(document: DocumentResource) document_resource.Lifecycle {
     const control = document.__payload.control orelse return .closed;
     return control.native.lifecycleState();
+}
+
+/// Public wrappers use this bounded entry before admitting cleanup. Ownership
+/// is deliberately checked before lifecycle so another process cannot learn
+/// whether the document has already been closed.
+pub fn document_owner_state(document: DocumentResource) !DocumentOwnerState {
+    const control = document.__payload.control orelse return .closed;
+    if (!pidsEqual(try beam.self(.{}), control.owner)) return .not_owner;
+
+    return switch (control.native.lifecycleState()) {
+        .open => .open,
+        .closing => .closing,
+        .closed => .closed,
+    };
 }
 
 pub fn execution_generation() u64 {

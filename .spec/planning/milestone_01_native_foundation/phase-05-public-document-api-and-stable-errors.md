@@ -41,41 +41,41 @@ Back to plan: [README](./README.md)
 
 ## 5.1 Section — Public Types and Argument Boundary
 
-- [ ] 5.1 Section - Define the minimal typed Elixir surface and reject invalid arguments before native submission.
+- [x] 5.1 Section - Define the minimal typed Elixir surface and reject invalid arguments before native submission.
 
   This section makes the API idiomatic without pretending the On-Demand document
   is a BEAM data tree. Public values reveal neither native identity nor caller
   input, and argument errors remain distinct from parser failures.
 
-  - [ ] 5.1.1 Task - Implement the opaque document module.
+  - [x] 5.1.1 Task - Implement the opaque document module.
 
     The task wraps only the BEAM resource reference and presents a stable type
     and inspection form suitable for later traversal APIs.
 
-    - [ ] 5.1.1.1 Subtask - Add `SimdJson.Document` with an opaque typespec whose only runtime authority is the registered NIF resource.
-    - [ ] 5.1.1.2 Subtask - Prevent construction of a forged struct-shaped value from passing the native resource type check.
-    - [ ] 5.1.1.3 Subtask - Implement redacted `Inspect` output that reveals only the module identity and safe lifecycle-neutral text, never pointers, JSON, parser state, owner PID, or generation.
-    - [ ] 5.1.1.4 Subtask - Keep resource extraction private to the wrapper and native bridge; expose no raw resource accessor or serialization protocol.
+    - [x] 5.1.1.1 Subtask - Add `SimdJson.Document` with an opaque typespec whose only runtime authority is the registered NIF resource.
+    - [x] 5.1.1.2 Subtask - Prevent construction of a forged struct-shaped value from passing the native resource type check.
+    - [x] 5.1.1.3 Subtask - Implement redacted `Inspect` output that reveals only the module identity and safe lifecycle-neutral text, never pointers, JSON, parser state, owner PID, or generation.
+    - [x] 5.1.1.4 Subtask - Keep resource extraction private to the wrapper and native bridge; expose no raw resource accessor or serialization protocol.
 
-  - [ ] 5.1.2 Task - Implement `SimdJson.open/1` validation and typespecs.
+  - [x] 5.1.2 Task - Implement `SimdJson.open/1` validation and typespecs.
 
     The task accepts exactly one binary and delegates successful admission to the
     correlated threaded operation from Phase 4.
 
-    - [ ] 5.1.2.1 Subtask - Add `open(binary()) :: {:ok, SimdJson.Document.t()} | {:error, SimdJson.Error.t()}` to the root module.
-    - [ ] 5.1.2.2 Subtask - Raise `ArgumentError` for iodata, atoms, maps, and every other non-binary before a request reference or native allocation is created.
-    - [ ] 5.1.2.3 Subtask - Pass the accepted binary to the threaded open path without making an extra untracked Elixir or native copy beyond the required owned padded copy.
-    - [ ] 5.1.2.4 Subtask - Return only a tagged result; never raise for malformed JSON or return a partial document on native failure.
+    - [x] 5.1.2.1 Subtask - Add `open(binary()) :: {:ok, SimdJson.Document.t()} | {:error, SimdJson.Error.t()}` to the root module.
+    - [x] 5.1.2.2 Subtask - Raise `ArgumentError` for iodata, atoms, maps, and every other non-binary before a request reference or native allocation is created.
+    - [x] 5.1.2.3 Subtask - Pass the accepted binary to the threaded open path without making an extra untracked Elixir or native copy beyond the required owned padded copy.
+    - [x] 5.1.2.4 Subtask - Return only a tagged result; never raise for malformed JSON or return a partial document on native failure.
 
-  - [ ] 5.1.3 Task - Implement `SimdJson.close/1` validation and typespecs.
+  - [x] 5.1.3 Task - Implement `SimdJson.close/1` validation and typespecs.
 
     The task accepts only a genuine document resource and joins the shared
     off-scheduler cleanup operation established in Phase 4.
 
-    - [ ] 5.1.3.1 Subtask - Add `close(SimdJson.Document.t()) :: :ok | {:error, SimdJson.Error.t()}` to the root module.
-    - [ ] 5.1.3.2 Subtask - Raise `ArgumentError` for binaries, maps, references, forged document-shaped values, and resources of another registered type before cleanup admission.
-    - [ ] 5.1.3.3 Subtask - Suspend the caller while threaded cleanup runs and return `:ok` only after the resource reaches `closed` and document-owned native allocations are released.
-    - [ ] 5.1.3.4 Subtask - Make an owner close on an already closing resource join the same completion and an owner close on an already closed resource return `:ok` immediately.
+    - [x] 5.1.3.1 Subtask - Add `close(SimdJson.Document.t()) :: :ok | {:error, SimdJson.Error.t()}` to the root module.
+    - [x] 5.1.3.2 Subtask - Raise `ArgumentError` for binaries, maps, references, forged document-shaped values, and resources of another registered type before cleanup admission.
+    - [x] 5.1.3.3 Subtask - Suspend the caller while threaded cleanup runs and return `:ok` only after the resource reaches `closed` and document-owned native allocations are released.
+    - [x] 5.1.3.4 Subtask - Make an owner close on an already closing resource join the same completion and an owner close on an already closed resource return `:ok` immediately.
 
 ## 5.2 Section — Stable Error Translation and Redaction
 

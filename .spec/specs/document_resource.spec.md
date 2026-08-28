@@ -15,9 +15,11 @@ a Zigler worker, publishes an internal parsed document resource, and uses a
 threaded explicit/orphan cleanup operation. GC callbacks now detach an
 intrusive control block into a cleanup-only dispatcher, failed handoff retains
 ownership for retry, and concurrent internal cleanup joins exactly-once native
-destruction. The public document type, owner enforcement, and public
-idempotent close remain Phase 5 work, so the bootstrap exception stays in
-force.
+destruction. Phase 5 Section 5.1 publishes that resource only inside an opaque
+redacted document, checks its immutable owner before lifecycle, and gives the
+owner an idempotent close that waits for threaded destruction. Broader public
+error, corpus, lifetime, and final qualification evidence remain, so the
+bootstrap exception stays in force.
 
 ```spec-meta
 id: simd_json.document_resource
@@ -225,6 +227,16 @@ decisions:
     - simd_json.document_resource.gc_cleanup
     - simd_json.document_resource.native_memory_baseline
 
+- kind: test_file
+  target: test/simd_json/document_api_test.exs
+  covers:
+    - simd_json.document_resource.opaque_handle
+    - simd_json.document_resource.single_owner
+    - simd_json.document_resource.lifecycle
+    - simd_json.document_resource.idempotent_close
+    - simd_json.document_resource.repeated_close
+    - simd_json.document_resource.non_owner_rejection
+
 - kind: command
   target: bash scripts/native/run_zig_resource_tests.sh ordinary
   covers:
@@ -279,5 +291,5 @@ Before activation, replace the bootstrap exception with executed resource tests,
     - simd_json.document_resource.partial_open_failure
     - simd_json.document_resource.gc_cleanup
     - simd_json.document_resource.native_memory_baseline
-  reason: Phase 3 implements and tests the native ownership/resource foundation, but the parsed resource is not production-reachable until threaded execution, owner enforcement, explicit and GC close, shutdown, and full qualification evidence arrive in later phases.
+  reason: Phases 3 and 4 implement native ownership plus threaded explicit/GC teardown, and Phase 5 Section 5.1 adds opaque public reachability, owner-first validation, and idempotent deterministic close; retain the exception until the full public lifetime/baseline integration matrix and Phase 6 qualification execute.
 ```

@@ -83,6 +83,23 @@ production-reachable. The BEAM fixture contains only destructible empty state;
 threaded construction and deferred cleanup arrive in Phase 4, while owner
 enforcement and public idempotent close arrive in Phase 5.
 
+### Phase 5 public-boundary checkpoint
+
+`SimdJson.Document` now wraps the registered resource behind an opaque type and
+redacted inspection. Before public cleanup admission, one bounded synchronous
+NIF entry verifies the registered resource type and compares the calling PID
+with immutable owner metadata. That comparison occurs before lifecycle is read,
+so another process receives `not_owner` for both open and closed documents and
+cannot mutate lifecycle or enqueue cleanup. A forged struct containing an
+ordinary reference or another resource type fails the native type decoder.
+
+An accepted owner delegates close to the correlated threaded cleanup path.
+Closed resources return immediately, while open or closing resources share the
+existing exactly-once cleanup owner. The wrapper exports no raw resource
+accessor, ownership transfer, cursor, serialization, or document operation
+beyond close. This checkpoint implements the existing decision without changing
+the single-owner or lifecycle model.
+
 ## Consequences
 
 The input remains valid for the complete parser lifetime and zero-copy ambiguity cannot cause an over-read. Explicit close releases large native allocations deterministically, while garbage collection safely handles abandoned documents.
