@@ -1,6 +1,6 @@
 name: CI
 
-# covers: simd_json.native_build_and_abi.official_vendored_source simd_json.native_build_and_abi.pinned_toolchain simd_json.native_build_and_abi.clean_checkout_build simd_json.native_build_and_abi.target_qualification simd_json.native_build_and_abi.clean_supported_build simd_json.native_build_and_abi.unsupported_target_rejection
+# covers: simd_json.native_build_and_abi.official_vendored_source simd_json.native_build_and_abi.pinned_toolchain simd_json.native_build_and_abi.clean_checkout_build simd_json.native_build_and_abi.target_qualification simd_json.native_build_and_abi.clean_supported_build simd_json.native_build_and_abi.unsupported_target_rejection simd_json.native_build_and_abi.c_abi_conformance simd_json.native_build_and_abi.cpp_exception_translation simd_json.native_build_and_abi.release_symbol_surface
 
 on:
   push:
@@ -59,6 +59,12 @@ jobs:
 
       - name: Run tests
         run: mix test
+
+      - name: Run sanitizer C ABI conformance
+        run: scripts/native/run_c_abi_conformance.sh sanitizer
+
+      - name: Verify release symbol surfaces
+        run: scripts/native/verify_release_symbols.sh
 
       - name: Repeat clean builds with network disabled
         run: bash scripts/ci/verify_offline_native_build.sh

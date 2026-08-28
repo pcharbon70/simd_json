@@ -8,7 +8,10 @@ defmodule SimdJson.Native.BuildPolicyTest do
     "lib/simd_json/native/build_smoke.ex",
     "native/manifest.exs",
     "native/src/build_smoke.cpp",
-    "native/zig/build_smoke.zig"
+    "native/src/simd_json_abi.cpp",
+    "native/zig/build_smoke.zig",
+    "scripts/native/run_c_abi_conformance.sh",
+    "scripts/native/verify_release_symbols.sh"
   ]
 
   # covers: simd_json.native_build_and_abi.clean_checkout_build
@@ -72,8 +75,13 @@ defmodule SimdJson.Native.BuildPolicyTest do
 
     for path <- [
           "native/manifest.exs",
+          "native/include/simd_json_abi.h",
           "native/include/simd_json_build_smoke.h",
           "native/src/build_smoke.cpp",
+          "native/src/simd_json_abi.cpp",
+          "native/symbols/c_abi.allowlist",
+          "native/symbols/c_abi.version",
+          "native/symbols/nif.allowlist",
           "native/zig/build_smoke.zig",
           "native/vendor/simdjson/simdjson.cpp",
           "native/vendor/simdjson/simdjson.h",

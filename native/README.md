@@ -88,10 +88,78 @@ upgrade and must fail the dependency guard.
 
 `mix compile` runs the target, toolchain, lockfile, vendor-digest, and patch
 guards before Zigler invokes the C++ compiler. It then compiles
-`native/src/build_smoke.cpp` and the vendored `simdjson.cpp` through Zigler and
-Zig. The native build never contains a library search for simdjson.
+`native/src/build_smoke.cpp`, the real `native/src/simd_json_abi.cpp` shim, and
+the vendored `simdjson.cpp` through Zigler and Zig. The native build never
+contains a library search for simdjson.
 
 `cache_inputs` in `manifest.exs` is the authoritative list used to derive a CI
 native-cache key. The key also contains the runner OS/architecture, Mix
 environment, and Zigler release mode. Any pin, flag, native source, vendored
 file, license, or patch-series change therefore selects a new cache entry.
+
+## Private C ABI
+
+[`include/simd_json_abi.h`](./include/simd_json_abi.h) is the only parser
+contract visible above C++. It is valid as C11 and C++17 and exposes opaque
+parser/document handles, fixed-width values, stable numeric statuses, and
+matching null-safe destructors. No simdjson or C++ layout is part of the
+contract.
+
+The caller supplies a non-null byte pointer, a logical JSON length, and the
+allocation capacity. Capacity must cover the logical length plus the pinned 64
+bytes of initialized simdjson padding without integer overflow. The caller
+retains that allocation unchanged until the document is destroyed; padding is
+never included in a reported logical byte offset. A parser must likewise
+outlive every document opened through it, so cleanup order is document, parser,
+then (in the later Zig resource) input allocation.
+
+Every constructor initializes its out handle to null before doing work and
+publishes ownership only on success. A non-null successful handle is consumed
+exactly once by its matching destructor; callers clear that pointer after the
+call. Passing null to either destructor is explicitly safe.
+
+The stable native statuses are success, invalid JSON, invalid UTF-8,
+unexpected EOF, out of memory, invalid argument, and internal failure. The
+status also carries a raw simdjson numeric code when one exists and either a
+logical byte offset or the explicit unavailable sentinel. Upstream error text
+is never returned through this boundary.
+
+[`src/simd_json_abi.cpp`](./src/simd_json_abi.cpp) is the single C++ exception
+boundary. It recursively validates every object, array, and scalar through the
+official On-Demand API, rewinds a successful document before publishing it,
+and catches simdjson, allocation, standard, and unknown exceptions. Local smart
+pointers retain partial allocations until a handle is published.
+
+The release C ABI shared-artifact and Zigler NIF symbol surfaces are frozen in
+[`symbols`](./symbols). The standalone ABI exports only its four declared C
+functions. The current statically linked Zigler NIF needs only `nif_init`; its
+C ABI and C++ implementation symbols remain local. Run
+`scripts/native/verify_release_symbols.sh` after compiling the NIF to compare
+both artifacts with their checked-in allowlists and to prove test-only failure
+controls are absent.
+
+## Native ABI conformance
+
+The standalone harness in [`test/c_abi_conformance.c`](./test/c_abi_conformance.c)
+is compiled by `zig cc` as strict C11 against only the production and test C
+header directories. It then links a private archive containing the C++ shim and
+vendored parser. This prevents the harness from relying on a C++ declaration,
+layout, exception, or implementation symbol.
+
+Test builds add one-shot failure points before and after parser allocation,
+during document construction, and immediately before document publication.
+Each point can raise a known simdjson exception, `std::bad_alloc`, another
+standard exception, or a non-standard exception. Bounded live-handle counters
+verify RAII cleanup without exposing addresses or input. These hooks are
+guarded by `SIMD_JSON_TESTING`; release symbol and string checks prove that they
+are absent from distributed artifacts.
+
+Run the ordinary and sanitizer matrices with:
+
+```text
+scripts/native/run_c_abi_conformance.sh ordinary
+scripts/native/run_c_abi_conformance.sh sanitizer
+```
+
+The sanitizer profile enables AddressSanitizer, UndefinedBehaviorSanitizer,
+leak detection, frame pointers, and fail-fast runtime options.
