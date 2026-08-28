@@ -25,32 +25,32 @@ Back to plan: [README](./README.md)
 
 ## 3.1 Section — Zig C Interop and Resource Registration
 
-- [ ] 3.1 Section - Import the private C contract without widening it and register one opaque BEAM document resource.
+- [x] 3.1 Section - Import the private C contract without widening it and register one opaque BEAM document resource.
 
   This section makes Zig the sole owner of BEAM-specific state and native term
   marshalling. C++ remains inaccessible above the imported C header, and the
   initial resource registration performs only bounded setup.
 
-  - [ ] 3.1.1 Task - Add typed Zig declarations and status adaptation.
+  - [x] 3.1.1 Task - Add typed Zig declarations and status adaptation.
 
     The task mirrors the fixed C layouts at compile time and creates a native
     adapter that does not yet construct public BEAM errors.
 
-    - [ ] 3.1.1.1 Subtask - Import or declare every C ABI type and function from the canonical header without duplicating numeric constants by hand.
-    - [ ] 3.1.1.2 Subtask - Add compile-time size, alignment, signedness, and status-value assertions between Zig and the C header.
-    - [ ] 3.1.1.3 Subtask - Represent native success, known parser failures, allocation failure, invalid arguments, and unknown failure as a closed Zig error/status union.
-    - [ ] 3.1.1.4 Subtask - Keep raw C handles private to the native module and prohibit them from being encoded as integers, binaries, or public terms.
+    - [x] 3.1.1.1 Subtask - Import or declare every C ABI type and function from the canonical header without duplicating numeric constants by hand.
+    - [x] 3.1.1.2 Subtask - Add compile-time size, alignment, signedness, and status-value assertions between Zig and the C header.
+    - [x] 3.1.1.3 Subtask - Represent native success, known parser failures, allocation failure, invalid arguments, and unknown failure as a closed Zig error/status union.
+    - [x] 3.1.1.4 Subtask - Keep raw C handles private to the native module and prohibit them from being encoded as integers, binaries, or public terms.
 
-  - [ ] 3.1.2 Task - Register the opaque document resource type.
+  - [x] 3.1.2 Task - Register the opaque document resource type.
 
     The task defines one resource identity shared by every later open, close,
     projection, and child-resource operation without exposing resource internals
     to Elixir.
 
-    - [ ] 3.1.2.1 Subtask - Register the document resource at NIF load with explicit load, upgrade, unload, and destructor behavior for the pinned OTP/Zigler versions.
-    - [ ] 3.1.2.2 Subtask - Define native resource storage for padded input, logical length, parser/document handles, owner PID, lifecycle state, generation, admitted-operation state, and bounded synchronization.
-    - [ ] 3.1.2.3 Subtask - Initialize resource memory to a destructible empty state before any fallible field construction begins.
-    - [ ] 3.1.2.4 Subtask - Add private retain/release helpers that future child resources must use to keep their parent document alive; add no cursor or child API in this milestone.
+    - [x] 3.1.2.1 Subtask - Register the document resource at NIF load with explicit load, upgrade, unload, and destructor behavior for the pinned OTP/Zigler versions.
+    - [x] 3.1.2.2 Subtask - Define native resource storage for padded input, logical length, parser/document handles, owner PID, lifecycle state, generation, admitted-operation state, and bounded synchronization.
+    - [x] 3.1.2.3 Subtask - Initialize resource memory to a destructible empty state before any fallible field construction begins.
+    - [x] 3.1.2.4 Subtask - Add private retain/release helpers that future child resources must use to keep their parent document alive; add no cursor or child API in this milestone.
 
 ## 3.2 Section — Aligned Padded Input
 

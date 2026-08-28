@@ -8,14 +8,24 @@ defmodule SimdJson.Native.BuildSmoke do
     otp_app: :simd_json,
     zig_code_path: "./native/zig/build_smoke.zig",
     optimize: {:env, :safe},
+    extra_modules: [document_resource: {"./native/zig/document_resource.zig", []}],
+    resources: [:DocumentResource],
+    callbacks: [
+      on_load: :resource_on_load,
+      on_upgrade: :resource_on_upgrade,
+      on_unload: :resource_on_unload
+    ],
     nifs: [
       simdjson_version: [],
       simdjson_padding: [],
       runtime_implementation: [],
-      target_triple: []
+      target_triple: [],
+      document_resource_registration_smoke: [],
+      document_resource_fixture: []
     ],
     c: [
       include_dirs: ["./native/include", "./native/vendor/simdjson"],
+      headers: [simd_json_abi: "./native/include/simd_json_abi.h"],
       src: [
         {"../../../native/src/build_smoke.cpp",
          [

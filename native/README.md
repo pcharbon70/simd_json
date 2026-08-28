@@ -138,6 +138,30 @@ C ABI and C++ implementation symbols remain local. Run
 both artifacts with their checked-in allowlists and to prove test-only failure
 controls are absent.
 
+## Zig document resource boundary
+
+[`zig/document_resource.zig`](./zig/document_resource.zig) is instantiated with
+declarations translated directly from the canonical C header. It checks the C
+status width, signedness, alignment, field offsets, and distinct status values
+at compile time, then adapts every status into a closed Zig union. Unknown C
+status values are contained as internal failures. Raw parser and document
+handles remain fields of the native state and have no BEAM encoder.
+
+Zigler registers `DocumentResource` during both NIF load and upgrade. Its
+payload contains the destructible native state plus the opening process PID;
+the state reserves fields for the aligned padded allocation, logical length,
+opaque C handles, lifecycle, generation, and admitted-operation count. Explicit
+load, upgrade, unload, and destructor callbacks perform only bounded
+bookkeeping. In Phase 3 no production constructor can put parsed state in the
+resource, so its destructor never copies, parses, waits, or destroys large
+native allocations on a normal scheduler. Phase 4 attaches deferred teardown.
+
+The two fixture functions on the internal `SimdJson.Native.BuildSmoke` module
+exist solely to prove resource registration and opacity. They create only the
+fixed-size empty state and are not part of `SimdJson`'s public API. Future child
+resources must use the private `retainParent` and `releaseParent` helpers, which
+delegate to Zigler's BEAM resource keep/release operations.
+
 ## Native ABI conformance
 
 The standalone harness in [`test/c_abi_conformance.c`](./test/c_abi_conformance.c)
@@ -163,3 +187,10 @@ scripts/native/run_c_abi_conformance.sh sanitizer
 
 The sanitizer profile enables AddressSanitizer, UndefinedBehaviorSanitizer,
 leak detection, frame pointers, and fail-fast runtime options.
+
+The Zig ownership-state and resource-registration checks run with:
+
+```text
+scripts/native/run_zig_resource_tests.sh
+mix test test/native/document_resource_registration_test.exs
+```
