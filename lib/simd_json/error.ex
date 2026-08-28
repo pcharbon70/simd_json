@@ -26,15 +26,18 @@ defmodule SimdJson.Error do
 end
 
 defimpl Inspect, for: SimdJson.Error do
-  import Inspect.Algebra
-
   def inspect(error, options) do
-    fields = [
-      reason: error.reason,
-      byte_offset: error.byte_offset,
-      native_code: error.native_code
-    ]
+    reason = render(error.reason, options)
+    offset = render(error.byte_offset, options)
+    code = render(error.native_code, options)
 
-    concat(["#SimdJson.Error<", to_doc(fields, options), ">"])
+    "#SimdJson.Error<reason: #{reason}, byte_offset: #{offset}, native_code: #{code}>"
+  end
+
+  defp render(value, options) do
+    value
+    |> Inspect.Algebra.to_doc(options)
+    |> Inspect.Algebra.format(:infinity)
+    |> IO.iodata_to_binary()
   end
 end

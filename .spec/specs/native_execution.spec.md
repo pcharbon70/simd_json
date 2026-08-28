@@ -26,9 +26,11 @@ normal/dirty scheduler-utilization profile now close the Phase 4 integration
 section. Phase 5 Section 5.1 routes the binary public open and accepted owner
 close directly through that coordinator. Non-binary, forged-document, and
 non-owner calls stop before threaded admission; the bounded owner NIF reads no
-input-dependent state and checks owner before lifecycle. The formal Phase 6
-scheduler profile and the recorded repeated-unload qualification gap keep the
-bootstrap exception in force.
+input-dependent state and checks owner before lifecycle. Section 5.2 verifies
+that rejected submissions and every native failure class return through the
+same redacted public translator without synchronous fallback. The formal Phase
+6 scheduler profile and the recorded repeated-unload qualification gap keep
+the bootstrap exception in force.
 
 ```spec-meta
 id: simd_json.native_execution
@@ -265,6 +267,12 @@ decisions:
   target: test/simd_json/document_api_test.exs
   covers:
     - simd_json.native_execution.bounded_nif_entry
+
+- kind: test_file
+  target: test/simd_json/error_test.exs
+  covers:
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.threaded_submission_failure
 ```
 
 ## Required Closure Evidence

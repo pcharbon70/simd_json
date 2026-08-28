@@ -13,7 +13,8 @@ defmodule SimdJson.Native.OperationCoordinator do
             requests: %{},
             caller_monitors: %{},
             worker_monitors: %{},
-            rejected_submissions: MapSet.new()
+            rejected_submissions: MapSet.new(),
+            open_failure_for_test: nil
 
   @type request :: %{
           kind: :document_open | :document_cleanup,
@@ -79,6 +80,11 @@ defmodule SimdJson.Native.OperationCoordinator do
         when kind in [:document_open, :document_cleanup] and is_boolean(reject?) do
       GenServer.call(__MODULE__, {:set_submission_rejection_for_test, kind, reject?})
     end
+
+    @spec set_open_failure_for_test(nil | map()) :: :ok | {:error, :invalid_failure}
+    def set_open_failure_for_test(failure) when is_nil(failure) or is_map(failure) do
+      GenServer.call(__MODULE__, {:set_open_failure_for_test, failure})
+    end
   end
 
   @impl true
@@ -113,6 +119,25 @@ defmodule SimdJson.Native.OperationCoordinator do
 
       {:reply, :ok, %{state | rejected_submissions: rejected_submissions}}
     end
+
+    def handle_call({:set_open_failure_for_test, failure}, _from, state) do
+      allowed = [
+        :cancelled,
+        :execution_unavailable,
+        :invalid_json,
+        :invalid_utf8,
+        :unexpected_eof,
+        :out_of_memory,
+        :invalid_argument,
+        :internal_failure
+      ]
+
+      if is_nil(failure) or Map.get(failure, :status) in allowed do
+        {:reply, :ok, %{state | open_failure_for_test: failure}}
+      else
+        {:reply, {:error, :invalid_failure}, state}
+      end
+    end
   end
 
   def handle_call({:release_pause, request_ref}, _from, state) do
@@ -135,8 +160,19 @@ defmodule SimdJson.Native.OperationCoordinator do
          true <- operation.generation == BuildSmoke.execution_generation(),
          false <- Map.has_key?(state.requests, operation.request_ref) do
       reject_submission? = submission_rejected?(state, kind)
+      open_failure_for_test = if kind == :document_open, do: state.open_failure_for_test
 
-      {:noreply, start_request(state, kind, operation, payload, from, caller, reject_submission?)}
+      {:noreply,
+       start_request(
+         state,
+         kind,
+         operation,
+         payload,
+         from,
+         caller,
+         reject_submission?,
+         open_failure_for_test
+       )}
     else
       _ ->
         _ = BuildSmoke.operation_finish(operation.resource, :discarded)
@@ -205,7 +241,8 @@ defmodule SimdJson.Native.OperationCoordinator do
          payload,
          from,
          caller,
-         reject_submission? \\ false
+         reject_submission? \\ false,
+         open_failure_for_test \\ nil
        ) do
     coordinator = self()
     caller_monitor = Process.monitor(caller)
@@ -216,13 +253,7 @@ defmodule SimdJson.Native.OperationCoordinator do
           ThreadedOperation.submit(operation, fn ->
             reject_submission_for_test!(reject_submission?)
 
-            case kind do
-              :document_open ->
-                BuildSmoke.threaded_document_open(operation.resource)
-
-              :document_cleanup ->
-                BuildSmoke.threaded_document_cleanup(operation.resource, payload)
-            end
+            execute_operation(kind, operation, payload, open_failure_for_test)
           end)
 
         send(
@@ -260,9 +291,32 @@ defmodule SimdJson.Native.OperationCoordinator do
     end
 
     defp reject_submission_for_test!(false), do: :ok
+
+    defp execute_operation(:document_open, operation, _payload, failure)
+         when is_map(failure) do
+      smoke = BuildSmoke.threaded_context_smoke(operation.resource)
+
+      %{
+        status: Map.fetch!(failure, :status),
+        kind: operation.kind,
+        generation: operation.generation,
+        worker_context: smoke.context,
+        native_code: Map.get(failure, :native_code),
+        byte_offset: Map.get(failure, :byte_offset),
+        document: nil
+      }
+    end
   else
     defp submission_rejected?(_state, _kind), do: false
     defp reject_submission_for_test!(_reject?), do: :ok
+  end
+
+  defp execute_operation(:document_open, operation, _payload, nil) do
+    BuildSmoke.threaded_document_open(operation.resource)
+  end
+
+  defp execute_operation(:document_cleanup, operation, payload, nil) do
+    BuildSmoke.threaded_document_cleanup(operation.resource, payload)
   end
 
   defp complete_request(state, request_ref, request, {:ok, native_result}) do

@@ -65,7 +65,7 @@
         ],
         "file": ".spec/specs/document_api.spec.md",
         "id": "simd_json.document_api.milestone_01_bootstrap",
-        "reason": "Phase 5 Section 5.1 implements the binary open, opaque document, argument validation, owner-first close, and idempotent deterministic cleanup surface; complete stable error/corpus/redaction proof, public-scope documentation, and Phase 5 integration evidence before activation.",
+        "reason": "Phase 5 Sections 5.1 and 5.2 implement the binary document boundary, owner-safe cleanup, the closed error vocabulary, logical-offset validation, controlled messages, and redacted failure diagnostics; complete public-scope documentation and the Phase 5 integration matrix before activation.",
         "subject_id": "simd_json.document_api"
       },
       {
@@ -1239,6 +1239,20 @@
       },
       {
         "covers": [
+          "simd_json.document_api.structured_error",
+          "simd_json.document_api.initial_error_reasons",
+          "simd_json.document_api.logical_offsets",
+          "simd_json.document_api.error_redaction",
+          "simd_json.document_api.invalid_input_errors",
+          "simd_json.document_api.redacted_failure"
+        ],
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/error_test.exs"
+      },
+      {
+        "covers": [
           "simd_json.document_api.milestone_scope"
         ],
         "file": ".spec/specs/document_api.spec.md",
@@ -1760,6 +1774,16 @@
       },
       {
         "covers": [
+          "simd_json.native_execution.no_fallback",
+          "simd_json.native_execution.threaded_submission_failure"
+        ],
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/simd_json/error_test.exs"
+      },
+      {
+        "covers": [
           "simd_json.package.mix_library",
           "simd_json.package.specled_tooling",
           "simd_json.package.native_build_tooling",
@@ -1935,7 +1959,7 @@
     "requirements": 52,
     "scenarios": 26,
     "subjects": 6,
-    "verifications": 64
+    "verifications": 66
   },
   "verification": {
     "claims": [
@@ -2050,6 +2074,72 @@
         "verification_index": 0
       },
       {
+        "cover_id": "simd_json.document_api.error_redaction",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/error_test.exs",
+        "verification_index": 1
+      },
+      {
+        "cover_id": "simd_json.document_api.initial_error_reasons",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/error_test.exs",
+        "verification_index": 1
+      },
+      {
+        "cover_id": "simd_json.document_api.invalid_input_errors",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/error_test.exs",
+        "verification_index": 1
+      },
+      {
+        "cover_id": "simd_json.document_api.logical_offsets",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/error_test.exs",
+        "verification_index": 1
+      },
+      {
+        "cover_id": "simd_json.document_api.redacted_failure",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/error_test.exs",
+        "verification_index": 1
+      },
+      {
+        "cover_id": "simd_json.document_api.structured_error",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/error_test.exs",
+        "verification_index": 1
+      },
+      {
         "cover_id": "simd_json.document_api.milestone_scope",
         "file": ".spec/specs/document_api.spec.md",
         "kind": "test_file",
@@ -2058,7 +2148,7 @@
         "strength": "linked",
         "subject_id": "simd_json.document_api",
         "target": "test/native/document_resource_policy_test.exs",
-        "verification_index": 1
+        "verification_index": 2
       },
       {
         "cover_id": "simd_json.document_resource.complete_ownership",
@@ -3821,6 +3911,28 @@
         "verification_index": 7
       },
       {
+        "cover_id": "simd_json.native_execution.no_fallback",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/simd_json/error_test.exs",
+        "verification_index": 8
+      },
+      {
+        "cover_id": "simd_json.native_execution.threaded_submission_failure",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/simd_json/error_test.exs",
+        "verification_index": 8
+      },
+      {
         "cover_id": "simd_json.package.mix_library",
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
@@ -4068,7 +4180,7 @@
     "strength_summary": {
       "claimed": 46,
       "executed": 0,
-      "linked": 147
+      "linked": 155
     },
     "threshold_failures": 0
   },

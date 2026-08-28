@@ -79,31 +79,31 @@ Back to plan: [README](./README.md)
 
 ## 5.2 Section — Stable Error Translation and Redaction
 
-- [ ] 5.2 Section - Translate native statuses once into a closed, documented Elixir error vocabulary.
+- [x] 5.2 Section - Translate native statuses once into a closed, documented Elixir error vocabulary.
 
   This section prevents callers from depending on simdjson enum values, compiler
   exception text, or mutable prose while preserving safe diagnostics and logical
   byte locations.
 
-  - [ ] 5.2.1 Task - Define `SimdJson.Error` and the initial reason set.
+  - [x] 5.2.1 Task - Define `SimdJson.Error` and the initial reason set.
 
     The task creates a stable data contract with typed fields and a single
     internal translation point.
 
-    - [ ] 5.2.1.1 Subtask - Add fields for `reason`, optional `byte_offset`, optional `native_code`, and explanatory `message` with corresponding typespecs.
-    - [ ] 5.2.1.2 Subtask - Define initial reasons `:invalid_json`, `:invalid_utf8`, `:unexpected_eof`, `:out_of_memory`, `:closed`, `:not_owner`, and `:native_failure`.
-    - [ ] 5.2.1.3 Subtask - Map every stable C/Zig status in one private translator and route unknown codes to `:native_failure` while retaining their numeric value only as safe diagnostics.
-    - [ ] 5.2.1.4 Subtask - Treat message text as explanatory only and document `reason` as the caller's machine-readable branch key.
+    - [x] 5.2.1.1 Subtask - Add fields for `reason`, optional `byte_offset`, optional `native_code`, and explanatory `message` with corresponding typespecs.
+    - [x] 5.2.1.2 Subtask - Define initial reasons `:invalid_json`, `:invalid_utf8`, `:unexpected_eof`, `:out_of_memory`, `:closed`, `:not_owner`, and `:native_failure`.
+    - [x] 5.2.1.3 Subtask - Map every stable C/Zig status in one private translator and route unknown codes to `:native_failure` while retaining their numeric value only as safe diagnostics.
+    - [x] 5.2.1.4 Subtask - Treat message text as explanatory only and document `reason` as the caller's machine-readable branch key.
 
-  - [ ] 5.2.2 Task - Preserve logical offsets and redact sensitive data.
+  - [x] 5.2.2 Task - Preserve logical offsets and redact sensitive data.
 
     The task allows useful failure location without exposing padding, native
     addresses, caller content, or raw exception messages.
 
-    - [ ] 5.2.2.1 Subtask - Convert the native unavailable-offset sentinel to `nil` and validate every present offset against the logical JSON length.
-    - [ ] 5.2.2.2 Subtask - Ensure no byte offset can point into native padding or be computed from allocation capacity.
-    - [ ] 5.2.2.3 Subtask - Construct safe messages from controlled templates rather than native exception or simdjson text that could include sensitive context.
-    - [ ] 5.2.2.4 Subtask - Implement redacted `Inspect` behavior for errors and verify default Logger metadata contains no JSON fragment, pointer, owner PID, or C++ exception text.
+    - [x] 5.2.2.1 Subtask - Convert the native unavailable-offset sentinel to `nil` and validate every present offset against the logical JSON length.
+    - [x] 5.2.2.2 Subtask - Ensure no byte offset can point into native padding or be computed from allocation capacity.
+    - [x] 5.2.2.3 Subtask - Construct safe messages from controlled templates rather than native exception or simdjson text that could include sensitive context.
+    - [x] 5.2.2.4 Subtask - Implement redacted `Inspect` behavior for errors and verify default Logger metadata contains no JSON fragment, pointer, owner PID, or C++ exception text.
 
 ## 5.3 Section — Ownership, Lifecycle, and Scope Enforcement
 
