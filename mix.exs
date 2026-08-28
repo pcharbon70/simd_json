@@ -15,6 +15,7 @@ defmodule SimdJson.MixProject do
 
   def application do
     [
+      mod: {SimdJson.Application, []},
       extra_applications: [:logger]
     ]
   end

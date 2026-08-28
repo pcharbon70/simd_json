@@ -6,13 +6,17 @@ Current-truth contract for the opaque `SimdJson.Document` resource, padded input
 
 This subject prevents use-after-free, unsafe simdjson over-read, double destruction, and incoherent cross-process access while leaving a stable parent-resource model for later cursor and streaming milestones.
 
-Phases 1 through 3 now contribute the vendored parser, private opaque C
+Phases 1 through 3 contribute the vendored parser, private opaque C
 parser/document handles, Zig-owned aligned padded input, registered opaque BEAM
 resource storage, monotonic lifecycle primitives, reverse rollback, parent
-retention helpers, and bounded test-only accounting. Native tests exercise that
-ownership graph through C++ in ordinary and sanitizer profiles. No production
-parse path, off-scheduler cleanup executor, public document type, owner check,
-or close API exists until later phases, so the bootstrap exception remains in
+retention helpers, and bounded test-only accounting. Phase 4 now retains input
+through a private environment, constructs the padded copy and native handles on
+a Zigler worker, publishes an internal parsed document resource, and uses a
+threaded explicit/orphan cleanup operation. GC callbacks now detach an
+intrusive control block into a cleanup-only dispatcher, failed handoff retains
+ownership for retry, and concurrent internal cleanup joins exactly-once native
+destruction. The public document type, owner enforcement, and public
+idempotent close remain Phase 5 work, so the bootstrap exception stays in
 force.
 
 ```spec-meta
@@ -199,6 +203,27 @@ decisions:
     - simd_json.document_resource.deferred_large_cleanup
     - simd_json.document_resource.test_accounting
     - simd_json.document_resource.input_lifetime
+
+- kind: test_file
+  target: test/native/threaded_document_open_test.exs
+  covers:
+    - simd_json.document_resource.opaque_handle
+    - simd_json.document_resource.padded_owned_copy
+    - simd_json.document_resource.complete_ownership
+    - simd_json.document_resource.lifecycle
+    - simd_json.document_resource.reverse_destruction
+    - simd_json.document_resource.input_lifetime
+    - simd_json.document_resource.partial_open_failure
+
+- kind: test_file
+  target: test/native/threaded_teardown_test.exs
+  covers:
+    - simd_json.document_resource.lifecycle
+    - simd_json.document_resource.idempotent_close
+    - simd_json.document_resource.reverse_destruction
+    - simd_json.document_resource.deferred_large_cleanup
+    - simd_json.document_resource.gc_cleanup
+    - simd_json.document_resource.native_memory_baseline
 
 - kind: command
   target: bash scripts/native/run_zig_resource_tests.sh ordinary

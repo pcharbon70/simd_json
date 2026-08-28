@@ -60,6 +60,13 @@ jobs:
       - name: Run tests
         run: mix test
 
+      - name: Run focused threaded execution integration tests
+        run: >-
+          mix test test/native/threaded_admission_test.exs
+          test/native/threaded_document_open_test.exs
+          test/native/threaded_teardown_test.exs
+          test/native/native_execution_integration_test.exs
+
       - name: Run sanitizer C ABI conformance
         run: scripts/native/run_c_abi_conformance.sh sanitizer
 

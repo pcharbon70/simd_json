@@ -197,10 +197,68 @@ parser, document, resource initialization, or immediately before
 publication—uses the same reverse rollback. A successfully closed state cannot
 be reopened because its invalidated generation is retained.
 
-The BEAM destructor calls only the bounded close-detach transition. Phase 3 has
-no production path that can place parsed state in a resource; Phase 4 will
-attach the cleanup owner to its off-scheduler executor before any such path is
-published.
+The BEAM destructor calls only the bounded close-detach transition. Phase 4's
+internal threaded constructor can now place parsed state in a resource; the
+callback-safe dispatcher that consumes detached GC cleanup is therefore the
+next required runtime edge and is described below.
+
+## Phase 4 threaded operation runtime
+
+The internal `SimdJson.Native.ThreadedOperation` adapter now admits a binary by
+copying its term—not its bytes—into a private NIF environment. That environment,
+the caller PID, a native-generated BEAM reference, private operation kind,
+module generation, cancellation flag, and terminal state live in a retained
+operation resource. A `[]const u8` is never passed directly from the ordinary
+admission environment to a Zigler worker because Zigler 0.16 may borrow that
+binary without retaining it.
+
+`threaded_document_open` is registered only with `concurrency: :threaded`. Its
+worker inspects the retained private term, performs the aligned padded copy,
+creates the C parser/document handles, and publishes the opaque resource only
+after complete success. It checks cancellation before copy, immediately before
+and after the C parse call, before resource publication, and before delivery.
+Every failed or cancelled construction edge uses the same reverse rollback as
+the native ownership tests. Parser failures return only the closed internal
+status, optional native code, and optional logical byte offset.
+
+`SimdJson.Native.OperationCoordinator` is the stable owner of each generated
+Zigler thread resource. The original caller can die without destroying the
+thread metadata: the coordinator marks the retained operation cancelled,
+waits for the worker to reach a safe boundary and join, then suppresses or
+discards its result. Completion messages include the private kind, unique
+reference, generation, and worker identity; a mismatch cannot select a waiter.
+Messages go to the coordinator rather than an unbounded caller mailbox.
+
+Explicit, concurrent, and orphan-result cleanup run through the correlated
+`threaded_document_cleanup` worker. All contenders join one lifecycle owner,
+and accounting completes exactly once after reverse native destruction.
+
+GC cleanup uses one cleanup-only native dispatcher. The resource destructor
+clears its payload pointer, atomically detaches the fixed-size control block,
+links that block into the intrusive dispatcher queue, and returns. It does not
+allocate, wait, loop, or destroy parser state. Injected handoff rejection keeps
+the same control block on a retained retry list; restoring admission moves it
+to the active queue without a normal- or dirty-scheduler fallback.
+
+Application stop first rejects coordinated admission, cancels and drains live
+operations, and then advances the native generation. NIF unload independently
+rejects native admission, drains and joins the dispatcher, and only then frees
+module state. OTP 27.3 application stop/start and generation isolation are
+exercised. Repeated in-process shared-object unload is not supported by that
+test harness and remains explicitly unqualified in the pinned Zigler research
+note. This runtime is a Milestone 1 qualification mechanism; production
+admission control and the bounded parse pool remain in Milestone 4.
+
+### Preliminary scheduler profile
+
+The Phase 4 integration profile runs concurrent 4 MiB valid and invalid inputs
+while an independent BEAM heartbeat measures wake-up intervals and
+`scheduler_wall_time_all` records normal, dirty CPU, and dirty I/O utilization.
+It also injects parse and cleanup submission rejection and proves native worker
+entry never occurs, so no alternative scheduler path can be selected. Exact
+fixtures, thresholds, environment, a development observation, and the Phase 6
+qualification boundary are recorded in
+[`phase_4_scheduler_qualification.md`](../.spec/research/phase_4_scheduler_qualification.md).
 
 Native test builds add aggregate counters for padded buffers, parser/document
 handles, resource records, retained parents, admissions, object destruction,

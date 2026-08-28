@@ -45,6 +45,27 @@ pub fn Implementation(comptime c: type) type {
             generation: u64,
         };
 
+        pub const CancellationBoundary = enum {
+            before_copy,
+            before_parse,
+            after_parse,
+            before_publication,
+        };
+
+        pub const CancellationProbe = struct {
+            context: ?*anyopaque,
+            is_cancelled: *const fn (?*anyopaque) bool,
+            at_boundary: ?*const fn (?*anyopaque, CancellationBoundary) void = null,
+
+            fn cancelledAt(
+                self: CancellationProbe,
+                boundary: CancellationBoundary,
+            ) bool {
+                if (self.at_boundary) |callback| callback(self.context, boundary);
+                return self.is_cancelled(self.context);
+            }
+        };
+
         const ConstructionFailurePoint = enum {
             none,
             after_buffer_allocation,
@@ -221,7 +242,19 @@ pub fn Implementation(comptime c: type) type {
                 allocator: std.mem.Allocator,
                 source: []const u8,
             ) NativeStatus {
-                return self.openOwnedWithFailure(allocator, source, .none);
+                return self.openOwnedWithFailure(allocator, source, .none, null);
+            }
+
+            /// The threaded constructor supplies a probe whose atomic read is
+            /// safe around the uninterruptible C call. Every cancellation edge
+            /// uses the same rollback owner as native construction failure.
+            pub fn openOwnedCancellable(
+                self: *DocumentState,
+                allocator: std.mem.Allocator,
+                source: []const u8,
+                cancellation: CancellationProbe,
+            ) NativeStatus {
+                return self.openOwnedWithFailure(allocator, source, .none, cancellation);
             }
 
             fn openOwnedWithFailure(
@@ -229,7 +262,13 @@ pub fn Implementation(comptime c: type) type {
                 allocator: std.mem.Allocator,
                 source: []const u8,
                 comptime failure: ConstructionFailurePoint,
+                cancellation: ?CancellationProbe,
             ) NativeStatus {
+                if (cancellation) |probe| {
+                    if (probe.cancelledAt(.before_copy))
+                        return statusWithoutDiagnostics(.internal_failure);
+                }
+
                 if (self.lifecycleState() != .closed or
                     self.hasOwnedNativeState() or
                     self.generation.load(.acquire) != 0 or
@@ -277,6 +316,13 @@ pub fn Implementation(comptime c: type) type {
                     return statusWithoutDiagnostics(.internal_failure);
                 }
 
+                if (cancellation) |probe| {
+                    if (probe.cancelledAt(.before_parse)) {
+                        self.rollbackConstruction();
+                        return statusWithoutDiagnostics(.internal_failure);
+                    }
+                }
+
                 var document: ?*c.simd_json_document = null;
                 status = adaptStatus(c.simd_json_document_open(
                     parser.?,
@@ -295,6 +341,13 @@ pub fn Implementation(comptime c: type) type {
                 self.document_handle = document;
                 if (test_build) _ = Accounting.live_document_handles.fetchAdd(1, .acq_rel);
 
+                if (cancellation) |probe| {
+                    if (probe.cancelledAt(.after_parse)) {
+                        self.rollbackConstruction();
+                        return statusWithoutDiagnostics(.internal_failure);
+                    }
+                }
+
                 if (failure == .after_document_creation) {
                     self.rollbackConstruction();
                     return statusWithoutDiagnostics(.internal_failure);
@@ -310,6 +363,13 @@ pub fn Implementation(comptime c: type) type {
                 if (failure == .before_resource_publication) {
                     self.rollbackConstruction();
                     return statusWithoutDiagnostics(.internal_failure);
+                }
+
+                if (cancellation) |probe| {
+                    if (probe.cancelledAt(.before_publication)) {
+                        self.rollbackConstruction();
+                        return statusWithoutDiagnostics(.internal_failure);
+                    }
                 }
 
                 self.lifecycle.store(@intFromEnum(Lifecycle.open), .release);
@@ -516,7 +576,7 @@ pub fn Implementation(comptime c: type) type {
                 comptime point: FailurePoint,
             ) NativeStatus {
                 std.debug.assert(point != .none);
-                return state.openOwnedWithFailure(allocator, source, point);
+                return state.openOwnedWithFailure(allocator, source, point, null);
             }
 
             pub fn snapshot() Snapshot {

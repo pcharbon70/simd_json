@@ -3,10 +3,12 @@
 Current package and documentation contract for the `SimdJson` library.
 
 The package currently distributes the pinned native build inputs, private C
-ABI, C++ shim, Zig ownership/resource sources, symbol policy, and native
-conformance harnesses through Phase 3. The registered resource fixture remains
-an internal build diagnostic: no document-opening public API or production
-parsed BEAM resource is exposed yet.
+ABI, C++ shim, Zig ownership/resource sources, symbol policy, native
+conformance harnesses, and Phase 4's internal correlated threaded operation
+runtime, stable coordinator, and cleanup-only dispatcher. The internal adapter
+can construct and explicitly or automatically clean a parsed BEAM resource for
+qualification tests, but no document-opening public API or public document type
+is exposed yet.
 
 ```spec-meta
 id: simd_json.package
@@ -113,6 +115,11 @@ surface:
 
 - kind: source_file
   target: .spec/research/simdjson_beam_nif_architecture.md
+  covers:
+    - simd_json.package.documentation_layout
+
+- kind: source_file
+  target: .spec/research/zigler_0_16_threaded_qualification.md
   covers:
     - simd_json.package.documentation_layout
 

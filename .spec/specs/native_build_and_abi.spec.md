@@ -6,13 +6,19 @@ Current-truth contract for the reproducible native toolchain, official simdjson 
 
 This subject ensures that every native artifact can be traced to pinned source and toolchain inputs and that C++ implementation details terminate at one small C ABI before Zig or BEAM ownership begins.
 
-Phases 1 through 3 now provide the reproducible vendored build, independently
+Phases 1 through 3 provide the reproducible vendored build, independently
 tested opaque C11 ABI, and canonical-header Zig ownership layer. The official
 On-Demand parser remains behind a C++ shim with stable statuses, total exception
 translation, reverse partial-failure cleanup, release symbol allowlists, and
-ordinary/sanitizer C and Zig harnesses. Threaded production execution, public
-document APIs, and final target qualification remain unimplemented, so the
-Milestone 1 bootstrap exception and `planned` status remain in force.
+ordinary/sanitizer C and Zig harnesses. Phase 4 additionally records and smoke
+tests the exact Zigler 0.16 threaded environment, payload, resource, callback,
+join, and cancellation constraints. The qualified path now reaches the private
+C ABI from a retained Zigler worker and returns only an opaque resource or
+bounded status metadata. Callback-safe GC teardown and application/unload
+drain are implemented; repeated shared-object unload remains explicitly
+unqualified on OTP 27.3. Public document APIs and final target qualification
+remain incomplete, so the Milestone 1 bootstrap exception and `planned` status
+remain in force.
 
 ```spec-meta
 id: simd_json.native_build_and_abi
@@ -198,6 +204,12 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
   covers:
     - simd_json.native_build_and_abi.pinned_toolchain
     - simd_json.native_build_and_abi.target_qualification
+
+- kind: source_file
+  target: .spec/research/zigler_0_16_threaded_qualification.md
+  covers:
+    - simd_json.native_build_and_abi.pinned_toolchain
+    - simd_json.native_build_and_abi.layered_boundary
 
 - kind: source_file
   target: native/vendor/simdjson/README.md

@@ -7,10 +7,24 @@ Current-truth contract for scheduler isolation, threaded request correlation, ca
 This subject ensures that proving the native parser never makes unrelated BEAM processes pay an input-dependent scheduling cost and that asynchronous completion cannot outlive the resources it uses.
 
 Phases 1 through 3 contribute bounded build/resource diagnostics and native
-ownership tests outside the BEAM. Resource destruction callbacks perform only
-an atomic close-detach transition, and no production NIF can copy input, parse,
-or own large parser state. Zigler's threaded parse and deferred-cleanup
-executors are attached in Phase 4, so the bootstrap exception remains in force.
+ownership tests outside the BEAM. Phase 4 now qualifies the pinned Zigler
+contexts and connects bounded admission to real threaded document construction.
+A private environment retains the binary term without copying its bytes; the
+worker alone creates the owned padded copy and invokes the C ABI. A stable
+coordinator owns the generated Zigler thread through join, correlates private
+kind/reference/generation, monitors the original caller, and discards or
+off-scheduler-cleans orphan results. Deterministic boundary tests cover caller
+death before copy, before and after parse, before publication, and before
+delivery. Resource callbacks now detach into a cleanup-only dispatcher, failed
+handoff retains ownership for retry, repeated explicit close joins one cleanup,
+and application stop drains work before advancing the native generation. The
+unload callback drains and joins the dispatcher, although repeated in-process
+shared-object unload is not supported by the qualified OTP harness. Controlled
+parse and cleanup submission rejection, repeated application generations,
+correlation races, large-resource GC, and a preliminary heartbeat plus
+normal/dirty scheduler-utilization profile now close the Phase 4 integration
+section. The formal Phase 6 scheduler profile and the recorded repeated-unload
+qualification gap keep the bootstrap exception in force.
 
 ```spec-meta
 id: simd_json.native_execution
@@ -175,6 +189,69 @@ decisions:
 
 ```spec-verification
 - kind: test_file
+  target: test/native/threaded_admission_test.exs
+  covers:
+    - simd_json.native_execution.threaded_parse
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.request_correlation
+    - simd_json.native_execution.retained_resources
+    - simd_json.native_execution.cancellation_boundaries
+
+- kind: test_file
+  target: test/native/threaded_document_open_test.exs
+  covers:
+    - simd_json.native_execution.threaded_parse
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.request_correlation
+    - simd_json.native_execution.retained_resources
+    - simd_json.native_execution.late_result_cleanup
+    - simd_json.native_execution.cancellation_boundaries
+    - simd_json.native_execution.caller_dies_while_running
+    - simd_json.native_execution.result_reference_mismatch
+
+- kind: test_file
+  target: test/native/threaded_teardown_test.exs
+  covers:
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.cancellation_boundaries
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.shutdown_cleanup
+    - simd_json.native_execution.large_gc_teardown
+    - simd_json.native_execution.reload_cleanup
+
+- kind: test_file
+  target: test/native/native_execution_integration_test.exs
+  covers:
+    - simd_json.native_execution.threaded_parse
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.scheduler_qualification
+    - simd_json.native_execution.preproduction_boundary
+    - simd_json.native_execution.large_parse_responsiveness
+    - simd_json.native_execution.threaded_submission_failure
+
+- kind: source_file
+  target: .spec/research/zigler_0_16_threaded_qualification.md
+  covers:
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.preproduction_boundary
+
+- kind: source_file
+  target: .spec/research/phase_4_scheduler_qualification.md
+  covers:
+    - simd_json.native_execution.threaded_parse
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.scheduler_qualification
+    - simd_json.native_execution.preproduction_boundary
+    - simd_json.native_execution.large_parse_responsiveness
+
+- kind: test_file
   target: test/native/document_resource_policy_test.exs
   covers:
     - simd_json.native_execution.bounded_nif_entry
@@ -207,5 +284,5 @@ Before activation, replace the bootstrap exception with executed scheduler heart
     - simd_json.native_execution.threaded_submission_failure
     - simd_json.native_execution.large_gc_teardown
     - simd_json.native_execution.reload_cleanup
-  reason: Phase 3 proves that the ordinary resource callback is bounded and exposes no production parse path, but threaded admission and cleanup are not implemented; add correlation, cancellation, teardown, shutdown, and scheduler-qualification proof before activation.
+  reason: Phase 4 now implements and integrates retained threaded construction, correlated delivery, cancellation, submission-failure containment, explicit/orphan/GC teardown, application generation cycling, and a preliminary scheduler matrix; Phase 6 must establish the final percentile budget and retain the recorded repeated shared-object unload gap until a supported harness supplies that evidence.
 ```
