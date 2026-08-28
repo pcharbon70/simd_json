@@ -3,8 +3,46 @@ defmodule SimdJson do
   @moduledoc """
   Opens and closes opaque JSON documents using SIMD-accelerated parsing.
 
-  Milestone 1 accepts binaries only and intentionally exposes no decoded tree,
-  projection, stream, cursor, ownership-transfer, or native-handle API.
+  The Milestone 1 public contract consists only of `open/1`, `close/1`,
+  `SimdJson.Document`, and `SimdJson.Error`. It accepts binaries only and
+  intentionally exposes no decoded tree, projection, stream, cursor,
+  ownership-transfer, or native-handle API.
+
+  A document belongs to the process that opened it. Owner `close/1` is
+  idempotent and waits for native cleanup; another process receives a stable
+  `:not_owner` error even when the document has already been closed. Other
+  owner operations introduced by later milestones will return `:closed` after
+  close.
+
+  Threaded execution in this milestone is a qualification runtime. Production
+  admission control and its bounded worker pool arrive in Milestone 4.
+
+  ## Examples
+
+      iex> {:ok, document} = SimdJson.open(~s({"ready": true}))
+      iex> inspect(document)
+      "#SimdJson.Document<opaque>"
+      iex> SimdJson.close(document)
+      :ok
+      iex> SimdJson.close(document)
+      :ok
+
+      iex> {:error, error} = SimdJson.open("[1,")
+      iex> {error.reason, error.message}
+      {:unexpected_eof, "unexpected end of JSON input"}
+      iex> inspect(error) =~ "[1,"
+      false
+
+      iex> SimdJson.open(:not_a_binary)
+      ** (ArgumentError) expected JSON input to be a binary
+
+      iex> {:ok, document} = SimdJson.open("null")
+      iex> task = Task.async(fn -> SimdJson.close(document) end)
+      iex> {:error, non_owner_error} = Task.await(task)
+      iex> non_owner_error.reason
+      :not_owner
+      iex> SimdJson.close(document)
+      :ok
   """
 
   alias SimdJson.Document
@@ -43,7 +81,9 @@ defmodule SimdJson do
   Closes an opaque document owned by the calling process.
 
   Owner close is idempotent and returns only after native cleanup completes.
-  A non-document argument raises `ArgumentError` before cleanup is submitted.
+  A non-owner receives `{:error, %SimdJson.Error{reason: :not_owner}}` without
+  learning the document lifecycle. A non-document argument raises
+  `ArgumentError` before cleanup is submitted.
   """
   @spec close(Document.t()) :: :ok | {:error, Error.t()}
   def close(%Document{__resource__: resource}) do

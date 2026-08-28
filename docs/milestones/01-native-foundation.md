@@ -68,9 +68,9 @@ Each boundary has one job:
 
 The C ABI must remain small enough that its behavior can be tested independently of the BEAM.
 
-## Initial Elixir contract
+## Milestone 1 Elixir contract
 
-The initial API should be deliberately narrow:
+The implemented API is deliberately narrow:
 
 ```elixir
 {:ok, document} = SimdJson.open(json_binary)
@@ -89,6 +89,12 @@ The expected types are:
 `close/1` provides deterministic release for large documents. Garbage collection remains a safety net, and cleanup must be idempotent so an explicit close followed by resource destruction cannot double-free memory. Any operation after close returns `{:error, %SimdJson.Error{reason: :closed}}`.
 
 `SimdJson.Document` must not expose a native address or cursor state. It can be an Elixir struct containing only the NIF resource reference, with a redacted `Inspect` implementation if necessary.
+
+The only documented runtime modules in this milestone are `SimdJson`,
+`SimdJson.Document`, and `SimdJson.Error`; the only root operations are
+`open/1` and `close/1`. Native diagnostics, resource helpers, accounting, and
+failure injection stay hidden or test-only. Decode, projection, streaming,
+cursors, ownership transfer, and raw handles remain absent.
 
 ## Native resource model
 
@@ -169,6 +175,10 @@ Parsing work must not execute as an ordinary synchronous NIF. Milestone 1 may us
 The Elixir wrapper may wait for an asynchronous native reply while the calling process is suspended in the usual BEAM way. It must correlate replies with a unique request reference and ignore or clean up late replies after timeout or caller termination.
 
 Scheduler responsiveness is part of correctness. A test should run repeated large opens while independent BEAM processes measure wake-up latency.
+
+The threaded mechanism used here qualifies the ownership and scheduler
+boundary; it is not the production admission-control design. Milestone 4 adds
+the bounded worker pool, backpressure, and production overload behavior.
 
 ## Errors
 

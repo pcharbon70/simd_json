@@ -28,9 +28,11 @@ close directly through that coordinator. Non-binary, forged-document, and
 non-owner calls stop before threaded admission; the bounded owner NIF reads no
 input-dependent state and checks owner before lifecycle. Section 5.2 verifies
 that rejected submissions and every native failure class return through the
-same redacted public translator without synchronous fallback. The formal Phase
-6 scheduler profile and the recorded repeated-unload qualification gap keep
-the bootstrap exception in force.
+same redacted public translator without synchronous fallback. Section 5.3
+labels this threaded layer as a qualification runtime and assigns production
+admission control and its bounded worker pool to Milestone 4. The formal Phase
+6 scheduler profile and the recorded repeated-unload qualification gap keep the
+bootstrap exception in force.
 
 ```spec-meta
 id: simd_json.native_execution
@@ -273,6 +275,11 @@ decisions:
   covers:
     - simd_json.native_execution.no_fallback
     - simd_json.native_execution.threaded_submission_failure
+
+- kind: test_file
+  target: test/simd_json/public_surface_test.exs
+  covers:
+    - simd_json.native_execution.preproduction_boundary
 ```
 
 ## Required Closure Evidence

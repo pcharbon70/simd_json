@@ -88,9 +88,10 @@ defmodule SimdJson.DocumentApiTest do
   end
 
   # covers: simd_json.document_api.close_contract simd_json.document_api.close_and_non_owner simd_json.document_resource.single_owner simd_json.document_resource.non_owner_rejection
-  test "non-owner close is rejected before lifecycle or cleanup changes" do
+  test "non-owner close is rejected before open and closed lifecycle state" do
     assert {:ok, %Document{} = document} = SimdJson.open("null")
     %Document{__resource__: resource} = document
+    generation = BuildSmoke.execution_generation()
     before = BuildSmoke.execution_snapshot()
 
     assert {:error, %Error{reason: :not_owner}} =
@@ -98,8 +99,24 @@ defmodule SimdJson.DocumentApiTest do
 
     after_rejection = BuildSmoke.execution_snapshot()
     assert BuildSmoke.document_lifecycle(resource) == :open
+    assert BuildSmoke.execution_generation() == generation
     assert after_rejection.worker_entries == before.worker_entries
     assert after_rejection.completed_document_cleanup == before.completed_document_cleanup
+
+    assert :ok = SimdJson.close(document)
+
+    before_closed_rejection = BuildSmoke.execution_snapshot()
+
+    assert {:error, %Error{reason: :not_owner}} =
+             Task.async(fn -> SimdJson.close(document) end) |> Task.await()
+
+    after_closed_rejection = BuildSmoke.execution_snapshot()
+    assert BuildSmoke.document_lifecycle(resource) == :closed
+    assert BuildSmoke.execution_generation() == generation
+    assert after_closed_rejection.worker_entries == before_closed_rejection.worker_entries
+
+    assert after_closed_rejection.completed_document_cleanup ==
+             before_closed_rejection.completed_document_cleanup
 
     assert :ok = SimdJson.close(document)
     document = resource = nil

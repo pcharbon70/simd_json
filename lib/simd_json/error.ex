@@ -2,7 +2,18 @@ defmodule SimdJson.Error do
   @moduledoc """
   A stable, redacted error returned by `SimdJson` operations.
 
-  Callers should branch on `reason`. The message is explanatory and may evolve.
+  Callers should branch on `reason`; `message` is explanatory and may evolve.
+  `byte_offset`, when present, is relative to the logical input rather than its
+  native padded allocation. `native_code` is diagnostic only. Inspection omits
+  the message so accidentally forged or enriched text is not logged by default.
+
+      iex> {:error, error} = SimdJson.open("?")
+      iex> error.reason
+      :invalid_json
+      iex> inspect(error) =~ "reason: :invalid_json"
+      true
+      iex> inspect(error) =~ error.message
+      false
   """
 
   @type reason ::

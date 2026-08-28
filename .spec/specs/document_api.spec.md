@@ -8,15 +8,16 @@ This subject gives callers one safe way to open and deterministically close an o
 
 Phases 1 through 4 contribute the reproducible NIF, private C parser ABI,
 opaque resource, and correlated threaded construction and cleanup runtime.
-Phase 5 Sections 5.1 and 5.2 expose binary-only `SimdJson.open/1`, owner-safe
-and idempotent `SimdJson.close/1`, an opaque redacted `SimdJson.Document`, and a
-closed `SimdJson.Error` vocabulary. One private translator maps all native
-statuses, validates offsets against logical input length, retains only numeric
-native diagnostics, and builds messages from controlled templates. Forged
-values fail the registered native resource check before cleanup admission, and
-a bounded native check rejects non-owners before revealing lifecycle state.
-Public-scope documentation and the complete Phase 5 integration evidence remain
-before the bootstrap exception can be removed.
+Phase 5 Sections 5.1 through 5.3 expose binary-only `SimdJson.open/1`,
+owner-safe and idempotent `SimdJson.close/1`, an opaque redacted
+`SimdJson.Document`, and a closed `SimdJson.Error` vocabulary. One private
+translator maps all native statuses, validates offsets against logical input
+length, retains only numeric native diagnostics, and builds messages from
+controlled templates. Forged values fail the registered native resource check
+before cleanup admission, and a bounded native check rejects non-owners before
+revealing open or closed lifecycle state. Module, README, milestone, export,
+typespec, and protocol checks now lock the public scope. The complete Phase 5
+integration evidence remains before the bootstrap exception can be removed.
 
 ```spec-meta
 id: simd_json.document_api
@@ -224,6 +225,25 @@ decisions:
     - simd_json.document_api.redacted_failure
 
 - kind: test_file
+  target: test/simd_json/public_surface_test.exs
+  covers:
+    - simd_json.document_api.milestone_scope
+    - simd_json.document_api.no_future_surface
+
+- kind: test_file
+  target: test/simd_json_test.exs
+  covers:
+    - simd_json.document_api.open_contract
+    - simd_json.document_api.binary_only
+    - simd_json.document_api.close_contract
+    - simd_json.document_api.opaque_document_type
+    - simd_json.document_api.structured_error
+    - simd_json.document_api.error_redaction
+    - simd_json.document_api.non_binary_argument
+    - simd_json.document_api.redacted_failure
+    - simd_json.document_api.close_and_non_owner
+
+- kind: test_file
   target: test/native/document_resource_policy_test.exs
   covers:
     - simd_json.document_api.milestone_scope
@@ -257,5 +277,5 @@ Before activation, replace the bootstrap exception with executed public API, typ
     - simd_json.document_api.redacted_failure
     - simd_json.document_api.close_and_non_owner
     - simd_json.document_api.no_future_surface
-  reason: Phase 5 Sections 5.1 and 5.2 implement the binary document boundary, owner-safe cleanup, the closed error vocabulary, logical-offset validation, controlled messages, and redacted failure diagnostics; complete public-scope documentation and the Phase 5 integration matrix before activation.
+  reason: Phase 5 Sections 5.1 through 5.3 implement the binary document boundary, owner-first cleanup, the closed redacted error vocabulary, public documentation, and an export/typespec/protocol scope allowlist; complete the Phase 5 corpus, lifetime, race, and native-baseline integration matrix before activation.
 ```

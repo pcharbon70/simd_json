@@ -107,30 +107,30 @@ Back to plan: [README](./README.md)
 
 ## 5.3 Section — Ownership, Lifecycle, and Scope Enforcement
 
-- [ ] 5.3 Section - Make single-process authority and deterministic cleanup observable through the public API.
+- [x] 5.3 Section - Make single-process authority and deterministic cleanup observable through the public API.
 
   This section applies the native lifecycle rules at every document boundary and
   fixes the Milestone 1 public surface so later work cannot leak in accidentally.
 
-  - [ ] 5.3.1 Task - Enforce owner-first document access.
+  - [x] 5.3.1 Task - Enforce owner-first document access.
 
     The task ensures possession of a resource term does not grant authority or
     disclose whether another process has already closed the document.
 
-    - [ ] 5.3.1.1 Subtask - Capture the successful opener's PID as immutable owner metadata before publishing the document.
-    - [ ] 5.3.1.2 Subtask - Check caller ownership before lifecycle state for every document operation, including close.
-    - [ ] 5.3.1.3 Subtask - Return `{:error, %SimdJson.Error{reason: :not_owner}}` to another process without changing lifecycle, generation, admission, or cleanup state.
-    - [ ] 5.3.1.4 Subtask - Return the stable `:closed` reason for any future owner document operation after close while retaining idempotent `close/1` as the explicit exception.
+    - [x] 5.3.1.1 Subtask - Capture the successful opener's PID as immutable owner metadata before publishing the document.
+    - [x] 5.3.1.2 Subtask - Check caller ownership before lifecycle state for every document operation, including close.
+    - [x] 5.3.1.3 Subtask - Return `{:error, %SimdJson.Error{reason: :not_owner}}` to another process without changing lifecycle, generation, admission, or cleanup state.
+    - [x] 5.3.1.4 Subtask - Return the stable `:closed` reason for any future owner document operation after close while retaining idempotent `close/1` as the explicit exception.
 
-  - [ ] 5.3.2 Task - Lock the Milestone 1 public surface.
+  - [x] 5.3.2 Task - Lock the Milestone 1 public surface.
 
     The task prevents foundation work from quietly implementing functionality
     assigned to later milestones.
 
-    - [ ] 5.3.2.1 Subtask - Document only `open/1`, `close/1`, `SimdJson.Document`, and `SimdJson.Error` as the Milestone 1 public contract.
-    - [ ] 5.3.2.2 Subtask - Keep NIF bridge, native diagnostics, counters, failure injection, and resource helpers private or test-only.
-    - [ ] 5.3.2.3 Subtask - Add an exported-function and typespec allowlist proving eager decode, projection, stream, cursor, ownership transfer, and raw native-handle operations are absent.
-    - [ ] 5.3.2.4 Subtask - State in module and milestone documentation that production admission control arrives with the bounded worker pool in Milestone 4.
+    - [x] 5.3.2.1 Subtask - Document only `open/1`, `close/1`, `SimdJson.Document`, and `SimdJson.Error` as the Milestone 1 public contract.
+    - [x] 5.3.2.2 Subtask - Keep NIF bridge, native diagnostics, counters, failure injection, and resource helpers private or test-only.
+    - [x] 5.3.2.3 Subtask - Add an exported-function and typespec allowlist proving eager decode, projection, stream, cursor, ownership transfer, and raw native-handle operations are absent.
+    - [x] 5.3.2.4 Subtask - State in module and milestone documentation that production admission control arrives with the bounded worker pool in Milestone 4.
 
 ## 5.4 Section — Phase 5 Integration Tests
 

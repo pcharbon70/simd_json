@@ -65,7 +65,7 @@
         ],
         "file": ".spec/specs/document_api.spec.md",
         "id": "simd_json.document_api.milestone_01_bootstrap",
-        "reason": "Phase 5 Sections 5.1 and 5.2 implement the binary document boundary, owner-safe cleanup, the closed error vocabulary, logical-offset validation, controlled messages, and redacted failure diagnostics; complete public-scope documentation and the Phase 5 integration matrix before activation.",
+        "reason": "Phase 5 Sections 5.1 through 5.3 implement the binary document boundary, owner-first cleanup, the closed redacted error vocabulary, public documentation, and an export/typespec/protocol scope allowlist; complete the Phase 5 corpus, lifetime, race, and native-baseline integration matrix before activation.",
         "subject_id": "simd_json.document_api"
       },
       {
@@ -90,7 +90,7 @@
         ],
         "file": ".spec/specs/document_resource.spec.md",
         "id": "simd_json.document_resource.milestone_01_bootstrap",
-        "reason": "Phases 3 and 4 implement native ownership plus threaded explicit/GC teardown, and Phase 5 Section 5.1 adds opaque public reachability, owner-first validation, and idempotent deterministic close; retain the exception until the full public lifetime/baseline integration matrix and Phase 6 qualification execute.",
+        "reason": "Phases 3 and 4 implement native ownership plus threaded explicit/GC teardown, and Phase 5 Sections 5.1 through 5.3 add opaque public reachability, owner-first validation for open and closed state, idempotent deterministic close, and the documented scope lock; retain the exception until the full public lifetime/baseline integration matrix and Phase 6 qualification execute.",
         "subject_id": "simd_json.document_resource"
       },
       {
@@ -1182,6 +1182,7 @@
           "summary": "Elixir library scaffold, pinned native build tooling, local specification tooling, and implementation roadmap.",
           "surface": [
             ".tool-versions",
+            "README.md",
             "mix.exs",
             "mix.lock",
             "lib/**/*.ex",
@@ -1250,6 +1251,33 @@
         "kind": "test_file",
         "subject_id": "simd_json.document_api",
         "target": "test/simd_json/error_test.exs"
+      },
+      {
+        "covers": [
+          "simd_json.document_api.milestone_scope",
+          "simd_json.document_api.no_future_surface"
+        ],
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/public_surface_test.exs"
+      },
+      {
+        "covers": [
+          "simd_json.document_api.open_contract",
+          "simd_json.document_api.binary_only",
+          "simd_json.document_api.close_contract",
+          "simd_json.document_api.opaque_document_type",
+          "simd_json.document_api.structured_error",
+          "simd_json.document_api.error_redaction",
+          "simd_json.document_api.non_binary_argument",
+          "simd_json.document_api.redacted_failure",
+          "simd_json.document_api.close_and_non_owner"
+        ],
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json_test.exs"
       },
       {
         "covers": [
@@ -1784,6 +1812,15 @@
       },
       {
         "covers": [
+          "simd_json.native_execution.preproduction_boundary"
+        ],
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/simd_json/public_surface_test.exs"
+      },
+      {
+        "covers": [
           "simd_json.package.mix_library",
           "simd_json.package.specled_tooling",
           "simd_json.package.native_build_tooling",
@@ -1959,7 +1996,7 @@
     "requirements": 52,
     "scenarios": 26,
     "subjects": 6,
-    "verifications": 66
+    "verifications": 69
   },
   "verification": {
     "claims": [
@@ -2147,8 +2184,129 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.document_api",
-        "target": "test/native/document_resource_policy_test.exs",
+        "target": "test/simd_json/public_surface_test.exs",
         "verification_index": 2
+      },
+      {
+        "cover_id": "simd_json.document_api.no_future_surface",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json/public_surface_test.exs",
+        "verification_index": 2
+      },
+      {
+        "cover_id": "simd_json.document_api.binary_only",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json_test.exs",
+        "verification_index": 3
+      },
+      {
+        "cover_id": "simd_json.document_api.close_and_non_owner",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json_test.exs",
+        "verification_index": 3
+      },
+      {
+        "cover_id": "simd_json.document_api.close_contract",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json_test.exs",
+        "verification_index": 3
+      },
+      {
+        "cover_id": "simd_json.document_api.error_redaction",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json_test.exs",
+        "verification_index": 3
+      },
+      {
+        "cover_id": "simd_json.document_api.non_binary_argument",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json_test.exs",
+        "verification_index": 3
+      },
+      {
+        "cover_id": "simd_json.document_api.opaque_document_type",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json_test.exs",
+        "verification_index": 3
+      },
+      {
+        "cover_id": "simd_json.document_api.open_contract",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json_test.exs",
+        "verification_index": 3
+      },
+      {
+        "cover_id": "simd_json.document_api.redacted_failure",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json_test.exs",
+        "verification_index": 3
+      },
+      {
+        "cover_id": "simd_json.document_api.structured_error",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/simd_json_test.exs",
+        "verification_index": 3
+      },
+      {
+        "cover_id": "simd_json.document_api.milestone_scope",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/native/document_resource_policy_test.exs",
+        "verification_index": 4
       },
       {
         "cover_id": "simd_json.document_resource.complete_ownership",
@@ -3933,6 +4091,17 @@
         "verification_index": 8
       },
       {
+        "cover_id": "simd_json.native_execution.preproduction_boundary",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/simd_json/public_surface_test.exs",
+        "verification_index": 9
+      },
+      {
         "cover_id": "simd_json.package.mix_library",
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
@@ -4180,7 +4349,7 @@
     "strength_summary": {
       "claimed": 46,
       "executed": 0,
-      "linked": 155
+      "linked": 167
     },
     "threshold_failures": 0
   },

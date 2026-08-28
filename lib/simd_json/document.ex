@@ -4,7 +4,14 @@ defmodule SimdJson.Document do
 
   Documents belong to the process that opened them. Use `SimdJson.close/1` for
   deterministic cleanup; the wrapped native resource is intentionally not a
-  public API.
+  public API. Inspection is lifecycle-neutral and reveals neither input nor
+  native identity.
+
+      iex> {:ok, document} = SimdJson.open("null")
+      iex> inspect(document)
+      "#SimdJson.Document<opaque>"
+      iex> SimdJson.close(document)
+      :ok
   """
 
   @enforce_keys [:__resource__]

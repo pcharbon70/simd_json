@@ -15,11 +15,12 @@ a Zigler worker, publishes an internal parsed document resource, and uses a
 threaded explicit/orphan cleanup operation. GC callbacks now detach an
 intrusive control block into a cleanup-only dispatcher, failed handoff retains
 ownership for retry, and concurrent internal cleanup joins exactly-once native
-destruction. Phase 5 Section 5.1 publishes that resource only inside an opaque
-redacted document, checks its immutable owner before lifecycle, and gives the
-owner an idempotent close that waits for threaded destruction. Broader public
-error, corpus, lifetime, and final qualification evidence remain, so the
-bootstrap exception stays in force.
+destruction. Phase 5 Sections 5.1 through 5.3 publish that resource only inside
+an opaque redacted document, check its immutable owner before both open and
+closed lifecycle state, and give the owner an idempotent close that waits for
+threaded destruction. Public documentation and API allowlists preserve that
+authority model. Broader corpus, lifetime, and final qualification evidence
+remain, so the bootstrap exception stays in force.
 
 ```spec-meta
 id: simd_json.document_resource
@@ -291,5 +292,5 @@ Before activation, replace the bootstrap exception with executed resource tests,
     - simd_json.document_resource.partial_open_failure
     - simd_json.document_resource.gc_cleanup
     - simd_json.document_resource.native_memory_baseline
-  reason: Phases 3 and 4 implement native ownership plus threaded explicit/GC teardown, and Phase 5 Section 5.1 adds opaque public reachability, owner-first validation, and idempotent deterministic close; retain the exception until the full public lifetime/baseline integration matrix and Phase 6 qualification execute.
+  reason: Phases 3 and 4 implement native ownership plus threaded explicit/GC teardown, and Phase 5 Sections 5.1 through 5.3 add opaque public reachability, owner-first validation for open and closed state, idempotent deterministic close, and the documented scope lock; retain the exception until the full public lifetime/baseline integration matrix and Phase 6 qualification execute.
 ```
