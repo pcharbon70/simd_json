@@ -6,6 +6,13 @@ Current-truth contract for the reproducible native toolchain, official simdjson 
 
 This subject ensures that every native artifact can be traced to pinned source and toolchain inputs and that C++ implementation details terminate at one small C ABI before Zig or BEAM ownership begins.
 
+Phases 1 and 2 now provide the reproducible vendored build plus an independently
+tested opaque C11 ABI. The official On-Demand parser is contained behind a C++
+shim with stable statuses, total exception translation, partial-failure
+cleanup, release symbol allowlists, and ordinary/sanitizer native harnesses.
+Zig resource ownership and the public document API remain unimplemented, so
+the Milestone 1 bootstrap exception and `planned` status remain in force.
+
 ```spec-meta
 id: simd_json.native_build_and_abi
 kind: subsystem
@@ -213,6 +220,19 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
     - simd_json.native_build_and_abi.clean_checkout_build
 
 - kind: source_file
+  target: native/include/simd_json_abi.h
+  covers:
+    - simd_json.native_build_and_abi.opaque_c_contract
+
+- kind: source_file
+  target: native/src/simd_json_abi.cpp
+  covers:
+    - simd_json.native_build_and_abi.opaque_c_contract
+    - simd_json.native_build_and_abi.exception_containment
+    - simd_json.native_build_and_abi.partial_failure_cleanup
+    - simd_json.native_build_and_abi.symbol_visibility
+
+- kind: source_file
   target: .github/workflows/ci.yml
   covers:
     - simd_json.native_build_and_abi.official_vendored_source
@@ -265,6 +285,49 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
     - simd_json.native_build_and_abi.clean_checkout_build
     - simd_json.native_build_and_abi.target_qualification
     - simd_json.native_build_and_abi.clean_supported_build
+
+- kind: test_file
+  target: test/native/c_abi_header_test.exs
+  covers:
+    - simd_json.native_build_and_abi.opaque_c_contract
+    - simd_json.native_build_and_abi.c_abi_conformance
+
+- kind: test_file
+  target: test/native/c_abi_conformance_test.exs
+  covers:
+    - simd_json.native_build_and_abi.exception_containment
+    - simd_json.native_build_and_abi.partial_failure_cleanup
+    - simd_json.native_build_and_abi.cpp_exception_translation
+    - simd_json.native_build_and_abi.c_abi_conformance
+
+- kind: command
+  target: bash scripts/native/run_c_abi_conformance.sh ordinary
+  covers:
+    - simd_json.native_build_and_abi.opaque_c_contract
+    - simd_json.native_build_and_abi.exception_containment
+    - simd_json.native_build_and_abi.partial_failure_cleanup
+    - simd_json.native_build_and_abi.cpp_exception_translation
+    - simd_json.native_build_and_abi.c_abi_conformance
+
+- kind: command
+  target: bash scripts/native/run_c_abi_conformance.sh sanitizer
+  covers:
+    - simd_json.native_build_and_abi.exception_containment
+    - simd_json.native_build_and_abi.partial_failure_cleanup
+    - simd_json.native_build_and_abi.cpp_exception_translation
+    - simd_json.native_build_and_abi.c_abi_conformance
+
+- kind: test_file
+  target: test/native/release_symbol_test.exs
+  covers:
+    - simd_json.native_build_and_abi.symbol_visibility
+    - simd_json.native_build_and_abi.release_symbol_surface
+
+- kind: command
+  target: bash scripts/native/verify_release_symbols.sh
+  covers:
+    - simd_json.native_build_and_abi.symbol_visibility
+    - simd_json.native_build_and_abi.release_symbol_surface
 ```
 
 ## Exceptions
@@ -287,5 +350,5 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
     - simd_json.native_build_and_abi.release_symbol_surface
     - simd_json.native_build_and_abi.unsupported_target_rejection
     - simd_json.native_build_and_abi.dependency_upgrade_gate
-  reason: Milestone 1 native code does not exist yet; remove this exception and add executed native, sanitizer, provenance, and clean-build verification before activating the subject.
+  reason: Phases 1 and 2 provide build, provenance, C ABI, sanitizer, and symbol evidence, but the exception remains until later phases add Zig resource, scheduler, lifecycle, supported-target qualification, and full Milestone 1 closure evidence before activation.
 ```

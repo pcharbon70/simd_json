@@ -1,0 +1,9 @@
+SIMD_JSON_ABI_1 {
+  global:
+    simd_json_document_destroy;
+    simd_json_document_open;
+    simd_json_parser_create;
+    simd_json_parser_destroy;
+  local:
+    *;
+};

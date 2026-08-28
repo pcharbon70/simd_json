@@ -64,6 +64,28 @@ Every successful constructor has exactly one matching destructor. Partial constr
 
 Only the private C ABI symbols are exported. The C++ shim and simdjson implementation symbols remain hidden from consumers.
 
+The Milestone 1 contract is ABI version 1 and uses separate opaque parser and
+document handles. Document open accepts a `uint8_t` pointer, a `uint64_t`
+logical length, a `uint64_t` allocation capacity, and an explicit document out
+parameter. The caller-owned initialized padding is included in capacity but not
+logical length, and the input plus parser must outlive the document. The caller
+destroys the document before its parser and clears each consumed handle; both
+destructors accept null.
+
+The fixed status record contains a signed 32-bit stable category, an optional
+signed 32-bit raw simdjson code, and an optional unsigned 64-bit logical byte
+offset. Dedicated numeric sentinels represent unavailable diagnostic code and
+offset values. The stable categories are success, invalid JSON, invalid UTF-8,
+unexpected EOF, out of memory, invalid argument, and internal failure. Raw
+upstream text, addresses, and input excerpts never cross the boundary.
+
+For the current static NIF linkage model, the C boundary remains local and the
+dynamic artifact exports only the required NIF initialization entry. The
+independently linked shared ABI test artifact exports exactly the four declared
+parser/document constructor and destructor functions through a versioned
+allowlist. Test-only injection and accounting controls are compile-time gated
+and must be absent from release symbol tables and strings.
+
 ### Build and target qualification
 
 The native build is driven through the pinned Zig/Zigler integration and produces the NIF from a clean checkout without requiring a preinstalled simdjson library. It must fail with a clear unsupported-target error rather than silently compile an unqualified combination.

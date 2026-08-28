@@ -6,9 +6,11 @@ Current-truth contract for the opaque `SimdJson.Document` resource, padded input
 
 This subject prevents use-after-free, unsafe simdjson over-read, double destruction, and incoherent cross-process access while leaving a stable parent-resource model for later cursor and streaming milestones.
 
-Phase 1 currently contributes only the vendored parser and an internal
-build-smoke NIF beneath this subject's broad native surface. It allocates no
-document state or BEAM resource; the bootstrap exception remains in force.
+Phases 1 and 2 currently contribute the vendored parser, internal NIF build,
+and private opaque C parser/document handles beneath this subject's broad
+native surface. The C document borrows its caller-owned padded input and parser;
+no Zig-owned buffer or BEAM resource exists yet, so the bootstrap exception
+remains in force.
 
 ```spec-meta
 id: simd_json.document_resource

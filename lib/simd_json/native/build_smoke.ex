@@ -25,6 +25,14 @@ defmodule SimdJson.Native.BuildSmoke do
            "-fvisibility=hidden",
            "-fvisibility-inlines-hidden"
          ]},
+        {"../../../native/src/simd_json_abi.cpp",
+         [
+           "-std=c++17",
+           "-DSIMDJSON_AVX512_ALLOWED=0",
+           "-DNDEBUG",
+           "-fvisibility=hidden",
+           "-fvisibility-inlines-hidden"
+         ]},
         {"../../../native/vendor/simdjson/simdjson.cpp",
          [
            "-std=c++17",

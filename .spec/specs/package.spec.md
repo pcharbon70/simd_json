@@ -2,6 +2,11 @@
 
 Current package and documentation contract for the `SimdJson` library.
 
+The package currently distributes the pinned native build inputs and the
+Phase 2 private C ABI, C++ shim, symbol policy, and native conformance harness.
+That boundary remains internal: no document-opening public API or BEAM resource
+is exposed yet.
+
 ```spec-meta
 id: simd_json.package
 kind: package

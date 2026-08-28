@@ -1,0 +1,23 @@
+defmodule SimdJson.Native.ReleaseSymbolTest do
+  use ExUnit.Case, async: false
+
+  # covers: simd_json.native_build_and_abi.release_symbol_surface simd_json.native_build_and_abi.symbol_visibility
+  test "release ABI and NIF symbols match their checked-in allowlists" do
+    nif_path =
+      :simd_json
+      |> :code.priv_dir()
+      |> to_string()
+      |> Path.join("lib/Elixir.SimdJson.Native.BuildSmoke.so")
+
+    env = [{"SIMD_JSON_NIF_PATH", nif_path}]
+
+    {output, status} =
+      System.cmd("bash", ["scripts/native/verify_release_symbols.sh"],
+        env: env,
+        stderr_to_stdout: true
+      )
+
+    assert status == 0, output
+    assert output =~ "release symbol surfaces match their allowlists"
+  end
+end
