@@ -110,7 +110,9 @@ defmodule SimdJson.Native.ThreadedDocumentOpenTest do
   end
 
   # covers: simd_json.native_execution.request_correlation simd_json.native_execution.result_reference_mismatch simd_json.native_execution.late_result_cleanup
-  test "reverse completion and forged correlation data cannot select another caller" do
+  test "reverse, forged, duplicate, late, and stale completions remain isolated", %{
+    baseline: baseline
+  } do
     parent = self()
 
     first =
@@ -170,9 +172,74 @@ defmodule SimdJson.Native.ThreadedDocumentOpenTest do
     assert :ok = ThreadedOperation.cleanup(first_document)
     assert :ok = ThreadedOperation.cleanup(second_document)
 
+    first_document = second_document = nil
+    wait_for_quiescence()
+    assert first_document == nil and second_document == nil
+
+    protected =
+      spawn(fn ->
+        send(
+          parent,
+          {:open_result, :protected,
+           ThreadedOperation.open(~s({"order":3}), pause: {:before_delivery, parent})}
+        )
+      end)
+
+    assert_receive {
+                     :simd_json_native_boundary,
+                     protected_ref,
+                     :document_open,
+                     ^generation,
+                     :before_delivery
+                   },
+                   2_000
+
+    assert {:ok, discarded_document} = ThreadedOperation.open(~s({"discarded":true}))
+
+    duplicate =
+      {@completion_tag, :document_open, first_ref, generation, self(),
+       %{
+         kind: :document_open,
+         generation: generation,
+         worker_context: :threaded,
+         status: :ok,
+         document: discarded_document
+       }}
+
+    send(OperationCoordinator, duplicate)
+    send(OperationCoordinator, duplicate)
+
+    send(
+      OperationCoordinator,
+      {@completion_tag, :document_open, first_ref, generation - 1, self(),
+       %{
+         kind: :document_open,
+         generation: generation - 1,
+         worker_context: :threaded,
+         status: :cancelled,
+         document: nil
+       }}
+    )
+
+    discarded_document = nil
+    :erlang.garbage_collect(self())
+    refute_receive {:open_result, :protected, _result}, 50
+
+    assert :ok = OperationCoordinator.release_pause(protected_ref)
+    assert_receive {:open_result, :protected, {:ok, protected_document}}, 2_000
+    assert :ok = ThreadedOperation.cleanup(protected_document)
+
+    protected_document = nil
+    wait_for_quiescence()
+    assert discarded_document == nil and protected_document == nil
+
     assert is_pid(first)
     assert is_pid(second)
-    wait_for_quiescence()
+    assert is_pid(protected)
+
+    snapshot = BuildSmoke.execution_snapshot()
+    assert snapshot.live_documents == baseline.live_documents
+    assert snapshot.live_document_controls == baseline.live_document_controls
   end
 
   # covers: simd_json.native_execution.bounded_nif_entry simd_json.native_execution.threaded_parse simd_json.native_execution.no_fallback

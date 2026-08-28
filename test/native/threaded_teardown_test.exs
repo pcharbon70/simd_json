@@ -147,6 +147,26 @@ defmodule SimdJson.Native.ThreadedTeardownTest do
     document = nil
     wait_for_quiescence()
     assert document == nil
+
+    final_generation =
+      Enum.reduce(1..2, BuildSmoke.execution_generation(), fn _cycle, prior_generation ->
+        assert :ok = Application.stop(:simd_json)
+        stopped_generation = BuildSmoke.execution_generation()
+        assert stopped_generation > prior_generation
+
+        assert {:ok, _applications} = Application.ensure_all_started(:simd_json)
+        resumed_generation = BuildSmoke.execution_generation()
+        assert resumed_generation > stopped_generation
+
+        assert {:ok, cycle_document} = ThreadedOperation.open("null")
+        assert :ok = ThreadedOperation.cleanup(cycle_document)
+        cycle_document = nil
+        wait_for_quiescence()
+        assert cycle_document == nil
+        resumed_generation
+      end)
+
+    assert final_generation > old_generation
   end
 
   # covers: simd_json.native_execution.bounded_nif_entry simd_json.native_execution.threaded_cleanup simd_json.document_resource.deferred_large_cleanup

@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 4 Phase - Connect document construction and destruction to correlated Zigler-threaded work outside normal and dirty schedulers.
+- [x] 4 Phase - Connect document construction and destruction to correlated Zigler-threaded work outside normal and dirty schedulers.
 
   This phase creates the Milestone 1 execution substrate. Ordinary NIF entry is
   restricted to bounded validation, retention, state transition, request setup,
@@ -153,30 +153,33 @@ Back to plan: [README](./README.md)
 
 ## 4.4 Section — Phase 4 Integration Tests
 
-- [ ] 4.4 Section - Prove threaded correlation, cancellation, cleanup, and scheduler isolation under races.
+- [x] 4.4 Section - Prove threaded correlation, cancellation, cleanup, and scheduler isolation under races.
 
   This section closes the execution substrate before the public Elixir API is
   allowed to depend on it. Phase 6 repeats scheduler measurements with the final
   public surface and formal qualification budget.
 
-  - [ ] 4.4.1 Task - Run request-correlation and failure-path integration tests.
+  - [x] 4.4.1 Task - Run request-correlation and failure-path integration tests.
 
     The task executes `caller_dies_while_running`,
     `result_reference_mismatch`, and `threaded_submission_failure` with native
     counters and deterministic synchronization seams.
 
-    - [ ] 4.4.1.1 Subtask - Complete concurrent requests in reverse order and assert each caller accepts only its own reference and generation.
-    - [ ] 4.4.1.2 Subtask - Inject forged, duplicate, late, and stale-generation completions and assert none completes another call or leaks result-owned state.
-    - [ ] 4.4.1.3 Subtask - Terminate callers before parse, during an uninterruptible parse, after parse, and before delivery; assert safe cancellation and baseline recovery.
-    - [ ] 4.4.1.4 Subtask - Reject threaded submission for parse and cleanup in controlled tests and prove there is no normal or dirty scheduler fallback.
+    - [x] 4.4.1.1 Subtask - Complete concurrent requests in reverse order and assert each caller accepts only its own reference and generation.
+    - [x] 4.4.1.2 Subtask - Inject forged, duplicate, late, and stale-generation completions and assert none completes another call or leaks result-owned state.
+    - [x] 4.4.1.3 Subtask - Terminate callers before parse, during an uninterruptible parse, after parse, and before delivery; assert safe cancellation and baseline recovery.
+    - [x] 4.4.1.4 Subtask - Reject threaded submission for parse and cleanup in controlled tests and prove there is no normal or dirty scheduler fallback.
 
-  - [ ] 4.4.2 Task - Run cleanup, reload, and preliminary scheduler integration tests.
+  - [x] 4.4.2 Task - Run cleanup, reload, and preliminary scheduler integration tests.
 
     The task executes `large_gc_teardown`, `reload_cleanup`, and an initial
     `large_parse_responsiveness` matrix through the internal document operation.
+    OTP 27.3 supports repeated application stop/start evidence; the unsupported
+    forced shared-object unload case remains explicitly unqualified in the
+    pinned runtime research rather than being simulated unsafely.
 
-    - [ ] 4.4.2.1 Subtask - Trigger GC for multiple large resources and assert callbacks stay bounded while threaded cleanup returns every native counter to baseline.
-    - [ ] 4.4.2.2 Subtask - Repeatedly load and unload in supported test environments with queued, running, completed, and abandoned operations; assert no stale delivery or retained allocation survives.
-    - [ ] 4.4.2.3 Subtask - Run large valid and invalid parses while BEAM heartbeat processes sample wake-up latency and normal/dirty scheduler utilization.
-    - [ ] 4.4.2.4 Subtask - Assert parser work never executes in ordinary or dirty NIF contexts and document that final admission control remains deferred to Milestone 4.
-    - [ ] 4.4.2.5 Subtask - Run the focused execution tests, `mix test`, `mix spec.next`, and the reported `mix spec.check --base ...` command before marking Phase 4 complete.
+    - [x] 4.4.2.1 Subtask - Trigger GC for multiple large resources and assert callbacks stay bounded while threaded cleanup returns every native counter to baseline.
+    - [x] 4.4.2.2 Subtask - Repeatedly load and unload in supported test environments with queued, running, completed, and abandoned operations; assert no stale delivery or retained allocation survives.
+    - [x] 4.4.2.3 Subtask - Run large valid and invalid parses while BEAM heartbeat processes sample wake-up latency and normal/dirty scheduler utilization.
+    - [x] 4.4.2.4 Subtask - Assert parser work never executes in ordinary or dirty NIF contexts and document that final admission control remains deferred to Milestone 4.
+    - [x] 4.4.2.5 Subtask - Run the focused execution tests, `mix test`, `mix spec.next`, and the reported `mix spec.check --base ...` command before marking Phase 4 complete.

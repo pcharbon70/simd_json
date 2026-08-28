@@ -89,7 +89,7 @@ unqualified as recorded in the pinned qualification note.
 
 ### Scheduler qualification
 
-Milestone 1 must include a repeatable scheduler-responsiveness test. Independent BEAM heartbeat processes run while large valid and invalid documents are opened and closed concurrently. The test records normal and dirty scheduler utilization and fails against a documented latency budget selected for the qualification environment.
+Milestone 1 must include a repeatable scheduler-responsiveness test. Independent BEAM heartbeat processes run while large valid and invalid documents are opened and closed concurrently. The test records normal and dirty scheduler utilization and fails against a documented latency budget selected for the qualification environment. Phase 4's preliminary profile and regression thresholds are recorded in [`phase_4_scheduler_qualification.md`](../research/phase_4_scheduler_qualification.md); Phase 6 owns the formal supported-target percentile budget.
 
 Native throughput alone cannot close the milestone. The evidence must show that unrelated BEAM work continues making progress and that dirty schedulers are not the hidden execution pool.
 

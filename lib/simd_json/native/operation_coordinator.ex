@@ -7,11 +7,13 @@ defmodule SimdJson.Native.OperationCoordinator do
   alias SimdJson.Native.ThreadedOperation
 
   @completion_tag {__MODULE__, :threaded_completion}
+  @test_hooks Mix.env() == :test
 
   defstruct accepting?: true,
             requests: %{},
             caller_monitors: %{},
-            worker_monitors: %{}
+            worker_monitors: %{},
+            rejected_submissions: MapSet.new()
 
   @type request :: %{
           kind: :document_open | :document_cleanup,
@@ -68,6 +70,17 @@ defmodule SimdJson.Native.OperationCoordinator do
     GenServer.call(__MODULE__, :begin_shutdown, :infinity)
   end
 
+  if @test_hooks do
+    @spec set_submission_rejection_for_test(
+            :document_open | :document_cleanup,
+            boolean()
+          ) :: :ok
+    def set_submission_rejection_for_test(kind, reject?)
+        when kind in [:document_open, :document_cleanup] and is_boolean(reject?) do
+      GenServer.call(__MODULE__, {:set_submission_rejection_for_test, kind, reject?})
+    end
+  end
+
   @impl true
   def init(:ok) do
     _generation = BuildSmoke.execution_resume()
@@ -89,6 +102,19 @@ defmodule SimdJson.Native.OperationCoordinator do
     {:reply, :ok, %{state | accepting?: false}}
   end
 
+  if @test_hooks do
+    def handle_call({:set_submission_rejection_for_test, kind, reject?}, _from, state) do
+      rejected_submissions =
+        if reject? do
+          MapSet.put(state.rejected_submissions, kind)
+        else
+          MapSet.delete(state.rejected_submissions, kind)
+        end
+
+      {:reply, :ok, %{state | rejected_submissions: rejected_submissions}}
+    end
+  end
+
   def handle_call({:release_pause, request_ref}, _from, state) do
     case Map.fetch(state.requests, request_ref) do
       {:ok, request} ->
@@ -108,7 +134,9 @@ defmodule SimdJson.Native.OperationCoordinator do
          true <- BuildSmoke.operation_owner_is(operation.resource, caller),
          true <- operation.generation == BuildSmoke.execution_generation(),
          false <- Map.has_key?(state.requests, operation.request_ref) do
-      {:noreply, start_request(state, kind, operation, payload, from, caller)}
+      reject_submission? = submission_rejected?(state, kind)
+
+      {:noreply, start_request(state, kind, operation, payload, from, caller, reject_submission?)}
     else
       _ ->
         _ = BuildSmoke.operation_finish(operation.resource, :discarded)
@@ -170,7 +198,15 @@ defmodule SimdJson.Native.OperationCoordinator do
     end
   end
 
-  defp start_request(state, kind, operation, payload, from, caller) do
+  defp start_request(
+         state,
+         kind,
+         operation,
+         payload,
+         from,
+         caller,
+         reject_submission? \\ false
+       ) do
     coordinator = self()
     caller_monitor = Process.monitor(caller)
 
@@ -178,6 +214,8 @@ defmodule SimdJson.Native.OperationCoordinator do
       spawn_monitor(fn ->
         result =
           ThreadedOperation.submit(operation, fn ->
+            reject_submission_for_test!(reject_submission?)
+
             case kind do
               :document_open ->
                 BuildSmoke.threaded_document_open(operation.resource)
@@ -210,6 +248,21 @@ defmodule SimdJson.Native.OperationCoordinator do
         caller_monitors: Map.put(state.caller_monitors, caller_monitor, operation.request_ref),
         worker_monitors: Map.put(state.worker_monitors, worker_monitor, operation.request_ref)
     }
+  end
+
+  if @test_hooks do
+    defp submission_rejected?(state, kind) do
+      MapSet.member?(state.rejected_submissions, kind)
+    end
+
+    defp reject_submission_for_test!(true) do
+      raise "injected Zigler threaded submission rejection"
+    end
+
+    defp reject_submission_for_test!(false), do: :ok
+  else
+    defp submission_rejected?(_state, _kind), do: false
+    defp reject_submission_for_test!(_reject?), do: :ok
   end
 
   defp complete_request(state, request_ref, request, {:ok, native_result}) do

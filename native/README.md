@@ -249,6 +249,17 @@ test harness and remains explicitly unqualified in the pinned Zigler research
 note. This runtime is a Milestone 1 qualification mechanism; production
 admission control and the bounded parse pool remain in Milestone 4.
 
+### Preliminary scheduler profile
+
+The Phase 4 integration profile runs concurrent 4 MiB valid and invalid inputs
+while an independent BEAM heartbeat measures wake-up intervals and
+`scheduler_wall_time_all` records normal, dirty CPU, and dirty I/O utilization.
+It also injects parse and cleanup submission rejection and proves native worker
+entry never occurs, so no alternative scheduler path can be selected. Exact
+fixtures, thresholds, environment, a development observation, and the Phase 6
+qualification boundary are recorded in
+[`phase_4_scheduler_qualification.md`](../.spec/research/phase_4_scheduler_qualification.md).
+
 Native test builds add aggregate counters for padded buffers, parser/document
 handles, resource records, retained parents, admissions, object destruction,
 and completed cleanup. Their snapshot and bounded quiescence poll contain no

@@ -19,9 +19,12 @@ delivery. Resource callbacks now detach into a cleanup-only dispatcher, failed
 handoff retains ownership for retry, repeated explicit close joins one cleanup,
 and application stop drains work before advancing the native generation. The
 unload callback drains and joins the dispatcher, although repeated in-process
-shared-object unload is not supported by the qualified OTP harness. Final
-submission-failure/reload stress and scheduler qualification remain for the
-integration section, so the bootstrap exception stays in force.
+shared-object unload is not supported by the qualified OTP harness. Controlled
+parse and cleanup submission rejection, repeated application generations,
+correlation races, large-resource GC, and a preliminary heartbeat plus
+normal/dirty scheduler-utilization profile now close the Phase 4 integration
+section. The formal Phase 6 scheduler profile and the recorded repeated-unload
+qualification gap keep the bootstrap exception in force.
 
 ```spec-meta
 id: simd_json.native_execution
@@ -218,12 +221,35 @@ decisions:
     - simd_json.native_execution.large_gc_teardown
     - simd_json.native_execution.reload_cleanup
 
+- kind: test_file
+  target: test/native/native_execution_integration_test.exs
+  covers:
+    - simd_json.native_execution.threaded_parse
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.scheduler_qualification
+    - simd_json.native_execution.preproduction_boundary
+    - simd_json.native_execution.large_parse_responsiveness
+    - simd_json.native_execution.threaded_submission_failure
+
 - kind: source_file
   target: .spec/research/zigler_0_16_threaded_qualification.md
   covers:
     - simd_json.native_execution.bounded_nif_entry
     - simd_json.native_execution.threaded_cleanup
     - simd_json.native_execution.preproduction_boundary
+
+- kind: source_file
+  target: .spec/research/phase_4_scheduler_qualification.md
+  covers:
+    - simd_json.native_execution.threaded_parse
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.scheduler_qualification
+    - simd_json.native_execution.preproduction_boundary
+    - simd_json.native_execution.large_parse_responsiveness
 
 - kind: test_file
   target: test/native/document_resource_policy_test.exs
@@ -258,5 +284,5 @@ Before activation, replace the bootstrap exception with executed scheduler heart
     - simd_json.native_execution.threaded_submission_failure
     - simd_json.native_execution.large_gc_teardown
     - simd_json.native_execution.reload_cleanup
-  reason: Phase 4 now implements retained bounded admission, real threaded construction, stable coordinator ownership, correlated delivery, boundary cancellation, explicit/orphan/GC cleanup, retry-safe handoff, and application/unload drain logic; complete the failure/reload stress and preliminary scheduler matrix, while retaining the recorded repeated-unload qualification gap, before activation.
+  reason: Phase 4 now implements and integrates retained threaded construction, correlated delivery, cancellation, submission-failure containment, explicit/orphan/GC teardown, application generation cycling, and a preliminary scheduler matrix; Phase 6 must establish the final percentile budget and retain the recorded repeated shared-object unload gap until a supported harness supplies that evidence.
 ```
