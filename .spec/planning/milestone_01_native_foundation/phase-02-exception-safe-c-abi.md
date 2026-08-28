@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 2 Phase - Contain all simdjson C++ behavior behind one independently testable private C contract.
+- [x] 2 Phase - Contain all simdjson C++ behavior behind one independently testable private C contract.
 
   This phase replaces the smoke boundary with the smallest parser ABI required
   by Milestone 1. The public native header contains only opaque handles and plain
@@ -119,26 +119,26 @@ Back to plan: [README](./README.md)
 
 ## 2.4 Section — Phase 2 Integration Tests
 
-- [ ] 2.4 Section - Prove ABI conformance, exception containment, cleanup, and symbol isolation together.
+- [x] 2.4 Section - Prove ABI conformance, exception containment, cleanup, and symbol isolation together.
 
   This section closes the highest-risk language boundary before Zig is allowed to
   rely on it.
 
-  - [ ] 2.4.1 Task - Run the independent C ABI acceptance matrix.
+  - [x] 2.4.1 Task - Run the independent C ABI acceptance matrix.
 
     The task executes `c_abi_conformance` and `cpp_exception_translation` across
     ordinary, failure-injection, and sanitizer profiles.
 
-    - [ ] 2.4.1.1 Subtask - Compile the harness as C with warnings treated as errors and no C++ header available on its include path.
-    - [ ] 2.4.1.2 Subtask - Run all valid, invalid-argument, malformed-input, exception-injection, allocation-failure, and destruction cases.
-    - [ ] 2.4.1.3 Subtask - Run the native harness under AddressSanitizer and UndefinedBehaviorSanitizer and retain leak, overflow, use-after-free, and double-free results.
-    - [ ] 2.4.1.4 Subtask - Assert every failure returns a documented status and that no exception terminates or unwinds through the C caller.
+    - [x] 2.4.1.1 Subtask - Compile the harness as C with warnings treated as errors and no C++ header available on its include path.
+    - [x] 2.4.1.2 Subtask - Run all valid, invalid-argument, malformed-input, exception-injection, allocation-failure, and destruction cases.
+    - [x] 2.4.1.3 Subtask - Run the native harness under AddressSanitizer and UndefinedBehaviorSanitizer and retain leak, overflow, use-after-free, and double-free results.
+    - [x] 2.4.1.4 Subtask - Assert every failure returns a documented status and that no exception terminates or unwinds through the C caller.
 
-  - [ ] 2.4.2 Task - Run release boundary and regression checks.
+  - [x] 2.4.2 Task - Run release boundary and regression checks.
 
     The task verifies the `release_symbol_surface` contract and confirms the
     completed shim still uses the reproducible build established in Phase 1.
 
-    - [ ] 2.4.2.1 Subtask - Inspect release dynamic symbols against the version-controlled allowlist and reject C++ standard-library, shim-internal, and simdjson implementation exports.
-    - [ ] 2.4.2.2 Subtask - Repeat the offline clean-checkout build with the real shim and native harness included.
-    - [ ] 2.4.2.3 Subtask - Run the focused native tests, `mix test`, `mix spec.next`, and the reported `mix spec.check --base ...` command before marking Phase 2 complete.
+    - [x] 2.4.2.1 Subtask - Inspect release dynamic symbols against the version-controlled allowlist and reject C++ standard-library, shim-internal, and simdjson implementation exports.
+    - [x] 2.4.2.2 Subtask - Repeat the offline clean-checkout build with the real shim and native harness included.
+    - [x] 2.4.2.3 Subtask - Run the focused native tests, `mix test`, `mix spec.next`, and the reported `mix spec.check --base ...` command before marking Phase 2 complete.
