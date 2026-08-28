@@ -8,13 +8,15 @@ This subject ensures that proving the native parser never makes unrelated BEAM p
 
 Phases 1 through 3 contribute bounded build/resource diagnostics and native
 ownership tests outside the BEAM. Phase 4 now qualifies the pinned Zigler
-threaded contexts and adds bounded admission: a private environment retains the
-binary term without copying its bytes, while a native operation record owns an
-unforgeable reference, private kind, generation, state, cancellation flag, and
-bounded accounting. The threaded smoke proof executes outside normal and dirty
-schedulers and the ordinary entrypoint performs no input-sized copy. Parsed
-document construction, correlated delivery, coordinator-owned cancellation,
-and deferred cleanup are not connected yet, so the bootstrap exception remains
+contexts and connects bounded admission to real threaded document construction.
+A private environment retains the binary term without copying its bytes; the
+worker alone creates the owned padded copy and invokes the C ABI. A stable
+coordinator owns the generated Zigler thread through join, correlates private
+kind/reference/generation, monitors the original caller, and discards or
+off-scheduler-cleans orphan results. Deterministic boundary tests cover caller
+death before copy, before and after parse, before publication, and before
+delivery. GC callback handoff, application shutdown, unload drainage, and
+scheduler qualification remain incomplete, so the bootstrap exception stays
 in force.
 
 ```spec-meta
@@ -189,6 +191,19 @@ decisions:
     - simd_json.native_execution.retained_resources
     - simd_json.native_execution.cancellation_boundaries
 
+- kind: test_file
+  target: test/native/threaded_document_open_test.exs
+  covers:
+    - simd_json.native_execution.threaded_parse
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.request_correlation
+    - simd_json.native_execution.retained_resources
+    - simd_json.native_execution.late_result_cleanup
+    - simd_json.native_execution.cancellation_boundaries
+    - simd_json.native_execution.caller_dies_while_running
+    - simd_json.native_execution.result_reference_mismatch
+
 - kind: source_file
   target: .spec/research/zigler_0_16_threaded_qualification.md
   covers:
@@ -229,5 +244,5 @@ Before activation, replace the bootstrap exception with executed scheduler heart
     - simd_json.native_execution.threaded_submission_failure
     - simd_json.native_execution.large_gc_teardown
     - simd_json.native_execution.reload_cleanup
-  reason: Phase 4 now qualifies Zigler 0.16 contexts and implements retained, correlated bounded admission plus threaded smoke proof, but parsed construction, delivery, caller-death coordination, teardown, shutdown, and scheduler qualification are not complete; add that evidence before activation.
+  reason: Phase 4 now implements retained bounded admission, real threaded construction, stable coordinator ownership, correlated delivery, boundary cancellation, and orphan cleanup, but GC teardown, application/NIF shutdown, unload drainage, submission-failure injection, and scheduler qualification remain incomplete; add that evidence before activation.
 ```

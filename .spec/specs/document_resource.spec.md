@@ -9,11 +9,12 @@ This subject prevents use-after-free, unsafe simdjson over-read, double destruct
 Phases 1 through 3 contribute the vendored parser, private opaque C
 parser/document handles, Zig-owned aligned padded input, registered opaque BEAM
 resource storage, monotonic lifecycle primitives, reverse rollback, parent
-retention helpers, and bounded test-only accounting. Phase 4 bounded admission
-now retains input through a private environment and operation resource, but it
-does not yet publish parsed document state. No production parse path,
-off-scheduler cleanup executor, public document type, owner check, or close API
-exists yet, so the bootstrap exception remains in force.
+retention helpers, and bounded test-only accounting. Phase 4 now retains input
+through a private environment, constructs the padded copy and native handles on
+a Zigler worker, publishes an internal parsed document resource, and uses a
+threaded explicit/orphan cleanup operation. The public document type, owner
+enforcement, idempotent public close, and GC/shutdown dispatcher are not yet
+complete, so the bootstrap exception remains in force.
 
 ```spec-meta
 id: simd_json.document_resource
@@ -199,6 +200,17 @@ decisions:
     - simd_json.document_resource.deferred_large_cleanup
     - simd_json.document_resource.test_accounting
     - simd_json.document_resource.input_lifetime
+
+- kind: test_file
+  target: test/native/threaded_document_open_test.exs
+  covers:
+    - simd_json.document_resource.opaque_handle
+    - simd_json.document_resource.padded_owned_copy
+    - simd_json.document_resource.complete_ownership
+    - simd_json.document_resource.lifecycle
+    - simd_json.document_resource.reverse_destruction
+    - simd_json.document_resource.input_lifetime
+    - simd_json.document_resource.partial_open_failure
 
 - kind: command
   target: bash scripts/native/run_zig_resource_tests.sh ordinary

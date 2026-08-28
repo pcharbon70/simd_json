@@ -12,9 +12,11 @@ On-Demand parser remains behind a C++ shim with stable statuses, total exception
 translation, reverse partial-failure cleanup, release symbol allowlists, and
 ordinary/sanitizer C and Zig harnesses. Phase 4 additionally records and smoke
 tests the exact Zigler 0.16 threaded environment, payload, resource, callback,
-join, and cancellation constraints. Parsed threaded execution, public document
-APIs, and final target qualification remain incomplete, so the Milestone 1
-bootstrap exception and `planned` status remain in force.
+join, and cancellation constraints. The qualified path now reaches the private
+C ABI from a retained Zigler worker and returns only an opaque resource or
+bounded status metadata. Public document APIs, callback-safe GC teardown, and
+final target qualification remain incomplete, so the Milestone 1 bootstrap
+exception and `planned` status remain in force.
 
 ```spec-meta
 id: simd_json.native_build_and_abi

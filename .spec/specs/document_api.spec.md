@@ -8,10 +8,11 @@ This subject gives callers one safe way to open and deterministically close an o
 
 Phases 1 through 3 contribute the reproducible NIF, private C parser ABI, and
 an internal opaque resource fixture beneath this subject's broad source
-surface. Phase 4 adds a private threaded-operation adapter and admission smoke
-proof, but neither is a `SimdJson.Document` public type or document API. There
-is still no `open/1`, `close/1`, structured error, or public document API, so
-the bootstrap exception remains in force.
+surface. Phase 4 adds a private threaded-operation adapter that can construct
+and clean an internal parsed resource with bounded native status metadata, but
+neither it nor the resource is a `SimdJson.Document` public API. There is still
+no `SimdJson.open/1`, `SimdJson.close/1`, or public structured error, so the
+bootstrap exception remains in force.
 
 ```spec-meta
 id: simd_json.document_api

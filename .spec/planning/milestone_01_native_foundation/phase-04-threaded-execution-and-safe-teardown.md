@@ -81,15 +81,15 @@ Back to plan: [README](./README.md)
   caller loss or result races cannot invalidate memory or deliver a result to
   the wrong process.
 
-  - [ ] 4.2.1 Task - Implement the threaded document-open operation.
+  - [x] 4.2.1 Task - Implement the threaded document-open operation.
 
     The task constructs all input-dependent native state on the threaded path
     and publishes an opaque resource only after complete success.
 
-    - [ ] 4.2.1.1 Subtask - Retain or safely transfer the input bytes needed by the worker before ordinary admission returns.
-    - [ ] 4.2.1.2 Subtask - On the worker, allocate and initialize the owned padded copy, create parser/document handles through the C ABI, and populate the resource in rollback-safe order.
-    - [ ] 4.2.1.3 Subtask - Capture the opening process as owner and publish `open` lifecycle state only after input, handles, owner, generation, and cleanup metadata are complete.
-    - [ ] 4.2.1.4 Subtask - Return only bounded success metadata needed to construct the opaque resource term or a stable internal status needed by the Elixir error layer.
+    - [x] 4.2.1.1 Subtask - Retain or safely transfer the input bytes needed by the worker before ordinary admission returns.
+    - [x] 4.2.1.2 Subtask - On the worker, allocate and initialize the owned padded copy, create parser/document handles through the C ABI, and populate the resource in rollback-safe order.
+    - [x] 4.2.1.3 Subtask - Capture the opening process as owner and publish `open` lifecycle state only after input, handles, owner, generation, and cleanup metadata are complete.
+    - [x] 4.2.1.4 Subtask - Return only bounded success metadata needed to construct the opaque resource term or a stable internal status needed by the Elixir error layer.
 
   - [ ] 4.2.2 Task - Add cancellation boundaries and safe uninterruptible retention.
 
@@ -97,21 +97,21 @@ Back to plan: [README](./README.md)
     a result while accepting that one simdjson call may run to its next safe
     boundary.
 
-    - [ ] 4.2.2.1 Subtask - Check cancellation before padded-copy construction, immediately before parsing, immediately after parsing, before result-term construction, and before delivery.
-    - [ ] 4.2.2.2 Subtask - Keep input, operation, and resource state retained for the complete duration of any uninterruptible simdjson call.
+    - [x] 4.2.2.1 Subtask - Check cancellation before padded-copy construction, immediately before parsing, immediately after parsing, before result-term construction, and before delivery.
+    - [x] 4.2.2.2 Subtask - Keep input, operation, and resource state retained for the complete duration of any uninterruptible simdjson call.
     - [ ] 4.2.2.3 Subtask - Mark operations cancelled on caller death, explicit lifecycle closure, application shutdown, or unload when the verified native boundary permits it.
-    - [ ] 4.2.2.4 Subtask - Route every cancellation boundary through the same rollback or resource cleanup owner used for ordinary failure.
+    - [x] 4.2.2.4 Subtask - Route every cancellation boundary through the same rollback or resource cleanup owner used for ordinary failure.
 
-  - [ ] 4.2.3 Task - Correlate delivery and clean every orphan result.
+  - [x] 4.2.3 Task - Correlate delivery and clean every orphan result.
 
     The task ensures only the waiting request can consume its completion and that
     discarded completions cannot leak native allocations or private term
     environments.
 
-    - [ ] 4.2.3.1 Subtask - Tag completion messages with the private operation kind, unique reference, and native generation, and match all three before completing a caller.
-    - [ ] 4.2.3.2 Subtask - Treat late, duplicate, forged, mismatched, cancelled, timed-out, and caller-orphaned completions as discard paths rather than alternate successes.
-    - [ ] 4.2.3.3 Subtask - Release every result environment, document resource, input retention, operation record, and temporary buffer owned by a discarded completion.
-    - [ ] 4.2.3.4 Subtask - Prevent a stale completion from crossing a NIF upgrade or unload generation and from remaining as an unbounded unmatched caller-mailbox message.
+    - [x] 4.2.3.1 Subtask - Tag completion messages with the private operation kind, unique reference, and native generation, and match all three before completing a caller.
+    - [x] 4.2.3.2 Subtask - Treat late, duplicate, forged, mismatched, cancelled, timed-out, and caller-orphaned completions as discard paths rather than alternate successes.
+    - [x] 4.2.3.3 Subtask - Release every result environment, document resource, input retention, operation record, and temporary buffer owned by a discarded completion.
+    - [x] 4.2.3.4 Subtask - Prevent a stale completion from crossing a NIF upgrade or unload generation and from remaining as an unbounded unmatched caller-mailbox message.
 
 ## 4.3 Section — Explicit, GC, Shutdown, and Unload Teardown
 

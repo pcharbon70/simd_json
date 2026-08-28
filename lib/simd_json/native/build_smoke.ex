@@ -26,9 +26,16 @@ defmodule SimdJson.Native.BuildSmoke do
       operation_metadata: [],
       operation_cancel: [],
       operation_finish: [],
+      operation_configure_pause: [],
+      operation_release_pause: [],
       admission_context: [],
       operation_owner_matches: [],
+      operation_owner_is: [],
       threaded_context_smoke: [concurrency: :threaded],
+      threaded_document_open: [concurrency: :threaded],
+      threaded_document_cleanup: [concurrency: :threaded],
+      document_lifecycle: [],
+      execution_generation: [],
       execution_snapshot: []
     ],
     c: [

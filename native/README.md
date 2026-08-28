@@ -197,10 +197,44 @@ parser, document, resource initialization, or immediately before
 publication—uses the same reverse rollback. A successfully closed state cannot
 be reopened because its invalidated generation is retained.
 
-The BEAM destructor calls only the bounded close-detach transition. Phase 3 has
-no production path that can place parsed state in a resource; Phase 4 will
-attach the cleanup owner to its off-scheduler executor before any such path is
-published.
+The BEAM destructor calls only the bounded close-detach transition. Phase 4's
+internal threaded constructor can now place parsed state in a resource; the
+callback-safe dispatcher that consumes detached GC cleanup is therefore the
+next required runtime edge and is described below.
+
+## Phase 4 threaded operation runtime
+
+The internal `SimdJson.Native.ThreadedOperation` adapter now admits a binary by
+copying its term—not its bytes—into a private NIF environment. That environment,
+the caller PID, a native-generated BEAM reference, private operation kind,
+module generation, cancellation flag, and terminal state live in a retained
+operation resource. A `[]const u8` is never passed directly from the ordinary
+admission environment to a Zigler worker because Zigler 0.16 may borrow that
+binary without retaining it.
+
+`threaded_document_open` is registered only with `concurrency: :threaded`. Its
+worker inspects the retained private term, performs the aligned padded copy,
+creates the C parser/document handles, and publishes the opaque resource only
+after complete success. It checks cancellation before copy, immediately before
+and after the C parse call, before resource publication, and before delivery.
+Every failed or cancelled construction edge uses the same reverse rollback as
+the native ownership tests. Parser failures return only the closed internal
+status, optional native code, and optional logical byte offset.
+
+`SimdJson.Native.OperationCoordinator` is the stable owner of each generated
+Zigler thread resource. The original caller can die without destroying the
+thread metadata: the coordinator marks the retained operation cancelled,
+waits for the worker to reach a safe boundary and join, then suppresses or
+discards its result. Completion messages include the private kind, unique
+reference, generation, and worker identity; a mismatch cannot select a waiter.
+Messages go to the coordinator rather than an unbounded caller mailbox.
+
+Explicit and orphan-result cleanup already run through the correlated
+`threaded_document_cleanup` worker. GC callbacks still perform only their
+bounded detach while Section 4.3 attaches the cleanup-only dispatcher required
+by the accepted execution ADR. The runtime remains a Milestone 1 qualification
+mechanism; production admission control and the bounded parse pool remain in
+Milestone 4.
 
 Native test builds add aggregate counters for padded buffers, parser/document
 handles, resource records, retained parents, admissions, object destruction,

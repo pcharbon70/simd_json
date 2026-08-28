@@ -2,6 +2,7 @@ defmodule SimdJson.Native.ThreadedOperation do
   @moduledoc false
 
   alias SimdJson.Native.BuildSmoke
+  alias SimdJson.Native.OperationCoordinator
 
   @type operation :: %{
           resource: reference(),
@@ -41,6 +42,31 @@ defmodule SimdJson.Native.ThreadedOperation do
     true = BuildSmoke.operation_owner_matches(operation.resource)
     true = BuildSmoke.operation_finish(operation.resource, :delivered)
     result
+  end
+
+  @spec open(binary(), keyword()) :: {:ok, reference()} | {:error, map()}
+  def open(input, options \\ []) when is_binary(input) and is_list(options) do
+    generation = BuildSmoke.execution_generation()
+    operation = admit(input, :document_open, generation)
+
+    case Keyword.get(options, :pause) do
+      nil ->
+        :ok
+
+      {boundary, observer} when is_atom(boundary) and is_pid(observer) ->
+        true = BuildSmoke.operation_configure_pause(operation.resource, boundary, observer)
+    end
+
+    OperationCoordinator.open(operation)
+  end
+
+  @spec cleanup(reference()) :: :ok | {:error, map()}
+  def cleanup(document) when is_reference(document) do
+    generation = BuildSmoke.execution_generation()
+
+    <<>>
+    |> admit(:document_cleanup, generation)
+    |> OperationCoordinator.cleanup(document)
   end
 
   @spec submit(operation(), (-> result)) ::
