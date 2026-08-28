@@ -162,6 +162,24 @@ fixed-size empty state and are not part of `SimdJson`'s public API. Future child
 resources must use the private `retainParent` and `releaseParent` helpers, which
 delegate to Zigler's BEAM resource keep/release operations.
 
+### Owned padded input
+
+`DocumentState.openOwned` is the only Milestone 1 parser-input constructor. It
+checks the logical length against Zig `usize`, the fixed-width C ABI, and the
+padding addition before allocating. The resulting allocation is aligned to the
+manifest's 64-byte boundary, contains exactly one copy of the logical bytes,
+and ends with all 64 required padding bytes initialized to zero. The C shim
+receives the logical length and capacity as separate values; only the logical
+length can appear in parser diagnostics.
+
+There is no borrowed slice, BEAM-binary pointer, or zero-copy branch. Native
+tests compare the source and owned allocations, overwrite the source after the
+C++ On-Demand document is open, and revalidate the document through a guarded
+test hook. Linux guard-page cases put the owned allocation's exact capacity at
+the end of a readable page, with the following page inaccessible. The ordinary
+and AddressSanitizer/UndefinedBehaviorSanitizer profiles exercise zero-length,
+small, alignment-boundary, padding-boundary, malformed, and overflow cases.
+
 ## Native ABI conformance
 
 The standalone harness in [`test/c_abi_conformance.c`](./test/c_abi_conformance.c)
@@ -192,5 +210,6 @@ The Zig ownership-state and resource-registration checks run with:
 
 ```text
 scripts/native/run_zig_resource_tests.sh
+scripts/native/run_zig_resource_tests.sh sanitizer
 mix test test/native/document_resource_registration_test.exs
 ```

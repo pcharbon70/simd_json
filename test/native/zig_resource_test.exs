@@ -2,7 +2,7 @@ defmodule SimdJson.Native.ZigResourceTest do
   use ExUnit.Case, async: false
 
   @tag timeout: 120_000
-  # covers: simd_json.document_resource.opaque_handle simd_json.document_resource.complete_ownership
+  # covers: simd_json.document_resource.opaque_handle simd_json.document_resource.complete_ownership simd_json.document_resource.padded_owned_copy simd_json.document_resource.zero_copy_disabled simd_json.document_resource.input_lifetime
   test "Zig resource state and C status adapter pass their native tests" do
     {output, status} =
       System.cmd("bash", ["scripts/native/run_zig_resource_tests.sh"], stderr_to_stdout: true)

@@ -29,6 +29,12 @@ void simd_json_test_inject_failure(int32_t point,
 void simd_json_test_clear_failure(void) SIMD_JSON_TEST_NOEXCEPT;
 uint64_t simd_json_test_live_parser_count(void) SIMD_JSON_TEST_NOEXCEPT;
 uint64_t simd_json_test_live_document_count(void) SIMD_JSON_TEST_NOEXCEPT;
+uint32_t simd_json_test_document_uses_input(
+    simd_json_document *document,
+    const uint8_t *data,
+    uint64_t logical_length) SIMD_JSON_TEST_NOEXCEPT;
+simd_json_status simd_json_test_document_revalidate(
+    simd_json_document *document) SIMD_JSON_TEST_NOEXCEPT;
 
 #undef SIMD_JSON_TEST_NOEXCEPT
 

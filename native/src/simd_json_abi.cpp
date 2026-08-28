@@ -501,4 +501,36 @@ extern "C" uint64_t simd_json_test_live_document_count(void) noexcept {
     return 0;
   }
 }
+
+extern "C" uint32_t simd_json_test_document_uses_input(
+    simd_json_document *document,
+    const uint8_t *data,
+    uint64_t logical_length) noexcept {
+  try {
+    return document != nullptr && document->data == data &&
+                   document->logical_length == logical_length
+               ? UINT32_C(1)
+               : UINT32_C(0);
+  } catch (...) {
+    return UINT32_C(0);
+  }
+}
+
+extern "C" simd_json_status simd_json_test_document_revalidate(
+    simd_json_document *document) noexcept {
+  if (document == nullptr) {
+    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+
+  try {
+    simdjson::error_code error = validate_document(document->value);
+    return error == simdjson::SUCCESS
+               ? make_status(SIMD_JSON_STATUS_OK)
+               : status_from_simdjson(
+                     error, current_byte_offset(document->value, document->data,
+                                                document->logical_length));
+  } catch (...) {
+    return status_from_current_exception();
+  }
+}
 #endif

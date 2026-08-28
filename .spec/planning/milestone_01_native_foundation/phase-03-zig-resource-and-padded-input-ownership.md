@@ -54,31 +54,31 @@ Back to plan: [README](./README.md)
 
 ## 3.2 Section — Aligned Padded Input
 
-- [ ] 3.2 Section - Copy every accepted binary into one aligned native allocation with exact initialized padding.
+- [x] 3.2 Section - Copy every accepted binary into one aligned native allocation with exact initialized padding.
 
   This section removes all ambiguity about BEAM binary padding and lifetime. The
   logical JSON length remains separate from allocation capacity so parser input,
   byte offsets, counters, and diagnostics never include padding bytes.
 
-  - [ ] 3.2.1 Task - Implement overflow-safe padded allocation and copying.
+  - [x] 3.2.1 Task - Implement overflow-safe padded allocation and copying.
 
     The task owns the only Milestone 1 path from caller bytes to simdjson-readable
     native memory.
 
-    - [ ] 3.2.1.1 Subtask - Compute `logical_length + required_padding` with checked arithmetic and reject lengths that overflow the C ABI, Zig allocator, or BEAM-facing size representation.
-    - [ ] 3.2.1.2 Subtask - Allocate with the exact alignment required by the pinned simdjson release and store both logical length and allocation capacity.
-    - [ ] 3.2.1.3 Subtask - Copy exactly the logical input bytes once and initialize every required padding byte according to the pinned API contract.
-    - [ ] 3.2.1.4 Subtask - Pass only logical length to the C ABI and keep capacity and padding private to cleanup and native safety checks.
-    - [ ] 3.2.1.5 Subtask - On any later construction failure, release the padded allocation through the same allocator and clear its resource fields before returning.
+    - [x] 3.2.1.1 Subtask - Compute `logical_length + required_padding` with checked arithmetic and reject lengths that overflow the C ABI, Zig allocator, or BEAM-facing size representation.
+    - [x] 3.2.1.2 Subtask - Allocate with the exact alignment required by the pinned simdjson release and store both logical length and allocation capacity.
+    - [x] 3.2.1.3 Subtask - Copy exactly the logical input bytes once and initialize every required padding byte according to the pinned API contract.
+    - [x] 3.2.1.4 Subtask - Pass only logical length to the C ABI and keep capacity and padding private to cleanup and native safety checks.
+    - [x] 3.2.1.5 Subtask - On any later construction failure, release the padded allocation through the same allocator and clear its resource fields before returning.
 
-  - [ ] 3.2.2 Task - Make the zero-copy exclusion executable.
+  - [x] 3.2.2 Task - Make the zero-copy exclusion executable.
 
     The task prevents a future optimization or helper from accidentally passing
     arbitrary BEAM memory directly to simdjson during Milestone 1.
 
-    - [ ] 3.2.2.1 Subtask - Centralize parser input creation behind the owned-padded-copy helper with no alternate borrowed-binary branch.
-    - [ ] 3.2.2.2 Subtask - Add a compile-time or structural test proving the resource's parser pointer lies within its owned native allocation, not the original BEAM binary.
-    - [ ] 3.2.2.3 Subtask - Add guard-page native tests that place the logical end at boundary-sensitive positions and prove no access occurs beyond the initialized padding capacity.
+    - [x] 3.2.2.1 Subtask - Centralize parser input creation behind the owned-padded-copy helper with no alternate borrowed-binary branch.
+    - [x] 3.2.2.2 Subtask - Add a compile-time or structural test proving the resource's parser pointer lies within its owned native allocation, not the original BEAM binary.
+    - [x] 3.2.2.3 Subtask - Add guard-page native tests that place the logical end at boundary-sensitive positions and prove no access occurs beyond the initialized padding capacity.
 
 ## 3.3 Section — Lifecycle and Exactly-Once Cleanup Primitives
 
