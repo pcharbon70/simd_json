@@ -211,7 +211,10 @@ defmodule SimdJson.Native.ThreadedDocumentOpenTest do
 
     if coordinator.live_requests == 0 and native.live_operations == 0 and
          native.running_operations == 0 and native.queued_operations == 0 and
-         native.live_documents == 0 do
+         native.live_documents == 0 and native.live_document_controls == 0 and
+         native.dispatcher_queued_cleanup == 0 and
+         native.dispatcher_active_cleanup == 0 and
+         native.retained_failed_cleanup == 0 do
       :ok
     else
       Process.sleep(5)

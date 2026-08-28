@@ -99,6 +99,25 @@ The cleanup dispatcher is not a parse executor, has no public admission queue,
 and does not claim the backpressure or telemetry guarantees assigned to the
 Milestone 4 worker pool. There is no normal- or dirty-scheduler fallback.
 
+## OTP 27.3 lifecycle evidence and qualification gap
+
+The primary development environment exercises `Application.stop(:simd_json)`
+while a native parse is paused after the C call. The coordinator rejects new
+admission, cancels and joins the retained worker, suppresses stale delivery,
+and application restart increments the native generation before accepting new
+work. GC handoff, injected handoff rejection/retry, and cleanup-dispatcher drain
+are also exercised in the same OTP 27.3 VM.
+
+OTP does not unload a loaded NIF merely because its application stops, and
+forcibly deleting or purging the Zigler-generated module in the test VM does
+not provide a supported repeated-unload contract while resource types may
+still exist. Consequently, repeated *application* stop/start is qualified, and
+the native `on_unload` drain is implemented and source-verified, but repeated
+in-process shared-object unload remains unqualified on this target. Phase 6
+must retain that qualification gap unless an isolated loader harness or an
+equivalent supported OTP test proves repeated load, upgrade, and unload with
+live resource generations.
+
 ## Qualification boundary
 
 This mechanism is accepted only for the Milestone 1 native vertical slice. A

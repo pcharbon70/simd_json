@@ -12,4 +12,26 @@ defmodule SimdJson.Application do
       name: SimdJson.Supervisor
     )
   end
+
+  @impl true
+  def prep_stop(state) do
+    if Process.whereis(SimdJson.Native.OperationCoordinator) do
+      :ok = SimdJson.Native.OperationCoordinator.begin_shutdown()
+      await_operation_drain()
+    end
+
+    _generation = SimdJson.Native.BuildSmoke.execution_begin_shutdown()
+    state
+  end
+
+  defp await_operation_drain do
+    case SimdJson.Native.OperationCoordinator.snapshot() do
+      %{live_requests: 0} ->
+        :ok
+
+      _snapshot ->
+        Process.sleep(5)
+        await_operation_drain()
+    end
+  end
 end

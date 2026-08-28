@@ -229,12 +229,25 @@ discards its result. Completion messages include the private kind, unique
 reference, generation, and worker identity; a mismatch cannot select a waiter.
 Messages go to the coordinator rather than an unbounded caller mailbox.
 
-Explicit and orphan-result cleanup already run through the correlated
-`threaded_document_cleanup` worker. GC callbacks still perform only their
-bounded detach while Section 4.3 attaches the cleanup-only dispatcher required
-by the accepted execution ADR. The runtime remains a Milestone 1 qualification
-mechanism; production admission control and the bounded parse pool remain in
-Milestone 4.
+Explicit, concurrent, and orphan-result cleanup run through the correlated
+`threaded_document_cleanup` worker. All contenders join one lifecycle owner,
+and accounting completes exactly once after reverse native destruction.
+
+GC cleanup uses one cleanup-only native dispatcher. The resource destructor
+clears its payload pointer, atomically detaches the fixed-size control block,
+links that block into the intrusive dispatcher queue, and returns. It does not
+allocate, wait, loop, or destroy parser state. Injected handoff rejection keeps
+the same control block on a retained retry list; restoring admission moves it
+to the active queue without a normal- or dirty-scheduler fallback.
+
+Application stop first rejects coordinated admission, cancels and drains live
+operations, and then advances the native generation. NIF unload independently
+rejects native admission, drains and joins the dispatcher, and only then frees
+module state. OTP 27.3 application stop/start and generation isolation are
+exercised. Repeated in-process shared-object unload is not supported by that
+test harness and remains explicitly unqualified in the pinned Zigler research
+note. This runtime is a Milestone 1 qualification mechanism; production
+admission control and the bounded parse pool remain in Milestone 4.
 
 Native test builds add aggregate counters for padded buffers, parser/document
 handles, resource records, retained parents, admissions, object destruction,

@@ -15,9 +15,13 @@ coordinator owns the generated Zigler thread through join, correlates private
 kind/reference/generation, monitors the original caller, and discards or
 off-scheduler-cleans orphan results. Deterministic boundary tests cover caller
 death before copy, before and after parse, before publication, and before
-delivery. GC callback handoff, application shutdown, unload drainage, and
-scheduler qualification remain incomplete, so the bootstrap exception stays
-in force.
+delivery. Resource callbacks now detach into a cleanup-only dispatcher, failed
+handoff retains ownership for retry, repeated explicit close joins one cleanup,
+and application stop drains work before advancing the native generation. The
+unload callback drains and joins the dispatcher, although repeated in-process
+shared-object unload is not supported by the qualified OTP harness. Final
+submission-failure/reload stress and scheduler qualification remain for the
+integration section, so the bootstrap exception stays in force.
 
 ```spec-meta
 id: simd_json.native_execution
@@ -204,6 +208,16 @@ decisions:
     - simd_json.native_execution.caller_dies_while_running
     - simd_json.native_execution.result_reference_mismatch
 
+- kind: test_file
+  target: test/native/threaded_teardown_test.exs
+  covers:
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.cancellation_boundaries
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.shutdown_cleanup
+    - simd_json.native_execution.large_gc_teardown
+    - simd_json.native_execution.reload_cleanup
+
 - kind: source_file
   target: .spec/research/zigler_0_16_threaded_qualification.md
   covers:
@@ -244,5 +258,5 @@ Before activation, replace the bootstrap exception with executed scheduler heart
     - simd_json.native_execution.threaded_submission_failure
     - simd_json.native_execution.large_gc_teardown
     - simd_json.native_execution.reload_cleanup
-  reason: Phase 4 now implements retained bounded admission, real threaded construction, stable coordinator ownership, correlated delivery, boundary cancellation, and orphan cleanup, but GC teardown, application/NIF shutdown, unload drainage, submission-failure injection, and scheduler qualification remain incomplete; add that evidence before activation.
+  reason: Phase 4 now implements retained bounded admission, real threaded construction, stable coordinator ownership, correlated delivery, boundary cancellation, explicit/orphan/GC cleanup, retry-safe handoff, and application/unload drain logic; complete the failure/reload stress and preliminary scheduler matrix, while retaining the recorded repeated-unload qualification gap, before activation.
 ```

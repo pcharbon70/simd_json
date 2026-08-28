@@ -75,7 +75,7 @@ Back to plan: [README](./README.md)
 
 ## 4.2 Section — Threaded Parse, Cancellation, and Delivery
 
-- [ ] 4.2 Section - Run padded-copy construction and simdjson parsing as one retained threaded operation.
+- [x] 4.2 Section - Run padded-copy construction and simdjson parsing as one retained threaded operation.
 
   This section connects the resource foundation to real parsing while ensuring
   caller loss or result races cannot invalidate memory or deliver a result to
@@ -91,7 +91,7 @@ Back to plan: [README](./README.md)
     - [x] 4.2.1.3 Subtask - Capture the opening process as owner and publish `open` lifecycle state only after input, handles, owner, generation, and cleanup metadata are complete.
     - [x] 4.2.1.4 Subtask - Return only bounded success metadata needed to construct the opaque resource term or a stable internal status needed by the Elixir error layer.
 
-  - [ ] 4.2.2 Task - Add cancellation boundaries and safe uninterruptible retention.
+  - [x] 4.2.2 Task - Add cancellation boundaries and safe uninterruptible retention.
 
     The task prevents avoidable work after the caller or runtime no longer wants
     a result while accepting that one simdjson call may run to its next safe
@@ -99,7 +99,7 @@ Back to plan: [README](./README.md)
 
     - [x] 4.2.2.1 Subtask - Check cancellation before padded-copy construction, immediately before parsing, immediately after parsing, before result-term construction, and before delivery.
     - [x] 4.2.2.2 Subtask - Keep input, operation, and resource state retained for the complete duration of any uninterruptible simdjson call.
-    - [ ] 4.2.2.3 Subtask - Mark operations cancelled on caller death, explicit lifecycle closure, application shutdown, or unload when the verified native boundary permits it.
+    - [x] 4.2.2.3 Subtask - Mark operations cancelled on caller death, explicit lifecycle closure, application shutdown, or unload when the verified native boundary permits it.
     - [x] 4.2.2.4 Subtask - Route every cancellation boundary through the same rollback or resource cleanup owner used for ordinary failure.
 
   - [x] 4.2.3 Task - Correlate delivery and clean every orphan result.
@@ -115,41 +115,41 @@ Back to plan: [README](./README.md)
 
 ## 4.3 Section — Explicit, GC, Shutdown, and Unload Teardown
 
-- [ ] 4.3 Section - Route every potentially large destruction path through one off-scheduler cleanup operation.
+- [x] 4.3 Section - Route every potentially large destruction path through one off-scheduler cleanup operation.
 
   This section attaches the Phase 3 cleanup state machine to threaded execution.
   Explicit close can wait outside a normal scheduler for completion; a resource
   destructor atomically detaches and enqueues cleanup, then returns while native
   retention keeps the operation alive.
 
-  - [ ] 4.3.1 Task - Implement shared threaded cleanup admission.
+  - [x] 4.3.1 Task - Implement shared threaded cleanup admission.
 
     The task lets explicit close, GC, partial open, caller death, and shutdown
     compete for one cleanup owner without duplicating destruction code.
 
-    - [ ] 4.3.1.1 Subtask - Atomically transition the resource from `open` to `closing`, reject new operation admission, and invalidate its generation before cleanup submission.
-    - [ ] 4.3.1.2 Subtask - Make every later close or destructor path join, observe, or retain the already-admitted cleanup instead of destroying state again.
-    - [ ] 4.3.1.3 Subtask - Wait for already-admitted native work at safe boundaries without blocking a normal scheduler, then perform reverse destruction on the threaded path.
-    - [ ] 4.3.1.4 Subtask - Publish `closed` and wake explicit close waiters only after document, parser, padded input, and operation-owned allocations are released.
+    - [x] 4.3.1.1 Subtask - Atomically transition the resource from `open` to `closing`, reject new operation admission, and invalidate its generation before cleanup submission.
+    - [x] 4.3.1.2 Subtask - Make every later close or destructor path join, observe, or retain the already-admitted cleanup instead of destroying state again.
+    - [x] 4.3.1.3 Subtask - Wait for already-admitted native work at safe boundaries without blocking a normal scheduler, then perform reverse destruction on the threaded path.
+    - [x] 4.3.1.4 Subtask - Publish `closed` and wake explicit close waiters only after document, parser, padded input, and operation-owned allocations are released.
 
-  - [ ] 4.3.2 Task - Keep resource callbacks bounded and GC cleanup retained.
+  - [x] 4.3.2 Task - Keep resource callbacks bounded and GC cleanup retained.
 
     The task makes garbage collection a safe fallback without turning the
     resource destructor into a second, scheduler-blocking cleanup engine.
 
-    - [ ] 4.3.2.1 Subtask - Restrict the destructor callback to bounded state transition, ownership detachment, retained cleanup creation, and verified threaded submission.
-    - [ ] 4.3.2.2 Subtask - Keep resource metadata alive after the callback returns until threaded destruction records `closed` and releases the final retention.
-    - [ ] 4.3.2.3 Subtask - Define a fail-closed path for cleanup submission failure during GC that preserves memory safety and never performs unbounded normal-scheduler teardown.
+    - [x] 4.3.2.1 Subtask - Restrict the destructor callback to bounded state transition, ownership detachment, retained cleanup creation, and verified threaded submission.
+    - [x] 4.3.2.2 Subtask - Keep resource metadata alive after the callback returns until threaded destruction records `closed` and releases the final retention.
+    - [x] 4.3.2.3 Subtask - Define a fail-closed path for cleanup submission failure during GC that preserves memory safety and never performs unbounded normal-scheduler teardown.
 
-  - [ ] 4.3.3 Task - Implement application shutdown and NIF unload quiescence.
+  - [x] 4.3.3 Task - Implement application shutdown and NIF unload quiescence.
 
     The task prevents code or module state from unloading while queued or
     running work can still call it.
 
-    - [ ] 4.3.3.1 Subtask - Introduce a native generation and shutdown state that rejects new admission once application stop, upgrade, or unload begins.
-    - [ ] 4.3.3.2 Subtask - Cancel queued work, retain running work to its next safe boundary, suppress delivery, and drain all cleanup operations before unload releases module state.
-    - [ ] 4.3.3.3 Subtask - Make repeated load and upgrade initialize a fresh generation that cannot accept completions from the prior artifact.
-    - [ ] 4.3.3.4 Subtask - Record any OTP environment where repeated unload cannot be exercised and keep that target unqualified until equivalent evidence is available.
+    - [x] 4.3.3.1 Subtask - Introduce a native generation and shutdown state that rejects new admission once application stop, upgrade, or unload begins.
+    - [x] 4.3.3.2 Subtask - Cancel queued work, retain running work to its next safe boundary, suppress delivery, and drain all cleanup operations before unload releases module state.
+    - [x] 4.3.3.3 Subtask - Make repeated load and upgrade initialize a fresh generation that cannot accept completions from the prior artifact.
+    - [x] 4.3.3.4 Subtask - Record any OTP environment where repeated unload cannot be exercised and keep that target unqualified until equivalent evidence is available.
 
 ## 4.4 Section — Phase 4 Integration Tests
 

@@ -14,9 +14,11 @@ ordinary/sanitizer C and Zig harnesses. Phase 4 additionally records and smoke
 tests the exact Zigler 0.16 threaded environment, payload, resource, callback,
 join, and cancellation constraints. The qualified path now reaches the private
 C ABI from a retained Zigler worker and returns only an opaque resource or
-bounded status metadata. Public document APIs, callback-safe GC teardown, and
-final target qualification remain incomplete, so the Milestone 1 bootstrap
-exception and `planned` status remain in force.
+bounded status metadata. Callback-safe GC teardown and application/unload
+drain are implemented; repeated shared-object unload remains explicitly
+unqualified on OTP 27.3. Public document APIs and final target qualification
+remain incomplete, so the Milestone 1 bootstrap exception and `planned` status
+remain in force.
 
 ```spec-meta
 id: simd_json.native_build_and_abi

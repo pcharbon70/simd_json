@@ -77,6 +77,16 @@ the stable coordinator and cleanup-only dispatcher above. This amendment
 closes the explicit reconciliation required before parsed resources become
 reachable; it does not permit another execution fallback.
 
+The reconciled path is now implemented. Generated Zigler workers have a stable
+coordinator owner, while document resource callbacks detach an intrusive
+control block into the cleanup-only dispatcher without allocating, waiting, or
+destroying native state. Rejected callback handoff retains that same block on a
+retry list. Application stop cancels and drains coordinated operations before
+invalidating admission; NIF unload rejects admission, drains dispatcher work,
+joins its thread, and only then frees module state. OTP 27.3 application
+stop/start is executed, while repeated shared-object unload remains explicitly
+unqualified as recorded in the pinned qualification note.
+
 ### Scheduler qualification
 
 Milestone 1 must include a repeatable scheduler-responsiveness test. Independent BEAM heartbeat processes run while large valid and invalid documents are opened and closed concurrently. The test records normal and dirty scheduler utilization and fails against a documented latency budget selected for the qualification environment.

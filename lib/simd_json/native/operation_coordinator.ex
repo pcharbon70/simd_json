@@ -28,6 +28,16 @@ defmodule SimdJson.Native.OperationCoordinator do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
+  def child_spec(options) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [options]},
+      type: :worker,
+      restart: :permanent,
+      shutdown: :infinity
+    }
+  end
+
   @spec open(ThreadedOperation.operation()) ::
           {:ok, reference()} | {:error, map()}
   def open(operation) do
@@ -53,12 +63,30 @@ defmodule SimdJson.Native.OperationCoordinator do
     GenServer.call(__MODULE__, {:release_pause, request_ref})
   end
 
+  @spec begin_shutdown() :: :ok
+  def begin_shutdown do
+    GenServer.call(__MODULE__, :begin_shutdown, :infinity)
+  end
+
   @impl true
-  def init(:ok), do: {:ok, %__MODULE__{}}
+  def init(:ok) do
+    _generation = BuildSmoke.execution_resume()
+    {:ok, %__MODULE__{}}
+  end
 
   @impl true
   def handle_call(:snapshot, _from, state) do
     {:reply, %{accepting?: state.accepting?, live_requests: map_size(state.requests)}, state}
+  end
+
+  def handle_call(:begin_shutdown, _from, state) do
+    Enum.each(state.requests, fn {_request_ref, request} ->
+      if request.kind == :document_open do
+        _ = BuildSmoke.operation_cancel(request.operation.resource)
+      end
+    end)
+
+    {:reply, :ok, %{state | accepting?: false}}
   end
 
   def handle_call({:release_pause, request_ref}, _from, state) do

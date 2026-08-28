@@ -9,19 +9,25 @@ extern fn simd_json_build_smoke_version() callconv(.c) u32;
 extern fn simd_json_build_smoke_padding() callconv(.c) u32;
 extern fn simd_json_build_smoke_runtime_implementation() callconv(.c) [*:0]const u8;
 
-const DocumentResourcePayload = struct {
+const DocumentControl = struct {
+    allocator: std.mem.Allocator,
     native: document_resource.DocumentState,
     owner: beam.pid,
     module_generation: u64,
     accounted: std.atomic.Value(bool),
+    cleanup_next: ?*DocumentControl,
+};
+
+const DocumentResourcePayload = struct {
+    control: ?*DocumentControl,
 };
 
 const DocumentResourceCallbacks = struct {
     pub fn dtor(payload: *DocumentResourcePayload) void {
-        // Phase 3 deliberately publishes no resource containing parse state.
-        // The callback therefore performs no input-dependent work or native
-        // destruction. Phase 4 will attach the off-scheduler cleanup queue.
-        _ = payload.native.detachForDeferredCleanup();
+        const control = payload.control orelse return;
+        payload.control = null;
+        _ = control.native.detachForDeferredCleanup();
+        enqueueDetachedDocument(control);
     }
 };
 
@@ -79,7 +85,147 @@ const ExecutionAccounting = struct {
     var worker_entries = std.atomic.Value(usize).init(0);
     var live_documents = std.atomic.Value(usize).init(0);
     var completed_document_cleanup = std.atomic.Value(usize).init(0);
+    var live_document_controls = std.atomic.Value(usize).init(0);
+    var dispatcher_queued_cleanup = std.atomic.Value(usize).init(0);
+    var dispatcher_active_cleanup = std.atomic.Value(usize).init(0);
+    var dispatcher_completed_cleanup = std.atomic.Value(usize).init(0);
+    var retained_failed_cleanup = std.atomic.Value(usize).init(0);
+    var cleanup_submission_failures = std.atomic.Value(usize).init(0);
 };
+
+const Runtime = struct {
+    allocator: std.mem.Allocator,
+    mutex: *e.ErlNifMutex,
+    condition: *e.ErlNifCond,
+    thread: beam.tid,
+    generation: std.atomic.Value(u64),
+    accepting: std.atomic.Value(bool),
+    shutdown_requested: bool,
+    worker_running: bool,
+    reject_cleanup_submission: bool,
+    queue_head: ?*DocumentControl,
+    queue_tail: ?*DocumentControl,
+    failed_head: ?*DocumentControl,
+    failed_tail: ?*DocumentControl,
+
+    fn create(allocator: std.mem.Allocator, generation: u64) !*Runtime {
+        const runtime = try allocator.create(Runtime);
+        errdefer allocator.destroy(runtime);
+
+        const mutex = e.enif_mutex_create(@constCast("simd_json_cleanup_mutex")) orelse
+            return error.cleanup_mutex_unavailable;
+        errdefer e.enif_mutex_destroy(mutex);
+
+        const condition = e.enif_cond_create(@constCast("simd_json_cleanup_condition")) orelse
+            return error.cleanup_condition_unavailable;
+        errdefer e.enif_cond_destroy(condition);
+
+        runtime.* = .{
+            .allocator = allocator,
+            .mutex = mutex,
+            .condition = condition,
+            .thread = undefined,
+            .generation = .init(generation),
+            .accepting = .init(true),
+            .shutdown_requested = false,
+            .worker_running = true,
+            .reject_cleanup_submission = false,
+            .queue_head = null,
+            .queue_tail = null,
+            .failed_head = null,
+            .failed_tail = null,
+        };
+
+        if (e.enif_thread_create(
+            @constCast("simd_json_cleanup"),
+            &runtime.thread,
+            cleanupWorkerMain,
+            runtime,
+            null,
+        ) != 0) return error.cleanup_thread_unavailable;
+
+        return runtime;
+    }
+
+    fn append(
+        head: *?*DocumentControl,
+        tail: *?*DocumentControl,
+        control: *DocumentControl,
+    ) void {
+        control.cleanup_next = null;
+        if (tail.*) |last| {
+            last.cleanup_next = control;
+        } else {
+            head.* = control;
+        }
+        tail.* = control;
+    }
+
+    fn enqueue(self: *Runtime, control: *DocumentControl) bool {
+        e.enif_mutex_lock(self.mutex);
+        defer e.enif_mutex_unlock(self.mutex);
+
+        if (!self.worker_running or self.reject_cleanup_submission) {
+            append(&self.failed_head, &self.failed_tail, control);
+            _ = ExecutionAccounting.retained_failed_cleanup.fetchAdd(1, .acq_rel);
+            _ = ExecutionAccounting.cleanup_submission_failures.fetchAdd(1, .acq_rel);
+            return false;
+        }
+
+        append(&self.queue_head, &self.queue_tail, control);
+        _ = ExecutionAccounting.dispatcher_queued_cleanup.fetchAdd(1, .acq_rel);
+        e.enif_cond_signal(self.condition);
+        return true;
+    }
+
+    fn setCleanupRejection(self: *Runtime, reject: bool) void {
+        e.enif_mutex_lock(self.mutex);
+        defer e.enif_mutex_unlock(self.mutex);
+
+        self.reject_cleanup_submission = reject;
+        if (reject or self.failed_head == null or !self.worker_running) return;
+
+        if (self.queue_tail) |tail| {
+            tail.cleanup_next = self.failed_head;
+        } else {
+            self.queue_head = self.failed_head;
+        }
+        self.queue_tail = self.failed_tail;
+
+        const retained = ExecutionAccounting.retained_failed_cleanup.swap(0, .acq_rel);
+        _ = ExecutionAccounting.dispatcher_queued_cleanup.fetchAdd(retained, .acq_rel);
+        self.failed_head = null;
+        self.failed_tail = null;
+        e.enif_cond_broadcast(self.condition);
+    }
+
+    fn pop(self: *Runtime) ?*DocumentControl {
+        const control = self.queue_head orelse return null;
+        self.queue_head = control.cleanup_next;
+        if (self.queue_head == null) self.queue_tail = null;
+        control.cleanup_next = null;
+        return control;
+    }
+
+    fn requestShutdownAndJoin(self: *Runtime) void {
+        self.accepting.store(false, .release);
+        self.setCleanupRejection(false);
+
+        e.enif_mutex_lock(self.mutex);
+        self.shutdown_requested = true;
+        e.enif_cond_broadcast(self.condition);
+        e.enif_mutex_unlock(self.mutex);
+
+        var ignored: ?*anyopaque = null;
+        _ = e.enif_thread_join(self.thread, &ignored);
+
+        e.enif_cond_destroy(self.condition);
+        e.enif_mutex_destroy(self.mutex);
+        self.allocator.destroy(self);
+    }
+};
+
+var runtime_ref = std.atomic.Value(?*Runtime).init(null);
 
 const OperationRecord = struct {
     allocator: std.mem.Allocator,
@@ -287,6 +433,12 @@ pub const ExecutionSnapshot = struct {
     worker_entries: usize,
     live_documents: usize,
     completed_document_cleanup: usize,
+    live_document_controls: usize,
+    dispatcher_queued_cleanup: usize,
+    dispatcher_active_cleanup: usize,
+    dispatcher_completed_cleanup: usize,
+    retained_failed_cleanup: usize,
+    cleanup_submission_failures: usize,
 };
 
 pub const ThreadedSmokeResult = struct {
@@ -395,12 +547,98 @@ fn failedDocumentOpen(
     };
 }
 
-fn finishDocumentAccounting(payload: *DocumentResourcePayload) void {
-    if (payload.accounted.swap(false, .acq_rel)) {
+fn finishDocumentAccounting(control: *DocumentControl) void {
+    if (control.accounted.swap(false, .acq_rel)) {
         const live = ExecutionAccounting.live_documents.fetchSub(1, .acq_rel);
         std.debug.assert(live > 0);
         _ = ExecutionAccounting.completed_document_cleanup.fetchAdd(1, .acq_rel);
     }
+}
+
+fn destroyDocumentControl(control: *DocumentControl) void {
+    const allocator = control.allocator;
+    allocator.destroy(control);
+    const live = ExecutionAccounting.live_document_controls.fetchSub(1, .acq_rel);
+    std.debug.assert(live > 0);
+}
+
+fn cleanupDetachedDocument(control: *DocumentControl) void {
+    if (control.native.lifecycleState() == .open)
+        _ = control.native.beginClose();
+
+    while (!control.native.completeCleanup()) std.atomic.spinLoopHint();
+    finishDocumentAccounting(control);
+    destroyDocumentControl(control);
+}
+
+fn completeThreadedDocumentCleanup(control: *DocumentControl) bool {
+    switch (control.native.beginClose()) {
+        .cleanup_owner => {
+            while (!control.native.completeCleanup()) std.atomic.spinLoopHint();
+        },
+        .closing => {
+            while (control.native.lifecycleState() != .closed) std.atomic.spinLoopHint();
+        },
+        .closed => {},
+    }
+    return control.native.lifecycleState() == .closed;
+}
+
+fn cleanupWorkerMain(raw_runtime: ?*anyopaque) callconv(.c) ?*anyopaque {
+    const runtime: *Runtime = @ptrCast(@alignCast(raw_runtime.?));
+
+    while (true) {
+        e.enif_mutex_lock(runtime.mutex);
+        while (runtime.queue_head == null and !runtime.shutdown_requested) {
+            e.enif_cond_wait(runtime.condition, runtime.mutex);
+        }
+
+        const control = runtime.pop();
+        if (control == null and runtime.shutdown_requested) {
+            runtime.worker_running = false;
+            e.enif_cond_broadcast(runtime.condition);
+            e.enif_mutex_unlock(runtime.mutex);
+            return null;
+        }
+
+        const queued = ExecutionAccounting.dispatcher_queued_cleanup.fetchSub(1, .acq_rel);
+        std.debug.assert(queued > 0);
+        _ = ExecutionAccounting.dispatcher_active_cleanup.fetchAdd(1, .acq_rel);
+        e.enif_mutex_unlock(runtime.mutex);
+
+        cleanupDetachedDocument(control.?);
+
+        e.enif_mutex_lock(runtime.mutex);
+        const active = ExecutionAccounting.dispatcher_active_cleanup.fetchSub(1, .acq_rel);
+        std.debug.assert(active > 0);
+        _ = ExecutionAccounting.dispatcher_completed_cleanup.fetchAdd(1, .acq_rel);
+        e.enif_cond_broadcast(runtime.condition);
+        e.enif_mutex_unlock(runtime.mutex);
+    }
+}
+
+fn enqueueDetachedDocument(control: *DocumentControl) void {
+    const runtime = runtime_ref.load(.acquire) orelse {
+        _ = ExecutionAccounting.retained_failed_cleanup.fetchAdd(1, .acq_rel);
+        _ = ExecutionAccounting.cleanup_submission_failures.fetchAdd(1, .acq_rel);
+        return;
+    };
+    _ = runtime.enqueue(control);
+}
+
+fn createDocumentControl(owner: beam.pid, generation: u64) !*DocumentControl {
+    const allocator = beam.allocator;
+    const control = try allocator.create(DocumentControl);
+    control.* = .{
+        .allocator = allocator,
+        .native = document_resource.DocumentState.empty(),
+        .owner = owner,
+        .module_generation = generation,
+        .accounted = .init(false),
+        .cleanup_next = null,
+    };
+    _ = ExecutionAccounting.live_document_controls.fetchAdd(1, .acq_rel);
+    return control;
 }
 
 /// Bounded admission retains a private-env reference to the binary; it does
@@ -411,7 +649,12 @@ pub fn operation_admit(
     kind: OperationKind,
     generation: u64,
 ) !OperationResource {
-    if (!module_loaded.load(.acquire) or generation == 0)
+    const runtime = runtime_ref.load(.acquire) orelse
+        return error.execution_unavailable;
+    if (!module_loaded.load(.acquire) or
+        !runtime.accepting.load(.acquire) or
+        generation == 0 or
+        generation != module_generation.load(.acquire))
         return error.execution_unavailable;
 
     var inspected: e.ErlNifBinary = undefined;
@@ -536,6 +779,12 @@ pub fn execution_snapshot() ExecutionSnapshot {
         .worker_entries = ExecutionAccounting.worker_entries.load(.acquire),
         .live_documents = ExecutionAccounting.live_documents.load(.acquire),
         .completed_document_cleanup = ExecutionAccounting.completed_document_cleanup.load(.acquire),
+        .live_document_controls = ExecutionAccounting.live_document_controls.load(.acquire),
+        .dispatcher_queued_cleanup = ExecutionAccounting.dispatcher_queued_cleanup.load(.acquire),
+        .dispatcher_active_cleanup = ExecutionAccounting.dispatcher_active_cleanup.load(.acquire),
+        .dispatcher_completed_cleanup = ExecutionAccounting.dispatcher_completed_cleanup.load(.acquire),
+        .retained_failed_cleanup = ExecutionAccounting.retained_failed_cleanup.load(.acquire),
+        .cleanup_submission_failures = ExecutionAccounting.cleanup_submission_failures.load(.acquire),
     };
 }
 
@@ -570,16 +819,15 @@ pub fn threaded_document_open(operation: OperationResource) !DocumentOpenResult 
     if (record.cancelled.load(.acquire))
         return documentOpenResult(.cancelled, record, null, null);
 
-    const document = try DocumentResource.create(.{
-        .native = document_resource.DocumentState.empty(),
-        .owner = record.owner,
-        .module_generation = record.generation,
-        .accounted = .init(false),
-    }, .{});
+    const control = try createDocumentControl(record.owner, record.generation);
+    const document = DocumentResource.create(.{ .control = control }, .{}) catch |err| {
+        destroyDocumentControl(control);
+        return err;
+    };
     var publish_document = false;
     defer if (!publish_document) document.release();
 
-    const native_status = document.__payload.native.openOwnedCancellable(
+    const native_status = control.native.openOwnedCancellable(
         beam.allocator,
         input,
         .{
@@ -592,7 +840,7 @@ pub fn threaded_document_open(operation: OperationResource) !DocumentOpenResult 
     // Cancellation immediately after the uninterruptible simdjson call and
     // before any result term/resource is published uses worker-owned rollback.
     if (record.cancelled.load(.acquire)) {
-        _ = document.__payload.native.closeAndDestroy();
+        _ = control.native.closeAndDestroy();
         return documentOpenResult(.cancelled, record, null, null);
     }
 
@@ -608,19 +856,19 @@ pub fn threaded_document_open(operation: OperationResource) !DocumentOpenResult 
     try beam.yield();
     record.pauseAt(.before_delivery);
     if (record.cancelled.load(.acquire)) {
-        _ = document.__payload.native.closeAndDestroy();
+        _ = control.native.closeAndDestroy();
         return documentOpenResult(.cancelled, record, null, null);
     }
 
     // Final cancellation/delivery claim occurs before the resource can be
     // encoded by the generated bounded join entry.
     if (!record.markReadyForDelivery()) {
-        _ = document.__payload.native.closeAndDestroy();
+        _ = control.native.closeAndDestroy();
         worker_finished = true;
         return documentOpenResult(.cancelled, record, null, null);
     }
 
-    document.__payload.accounted.store(true, .release);
+    control.accounted.store(true, .release);
     _ = ExecutionAccounting.live_documents.fetchAdd(1, .acq_rel);
     publish_document = true;
     worker_finished = true;
@@ -643,12 +891,22 @@ pub fn threaded_document_cleanup(
         };
     }
 
+    const control = document.__payload.control orelse {
+        _ = record.markReadyForDelivery();
+        return .{
+            .status = .internal_failure,
+            .kind = record.kind,
+            .generation = record.generation,
+            .worker_context = executionContext(),
+        };
+    };
+
     const available = module_loaded.load(.acquire) and
         record.generation == module_generation.load(.acquire) and
-        document.__payload.module_generation == record.generation;
+        control.module_generation == record.generation;
 
-    const cleaned = if (available) document.__payload.native.closeAndDestroy() else false;
-    if (cleaned) finishDocumentAccounting(document.__payload);
+    const cleaned = if (available) completeThreadedDocumentCleanup(control) else false;
+    if (cleaned) finishDocumentAccounting(control);
     const ready = record.markReadyForDelivery();
 
     return .{
@@ -665,11 +923,37 @@ pub fn threaded_document_cleanup(
 }
 
 pub fn document_lifecycle(document: DocumentResource) document_resource.Lifecycle {
-    return document.__payload.native.lifecycleState();
+    const control = document.__payload.control orelse return .closed;
+    return control.native.lifecycleState();
 }
 
 pub fn execution_generation() u64 {
     return module_generation.load(.acquire);
+}
+
+pub fn execution_begin_shutdown() u64 {
+    const runtime = runtime_ref.load(.acquire) orelse return 0;
+    runtime.accepting.store(false, .release);
+    const generation = runtime.generation.fetchAdd(1, .acq_rel) + 1;
+    module_generation.store(generation, .release);
+    return generation;
+}
+
+pub fn execution_resume() !u64 {
+    const runtime = runtime_ref.load(.acquire) orelse
+        return error.execution_unavailable;
+    if (!module_loaded.load(.acquire)) return error.execution_unavailable;
+
+    const generation = runtime.generation.fetchAdd(1, .acq_rel) + 1;
+    module_generation.store(generation, .release);
+    runtime.accepting.store(true, .release);
+    return generation;
+}
+
+pub fn execution_set_cleanup_rejection(reject: bool) bool {
+    const runtime = runtime_ref.load(.acquire) orelse return false;
+    runtime.setCleanupRejection(reject);
+    return true;
 }
 
 pub fn simdjson_version() u32 {
@@ -694,27 +978,25 @@ pub fn document_resource_registration_smoke() !bool {
     if (!module_loaded.load(.acquire)) return false;
 
     const owner = try beam.self(.{});
-    const fixture = try DocumentResource.create(.{
-        .native = document_resource.DocumentState.empty(),
-        .owner = owner,
-        .module_generation = module_generation.load(.acquire),
-        .accounted = .init(false),
-    }, .{ .released = false });
+    const control = try createDocumentControl(owner, module_generation.load(.acquire));
+    const fixture = DocumentResource.create(.{ .control = control }, .{ .released = false }) catch |err| {
+        destroyDocumentControl(control);
+        return err;
+    };
     defer fixture.release();
 
-    return !fixture.__payload.native.hasOwnedNativeState();
+    return !control.native.hasOwnedNativeState();
 }
 
 /// Produces only an opaque reference for a bounded resource-registration test.
 /// It is internal to the build module and is not a public document constructor.
 pub fn document_resource_fixture() !DocumentResource {
     const owner = try beam.self(.{});
-    return DocumentResource.create(.{
-        .native = document_resource.DocumentState.empty(),
-        .owner = owner,
-        .module_generation = module_generation.load(.acquire),
-        .accounted = .init(false),
-    }, .{});
+    const control = try createDocumentControl(owner, module_generation.load(.acquire));
+    return DocumentResource.create(.{ .control = control }, .{}) catch |err| {
+        destroyDocumentControl(control);
+        return err;
+    };
 }
 
 fn retainParent(parent: DocumentResource) void {
@@ -733,8 +1015,12 @@ pub fn resource_on_load(
     load_info: e.ErlNifTerm,
 ) callconv(.c) c_int {
     _ = env;
-    _ = private_data;
     _ = load_info;
+
+    const slot = private_data orelse return -1;
+    const runtime = Runtime.create(beam.allocator, 1) catch return -1;
+    slot.* = @ptrCast(runtime);
+    runtime_ref.store(runtime, .release);
     module_loaded.store(true, .release);
     module_generation.store(1, .release);
     return 0;
@@ -747,19 +1033,36 @@ pub fn resource_on_upgrade(
     load_info: e.ErlNifTerm,
 ) callconv(.c) c_int {
     _ = env;
-    _ = private_data;
-    _ = old_private_data;
     _ = load_info;
-    _ = module_generation.fetchAdd(1, .acq_rel);
+
+    const slot = private_data orelse return -1;
+    const old_runtime: ?*Runtime = if (old_private_data) |old_slot|
+        if (old_slot.*) |raw_old_runtime| @ptrCast(@alignCast(raw_old_runtime)) else null
+    else
+        null;
+
+    const generation = if (old_runtime) |old| blk: {
+        old.accepting.store(false, .release);
+        break :blk old.generation.load(.acquire) + 1;
+    } else module_generation.load(.acquire) + 1;
+
+    const runtime = Runtime.create(beam.allocator, generation) catch return -1;
+    slot.* = @ptrCast(runtime);
+    runtime_ref.store(runtime, .release);
+    module_generation.store(generation, .release);
     module_loaded.store(true, .release);
     return 0;
 }
 
 pub fn resource_on_unload(env: beam.env, private_data: ?*anyopaque) callconv(.c) void {
     _ = env;
-    _ = private_data;
     module_loaded.store(false, .release);
     _ = module_generation.fetchAdd(1, .acq_rel);
+
+    const runtime: *Runtime = @ptrCast(@alignCast(private_data orelse return));
+    runtime.accepting.store(false, .release);
+    runtime_ref.store(null, .release);
+    runtime.requestShutdownAndJoin();
 }
 
 // covers: simd_json.document_resource.opaque_handle simd_json.document_resource.complete_ownership simd_json.document_resource.lifecycle simd_json.document_resource.reverse_destruction simd_json.document_resource.parent_retention

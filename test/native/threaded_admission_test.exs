@@ -14,7 +14,7 @@ defmodule SimdJson.Native.ThreadedAdmissionTest do
     assert result.context == :threaded
     assert result.owner_matches
     assert result.kind == :threaded_smoke
-    assert result.generation == 1
+    assert result.generation == BuildSmoke.execution_generation()
     assert result.input_length == 1_024 * 1_024
 
     collect_operations()
@@ -31,19 +31,23 @@ defmodule SimdJson.Native.ThreadedAdmissionTest do
 
   # covers: simd_json.native_execution.request_correlation simd_json.native_execution.late_result_cleanup
   test "native references, operation kinds, and generations cannot be confused" do
-    first = ThreadedOperation.admit("first", :threaded_smoke, 41)
-    second = ThreadedOperation.admit("second", :document_open, 42)
+    generation = BuildSmoke.execution_generation()
+    first = ThreadedOperation.admit("first", :threaded_smoke, generation)
+    second = ThreadedOperation.admit("second", :document_open, generation)
 
     refute first.request_ref == second.request_ref
 
     refute ThreadedOperation.correlated?(first, %{kind: second.kind, generation: first.generation})
 
-    refute ThreadedOperation.correlated?(first, %{kind: first.kind, generation: second.generation})
+    refute ThreadedOperation.correlated?(first, %{
+             kind: first.kind,
+             generation: generation + 1
+           })
 
-    assert {first.request_ref, :threaded_smoke, 41, :queued} ==
+    assert {first.request_ref, :threaded_smoke, generation, :queued} ==
              BuildSmoke.operation_metadata(first.resource)
 
-    assert {second.request_ref, :document_open, 42, :queued} ==
+    assert {second.request_ref, :document_open, generation, :queued} ==
              BuildSmoke.operation_metadata(second.resource)
 
     assert BuildSmoke.operation_finish(first.resource, :discarded)
@@ -61,7 +65,8 @@ defmodule SimdJson.Native.ThreadedAdmissionTest do
 
     assert :ok = ThreadedOperation.cancel(operation)
 
-    assert {operation.request_ref, :threaded_smoke, 1, :cancelling} ==
+    assert {operation.request_ref, :threaded_smoke, BuildSmoke.execution_generation(),
+            :cancelling} ==
              BuildSmoke.operation_metadata(operation.resource)
 
     assert_raise ErlangError, fn ->

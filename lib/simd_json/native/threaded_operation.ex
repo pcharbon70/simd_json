@@ -11,8 +11,14 @@ defmodule SimdJson.Native.ThreadedOperation do
           generation: pos_integer()
         }
 
-  @spec admit(binary(), operation()[:kind], pos_integer()) :: operation()
-  def admit(input, kind, generation \\ 1)
+  @spec admit(binary(), operation()[:kind], pos_integer() | nil) :: operation()
+  def admit(input, kind, generation \\ nil)
+
+  def admit(input, kind, nil) when is_binary(input) and is_atom(kind) do
+    admit(input, kind, BuildSmoke.execution_generation())
+  end
+
+  def admit(input, kind, generation)
       when is_binary(input) and is_atom(kind) and is_integer(generation) and generation > 0 do
     resource = BuildSmoke.operation_admit(input, self(), kind, generation)
     {request_ref, ^kind, ^generation, :queued} = BuildSmoke.operation_metadata(resource)
