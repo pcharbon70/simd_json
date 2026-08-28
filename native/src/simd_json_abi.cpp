@@ -1,7 +1,7 @@
 #include "../include/simd_json_abi.h"
 #include "../vendor/simdjson/simdjson.h"
 
-/* covers: simd_json.native_build_and_abi.opaque_c_contract simd_json.native_build_and_abi.exception_containment simd_json.native_build_and_abi.partial_failure_cleanup simd_json.native_build_and_abi.symbol_visibility */
+/* covers: simd_json.native_build_and_abi.opaque_c_contract simd_json.native_build_and_abi.exception_containment simd_json.native_build_and_abi.partial_failure_cleanup simd_json.native_build_and_abi.symbol_visibility simd_json.document_resource.padded_owned_copy simd_json.document_resource.zero_copy_disabled simd_json.document_resource.input_lifetime simd_json.document_resource.partial_open_failure */
 
 #include <cstddef>
 #include <cstdint>
@@ -500,5 +500,54 @@ extern "C" uint64_t simd_json_test_live_document_count(void) noexcept {
   } catch (...) {
     return 0;
   }
+}
+
+extern "C" uint32_t simd_json_test_document_uses_input(
+    simd_json_document *document,
+    const uint8_t *data,
+    uint64_t logical_length) noexcept {
+  try {
+    return document != nullptr && document->data == data &&
+                   document->logical_length == logical_length
+               ? UINT32_C(1)
+               : UINT32_C(0);
+  } catch (...) {
+    return UINT32_C(0);
+  }
+}
+
+extern "C" simd_json_status simd_json_test_document_revalidate(
+    simd_json_document *document) noexcept {
+  if (document == nullptr) {
+    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+
+  try {
+    simdjson::error_code error = validate_document(document->value);
+    return error == simdjson::SUCCESS
+               ? make_status(SIMD_JSON_STATUS_OK)
+               : status_from_simdjson(
+                     error, current_byte_offset(document->value, document->data,
+                                                document->logical_length));
+  } catch (...) {
+    return status_from_current_exception();
+  }
+}
+
+extern "C" uint32_t simd_json_test_sanitizer_build(void) noexcept {
+#if defined(SIMD_JSON_SANITIZER_TESTING)
+  return UINT32_C(1);
+#else
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+  return UINT32_C(1);
+#endif
+#endif
+#if defined(__SANITIZE_ADDRESS__)
+  return UINT32_C(1);
+#else
+  return UINT32_C(0);
+#endif
+#endif
 }
 #endif

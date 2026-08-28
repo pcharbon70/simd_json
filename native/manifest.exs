@@ -74,6 +74,7 @@
       {"LICENSE-MIT", "9ed0a34979f22fc33fc13d942233f22d44906c236d876bd05fadf18cb5abf7da"}
     ],
     padding_bytes: 64,
+    input_alignment_bytes: 64,
     language_standard: "c++17",
     supported_compilers: ["Clang 6 or newer", "GCC 7 or newer", "MSVC 2017 or newer"],
     expected_x86_64_runtime_dispatch: ["haswell", "westmere", "fallback"],
@@ -103,14 +104,18 @@
     "native/include/simd_json_build_smoke.h",
     "native/src/build_smoke.cpp",
     "native/src/simd_json_abi.cpp",
+    "native/test/document_resource_test.zig",
+    "native/test/include/simd_json_test_hooks.h",
     "native/symbols/c_abi.allowlist",
     "native/symbols/c_abi.version",
     "native/symbols/nif.allowlist",
     "native/zig/build_smoke.zig",
+    "native/zig/document_resource.zig",
     "native/vendor/simdjson/simdjson.cpp",
     "native/vendor/simdjson/simdjson.h",
     "native/vendor/simdjson/LICENSE",
     "native/vendor/simdjson/LICENSE-MIT",
-    "native/vendor/simdjson/patches/series"
+    "native/vendor/simdjson/patches/series",
+    "scripts/native/run_zig_resource_tests.sh"
   ]
 ]

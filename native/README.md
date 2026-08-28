@@ -138,6 +138,77 @@ C ABI and C++ implementation symbols remain local. Run
 both artifacts with their checked-in allowlists and to prove test-only failure
 controls are absent.
 
+## Zig document resource boundary
+
+[`zig/document_resource.zig`](./zig/document_resource.zig) is instantiated with
+declarations translated directly from the canonical C header. It checks the C
+status width, signedness, alignment, field offsets, and distinct status values
+at compile time, then adapts every status into a closed Zig union. Unknown C
+status values are contained as internal failures. Raw parser and document
+handles remain fields of the native state and have no BEAM encoder.
+
+Zigler registers `DocumentResource` during both NIF load and upgrade. Its
+payload contains the destructible native state plus the opening process PID;
+the state reserves fields for the aligned padded allocation, logical length,
+opaque C handles, lifecycle, generation, and admitted-operation count. Explicit
+load, upgrade, unload, and destructor callbacks perform only bounded
+bookkeeping. In Phase 3 no production constructor can put parsed state in the
+resource, so its destructor never copies, parses, waits, or destroys large
+native allocations on a normal scheduler. Phase 4 attaches deferred teardown.
+
+The two fixture functions on the internal `SimdJson.Native.BuildSmoke` module
+exist solely to prove resource registration and opacity. They create only the
+fixed-size empty state and are not part of `SimdJson`'s public API. Future child
+resources must use the private `retainParent` and `releaseParent` helpers, which
+delegate to Zigler's BEAM resource keep/release operations.
+
+### Owned padded input
+
+`DocumentState.openOwned` is the only Milestone 1 parser-input constructor. It
+checks the logical length against Zig `usize`, the fixed-width C ABI, and the
+padding addition before allocating. The resulting allocation is aligned to the
+manifest's 64-byte boundary, contains exactly one copy of the logical bytes,
+and ends with all 64 required padding bytes initialized to zero. The C shim
+receives the logical length and capacity as separate values; only the logical
+length can appear in parser diagnostics.
+
+There is no borrowed slice, BEAM-binary pointer, or zero-copy branch. Native
+tests compare the source and owned allocations, overwrite the source after the
+C++ On-Demand document is open, and revalidate the document through a guarded
+test hook. Linux guard-page cases put the owned allocation's exact capacity at
+the end of a readable page, with the following page inaccessible. The ordinary
+and AddressSanitizer/UndefinedBehaviorSanitizer profiles exercise zero-length,
+small, alignment-boundary, padding-boundary, malformed, and overflow cases.
+
+### Lifecycle and cleanup
+
+Published native state moves only from `open` to `closing` to `closed`. One
+compare-and-exchange selects the cleanup owner and increments the generation;
+every other close path observes `closing` or `closed`. Operation admission first
+increments a bounded counter and then rechecks lifecycle and generation, so a
+close can reject new work while preserving already-admitted work. The deferred
+executor may release ownership only after that counter reaches zero, and a
+second atomic guard makes completion exactly once.
+
+Release order is fixed: document, parser, padded buffer, then resource-record
+accounting. Each field is cleared as ownership ends. Construction remains
+unpublished until all fields are ready, and every failure edge—after buffer,
+parser, document, resource initialization, or immediately before
+publication—uses the same reverse rollback. A successfully closed state cannot
+be reopened because its invalidated generation is retained.
+
+The BEAM destructor calls only the bounded close-detach transition. Phase 3 has
+no production path that can place parsed state in a resource; Phase 4 will
+attach the cleanup owner to its off-scheduler executor before any such path is
+published.
+
+Native test builds add aggregate counters for padded buffers, parser/document
+handles, resource records, retained parents, admissions, object destruction,
+and completed cleanup. Their snapshot and bounded quiescence poll contain no
+pointers, allocation contents, or JSON. Failure controls and accounting are
+selected only when the guarded C test header is present; release symbol and
+string inspection proves they are absent from the NIF and standalone ABI.
+
 ## Native ABI conformance
 
 The standalone harness in [`test/c_abi_conformance.c`](./test/c_abi_conformance.c)
@@ -163,3 +234,11 @@ scripts/native/run_c_abi_conformance.sh sanitizer
 
 The sanitizer profile enables AddressSanitizer, UndefinedBehaviorSanitizer,
 leak detection, frame pointers, and fail-fast runtime options.
+
+The Zig ownership-state and resource-registration checks run with:
+
+```text
+scripts/native/run_zig_resource_tests.sh
+scripts/native/run_zig_resource_tests.sh sanitizer
+mix test test/native/document_resource_registration_test.exs
+```

@@ -39,6 +39,15 @@ Caller death, explicit close, application shutdown, and NIF unload mark work can
 
 Potentially large destruction is executed through the same off-scheduler policy. Ordinary resource callbacks may atomically detach or enqueue cleanup, but may not synchronously destroy unbounded parser or buffer state on a normal scheduler.
 
+### Phase 3 implementation checkpoint
+
+The registered resource destructor now performs only the bounded atomic
+close-detach transition. No production NIF can copy input, call simdjson, or
+place parsed state in the resource, and static policy tests freeze that boundary.
+The off-scheduler parse and cleanup executors remain intentionally absent until
+Phase 4; this checkpoint is a prerequisite for the decision, not a scheduling
+substitute or policy change.
+
 ### Scheduler qualification
 
 Milestone 1 must include a repeatable scheduler-responsiveness test. Independent BEAM heartbeat processes run while large valid and invalid documents are opened and closed concurrently. The test records normal and dirty scheduler utilization and fails against a documented latency budget selected for the qualification environment.

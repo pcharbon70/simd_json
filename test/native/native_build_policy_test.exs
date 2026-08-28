@@ -10,7 +10,9 @@ defmodule SimdJson.Native.BuildPolicyTest do
     "native/src/build_smoke.cpp",
     "native/src/simd_json_abi.cpp",
     "native/zig/build_smoke.zig",
+    "native/zig/document_resource.zig",
     "scripts/native/run_c_abi_conformance.sh",
+    "scripts/native/run_zig_resource_tests.sh",
     "scripts/native/verify_release_symbols.sh"
   ]
 
@@ -83,6 +85,9 @@ defmodule SimdJson.Native.BuildPolicyTest do
           "native/symbols/c_abi.version",
           "native/symbols/nif.allowlist",
           "native/zig/build_smoke.zig",
+          "native/zig/document_resource.zig",
+          "native/test/document_resource_test.zig",
+          "native/test/include/simd_json_test_hooks.h",
           "native/vendor/simdjson/simdjson.cpp",
           "native/vendor/simdjson/simdjson.h",
           "native/vendor/simdjson/LICENSE",
