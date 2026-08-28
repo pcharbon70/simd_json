@@ -86,6 +86,23 @@ parser/document constructor and destructor functions through a versioned
 allowlist. Test-only injection and accounting controls are compile-time gated
 and must be absent from release symbol tables and strings.
 
+### Phase 5 conformance-probe checkpoint
+
+The Phase 5 lifetime test revalidates an already-open On-Demand document after
+the original BEAM binary and threaded-operation environment are unreachable.
+Two NIF-internal C declarations associate the opaque document with its owned
+input and rewind/revalidate it. They use only opaque handles, fixed-width
+values, the existing stable status record, total exception containment, and
+hidden visibility. They are absent from the versioned public C header and
+dynamic symbol allowlist, so ABI version 1 and its four exported constructor and
+destructor symbols do not change.
+
+The high-level `ThreadedOperation` probe helper is compiled only in tests and
+runs via the pinned Zigler threaded context with document admission retained
+across the C++ traversal. Its generated NIF entry remains confined to the
+undocumented native bridge. Native failure-injection and accounting hooks stay
+absent from release symbol tables and strings.
+
 ### Build and target qualification
 
 The native build is driven through the pinned Zig/Zigler integration and produces the NIF from a clean checkout without requiring a preinstalled simdjson library. It must fail with a clear unsupported-target error rather than silently compile an unqualified combination.

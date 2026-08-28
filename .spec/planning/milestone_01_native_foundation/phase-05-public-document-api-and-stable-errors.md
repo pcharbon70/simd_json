@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 5 Phase - Expose the completed native foundation through the deliberately narrow Milestone 1 Elixir contract.
+- [x] 5 Phase - Expose the completed native foundation through the deliberately narrow Milestone 1 Elixir contract.
 
   This phase adds `SimdJson.open/1`, `SimdJson.close/1`, the opaque
   `SimdJson.Document` type, and stable `SimdJson.Error` values. Elixir performs
@@ -134,40 +134,40 @@ Back to plan: [README](./README.md)
 
 ## 5.4 Section — Phase 5 Integration Tests
 
-- [ ] 5.4 Section - Prove the public contract across JSON corpora, ownership boundaries, lifecycle races, and redaction.
+- [x] 5.4 Section - Prove the public contract across JSON corpora, ownership boundaries, lifecycle races, and redaction.
 
   This section closes the user-visible vertical slice before Phase 6 performs
   release qualification and removes bootstrap exceptions.
 
-  - [ ] 5.4.1 Task - Run public open, validation, and error-corpus tests.
+  - [x] 5.4.1 Task - Run public open, validation, and error-corpus tests.
 
     The task executes `open_and_close`, `all_top_level_values`,
     `invalid_input_errors`, `non_binary_argument`, `invalid_document_argument`,
     and `redacted_failure` through the real threaded native stack.
 
-    - [ ] 5.4.1.1 Subtask - Open valid object, array, string, integer, floating-point, true, false, and null documents with leading and trailing legal whitespace.
-    - [ ] 5.4.1.2 Subtask - Test empty, whitespace-only, beginning/middle/end malformed, truncated, invalid UTF-8, and unescaped embedded-null binaries with stable reasons and logical offsets.
-    - [ ] 5.4.1.3 Subtask - Inject allocation and unknown native failures and assert `:out_of_memory` and `:native_failure` mappings without a partial document.
-    - [ ] 5.4.1.4 Subtask - Test every invalid `open/1` and `close/1` argument shape and prove no threaded submission, allocation, or lifecycle change occurs.
-    - [ ] 5.4.1.5 Subtask - Put a unique secret in malformed input and injected exception text, then assert errors, inspection, logs, and diagnostics never contain it.
+    - [x] 5.4.1.1 Subtask - Open valid object, array, string, integer, floating-point, true, false, and null documents with leading and trailing legal whitespace.
+    - [x] 5.4.1.2 Subtask - Test empty, whitespace-only, beginning/middle/end malformed, truncated, invalid UTF-8, and unescaped embedded-null binaries with stable reasons and logical offsets.
+    - [x] 5.4.1.3 Subtask - Inject allocation and unknown native failures and assert `:out_of_memory` and `:native_failure` mappings without a partial document.
+    - [x] 5.4.1.4 Subtask - Test every invalid `open/1` and `close/1` argument shape and prove no threaded submission, allocation, or lifecycle change occurs.
+    - [x] 5.4.1.5 Subtask - Put a unique secret in malformed input and injected exception text, then assert errors, inspection, logs, and diagnostics never contain it.
 
-  - [ ] 5.4.2 Task - Run ownership, lifetime, and deterministic-close tests.
+  - [x] 5.4.2 Task - Run ownership, lifetime, and deterministic-close tests.
 
     The task executes `close_and_non_owner`, `non_owner_rejection`,
     `input_lifetime`, `repeated_close`, and `native_memory_baseline` through
     public terms and multiple BEAM processes.
 
-    - [ ] 5.4.2.1 Subtask - Drop every original binary reference after `open/1`, force garbage collection, and prove the document remains valid through a native conformance probe until close.
-    - [ ] 5.4.2.2 Subtask - Send an open and a closed document term to another process and assert owner-first `:not_owner` results with no state or generation change.
-    - [ ] 5.4.2.3 Subtask - Race repeated owner close calls and later resource destruction; assert every close returns `:ok` only after one cleanup completes and every native object is freed once.
-    - [ ] 5.4.2.4 Subtask - Open independent documents concurrently from different owners and prove their input, lifecycle, reference, error, and cleanup state never cross.
-    - [ ] 5.4.2.5 Subtask - Release batches by explicit close and GC, await cleanup quiescence, and assert all bounded native counters return to baseline.
+    - [x] 5.4.2.1 Subtask - Drop every original binary reference after `open/1`, force garbage collection, and prove the document remains valid through a native conformance probe until close.
+    - [x] 5.4.2.2 Subtask - Send an open and a closed document term to another process and assert owner-first `:not_owner` results with no state or generation change.
+    - [x] 5.4.2.3 Subtask - Race repeated owner close calls and later resource destruction; assert every close returns `:ok` only after one cleanup completes and every native object is freed once.
+    - [x] 5.4.2.4 Subtask - Open independent documents concurrently from different owners and prove their input, lifecycle, reference, error, and cleanup state never cross.
+    - [x] 5.4.2.5 Subtask - Release batches by explicit close and GC, await cleanup quiescence, and assert all bounded native counters return to baseline.
 
-  - [ ] 5.4.3 Task - Run API-surface and documentation integration tests.
+  - [x] 5.4.3 Task - Run API-surface and documentation integration tests.
 
     The task executes `no_future_surface` and confirms examples and types agree
     with actual runtime behavior.
 
-    - [ ] 5.4.3.1 Subtask - Enumerate documented modules, exported functions, typespecs, and protocols against the Milestone 1 allowlist.
-    - [ ] 5.4.3.2 Subtask - Add doctests for successful open/close, malformed input, invalid arguments, redacted inspection, repeated close, and non-owner rejection.
-    - [ ] 5.4.3.3 Subtask - Run focused API/resource/error tests, native baseline checks, `mix test`, `mix format --check-formatted`, `mix spec.next`, and the reported `mix spec.check --base ...` command before marking Phase 5 complete.
+    - [x] 5.4.3.1 Subtask - Enumerate documented modules, exported functions, typespecs, and protocols against the Milestone 1 allowlist.
+    - [x] 5.4.3.2 Subtask - Add doctests for successful open/close, malformed input, invalid arguments, redacted inspection, repeated close, and non-owner rejection.
+    - [x] 5.4.3.3 Subtask - Run focused API/resource/error tests, native baseline checks, `mix test`, `mix format --check-formatted`, `mix spec.next`, and the reported `mix spec.check --base ...` command before marking Phase 5 complete.

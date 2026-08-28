@@ -4,6 +4,8 @@ defmodule SimdJson.Native.ThreadedOperation do
   alias SimdJson.Native.BuildSmoke
   alias SimdJson.Native.OperationCoordinator
 
+  @test_hooks Mix.env() == :test
+
   @type operation :: %{
           resource: reference(),
           request_ref: reference(),
@@ -48,6 +50,26 @@ defmodule SimdJson.Native.ThreadedOperation do
     true = BuildSmoke.operation_owner_matches(operation.resource)
     true = BuildSmoke.operation_finish(operation.resource, :delivered)
     result
+  end
+
+  if @test_hooks do
+    @spec probe_document_for_test(reference()) :: map()
+    def probe_document_for_test(document) when is_reference(document) do
+      operation = admit(<<>>, :threaded_smoke)
+
+      {:ok, result} =
+        submit(operation, fn ->
+          BuildSmoke.threaded_document_probe(operation.resource, document)
+        end)
+
+      true =
+        correlated?(operation, result) and
+          result.worker_context == :threaded and
+          result.ready_for_delivery
+
+      true = BuildSmoke.operation_finish(operation.resource, :delivered)
+      result
+    end
   end
 
   @spec open(binary(), keyword()) :: {:ok, reference()} | {:error, map()}

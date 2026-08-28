@@ -54,10 +54,10 @@ test "owned padded input is aligned, initialized, and independent of its source"
             state.padded_input.?.len,
         );
         try std.testing.expect(@intFromPtr(state.padded_input.?.ptr) != @intFromPtr(source.ptr));
-        try std.testing.expect(state.cDocumentUsesOwnedInputForTest());
+        try std.testing.expect(state.cDocumentUsesOwnedInputForProbe());
 
         @memset(source, 'x');
-        try std.testing.expect(state.revalidateForTest() == .ok);
+        try std.testing.expect(state.revalidateForProbe() == .ok);
         try std.testing.expect(state.closeAndDestroy());
     }
 }

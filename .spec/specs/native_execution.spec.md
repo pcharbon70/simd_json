@@ -30,9 +30,11 @@ input-dependent state and checks owner before lifecycle. Section 5.2 verifies
 that rejected submissions and every native failure class return through the
 same redacted public translator without synchronous fallback. Section 5.3
 labels this threaded layer as a qualification runtime and assigns production
-admission control and its bounded worker pool to Milestone 4. The formal Phase
-6 scheduler profile and the recorded repeated-unload qualification gap keep the
-bootstrap exception in force.
+admission control and its bounded worker pool to Milestone 4. Section 5.4 adds
+a private threaded lifetime probe, concurrent public-owner correlation, and
+explicit/GC cleanup-baseline evidence. The formal Phase 6 scheduler profile and
+the recorded repeated-unload qualification gap keep the bootstrap exception in
+force.
 
 ```spec-meta
 id: simd_json.native_execution
@@ -280,6 +282,17 @@ decisions:
   target: test/simd_json/public_surface_test.exs
   covers:
     - simd_json.native_execution.preproduction_boundary
+
+- kind: test_file
+  target: test/simd_json/phase_5_integration_test.exs
+  covers:
+    - simd_json.native_execution.threaded_parse
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.request_correlation
+    - simd_json.native_execution.retained_resources
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.threaded_submission_failure
 ```
 
 ## Required Closure Evidence
@@ -308,5 +321,5 @@ Before activation, replace the bootstrap exception with executed scheduler heart
     - simd_json.native_execution.threaded_submission_failure
     - simd_json.native_execution.large_gc_teardown
     - simd_json.native_execution.reload_cleanup
-  reason: Phase 4 now implements and integrates retained threaded construction, correlated delivery, cancellation, submission-failure containment, explicit/orphan/GC teardown, application generation cycling, and a preliminary scheduler matrix; Phase 6 must establish the final percentile budget and retain the recorded repeated shared-object unload gap until a supported harness supplies that evidence.
+  reason: Phase 4 implements retained threaded construction, correlation, cancellation, explicit/orphan/GC teardown, application generations, and the preliminary scheduler matrix; Phase 5 adds the complete public API, failure, lifetime, ownership, concurrency, and cleanup-baseline matrix. Phase 6 must establish the final percentile budget and retain the recorded repeated shared-object unload gap until a supported harness supplies that evidence.
 ```

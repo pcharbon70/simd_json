@@ -5,12 +5,13 @@ Current package and documentation contract for the `SimdJson` library.
 The package currently distributes the pinned native build inputs, private C
 ABI, C++ shim, Zig ownership/resource sources, symbol policy, native
 conformance harnesses, and Phase 4's internal correlated threaded operation
-runtime, stable coordinator, and cleanup-only dispatcher. Phase 5 Sections 5.1
-through 5.3 add the narrow binary `open/1` and owner-safe `close/1` root API
+runtime, stable coordinator, and cleanup-only dispatcher. Phase 5 adds the
+narrow binary `open/1` and owner-safe `close/1` root API
 with an opaque document and a closed, redacted structured-error vocabulary.
 README, module, milestone, export, typespec, and protocol checks establish that
 no decode, projection, streaming, cursor, transfer, or raw native-handle
-surface is exposed.
+surface is exposed. Public corpora, ownership, lifetime, concurrency, and
+native-baseline tests now exercise the packaged vertical slice.
 
 ```spec-meta
 id: simd_json.package
