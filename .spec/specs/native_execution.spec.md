@@ -7,10 +7,15 @@ Current-truth contract for scheduler isolation, threaded request correlation, ca
 This subject ensures that proving the native parser never makes unrelated BEAM processes pay an input-dependent scheduling cost and that asynchronous completion cannot outlive the resources it uses.
 
 Phases 1 through 3 contribute bounded build/resource diagnostics and native
-ownership tests outside the BEAM. Resource destruction callbacks perform only
-an atomic close-detach transition, and no production NIF can copy input, parse,
-or own large parser state. Zigler's threaded parse and deferred-cleanup
-executors are attached in Phase 4, so the bootstrap exception remains in force.
+ownership tests outside the BEAM. Phase 4 now qualifies the pinned Zigler
+threaded contexts and adds bounded admission: a private environment retains the
+binary term without copying its bytes, while a native operation record owns an
+unforgeable reference, private kind, generation, state, cancellation flag, and
+bounded accounting. The threaded smoke proof executes outside normal and dirty
+schedulers and the ordinary entrypoint performs no input-sized copy. Parsed
+document construction, correlated delivery, coordinator-owned cancellation,
+and deferred cleanup are not connected yet, so the bootstrap exception remains
+in force.
 
 ```spec-meta
 id: simd_json.native_execution
@@ -175,6 +180,23 @@ decisions:
 
 ```spec-verification
 - kind: test_file
+  target: test/native/threaded_admission_test.exs
+  covers:
+    - simd_json.native_execution.threaded_parse
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.request_correlation
+    - simd_json.native_execution.retained_resources
+    - simd_json.native_execution.cancellation_boundaries
+
+- kind: source_file
+  target: .spec/research/zigler_0_16_threaded_qualification.md
+  covers:
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.preproduction_boundary
+
+- kind: test_file
   target: test/native/document_resource_policy_test.exs
   covers:
     - simd_json.native_execution.bounded_nif_entry
@@ -207,5 +229,5 @@ Before activation, replace the bootstrap exception with executed scheduler heart
     - simd_json.native_execution.threaded_submission_failure
     - simd_json.native_execution.large_gc_teardown
     - simd_json.native_execution.reload_cleanup
-  reason: Phase 3 proves that the ordinary resource callback is bounded and exposes no production parse path, but threaded admission and cleanup are not implemented; add correlation, cancellation, teardown, shutdown, and scheduler-qualification proof before activation.
+  reason: Phase 4 now qualifies Zigler 0.16 contexts and implements retained, correlated bounded admission plus threaded smoke proof, but parsed construction, delivery, caller-death coordination, teardown, shutdown, and scheduler qualification are not complete; add that evidence before activation.
 ```

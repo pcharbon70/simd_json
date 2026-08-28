@@ -9,7 +9,7 @@ defmodule SimdJson.Native.BuildSmoke do
     zig_code_path: "./native/zig/build_smoke.zig",
     optimize: {:env, :safe},
     extra_modules: [document_resource: {"./native/zig/document_resource.zig", []}],
-    resources: [:DocumentResource],
+    resources: [:DocumentResource, :OperationResource],
     callbacks: [
       on_load: :resource_on_load,
       on_upgrade: :resource_on_upgrade,
@@ -21,7 +21,15 @@ defmodule SimdJson.Native.BuildSmoke do
       runtime_implementation: [],
       target_triple: [],
       document_resource_registration_smoke: [],
-      document_resource_fixture: []
+      document_resource_fixture: [],
+      operation_admit: [],
+      operation_metadata: [],
+      operation_cancel: [],
+      operation_finish: [],
+      admission_context: [],
+      operation_owner_matches: [],
+      threaded_context_smoke: [concurrency: :threaded],
+      execution_snapshot: []
     ],
     c: [
       include_dirs: ["./native/include", "./native/vendor/simdjson"],

@@ -6,14 +6,14 @@ Current-truth contract for the opaque `SimdJson.Document` resource, padded input
 
 This subject prevents use-after-free, unsafe simdjson over-read, double destruction, and incoherent cross-process access while leaving a stable parent-resource model for later cursor and streaming milestones.
 
-Phases 1 through 3 now contribute the vendored parser, private opaque C
+Phases 1 through 3 contribute the vendored parser, private opaque C
 parser/document handles, Zig-owned aligned padded input, registered opaque BEAM
 resource storage, monotonic lifecycle primitives, reverse rollback, parent
-retention helpers, and bounded test-only accounting. Native tests exercise that
-ownership graph through C++ in ordinary and sanitizer profiles. No production
-parse path, off-scheduler cleanup executor, public document type, owner check,
-or close API exists until later phases, so the bootstrap exception remains in
-force.
+retention helpers, and bounded test-only accounting. Phase 4 bounded admission
+now retains input through a private environment and operation resource, but it
+does not yet publish parsed document state. No production parse path,
+off-scheduler cleanup executor, public document type, owner check, or close API
+exists yet, so the bootstrap exception remains in force.
 
 ```spec-meta
 id: simd_json.document_resource

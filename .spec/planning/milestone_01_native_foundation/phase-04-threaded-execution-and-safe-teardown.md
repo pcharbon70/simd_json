@@ -36,42 +36,42 @@ Back to plan: [README](./README.md)
 
 ## 4.1 Section — Bounded Admission and Request Correlation
 
-- [ ] 4.1 Section - Define one bounded NIF admission protocol for every input-dependent operation.
+- [x] 4.1 Section - Define one bounded NIF admission protocol for every input-dependent operation.
 
   This section verifies the exact semantics of the pinned Zigler `:threaded`
   facility and wraps them in an operation record whose references, caller,
   resource retention, and terminal state cannot be confused with another call.
 
-  - [ ] 4.1.1 Task - Verify and encapsulate the pinned threaded runtime.
+  - [x] 4.1.1 Task - Verify and encapsulate the pinned threaded runtime.
 
     The task confirms which Zigler and Erlang NIF APIs are legal on the calling
     scheduler, worker thread, completion path, resource callback, upgrade, and
     unload path before those APIs own real document memory.
 
-    - [ ] 4.1.1.1 Subtask - Add a focused threaded smoke test that records calling-process identity and scheduler classification at admission, worker execution, and completion.
-    - [ ] 4.1.1.2 Subtask - Document which environment, term, binary, resource, and message APIs the pinned Zigler/OTP combination permits from each execution context.
-    - [ ] 4.1.1.3 Subtask - Encapsulate Zigler-specific threaded submission behind one native operation adapter so later Milestone 4 replacement does not change document ownership semantics.
-    - [ ] 4.1.1.4 Subtask - If the pinned facility cannot safely submit both parse and deferred cleanup work, stop and reconcile the execution ADR rather than falling back to a normal or dirty NIF.
+    - [x] 4.1.1.1 Subtask - Add a focused threaded smoke test that records calling-process identity and scheduler classification at admission, worker execution, and completion.
+    - [x] 4.1.1.2 Subtask - Document which environment, term, binary, resource, and message APIs the pinned Zigler/OTP combination permits from each execution context.
+    - [x] 4.1.1.3 Subtask - Encapsulate Zigler-specific threaded submission behind one native operation adapter so later Milestone 4 replacement does not change document ownership semantics.
+    - [x] 4.1.1.4 Subtask - If the pinned facility cannot safely submit both parse and deferred cleanup work, stop and reconcile the execution ADR rather than falling back to a normal or dirty NIF.
 
-  - [ ] 4.1.2 Task - Implement the correlated operation record.
+  - [x] 4.1.2 Task - Implement the correlated operation record.
 
     The task gives each admitted parse or cleanup operation unique identity and
     explicit ownership from admission through delivery or discard.
 
-    - [ ] 4.1.2.1 Subtask - Generate an unforgeable BEAM reference for each request and pair it with a private operation kind and native generation.
-    - [ ] 4.1.2.2 Subtask - Retain the caller identity, required resource references, input ownership, and any private result environment until terminal cleanup.
-    - [ ] 4.1.2.3 Subtask - Represent queued, running, cancelling, delivering, completed, and discarded terminal paths without allowing two terminal owners.
-    - [ ] 4.1.2.4 Subtask - Add bounded test accounting for live operation records, retained resources, queued cleanup, delivered results, and discarded results.
+    - [x] 4.1.2.1 Subtask - Generate an unforgeable BEAM reference for each request and pair it with a private operation kind and native generation.
+    - [x] 4.1.2.2 Subtask - Retain the caller identity, required resource references, input ownership, and any private result environment until terminal cleanup.
+    - [x] 4.1.2.3 Subtask - Represent queued, running, cancelling, delivering, completed, and discarded terminal paths without allowing two terminal owners.
+    - [x] 4.1.2.4 Subtask - Add bounded test accounting for live operation records, retained resources, queued cleanup, delivered results, and discarded results.
 
-  - [ ] 4.1.3 Task - Restrict ordinary NIF entry to bounded work.
+  - [x] 4.1.3 Task - Restrict ordinary NIF entry to bounded work.
 
     The task makes scheduler safety structural rather than dependent on typical
     input size.
 
-    - [ ] 4.1.3.1 Subtask - Limit admission to argument shape checks, resource type checks, owner/lifecycle snapshots, reference creation, required retention, atomic state changes, and threaded submission.
-    - [ ] 4.1.3.2 Subtask - Move input copying, padding initialization, simdjson parsing, unbounded result preparation, waits, and native destruction out of ordinary callbacks.
-    - [ ] 4.1.3.3 Subtask - On submission failure, return an internal structured status and release retained state without executing any input-dependent fallback.
-    - [ ] 4.1.3.4 Subtask - Add source-level and runtime test hooks that fail if parse work is registered as synchronous, dirty CPU, or dirty IO execution.
+    - [x] 4.1.3.1 Subtask - Limit admission to argument shape checks, resource type checks, owner/lifecycle snapshots, reference creation, required retention, atomic state changes, and threaded submission.
+    - [x] 4.1.3.2 Subtask - Move input copying, padding initialization, simdjson parsing, unbounded result preparation, waits, and native destruction out of ordinary callbacks.
+    - [x] 4.1.3.3 Subtask - On submission failure, return an internal structured status and release retained state without executing any input-dependent fallback.
+    - [x] 4.1.3.4 Subtask - Add source-level and runtime test hooks that fail if parse work is registered as synchronous, dirty CPU, or dirty IO execution.
 
 ## 4.2 Section — Threaded Parse, Cancellation, and Delivery
 
