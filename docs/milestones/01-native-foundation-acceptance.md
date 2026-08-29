@@ -12,9 +12,9 @@ artifact records the final PR head on Ubuntu 24.04 before merge.
 
 | Identity | Value |
 | --- | --- |
-| Local release-candidate revision | `d0f817921018d9b41428c7ecf1aa73d31e09257b` |
-| Local source tree | `9c3e88f7c95d061747a4e8231619bc15e450a71a` |
-| Qualification-input SHA-256 | `d6034e5c55d3bf31636622599d989f1801335820142a66dc19da1600cc5e5c08` |
+| Local release-candidate revision | `63d1899c4f5ced158216c8dade4fed6b5574e411` |
+| Local source tree | `20cd20e4d66c8605e435cabc1f28af1e8081aedc` |
+| Qualification-input SHA-256 | `97ae50b15cf497538ad8dc6df9f7722b990d1a3f1140ac025b35498b287a2a80` |
 | Qualification date | 2026-08-29 |
 | Local observation host | Linux Mint 22.1, x86-64, kernel 6.8.0; compatibility evidence only, not an added supported target |
 | Complete local command | `bash scripts/ci/qualify_milestone_1.sh` |
@@ -70,7 +70,7 @@ The SpecLed check executes the four owning subject commands:
 
 ## Results
 
-The clean local run of `d0f8179` produced these results:
+The clean local run of `63d1899` produced these results:
 
 | Gate | Result |
 | --- | --- |
@@ -81,7 +81,7 @@ The clean local run of `d0f8179` produced these results:
 | Instrumented NIF | 30 threaded/public tests passed under ASan/UBSan. |
 | Package and build | Required sources, headers, notices, and both licenses were present; generated native artifacts were absent; two network-disabled clean builds agreed and selected `haswell`. |
 | Symbols | The standalone C ABI and NIF dynamic surfaces matched their allowlists; release test hooks and C++ implementation symbols were absent. |
-| Scheduler | 86 heartbeat samples; p50 3.032 ms, p95 7.410 ms, p99/max 10.523 ms; dirty CPU and dirty I/O utilization both 0%. Budgets were p95 50 ms, p99 250 ms, and max 500 ms. |
+| Scheduler | 84 heartbeat samples; p50 3.011 ms, p95 5.252 ms, p99/max 17.185 ms; dirty CPU and dirty I/O utilization both 0%. Budgets were p95 50 ms, p99 250 ms, and max 500 ms. |
 | Lifecycle | Seed 260829001; 20 caller deaths, 16 explicit documents, 16 GC documents, 8 exiting-owner documents, and 3 application cycles; every live native gauge returned to zero after each batch. |
 | SpecLed | 68/68 Milestone 1 requirement/scenario claims had executed strength; 0 threshold failures, findings, warnings, uncovered policy files, or bootstrap exceptions. |
 
