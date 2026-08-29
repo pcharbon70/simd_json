@@ -65,7 +65,7 @@
         ],
         "file": ".spec/specs/document_api.spec.md",
         "id": "simd_json.document_api.milestone_01_bootstrap",
-        "reason": "Phase 5 implements the complete public contract and Phase 6 Section 6.1 repeats its corpus against the sanitizer-instrumented NIF; retain the exception until Sections 6.2 through 6.4 finish runtime qualification and activate every dependent native subject together.",
+        "reason": "Phase 5 implements the complete public contract and Phase 6 Sections 6.1 and 6.2 repeat it against the sanitizer-instrumented NIF and under seeded owner, close, failure, and GC stress; retain the exception until Sections 6.3 and 6.4 activate every dependent native subject together.",
         "subject_id": "simd_json.document_api"
       },
       {
@@ -90,7 +90,7 @@
         ],
         "file": ".spec/specs/document_resource.spec.md",
         "id": "simd_json.document_resource.milestone_01_bootstrap",
-        "reason": "Phase 6 Section 6.1 adds ordinary and sanitizer coverage for the standalone Zig resource plus actual threaded/public NIF corpora and confirms release accounting hooks remain absent; retain the exception until Sections 6.2 through 6.4 complete bounded lifecycle stress and coordinated activation.",
+        "reason": "Phase 6 Sections 6.1 and 6.2 add standalone and NIF sanitizer coverage plus seeded cancellation, failure, owner, close, GC, generation, exactly-once cleanup, and per-batch native-baseline stress; retain the exception until Sections 6.3 and 6.4 reconcile executed proof and activate all dependent subjects together.",
         "subject_id": "simd_json.document_resource"
       },
       {
@@ -113,7 +113,7 @@
         ],
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "id": "simd_json.native_build_and_abi.milestone_01_bootstrap",
-        "reason": "Phase 6 Section 6.1 qualifies the supported release package, deterministic ABI stress, standalone and NIF sanitizer corpora, symbol surface, offline build, target rejection, and executable dependency-upgrade fingerprint; retain the exception until Sections 6.2 through 6.4 complete runtime qualification and activate all four subjects together.",
+        "reason": "Phase 6 Sections 6.1 and 6.2 qualify the supported release package, deterministic ABI stress, standalone and NIF sanitizer corpora, symbol surface, offline build, target rejection, formal scheduler profile, lifecycle stress, and executable dependency-upgrade fingerprint; retain the exception until Sections 6.3 and 6.4 reconcile and activate all four subjects together.",
         "subject_id": "simd_json.native_build_and_abi"
       },
       {
@@ -138,7 +138,7 @@
         ],
         "file": ".spec/specs/native_execution.spec.md",
         "id": "simd_json.native_execution.milestone_01_bootstrap",
-        "reason": "Phase 6 Section 6.1 adds sanitizer coverage for the actual correlated threaded and public path and binds it to executable qualification freshness; retain the exception until Sections 6.2 through 6.4 establish the formal percentile budget, bounded lifecycle stress, and activation while documenting the unsupported repeated shared-object unload harness.",
+        "reason": "Phase 6 Sections 6.1 and 6.2 add sanitizer coverage for the actual correlated path, a formal raw-sample percentile/utilization profile, seeded cancellation and teardown stress, supported application generation cycling, and per-batch baseline recovery; retain the exception until Sections 6.3 and 6.4 reconcile executed proof and activate the subject while preserving the unsupported repeated shared-object unload boundary.",
         "subject_id": "simd_json.native_execution"
       }
     ],
@@ -1337,6 +1337,19 @@
       },
       {
         "covers": [
+          "simd_json.document_api.open_contract",
+          "simd_json.document_api.close_contract",
+          "simd_json.document_api.structured_error",
+          "simd_json.document_api.initial_error_reasons",
+          "simd_json.document_api.close_and_non_owner"
+        ],
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "subject_id": "simd_json.document_api",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs"
+      },
+      {
+        "covers": [
           "simd_json.document_resource.opaque_handle",
           "simd_json.document_resource.complete_ownership",
           "simd_json.document_resource.parent_retention"
@@ -1493,6 +1506,48 @@
         "kind": "command",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/run_nif_sanitizer_tests.sh"
+      },
+      {
+        "covers": [
+          "simd_json.document_resource.single_owner",
+          "simd_json.document_resource.lifecycle",
+          "simd_json.document_resource.idempotent_close",
+          "simd_json.document_resource.reverse_destruction",
+          "simd_json.document_resource.deferred_large_cleanup",
+          "simd_json.document_resource.repeated_close",
+          "simd_json.document_resource.non_owner_rejection",
+          "simd_json.document_resource.gc_cleanup",
+          "simd_json.document_resource.native_memory_baseline"
+        ],
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs"
+      },
+      {
+        "covers": [
+          "simd_json.document_resource.opaque_handle",
+          "simd_json.document_resource.padded_owned_copy",
+          "simd_json.document_resource.zero_copy_disabled",
+          "simd_json.document_resource.complete_ownership",
+          "simd_json.document_resource.single_owner",
+          "simd_json.document_resource.lifecycle",
+          "simd_json.document_resource.idempotent_close",
+          "simd_json.document_resource.reverse_destruction",
+          "simd_json.document_resource.parent_retention",
+          "simd_json.document_resource.deferred_large_cleanup",
+          "simd_json.document_resource.test_accounting",
+          "simd_json.document_resource.input_lifetime",
+          "simd_json.document_resource.repeated_close",
+          "simd_json.document_resource.non_owner_rejection",
+          "simd_json.document_resource.partial_open_failure",
+          "simd_json.document_resource.gc_cleanup",
+          "simd_json.document_resource.native_memory_baseline"
+        ],
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh"
       },
       {
         "covers": [
@@ -1878,6 +1933,17 @@
       },
       {
         "covers": [
+          "simd_json.native_build_and_abi.pinned_toolchain",
+          "simd_json.native_build_and_abi.target_qualification",
+          "simd_json.native_build_and_abi.dependency_upgrade_gate"
+        ],
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "command",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "bash scripts/ci/qualify_runtime.sh"
+      },
+      {
+        "covers": [
           "simd_json.native_execution.threaded_parse",
           "simd_json.native_execution.bounded_nif_entry",
           "simd_json.native_execution.no_fallback",
@@ -2037,6 +2103,79 @@
         "kind": "command",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/native/run_nif_sanitizer_tests.sh"
+      },
+      {
+        "covers": [
+          "simd_json.native_execution.threaded_parse",
+          "simd_json.native_execution.bounded_nif_entry",
+          "simd_json.native_execution.no_fallback",
+          "simd_json.native_execution.threaded_cleanup",
+          "simd_json.native_execution.scheduler_qualification",
+          "simd_json.native_execution.preproduction_boundary",
+          "simd_json.native_execution.large_parse_responsiveness"
+        ],
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "source_file",
+        "subject_id": "simd_json.native_execution",
+        "target": ".spec/research/phase_6_scheduler_qualification.md"
+      },
+      {
+        "covers": [
+          "simd_json.native_execution.threaded_parse",
+          "simd_json.native_execution.bounded_nif_entry",
+          "simd_json.native_execution.no_fallback",
+          "simd_json.native_execution.threaded_cleanup",
+          "simd_json.native_execution.scheduler_qualification",
+          "simd_json.native_execution.preproduction_boundary",
+          "simd_json.native_execution.large_parse_responsiveness"
+        ],
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/scheduler_qualification_test.exs"
+      },
+      {
+        "covers": [
+          "simd_json.native_execution.no_fallback",
+          "simd_json.native_execution.retained_resources",
+          "simd_json.native_execution.late_result_cleanup",
+          "simd_json.native_execution.cancellation_boundaries",
+          "simd_json.native_execution.threaded_cleanup",
+          "simd_json.native_execution.shutdown_cleanup",
+          "simd_json.native_execution.caller_dies_while_running",
+          "simd_json.native_execution.threaded_submission_failure",
+          "simd_json.native_execution.large_gc_teardown",
+          "simd_json.native_execution.reload_cleanup"
+        ],
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs"
+      },
+      {
+        "covers": [
+          "simd_json.native_execution.threaded_parse",
+          "simd_json.native_execution.bounded_nif_entry",
+          "simd_json.native_execution.no_fallback",
+          "simd_json.native_execution.request_correlation",
+          "simd_json.native_execution.retained_resources",
+          "simd_json.native_execution.late_result_cleanup",
+          "simd_json.native_execution.cancellation_boundaries",
+          "simd_json.native_execution.threaded_cleanup",
+          "simd_json.native_execution.scheduler_qualification",
+          "simd_json.native_execution.preproduction_boundary",
+          "simd_json.native_execution.shutdown_cleanup",
+          "simd_json.native_execution.large_parse_responsiveness",
+          "simd_json.native_execution.caller_dies_while_running",
+          "simd_json.native_execution.result_reference_mismatch",
+          "simd_json.native_execution.threaded_submission_failure",
+          "simd_json.native_execution.large_gc_teardown",
+          "simd_json.native_execution.reload_cleanup"
+        ],
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh"
       },
       {
         "covers": [
@@ -2225,7 +2364,7 @@
     "requirements": 52,
     "scenarios": 26,
     "subjects": 6,
-    "verifications": 84
+    "verifications": 92
   },
   "verification": {
     "claims": [
@@ -2877,6 +3016,61 @@
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/native/run_nif_sanitizer_tests.sh",
         "verification_index": 6
+      },
+      {
+        "cover_id": "simd_json.document_api.close_and_non_owner",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 7
+      },
+      {
+        "cover_id": "simd_json.document_api.close_contract",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 7
+      },
+      {
+        "cover_id": "simd_json.document_api.initial_error_reasons",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 7
+      },
+      {
+        "cover_id": "simd_json.document_api.open_contract",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 7
+      },
+      {
+        "cover_id": "simd_json.document_api.structured_error",
+        "file": ".spec/specs/document_api.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_api",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 7
       },
       {
         "cover_id": "simd_json.document_resource.complete_ownership",
@@ -3658,6 +3852,292 @@
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/native/run_nif_sanitizer_tests.sh",
         "verification_index": 10
+      },
+      {
+        "cover_id": "simd_json.document_resource.deferred_large_cleanup",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 11
+      },
+      {
+        "cover_id": "simd_json.document_resource.gc_cleanup",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 11
+      },
+      {
+        "cover_id": "simd_json.document_resource.idempotent_close",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 11
+      },
+      {
+        "cover_id": "simd_json.document_resource.lifecycle",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 11
+      },
+      {
+        "cover_id": "simd_json.document_resource.native_memory_baseline",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 11
+      },
+      {
+        "cover_id": "simd_json.document_resource.non_owner_rejection",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 11
+      },
+      {
+        "cover_id": "simd_json.document_resource.repeated_close",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 11
+      },
+      {
+        "cover_id": "simd_json.document_resource.reverse_destruction",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 11
+      },
+      {
+        "cover_id": "simd_json.document_resource.single_owner",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.document_resource",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 11
+      },
+      {
+        "cover_id": "simd_json.document_resource.complete_ownership",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.document_resource.deferred_large_cleanup",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.document_resource.gc_cleanup",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.document_resource.idempotent_close",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.document_resource.input_lifetime",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.document_resource.lifecycle",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.document_resource.native_memory_baseline",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.document_resource.non_owner_rejection",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.document_resource.opaque_handle",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.document_resource.padded_owned_copy",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.document_resource.parent_retention",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.document_resource.partial_open_failure",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.document_resource.repeated_close",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.document_resource.reverse_destruction",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.document_resource.single_owner",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.document_resource.test_accounting",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.document_resource.zero_copy_disabled",
+        "file": ".spec/specs/document_resource.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.document_resource",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 12
       },
       {
         "cover_id": "simd_json.native_build_and_abi.pinned_toolchain",
@@ -4782,6 +5262,39 @@
         "verification_index": 34
       },
       {
+        "cover_id": "simd_json.native_build_and_abi.dependency_upgrade_gate",
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 35
+      },
+      {
+        "cover_id": "simd_json.native_build_and_abi.pinned_toolchain",
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 35
+      },
+      {
+        "cover_id": "simd_json.native_build_and_abi.target_qualification",
+        "file": ".spec/specs/native_build_and_abi.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_build_and_abi",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 35
+      },
+      {
         "cover_id": "simd_json.native_execution.bounded_nif_entry",
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "test_file",
@@ -5508,6 +6021,457 @@
         "verification_index": 11
       },
       {
+        "cover_id": "simd_json.native_execution.bounded_nif_entry",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": ".spec/research/phase_6_scheduler_qualification.md",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.native_execution.large_parse_responsiveness",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": ".spec/research/phase_6_scheduler_qualification.md",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.native_execution.no_fallback",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": ".spec/research/phase_6_scheduler_qualification.md",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.native_execution.preproduction_boundary",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": ".spec/research/phase_6_scheduler_qualification.md",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.native_execution.scheduler_qualification",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": ".spec/research/phase_6_scheduler_qualification.md",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.native_execution.threaded_cleanup",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": ".spec/research/phase_6_scheduler_qualification.md",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.native_execution.threaded_parse",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": ".spec/research/phase_6_scheduler_qualification.md",
+        "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.native_execution.bounded_nif_entry",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/scheduler_qualification_test.exs",
+        "verification_index": 13
+      },
+      {
+        "cover_id": "simd_json.native_execution.large_parse_responsiveness",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/scheduler_qualification_test.exs",
+        "verification_index": 13
+      },
+      {
+        "cover_id": "simd_json.native_execution.no_fallback",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/scheduler_qualification_test.exs",
+        "verification_index": 13
+      },
+      {
+        "cover_id": "simd_json.native_execution.preproduction_boundary",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/scheduler_qualification_test.exs",
+        "verification_index": 13
+      },
+      {
+        "cover_id": "simd_json.native_execution.scheduler_qualification",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/scheduler_qualification_test.exs",
+        "verification_index": 13
+      },
+      {
+        "cover_id": "simd_json.native_execution.threaded_cleanup",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/scheduler_qualification_test.exs",
+        "verification_index": 13
+      },
+      {
+        "cover_id": "simd_json.native_execution.threaded_parse",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/scheduler_qualification_test.exs",
+        "verification_index": 13
+      },
+      {
+        "cover_id": "simd_json.native_execution.caller_dies_while_running",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 14
+      },
+      {
+        "cover_id": "simd_json.native_execution.cancellation_boundaries",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 14
+      },
+      {
+        "cover_id": "simd_json.native_execution.large_gc_teardown",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 14
+      },
+      {
+        "cover_id": "simd_json.native_execution.late_result_cleanup",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 14
+      },
+      {
+        "cover_id": "simd_json.native_execution.no_fallback",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 14
+      },
+      {
+        "cover_id": "simd_json.native_execution.reload_cleanup",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 14
+      },
+      {
+        "cover_id": "simd_json.native_execution.retained_resources",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 14
+      },
+      {
+        "cover_id": "simd_json.native_execution.shutdown_cleanup",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 14
+      },
+      {
+        "cover_id": "simd_json.native_execution.threaded_cleanup",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 14
+      },
+      {
+        "cover_id": "simd_json.native_execution.threaded_submission_failure",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "test_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.native_execution",
+        "target": "test/qualification/lifecycle_memory_qualification_test.exs",
+        "verification_index": 14
+      },
+      {
+        "cover_id": "simd_json.native_execution.bounded_nif_entry",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
+        "cover_id": "simd_json.native_execution.caller_dies_while_running",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
+        "cover_id": "simd_json.native_execution.cancellation_boundaries",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
+        "cover_id": "simd_json.native_execution.large_gc_teardown",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
+        "cover_id": "simd_json.native_execution.large_parse_responsiveness",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
+        "cover_id": "simd_json.native_execution.late_result_cleanup",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
+        "cover_id": "simd_json.native_execution.no_fallback",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
+        "cover_id": "simd_json.native_execution.preproduction_boundary",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
+        "cover_id": "simd_json.native_execution.reload_cleanup",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
+        "cover_id": "simd_json.native_execution.request_correlation",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
+        "cover_id": "simd_json.native_execution.result_reference_mismatch",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
+        "cover_id": "simd_json.native_execution.retained_resources",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
+        "cover_id": "simd_json.native_execution.scheduler_qualification",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
+        "cover_id": "simd_json.native_execution.shutdown_cleanup",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
+        "cover_id": "simd_json.native_execution.threaded_cleanup",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
+        "cover_id": "simd_json.native_execution.threaded_parse",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
+        "cover_id": "simd_json.native_execution.threaded_submission_failure",
+        "file": ".spec/specs/native_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_execution",
+        "target": "bash scripts/ci/qualify_runtime.sh",
+        "verification_index": 15
+      },
+      {
         "cover_id": "simd_json.package.mix_library",
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
@@ -5775,9 +6739,9 @@
     "cli_minimum_strength": null,
     "default_minimum_strength": "claimed",
     "strength_summary": {
-      "claimed": 115,
+      "claimed": 152,
       "executed": 0,
-      "linked": 207
+      "linked": 245
     },
     "threshold_failures": 0
   },

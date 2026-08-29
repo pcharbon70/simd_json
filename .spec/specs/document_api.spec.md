@@ -22,7 +22,9 @@ families, failure redaction, input lifetime, owner boundaries, repeated close,
 concurrent owners, and explicit/GC baseline recovery. Phase 6 Section 6.1 now
 repeats that public corpus against an isolated NIF whose C++ translation units
 are instrumented by AddressSanitizer and UndefinedBehaviorSanitizer. Runtime
-qualification and coordinated subject activation remain.
+qualification now repeats owner, non-owner, idempotent-close, submission
+failure, and GC behavior in a seeded bounded stress profile. Coordinated subject
+activation remains.
 
 ```spec-meta
 id: simd_json.document_api
@@ -291,6 +293,15 @@ decisions:
     - simd_json.document_api.redacted_failure
     - simd_json.document_api.close_and_non_owner
     - simd_json.document_api.no_future_surface
+
+- kind: test_file
+  target: test/qualification/lifecycle_memory_qualification_test.exs
+  covers:
+    - simd_json.document_api.open_contract
+    - simd_json.document_api.close_contract
+    - simd_json.document_api.structured_error
+    - simd_json.document_api.initial_error_reasons
+    - simd_json.document_api.close_and_non_owner
 ```
 
 ## Required Closure Evidence
@@ -324,5 +335,5 @@ and activating the native build, resource, and scheduler subjects.
     - simd_json.document_api.redacted_failure
     - simd_json.document_api.close_and_non_owner
     - simd_json.document_api.no_future_surface
-  reason: Phase 5 implements the complete public contract and Phase 6 Section 6.1 repeats its corpus against the sanitizer-instrumented NIF; retain the exception until Sections 6.2 through 6.4 finish runtime qualification and activate every dependent native subject together.
+  reason: Phase 5 implements the complete public contract and Phase 6 Sections 6.1 and 6.2 repeat it against the sanitizer-instrumented NIF and under seeded owner, close, failure, and GC stress; retain the exception until Sections 6.3 and 6.4 activate every dependent native subject together.
 ```

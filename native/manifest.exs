@@ -158,6 +158,7 @@
     "native/zig/build_smoke.zig",
     "native/zig/document_resource.zig",
     "scripts/ci/qualify_native_release.sh",
+    "scripts/ci/qualify_runtime.sh",
     "scripts/ci/verify_offline_native_build.sh",
     "scripts/native/run_c_abi_conformance.sh",
     "scripts/native/run_nif_sanitizer_tests.sh",
@@ -176,12 +177,15 @@
     "test/native/threaded_document_open_test.exs",
     "test/native/threaded_teardown_test.exs",
     "test/native/zig_resource_test.exs",
+    "test/qualification/lifecycle_memory_qualification_test.exs",
     "test/qualification/native_release_qualification_test.exs",
+    "test/qualification/scheduler_qualification_test.exs",
     "test/simd_json/document_api_test.exs",
     "test/simd_json/error_test.exs",
     "test/simd_json/phase_5_integration_test.exs",
     "test/simd_json/public_surface_test.exs",
     "test/simd_json_test.exs",
-    "test/test_helper.exs"
+    "test/test_helper.exs",
+    ".spec/research/phase_6_scheduler_qualification.md"
   ]
 ]

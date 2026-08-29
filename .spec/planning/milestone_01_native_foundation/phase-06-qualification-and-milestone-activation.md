@@ -61,36 +61,36 @@ Back to plan: [README](./README.md)
 
 ## 6.2 Section — Scheduler, Lifecycle, and Memory Qualification
 
-- [ ] 6.2 Section - Prove the final public API remains responsive and leak-free under realistic concurrency and teardown races.
+- [x] 6.2 Section - Prove the final public API remains responsive and leak-free under realistic concurrency and teardown races.
 
   This section turns scheduler safety into repeatable measured evidence. It
   records enough environment data to interpret latency results and treats dirty
   scheduler consumption, orphaned native work, and memory retained after
   quiescence as failures.
 
-  - [ ] 6.2.1 Task - Establish and run the scheduler-responsiveness qualification profile.
+  - [x] 6.2.1 Task - Establish and run the scheduler-responsiveness qualification profile.
 
     The task executes the final `large_parse_responsiveness` scenario with a
     documented budget chosen from stable qualification-host measurements rather
     than an unexplained timing constant.
 
-    - [ ] 6.2.1.1 Subtask - Record OTP/ERTS, operating system, architecture, CPU, normal and dirty scheduler counts, power/virtualization assumptions, fixture sizes, concurrency, warm-up, sample count, and percentile calculation.
-    - [ ] 6.2.1.2 Subtask - Select and document a normal-scheduler heartbeat latency budget and a separate non-flaky CI regression threshold derived from the qualification profile.
-    - [ ] 6.2.1.3 Subtask - Open and close large valid and invalid documents concurrently while independent BEAM processes measure wake-up latency and scheduler utilization.
-    - [ ] 6.2.1.4 Subtask - Assert heartbeat percentiles stay within budget, ordinary NIF entry remains bounded, and dirty schedulers do not carry JSON parse or large-cleanup load.
-    - [ ] 6.2.1.5 Subtask - Retain raw bounded measurements and summarized results so a future toolchain or execution change can be compared against the same protocol.
+    - [x] 6.2.1.1 Subtask - Record OTP/ERTS, operating system, architecture, CPU, normal and dirty scheduler counts, power/virtualization assumptions, fixture sizes, concurrency, warm-up, sample count, and percentile calculation.
+    - [x] 6.2.1.2 Subtask - Select and document a normal-scheduler heartbeat latency budget and a separate non-flaky CI regression threshold derived from the qualification profile.
+    - [x] 6.2.1.3 Subtask - Open and close large valid and invalid documents concurrently while independent BEAM processes measure wake-up latency and scheduler utilization.
+    - [x] 6.2.1.4 Subtask - Assert heartbeat percentiles stay within budget, ordinary NIF entry remains bounded, and dirty schedulers do not carry JSON parse or large-cleanup load.
+    - [x] 6.2.1.5 Subtask - Retain raw bounded measurements and summarized results so a future toolchain or execution change can be compared against the same protocol.
 
-  - [ ] 6.2.2 Task - Stress cancellation, teardown, and native baseline recovery.
+  - [x] 6.2.2 Task - Stress cancellation, teardown, and native baseline recovery.
 
     The task combines `caller_dies_while_running`, `threaded_submission_failure`,
     `large_gc_teardown`, `reload_cleanup`, `repeated_close`, and
     `native_memory_baseline` in long-running but bounded qualification loops.
 
-    - [ ] 6.2.2.1 Subtask - Randomize caller death and explicit close around each cancellation boundary while valid and invalid parses are queued or running.
-    - [ ] 6.2.2.2 Subtask - Inject parse and cleanup submission failures and assert no scheduler fallback, partial publication, stale delivery, or retained operation survives quiescence.
-    - [ ] 6.2.2.3 Subtask - Mix owner close, repeated close, non-owner close, dropped resource terms, and forced GC across independent documents and assert exactly-once reverse destruction.
-    - [ ] 6.2.2.4 Subtask - Repeat application stop/start and supported NIF load/unload with queued, running, delivered, and abandoned work; assert generations isolate every completion.
-    - [ ] 6.2.2.5 Subtask - After each stress batch, await bounded cleanup quiescence and prove buffers, parser/document handles, resources, retained parents, operations, and result environments return to baseline.
+    - [x] 6.2.2.1 Subtask - Randomize caller death and explicit close around each cancellation boundary while valid and invalid parses are queued or running.
+    - [x] 6.2.2.2 Subtask - Inject parse and cleanup submission failures and assert no scheduler fallback, partial publication, stale delivery, or retained operation survives quiescence.
+    - [x] 6.2.2.3 Subtask - Mix owner close, repeated close, non-owner close, dropped resource terms, and forced GC across independent documents and assert exactly-once reverse destruction.
+    - [x] 6.2.2.4 Subtask - Repeat application stop/start and supported NIF load/unload with queued, running, delivered, and abandoned work; assert generations isolate every completion.
+    - [x] 6.2.2.5 Subtask - After each stress batch, await bounded cleanup quiescence and prove buffers, parser/document handles, resources, retained parents, operations, and result environments return to baseline.
 
 ## 6.3 Section — Documentation, Traceability, and Spec Activation
 

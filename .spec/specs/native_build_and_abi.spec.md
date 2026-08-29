@@ -24,9 +24,10 @@ Phase 6 Section 6.1 adds the release package inspection, deterministic
 randomized C ABI stress, isolated threaded/public NIF sanitizer run, and a
 checked-in qualification fingerprint. Every ABI-, runtime-, harness-, target-,
 workflow-, and evidence-relevant change now makes the recorded proof stale,
-and an isolated pin-change test proves the gate fails closed. The final
-scheduler and lifecycle qualification still precede activation, so the
-Milestone 1 bootstrap exception and `planned` status remain in force.
+and an isolated pin-change test proves the gate fails closed. Section 6.2 adds
+the formal scheduler and lifecycle evidence commands to the same fingerprinted
+release matrix. Documentation reconciliation and final activation remain, so
+the Milestone 1 bootstrap exception and `planned` status stay in force.
 
 ```spec-meta
 id: simd_json.native_build_and_abi
@@ -432,6 +433,13 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
     - simd_json.native_build_and_abi.release_symbol_surface
     - simd_json.native_build_and_abi.unsupported_target_rejection
     - simd_json.native_build_and_abi.dependency_upgrade_gate
+
+- kind: command
+  target: bash scripts/ci/qualify_runtime.sh
+  covers:
+    - simd_json.native_build_and_abi.pinned_toolchain
+    - simd_json.native_build_and_abi.target_qualification
+    - simd_json.native_build_and_abi.dependency_upgrade_gate
 ```
 
 ## Exceptions
@@ -454,5 +462,5 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
     - simd_json.native_build_and_abi.release_symbol_surface
     - simd_json.native_build_and_abi.unsupported_target_rejection
     - simd_json.native_build_and_abi.dependency_upgrade_gate
-  reason: Phase 6 Section 6.1 qualifies the supported release package, deterministic ABI stress, standalone and NIF sanitizer corpora, symbol surface, offline build, target rejection, and executable dependency-upgrade fingerprint; retain the exception until Sections 6.2 through 6.4 complete runtime qualification and activate all four subjects together.
+  reason: Phase 6 Sections 6.1 and 6.2 qualify the supported release package, deterministic ABI stress, standalone and NIF sanitizer corpora, symbol surface, offline build, target rejection, formal scheduler profile, lifecycle stress, and executable dependency-upgrade fingerprint; retain the exception until Sections 6.3 and 6.4 reconcile and activate all four subjects together.
 ```

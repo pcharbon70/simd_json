@@ -80,3 +80,17 @@ jobs:
           path: _build/qualification/native
           if-no-files-found: error
           retention-days: 30
+
+      - name: Qualify scheduler, lifecycle, and native baseline recovery
+        env:
+          SIMD_JSON_QUALIFICATION_DIR: _build/qualification/runtime
+        run: bash scripts/ci/qualify_runtime.sh
+
+      - name: Archive runtime qualification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: milestone-1-runtime-${{ github.sha }}
+          path: _build/qualification/runtime
+          if-no-files-found: error
+          retention-days: 30

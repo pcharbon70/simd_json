@@ -36,8 +36,10 @@ explicit/GC cleanup-baseline evidence. Phase 6 Section 6.1 now instruments the
 actual threaded/public NIF path with AddressSanitizer and
 UndefinedBehaviorSanitizer and binds that command to the checked-in
 qualification fingerprint. The formal scheduler profile and bounded lifecycle
-stress, together with the recorded repeated-unload qualification gap, keep the
-bootstrap exception in force.
+stress now retain raw percentile/utilization evidence, execute seeded teardown
+races, cycle supported application generations, and restore every live native
+gauge after each batch. The recorded repeated-unload qualification gap and
+coordinated subject activation keep the bootstrap exception in force.
 
 ```spec-meta
 id: simd_json.native_execution
@@ -314,6 +316,63 @@ decisions:
     - simd_json.native_execution.threaded_submission_failure
     - simd_json.native_execution.large_gc_teardown
     - simd_json.native_execution.reload_cleanup
+
+- kind: source_file
+  target: .spec/research/phase_6_scheduler_qualification.md
+  covers:
+    - simd_json.native_execution.threaded_parse
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.scheduler_qualification
+    - simd_json.native_execution.preproduction_boundary
+    - simd_json.native_execution.large_parse_responsiveness
+
+- kind: test_file
+  target: test/qualification/scheduler_qualification_test.exs
+  covers:
+    - simd_json.native_execution.threaded_parse
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.scheduler_qualification
+    - simd_json.native_execution.preproduction_boundary
+    - simd_json.native_execution.large_parse_responsiveness
+
+- kind: test_file
+  target: test/qualification/lifecycle_memory_qualification_test.exs
+  covers:
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.retained_resources
+    - simd_json.native_execution.late_result_cleanup
+    - simd_json.native_execution.cancellation_boundaries
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.shutdown_cleanup
+    - simd_json.native_execution.caller_dies_while_running
+    - simd_json.native_execution.threaded_submission_failure
+    - simd_json.native_execution.large_gc_teardown
+    - simd_json.native_execution.reload_cleanup
+
+- kind: command
+  target: bash scripts/ci/qualify_runtime.sh
+  covers:
+    - simd_json.native_execution.threaded_parse
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.request_correlation
+    - simd_json.native_execution.retained_resources
+    - simd_json.native_execution.late_result_cleanup
+    - simd_json.native_execution.cancellation_boundaries
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.scheduler_qualification
+    - simd_json.native_execution.preproduction_boundary
+    - simd_json.native_execution.shutdown_cleanup
+    - simd_json.native_execution.large_parse_responsiveness
+    - simd_json.native_execution.caller_dies_while_running
+    - simd_json.native_execution.result_reference_mismatch
+    - simd_json.native_execution.threaded_submission_failure
+    - simd_json.native_execution.large_gc_teardown
+    - simd_json.native_execution.reload_cleanup
 ```
 
 ## Required Closure Evidence
@@ -342,5 +401,5 @@ Before activation, replace the bootstrap exception with executed scheduler heart
     - simd_json.native_execution.threaded_submission_failure
     - simd_json.native_execution.large_gc_teardown
     - simd_json.native_execution.reload_cleanup
-  reason: Phase 6 Section 6.1 adds sanitizer coverage for the actual correlated threaded and public path and binds it to executable qualification freshness; retain the exception until Sections 6.2 through 6.4 establish the formal percentile budget, bounded lifecycle stress, and activation while documenting the unsupported repeated shared-object unload harness.
+  reason: Phase 6 Sections 6.1 and 6.2 add sanitizer coverage for the actual correlated path, a formal raw-sample percentile/utilization profile, seeded cancellation and teardown stress, supported application generation cycling, and per-batch baseline recovery; retain the exception until Sections 6.3 and 6.4 reconcile executed proof and activate the subject while preserving the unsupported repeated shared-object unload boundary.
 ```

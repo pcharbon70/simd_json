@@ -25,8 +25,12 @@ processes, queues repeated owner closes, isolates concurrent owners, and returns
 explicit and GC cleanup batches to native gauge baselines. Phase 6 Section 6.1
 now runs the Zig ownership harness plus the actual threaded/public NIF corpus
 under AddressSanitizer and UndefinedBehaviorSanitizer, while release inspection
-proves test accounting stays absent. Scheduler/lifecycle stress and coordinated
-activation remain, so the bootstrap exception stays in force.
+proves test accounting stays absent. Section 6.2 executes seeded cancellation,
+submission failure, owner/non-owner close,
+dropped-term, GC, and application-generation batches; every batch returns all
+live native gauges to baseline and the mixed batch counts exactly one cleanup
+per opened document. Coordinated activation remains, so the bootstrap exception
+stays in force.
 
 ```spec-meta
 id: simd_json.document_resource
@@ -299,6 +303,40 @@ decisions:
     - simd_json.document_resource.non_owner_rejection
     - simd_json.document_resource.gc_cleanup
     - simd_json.document_resource.native_memory_baseline
+
+- kind: test_file
+  target: test/qualification/lifecycle_memory_qualification_test.exs
+  covers:
+    - simd_json.document_resource.single_owner
+    - simd_json.document_resource.lifecycle
+    - simd_json.document_resource.idempotent_close
+    - simd_json.document_resource.reverse_destruction
+    - simd_json.document_resource.deferred_large_cleanup
+    - simd_json.document_resource.repeated_close
+    - simd_json.document_resource.non_owner_rejection
+    - simd_json.document_resource.gc_cleanup
+    - simd_json.document_resource.native_memory_baseline
+
+- kind: command
+  target: bash scripts/ci/qualify_runtime.sh
+  covers:
+    - simd_json.document_resource.opaque_handle
+    - simd_json.document_resource.padded_owned_copy
+    - simd_json.document_resource.zero_copy_disabled
+    - simd_json.document_resource.complete_ownership
+    - simd_json.document_resource.single_owner
+    - simd_json.document_resource.lifecycle
+    - simd_json.document_resource.idempotent_close
+    - simd_json.document_resource.reverse_destruction
+    - simd_json.document_resource.parent_retention
+    - simd_json.document_resource.deferred_large_cleanup
+    - simd_json.document_resource.test_accounting
+    - simd_json.document_resource.input_lifetime
+    - simd_json.document_resource.repeated_close
+    - simd_json.document_resource.non_owner_rejection
+    - simd_json.document_resource.partial_open_failure
+    - simd_json.document_resource.gc_cleanup
+    - simd_json.document_resource.native_memory_baseline
 ```
 
 ## Required Closure Evidence
@@ -327,5 +365,5 @@ Before activation, replace the bootstrap exception with executed resource tests,
     - simd_json.document_resource.partial_open_failure
     - simd_json.document_resource.gc_cleanup
     - simd_json.document_resource.native_memory_baseline
-  reason: Phase 6 Section 6.1 adds ordinary and sanitizer coverage for the standalone Zig resource plus actual threaded/public NIF corpora and confirms release accounting hooks remain absent; retain the exception until Sections 6.2 through 6.4 complete bounded lifecycle stress and coordinated activation.
+  reason: Phase 6 Sections 6.1 and 6.2 add standalone and NIF sanitizer coverage plus seeded cancellation, failure, owner, close, GC, generation, exactly-once cleanup, and per-batch native-baseline stress; retain the exception until Sections 6.3 and 6.4 reconcile executed proof and activate all dependent subjects together.
 ```
