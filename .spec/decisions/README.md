@@ -29,3 +29,9 @@ Use this folder for durable cross-cutting decisions that shape the current Spec 
 - [Native Stack and C ABI Boundary](./0001-native-stack-and-c-abi.md)
 - [Document Resource and Input Buffer Ownership](./0002-document-resource-and-buffer-ownership.md)
 - [Off-Scheduler Native Execution](./0003-off-scheduler-native-execution.md)
+
+### Milestone 2 — Projection API
+
+- [Projection API and Validation Contract](./0004-projection-api-and-validation-contract.md)
+- [Prefix-Sharing Native Projection Engine](./0005-prefix-sharing-native-projection-engine.md)
+- [Projection Admission, Consumption, and Lifetime](./0006-projection-admission-consumption-and-lifetime.md)

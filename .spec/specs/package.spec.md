@@ -15,12 +15,16 @@ native-baseline tests now exercise the packaged vertical slice.
 Phase 6 Section 6.1 also makes the Hex archive buildable with explicit package
 metadata, excludes generated Zigler intermediates, and inspects the unpacked
 artifact for every required native source, header, provenance, and license.
+Milestone 2 is now defined by three accepted projection ADRs, three planned
+subjects with explicit bootstrap exceptions, and a six-phase implementation
+plan. Those documents specify future `select/2` behavior but do not change the
+currently packaged or exported Milestone 1 runtime surface.
 
 ```spec-meta
 id: simd_json.package
 kind: package
 status: active
-summary: Elixir library scaffold, pinned native build tooling, local specification tooling, and implementation roadmap.
+summary: Active Milestone 1 library and native tooling with a fully specified, phased Milestone 2 projection plan.
 surface:
   - .tool-versions
   - README.md
@@ -32,6 +36,9 @@ surface:
   - native/vendor/simdjson/**
   - test/**/*.exs
   - docs/milestones/*.md
+  - .spec/decisions/*.md
+  - .spec/planning/**/*.md
+  - .spec/specs/*.spec.md
   - .spec/research/*.md
 ```
 
@@ -117,6 +124,11 @@ surface:
 
 - kind: source_file
   target: docs/milestones/README.md
+  covers:
+    - simd_json.package.documentation_layout
+
+- kind: source_file
+  target: .spec/planning/milestone_02_projection_api/README.md
   covers:
     - simd_json.package.documentation_layout
 

@@ -8,6 +8,33 @@ This milestone delivers the library's primary value proposition: extract a small
 
 For a large input, the cost should be proportional to parsing and locating the selected paths, not to allocating an equivalent Elixir map and list tree. `select/2` is therefore more important to the product than eager `decode/1`.
 
+## Normative decisions, specifications, and plan
+
+Milestone 2 is governed by these accepted architecture decisions:
+
+- [Projection API and Validation Contract](https://github.com/pcharbon70/simd_json/blob/main/.spec/decisions/0004-projection-api-and-validation-contract.md)
+- [Prefix-Sharing Native Projection Engine](https://github.com/pcharbon70/simd_json/blob/main/.spec/decisions/0005-prefix-sharing-native-projection-engine.md)
+- [Projection Admission, Consumption, and Lifetime](https://github.com/pcharbon70/simd_json/blob/main/.spec/decisions/0006-projection-admission-consumption-and-lifetime.md)
+
+Its implementation and closure evidence are defined by these planned
+current-truth specifications:
+
+- [Projection API](https://github.com/pcharbon70/simd_json/blob/main/.spec/specs/projection_api.spec.md)
+- [Projection Engine](https://github.com/pcharbon70/simd_json/blob/main/.spec/specs/projection_engine.spec.md)
+- [Projection Execution and Lifecycle](https://github.com/pcharbon70/simd_json/blob/main/.spec/specs/projection_execution.spec.md)
+
+Implementation is sequenced by the
+[Milestone 2 Projection API Implementation Plan](https://github.com/pcharbon70/simd_json/blob/main/.spec/planning/milestone_02_projection_api/README.md).
+
+The Milestone 1 native stack, document ownership, and off-scheduler execution
+decisions remain binding prerequisites throughout this work.
+
+## Status
+
+Milestone 2 is planned. Its three specifications retain explicit bootstrap
+exceptions until the implementation, native safety, scheduler, lifecycle,
+public API, and end-to-end benchmark evidence defined by the plan are complete.
+
 ## Prerequisites
 
 Milestone 1 must already provide:
@@ -46,28 +73,37 @@ with a result such as:
 }
 ```
 
-The binary form creates a temporary document, evaluates the projection, and releases the document before returning. The document form reuses an existing native document when its cursor semantics permit it:
+The binary form creates a temporary document, evaluates the projection, and
+releases every temporary native allocation before returning. The document form
+consumes one fresh caller-owned document exactly once:
 
 ```elixir
 SimdJson.select(document, projection)
 ```
 
-The implementation must define whether a document is reusable for more than one projection. If On-Demand state makes reuse unsafe, the API should return `:cursor_consumed` rather than silently reparsing or producing order-dependent results.
+Once native cursor access begins, the document becomes consumed whether
+projection succeeds or fails. A later attempt returns `:cursor_consumed`
+instead of rewinding or silently reparsing. Projection validation and a proven
+pre-worker submission rejection do not consume the document.
 
 ## Projection specification
 
-A projection is a collection of output-key and path pairs.
+A projection is a non-empty proper list of output-key and path pairs.
 
 - Output keys are atoms or binaries supplied by trusted caller code.
 - Object path segments are UTF-8 binaries.
-- Array path segments are non-negative integers.
+- Array path segments are integers from zero through `UINT64_MAX`.
 - Empty paths are rejected initially because selecting the entire root undermines the milestone's bounded-output goal.
 - Duplicate output keys are rejected before native execution.
+- Duplicate paths under different output keys are allowed and share one native terminal value.
+- Map-shaped projections and improper lists are rejected because they cannot preserve complete duplicate-key validation and deterministic structure.
 - Invalid path segment types return `:invalid_projection`.
 
 JSON keys must never be converted to atoms. An atom output key is safe only because it already exists in the caller's projection.
 
-The first version should guarantee scalar leaves: strings, integers, floats, booleans, and `nil`. Selecting an object or array as a leaf should either be explicitly unsupported or require a materialization selector. It must not accidentally materialize a huge subtree merely because a path stopped early.
+The first version guarantees scalar leaves: strings, integers, floats, booleans,
+and `nil`. Selecting an object or array as a leaf returns `:incorrect_type`; it
+never materializes a subtree merely because a path stopped early.
 
 ## Compile once, traverse once
 
@@ -106,6 +142,12 @@ root
 
 The traversal follows document order and matches requested fields as they are encountered. It does not repeatedly rewind the cursor to honor projection declaration order. Result slots restore the caller's output keys after traversal.
 
+The traversal also structurally consumes the complete logical JSON value,
+including unselected branches and content after the last requested value.
+Skipping avoids materialization; it does not allow malformed JSON to pass.
+When a requested object key is repeated, its first occurrence in document order
+supplies the result and later occurrences are consumed only for validation.
+
 This design also gives a natural foundation for a later public `SimdJson.compile/1`, where the validated projection tree can be reused across many documents.
 
 ## Result conversion
@@ -137,7 +179,7 @@ The baseline should be deterministic and fail fast:
  }}
 ```
 
-Recommended initial behavior:
+The initial behavior is:
 
 - a missing object field returns `:no_such_field`;
 - an array index beyond the end returns `:index_out_of_bounds`;
@@ -146,6 +188,7 @@ Recommended initial behavior:
 - malformed JSON returns the parse error with a byte offset when available;
 - a previously consumed document returns `:cursor_consumed`;
 - cancellation returns `:cancelled`.
+- a requested object or array terminal returns `:incorrect_type`.
 
 Options such as defaults, optional fields, per-field errors, and null substitution can be designed later. Adding them prematurely complicates both the native result layout and the meaning of a successful projection.
 
@@ -169,7 +212,10 @@ Projection operates under the document's owner and lifecycle rules:
 - every operation checks the resource generation before dereferencing native state;
 - a failed projection leaves the document in an explicitly defined state.
 
-The simplest safe rule is that attempting a projection consumes the On-Demand document whether it succeeds or fails. Reuse can be added only if the implementation can prove reset or reparse semantics without surprise.
+A projection that reaches native cursor access consumes the On-Demand document
+whether it succeeds or fails. Invalid preflight and proven pre-worker submission
+rejection leave it fresh. Reuse can be added only through a superseding decision
+that proves explicit reset or reparse semantics without surprise.
 
 ## Implementation work
 
@@ -195,7 +241,7 @@ Functional tests should cover:
 - every scalar JSON type;
 - missing fields, wrong container types, and out-of-range indices;
 - duplicate output keys and malformed projection terms;
-- duplicate keys in the input JSON under a documented policy;
+- duplicate keys in the input JSON under the first-occurrence policy;
 - invalid JSON before, inside, and after a selected branch;
 - very large unselected subtrees;
 - process ownership, close races, and consumed documents.
