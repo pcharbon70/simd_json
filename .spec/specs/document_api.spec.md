@@ -32,6 +32,11 @@ optional validated caller-path field in `SimdJson.Error`. Existing open and
 close paths retain their original meanings and continue to return `path: nil`.
 Default inspection omits both message and path contents and defensively bounds
 forged fields, while the root public operation set remains unchanged.
+Milestone 2 Phase 2 changes only the private native build: the four
+parser/document signatures, their 16-byte status, document error translation,
+and every `open/1`/`close/1` result remain unchanged. No projection descriptor,
+plan, result slot, pointer, status, or diagnostic is reachable from the public
+Elixir API or release NIF exports.
 
 ```spec-meta
 id: simd_json.document_api

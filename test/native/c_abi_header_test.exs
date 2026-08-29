@@ -28,10 +28,12 @@ defmodule SimdJson.Native.CAbiHeaderTest do
 
     assert header =~ "typedef struct simd_json_parser simd_json_parser;"
     assert header =~ "typedef struct simd_json_document simd_json_document;"
+    assert header =~ "typedef struct simd_json_projection_plan simd_json_projection_plan;"
     assert header =~ "const uint8_t *data"
     assert header =~ "uint64_t logical_length"
     assert header =~ "uint64_t capacity"
     assert header =~ "SIMD_JSON_BYTE_OFFSET_UNAVAILABLE UINT64_MAX"
+    assert header =~ "SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE UINT32_MAX"
 
     refute header =~ "std::"
     refute header =~ "simdjson::"

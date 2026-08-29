@@ -37,6 +37,10 @@ BEAM preflight seam. Invalid projection terms create no native admission,
 request, allocation, generation change, lifecycle transition, or cursor state;
 the accepted Milestone 1 resource graph and close behavior therefore remain
 unchanged until projection admission is implemented in a later phase.
+Milestone 2 Phase 2 adds an operation-scoped projection plan type beside, not
+inside, the document resource. Plan conformance never publishes a plan as a
+BEAM resource, never admits against a document, and does not change document,
+parser, padded-input, parent-retention, generation, or cleanup ownership.
 
 ```spec-meta
 id: simd_json.document_resource

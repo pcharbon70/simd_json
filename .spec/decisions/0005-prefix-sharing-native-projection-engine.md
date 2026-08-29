@@ -63,6 +63,25 @@ traversal failure, result conversion failure, and cancellation unwind through
 one dependency-safe destruction path. Release symbol allowlists and independent
 C conformance tests are updated for ABI version 2.
 
+### Phase 2 implementation checkpoint
+
+The canonical ABI now preserves the ABI v1 parser/document symbol versions and
+16-byte status while introducing a distinct 24-byte projection status. The
+projection entry and segment descriptors reference one Zig-owned UTF-8 key
+arena by checked `uint64_t` offsets and lengths. Zig releases all temporary
+descriptor storage immediately after the C++ constructor has copied retained
+keys; its owned plan wrapper clears the handle before null-safe destruction.
+
+The C++ plan stores typed object and array edges in canonical byte/index order,
+shares nodes across common prefixes, and sorts multiple terminal output slots.
+Nodes live in a flat ownership arena so reverse cleanup is non-recursive even
+for deep paths. Test-only summaries expose only bounded counts and a numeric
+topology hash. Ordinary and ASan/UBSan C and Zig matrices cover empty-invalid,
+single, shared, identical, deep, Unicode, maximum-index, and large plans plus
+invalid descriptors and every injected allocation/exception checkpoint. The
+execution symbol and typed slot layout are frozen, but its bounded placeholder
+does not traverse a document; guided On-Demand execution remains Phase 3.
+
 ### One guided traversal
 
 One execution call consumes the On-Demand document in source order. At each

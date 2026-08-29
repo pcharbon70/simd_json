@@ -70,6 +70,13 @@ required_package_files=(
   native/include/simd_json_abi.h
   native/include/simd_json_nif_internal.h
   native/src/simd_json_abi.cpp
+  native/src/simd_json_projection.cpp
+  native/symbols/c_abi.allowlist
+  native/symbols/c_abi.version
+  native/symbols/nif.allowlist
+  native/test/include/simd_json_test_hooks.h
+  native/test/projection_plan_conformance.c
+  native/test/projection_plan_test.zig
   native/vendor/simdjson/simdjson.cpp
   native/vendor/simdjson/simdjson.h
   native/vendor/simdjson/README.md
@@ -78,6 +85,7 @@ required_package_files=(
   native/vendor/simdjson/patches/series
   native/zig/build_smoke.zig
   native/zig/document_resource.zig
+  native/zig/projection_plan.zig
 )
 
 for relative_path in "${required_package_files[@]}"; do

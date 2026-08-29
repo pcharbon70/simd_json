@@ -30,7 +30,7 @@ developer tools. `mix zig.get --version 0.16.0` is also supported for CI or a
 developer without asdf; that acquisition occurs before the offline build test,
 and Zig's official archive digest remains mandatory.
 
-Zigler compiles both C++ translation units with `zig c++`; no host `g++`,
+Zigler compiles every C++ translation unit with `zig c++`; no host `g++`,
 system simdjson, or system C++ package is selected. The native profiles are
 fixed in `manifest.exs`:
 
@@ -121,9 +121,10 @@ them until equivalent evidence is recorded.
 
 `mix compile` runs the target, toolchain, lockfile, vendor-digest, and patch
 guards before Zigler invokes the C++ compiler. It then compiles
-`native/src/build_smoke.cpp`, the real `native/src/simd_json_abi.cpp` shim, and
-the vendored `simdjson.cpp` through Zigler and Zig. The native build never
-contains a library search for simdjson.
+`native/src/build_smoke.cpp`, the parser/document shim in
+`native/src/simd_json_abi.cpp`, the projection-plan shim in
+`native/src/simd_json_projection.cpp`, and the vendored `simdjson.cpp` through
+Zigler and Zig. The native build never contains a library search for simdjson.
 
 `cache_inputs` in `manifest.exs` is the authoritative list used to derive a CI
 native-cache key. The key also contains the runner OS/architecture, Mix
@@ -132,11 +133,11 @@ file, license, or patch-series change therefore selects a new cache entry.
 
 ## Private C ABI
 
-[`include/simd_json_abi.h`](./include/simd_json_abi.h) is the only parser
+[`include/simd_json_abi.h`](./include/simd_json_abi.h) is the only native
 contract visible above C++. It is valid as C11 and C++17 and exposes opaque
-parser/document handles, fixed-width values, stable numeric statuses, and
-matching null-safe destructors. No simdjson or C++ layout is part of the
-contract.
+parser, document, and operation-scoped projection-plan handles, fixed-width
+values, stable numeric statuses, and matching null-safe destructors. No
+simdjson or C++ layout is part of the contract.
 
 The caller supplies a non-null byte pointer, a logical JSON length, and the
 allocation capacity. Capacity must cover the logical length plus the pinned 64
@@ -151,22 +152,28 @@ publishes ownership only on success. A non-null successful handle is consumed
 exactly once by its matching destructor; callers clear that pointer after the
 call. Passing null to either destructor is explicitly safe.
 
-The stable native statuses are success, invalid JSON, invalid UTF-8,
-unexpected EOF, out of memory, invalid argument, and internal failure. The
-status also carries a raw simdjson numeric code when one exists and either a
-logical byte offset or the explicit unavailable sentinel. Upstream error text
-is never returned through this boundary.
+The unchanged 16-byte Milestone 1 status carries success, parse, allocation,
+argument, and internal categories plus an optional raw simdjson code and
+logical byte offset. ABI version 2 adds a distinct 24-byte projection status
+with stable missing-field, bounds, type, numeric-range, consumed-cursor, and
+cancellation categories plus an optional failing output slot. Dedicated
+sentinels represent unavailable diagnostics; upstream error text is never
+returned through this boundary.
 
-[`src/simd_json_abi.cpp`](./src/simd_json_abi.cpp) is the single C++ exception
-boundary. It recursively validates every object, array, and scalar through the
-official On-Demand API, rewinds a successful document before publishing it,
-and catches simdjson, allocation, standard, and unknown exceptions. Local smart
-pointers retain partial allocations until a handle is published.
+[`src/simd_json_abi.cpp`](./src/simd_json_abi.cpp) validates every object,
+array, and scalar through the official On-Demand API and rewinds a successful
+document before publishing it. [`src/simd_json_projection.cpp`](./src/simd_json_projection.cpp)
+validates normalized fixed-width descriptors before allocation and builds one
+immutable, canonically ordered prefix-sharing trie. Each C++ boundary catches
+simdjson, allocation, standard, and unknown exceptions. Local ownership keeps
+partial allocations private until a handle is published.
 
 The release C ABI shared-artifact and Zigler NIF symbol surfaces are frozen in
-[`symbols`](./symbols). The standalone ABI exports only its four declared C
-functions. The current statically linked Zigler NIF needs only `nif_init`; its
-C ABI and C++ implementation symbols remain local. Run
+[`symbols`](./symbols). The standalone ABI retains the four ABI v1
+parser/document functions and adds only the ABI v2 plan constructor,
+destructor, and future execution entry. The current statically linked Zigler
+NIF needs only `nif_init`; its C ABI and C++ implementation symbols remain
+local. Run
 `scripts/native/verify_release_symbols.sh` after compiling the NIF to compare
 both artifacts with their checked-in allowlists and to prove test-only failure
 controls are absent.
@@ -188,6 +195,14 @@ status width, signedness, alignment, field offsets, and distinct status values
 at compile time, then adapts every status into a closed Zig union. Unknown C
 status values are contained as internal failures. Raw parser and document
 handles remain fields of the native state and have no BEAM encoder.
+
+[`zig/projection_plan.zig`](./zig/projection_plan.zig) separately freezes every
+ABI v2 layout, tag, status, and sentinel at compile time. It serializes only
+validated numeric output/path slots and typed segments into temporary
+descriptor arrays and one key-byte arena. The C++ constructor copies retained
+keys before Zig releases those buffers, and the owned Zig plan wrapper provides
+one idempotent destruction path. Caller output keys and raw BEAM terms are not
+represented at this boundary.
 
 Zigler registers `DocumentResource` during both NIF load and upgrade. Its
 payload contains the destructible native state plus the opening process PID;
@@ -311,11 +326,12 @@ string inspection proves they are absent from the NIF and standalone ABI.
 
 ## Native ABI conformance
 
-The standalone harness in [`test/c_abi_conformance.c`](./test/c_abi_conformance.c)
-is compiled by `zig cc` as strict C11 against only the production and test C
-header directories. It then links a private archive containing the C++ shim and
-vendored parser. This prevents the harness from relying on a C++ declaration,
-layout, exception, or implementation symbol.
+The standalone harnesses in [`test/c_abi_conformance.c`](./test/c_abi_conformance.c)
+and [`test/projection_plan_conformance.c`](./test/projection_plan_conformance.c)
+are compiled by `zig cc` as strict C11 against only the production and test C
+header directories. They then link a private archive containing both C++ shims
+and the vendored parser. This prevents either harness from relying on a C++
+declaration, layout, exception, or implementation symbol.
 
 Test builds add one-shot failure points before and after parser allocation,
 during document construction, and immediately before document publication.
@@ -324,6 +340,12 @@ standard exception, or a non-standard exception. Bounded live-handle counters
 verify RAII cleanup without exposing addresses or input. These hooks are
 guarded by `SIMD_JSON_TESTING`; release symbol and string checks prove that they
 are absent from distributed artifacts.
+
+Projection test builds additionally inject every constructor checkpoint and
+report only live plan, node, copied-key-byte, and bounded topology counts. The
+C and Zig matrices cover shared and identical paths, canonical edge ordering,
+invalid descriptors, every exception class, serializer allocation failures,
+and repeated null/idempotent caller cleanup.
 
 Run the ordinary and sanitizer matrices with:
 

@@ -19,6 +19,11 @@ returns one controlled `invalid_projection` error before any native admission.
 redacted caller path. The public `select/2` operation and every native result
 behavior remain unimplemented, so this subject stays planned under its complete
 bootstrap exception.
+Phase 2 consumes representative copies of that normalized shape only in native
+conformance: its Zig serializer deliberately omits output keys and raw BEAM
+terms, and its C++ plan remains an opaque operation detail. It adds no Elixir
+function, protocol, struct, resource, error translation, or compiled-plan API;
+the existing preflight and public-surface boundaries therefore remain intact.
 
 ```spec-meta
 id: simd_json.projection_api

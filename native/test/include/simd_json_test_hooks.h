@@ -24,6 +24,23 @@ extern "C" {
 #define SIMD_JSON_TEST_FAILURE_STANDARD INT32_C(3)
 #define SIMD_JSON_TEST_FAILURE_UNKNOWN INT32_C(4)
 
+typedef struct simd_json_test_projection_accounting {
+  uint64_t live_plans;
+  uint64_t live_nodes;
+  uint64_t live_key_bytes;
+} simd_json_test_projection_accounting;
+
+typedef struct simd_json_test_projection_summary {
+  uint64_t output_slots;
+  uint64_t nodes;
+  uint64_t object_edges;
+  uint64_t array_edges;
+  uint64_t terminals;
+  uint64_t key_bytes;
+  uint64_t maximum_depth;
+  uint64_t topology_hash;
+} simd_json_test_projection_summary;
+
 void simd_json_test_inject_failure(int32_t point,
                                    int32_t kind) SIMD_JSON_TEST_NOEXCEPT;
 void simd_json_test_clear_failure(void) SIMD_JSON_TEST_NOEXCEPT;
@@ -36,6 +53,15 @@ uint32_t simd_json_test_document_uses_input(
 simd_json_status simd_json_test_document_revalidate(
     simd_json_document *document) SIMD_JSON_TEST_NOEXCEPT;
 uint32_t simd_json_test_sanitizer_build(void) SIMD_JSON_TEST_NOEXCEPT;
+void simd_json_test_projection_inject_failure(
+    uint64_t successful_checkpoints,
+    int32_t kind) SIMD_JSON_TEST_NOEXCEPT;
+void simd_json_test_projection_clear_failure(void) SIMD_JSON_TEST_NOEXCEPT;
+simd_json_test_projection_accounting simd_json_test_projection_accounting_snapshot(
+    void) SIMD_JSON_TEST_NOEXCEPT;
+uint32_t simd_json_test_projection_summary_read(
+    const simd_json_projection_plan *plan,
+    simd_json_test_projection_summary *out_summary) SIMD_JSON_TEST_NOEXCEPT;
 
 #undef SIMD_JSON_TEST_NOEXCEPT
 

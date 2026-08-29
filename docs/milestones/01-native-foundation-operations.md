@@ -34,10 +34,12 @@ belong to Milestone 4's fixed native worker pool.
 | `lib/simd_json/native/build_smoke.ex` | Zigler registration, callbacks, NIF declarations, and C++ compilation inputs. |
 | `lib/simd_json/native/operation_coordinator.ex` | Stable request owner, caller monitors, correlation, cancellation, join, and orphan cleanup. |
 | `lib/simd_json/native/threaded_operation.ex` | Private operation admission and Zigler-threaded adapter. |
-| `native/include/simd_json_abi.h` | Canonical C11 ABI version 1. |
+| `native/include/simd_json_abi.h` | Canonical C11 header; ABI v1 parser/document contract retained inside current private ABI v2. |
 | `native/include/simd_json_nif_internal.h` | Hidden NIF-only extensions; never part of the shared ABI allowlist. |
-| `native/src/simd_json_abi.cpp` | Single C++ exception boundary and simdjson adapter. |
+| `native/src/simd_json_abi.cpp` | Parser/document C++ exception boundary and simdjson adapter. |
+| `native/src/simd_json_projection.cpp` | Operation-scoped prefix-sharing plan constructor and ABI v2 projection boundary. |
 | `native/zig/document_resource.zig` | Padded buffer, native handle ownership, lifecycle, generation, admission, and accounting. |
+| `native/zig/projection_plan.zig` | ABI v2 layout assertions, normalized-path serialization, and idempotent plan ownership. |
 | `native/zig/build_smoke.zig` | BEAM resources, threaded workers, cleanup dispatcher, callbacks, and bounded diagnostics. |
 | `native/vendor/simdjson` | Exact official v4.6.9 amalgamation, provenance, patch declaration, and upstream licenses. |
 | `native/manifest.exs` | Authoritative toolchain, target, profile, cache, and qualification input matrix. |
@@ -91,17 +93,17 @@ flowchart LR
     API[SimdJson API] --> Coordinator[Operation coordinator]
     Coordinator --> Zigler[Zigler threaded launch/join]
     Zigler --> Zig[Zig resource and term layer]
-    Zig --> ABI[Private C ABI v1]
+    Zig --> ABI[Private C ABI v2<br/>v1 parser/document symbols retained]
     ABI --> Shim[C++ exception boundary]
     Shim --> SIMD[Official simdjson v4.6.9]
 ```
 
-ABI version 1 exports four C functions from its independent shared test
-artifact: parser create/destroy and document open/destroy. Handles are opaque.
-Arguments are fixed-width integers, byte pointer/length/capacity triples, one
-out parameter, and the fixed 16-byte status record. Both destructors accept
-null. The Zigler NIF links this boundary statically and dynamically exports only
-`nif_init`.
+The independent shared artifact retains four ABI v1 functions—parser
+create/destroy and document open/destroy—with their fixed 16-byte status. ABI
+v2 adds only an opaque projection-plan constructor/destructor and a reserved
+future execution entry using fixed descriptors, typed result slots, and a
+distinct 24-byte projection status. Every destructor accepts null. The Zigler
+NIF links this boundary statically and dynamically exports only `nif_init`.
 
 The stable status categories are:
 

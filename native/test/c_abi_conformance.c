@@ -350,7 +350,7 @@ static int randomized_malformed_and_lifecycle_matrix(uint64_t seed) {
     status = simd_json_document_open(parser, copy, logical_length, capacity,
                                      &document);
     CHECK(status.code >= SIMD_JSON_STATUS_OK);
-    CHECK(status.code <= SIMD_JSON_STATUS_INTERNAL_FAILURE);
+    CHECK(status.code <= SIMD_JSON_STATUS_CANCELLED);
     CHECK(status_has_safe_metadata(status, logical_length));
 
     if (status.code == SIMD_JSON_STATUS_OK) {
