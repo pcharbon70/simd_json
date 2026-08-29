@@ -3,14 +3,19 @@ defmodule SimdJson.PublicSurfaceTest do
 
   alias SimdJson.Document
   alias SimdJson.Error
+  alias SimdJson.Projection
 
   @root_functions [close: 1, open: 1]
   @struct_functions [__struct__: 0, __struct__: 1]
   @forbidden_functions [
     :decode,
     :decode!,
+    :select,
+    :select!,
     :project,
     :project!,
+    :compile_projection,
+    :compile_projection!,
     :stream,
     :cursor,
     :transfer,
@@ -30,6 +35,30 @@ defmodule SimdJson.PublicSurfaceTest do
     for module <- [SimdJson, Document, Error], {name, _arity} <- module.__info__(:functions) do
       refute name in @forbidden_functions
     end
+  end
+
+  # covers: simd_json.projection_api.milestone_scope
+  test "keeps projection validation internal without a compiled-plan surface" do
+    projection_functions = Projection.__info__(:functions)
+
+    assert {:validate, 1} in projection_functions
+    assert {:preflight_for_test, 2} in projection_functions
+    assert {:snapshot_for_test, 1} in projection_functions
+
+    for function <- [
+          :__struct__,
+          :compile,
+          :compile_projection,
+          :deserialize,
+          :new,
+          :resource,
+          :serialize
+        ] do
+      refute Enum.any?(projection_functions, fn {name, _arity} -> name == function end)
+    end
+
+    refute documented?(Projection)
+    refute Code.ensure_loaded?(SimdJson.CompiledProjection)
   end
 
   # covers: simd_json.document_api.milestone_scope simd_json.document_api.no_future_surface simd_json.native_execution.preproduction_boundary

@@ -42,6 +42,13 @@ gauge after each batch. Section 6.3 activates this subject against executable
 runtime qualification while retaining repeated shared-object unload as an
 explicitly unsupported environment rather than an exception to the contract.
 
+Milestone 2 Phase 1 adds compile-time-gated Elixir admission counters around
+the existing test build's native-operation entry. Projection preflight runs
+entirely before that boundary, and integration tests prove invalid terms leave
+the counter, correlated request state, native allocation gauges, worker-entry
+count, and generation unchanged. No projection operation kind or threaded
+native execution exists yet, and release builds expose none of the test seam.
+
 ```spec-meta
 id: simd_json.native_execution
 kind: subsystem

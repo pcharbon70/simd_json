@@ -11,6 +11,14 @@ forward-only cursor. It ensures shared path prefixes are evaluated once, source
 order never changes public results, unselected input is still validated, and no
 BEAM terms are constructed for unrequested containers or values.
 
+Phase 1 now provides the engine's only accepted future input: an opaque,
+deterministic BEAM term containing declaration-order output slots and a
+first-seen table of validated paths, with identical paths sharing one path
+slot. It exposes no compiled-plan constructor, serializer, protocol, resource,
+or C descriptor. Native ABI version 2 and prefix-sharing plan construction
+remain Phase 2 work, so all engine requirements remain planned under the
+bootstrap exception.
+
 ```spec-meta
 id: simd_json.projection_engine
 kind: subsystem

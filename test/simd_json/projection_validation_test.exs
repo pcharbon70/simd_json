@@ -15,25 +15,33 @@ defmodule SimdJson.ProjectionValidationTest do
     shared_path = ["customer", "id"]
 
     projection = [
-      {:customer_id, shared_path},
-      {"same-id", shared_path},
+      {:id, shared_path},
+      {"id", shared_path},
       {"unicode", ["", "café", 0, @max_array_index]},
-      {:keyword_style, ["ready"]}
+      {:keyword_style, ["ready"]},
+      {<<255>>, ["root", "left"]},
+      {nil, ["root", "right"]},
+      {true, ["ready"]}
     ]
 
     assert {:ok, normalized} = Projection.validate(projection)
 
     assert Projection.snapshot_for_test(normalized) == %{
              entries: [
-               {0, :customer_id, 0},
-               {1, "same-id", 0},
+               {0, :id, 0},
+               {1, "id", 0},
                {2, "unicode", 1},
-               {3, :keyword_style, 2}
+               {3, :keyword_style, 2},
+               {4, <<255>>, 3},
+               {5, nil, 4},
+               {6, true, 2}
              ],
              paths: [
                {0, shared_path},
                {1, ["", "café", 0, @max_array_index]},
-               {2, ["ready"]}
+               {2, ["ready"]},
+               {3, ["root", "left"]},
+               {4, ["root", "right"]}
              ]
            }
 
@@ -42,6 +50,33 @@ defmodule SimdJson.ProjectionValidationTest do
     for source <- [~s({"a":1,"b":2}), ~s({"b":2,"a":1}), "not JSON"] do
       assert {:ok, ^normalized} = Projection.preflight_for_test(source, projection)
     end
+  end
+
+  # covers: simd_json.projection_api.projection_grammar simd_json.projection_api.output_key_identity
+  test "accepts generated combinations of every valid path segment boundary" do
+    object_segments = ["", "plain", "雪", "emoji-☃"]
+    array_segments = [0, 1, 4_294_967_296, @max_array_index]
+
+    paths =
+      for object_segment <- object_segments,
+          array_segment <- array_segments do
+        [object_segment, array_segment]
+      end
+
+    projection =
+      paths
+      |> Enum.with_index()
+      |> Enum.map(fn {path, index} -> {"generated-#{index}", path} end)
+
+    assert {:ok, normalized} = Projection.validate(projection)
+    snapshot = Projection.snapshot_for_test(normalized)
+
+    assert Enum.map(snapshot.entries, &elem(&1, 0)) == Enum.to_list(0..15)
+
+    assert Enum.map(snapshot.entries, &elem(&1, 1)) ==
+             Enum.map(0..15, &"generated-#{&1}")
+
+    assert Enum.map(snapshot.paths, &elem(&1, 1)) == paths
   end
 
   # covers: simd_json.projection_api.projection_grammar simd_json.projection_api.complete_preflight_validation simd_json.projection_api.invalid_projection
@@ -139,7 +174,8 @@ defmodule SimdJson.ProjectionValidationTest do
                 reason: :invalid_projection,
                 message: "invalid projection",
                 byte_offset: nil,
-                native_code: nil
+                native_code: nil,
+                path: nil
               }} = Projection.preflight_for_test(document, projection)
     end
 
@@ -161,7 +197,8 @@ defmodule SimdJson.ProjectionValidationTest do
               reason: :invalid_projection,
               message: "invalid projection",
               byte_offset: nil,
-              native_code: nil
+              native_code: nil,
+              path: nil
             }} = Projection.validate(projection)
   end
 

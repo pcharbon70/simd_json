@@ -53,10 +53,20 @@ defmodule SimdJson.Native.ThreadedOperation do
     admit(input, kind, BuildSmoke.execution_generation())
   end
 
-  def admit(input, kind, generation)
-      when is_binary(input) and is_atom(kind) and is_integer(generation) and generation > 0 do
-    if @test_hooks, do: record_admission_for_test(kind)
+  if @test_hooks do
+    def admit(input, kind, generation)
+        when is_binary(input) and is_atom(kind) and is_integer(generation) and generation > 0 do
+      record_admission_for_test(kind)
+      admit_native(input, kind, generation)
+    end
+  else
+    def admit(input, kind, generation)
+        when is_binary(input) and is_atom(kind) and is_integer(generation) and generation > 0 do
+      admit_native(input, kind, generation)
+    end
+  end
 
+  defp admit_native(input, kind, generation) do
     resource = BuildSmoke.operation_admit(input, self(), kind, generation)
     {request_ref, ^kind, ^generation, :queued} = BuildSmoke.operation_metadata(resource)
 
