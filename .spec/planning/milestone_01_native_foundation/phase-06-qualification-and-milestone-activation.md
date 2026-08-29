@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 6 Phase - Qualify the complete vertical slice, publish reproducible evidence, and activate Milestone 1 current truth.
+- [x] 6 Phase - Qualify the complete vertical slice, publish reproducible evidence, and activate Milestone 1 current truth.
 
   This phase repeats the earlier safety gates against the final public artifact,
   establishes the supported-target and scheduler budgets, stress-tests shutdown
@@ -138,13 +138,13 @@ Back to plan: [README](./README.md)
 
 ## 6.4 Section — Phase 6 Integration Tests
 
-- [ ] 6.4 Section - Execute the complete release-candidate gate and produce the Milestone 1 acceptance record.
+- [x] 6.4 Section - Execute the complete release-candidate gate and produce the Milestone 1 acceptance record.
 
   This section runs every layer together from clean package build through
   public API, scheduler stress, cleanup quiescence, and SpecLed validation. Any
   failure reopens its owning phase and prevents spec activation.
 
-  - [ ] 6.4.1 Task - Run the full release-candidate verification matrix.
+  - [x] 6.4.1 Task - Run the full release-candidate verification matrix.
 
     The task proves all accepted decisions and all four subject specs against one
     immutable source revision.
@@ -153,9 +153,9 @@ Back to plan: [README](./README.md)
     - [x] 6.4.1.2 Subtask - Run the independent C ABI harness plus Zig resource and failure-injection suites in ordinary, AddressSanitizer, and UndefinedBehaviorSanitizer profiles.
     - [x] 6.4.1.3 Subtask - Run the complete public valid/invalid corpus, argument, redaction, owner, lifecycle, concurrent-open, caller-death, submission-failure, GC, baseline, shutdown, and reload suites.
     - [x] 6.4.1.4 Subtask - Run the formal scheduler qualification and assert the recorded normal-scheduler latency and dirty-scheduler utilization budgets.
-    - [ ] 6.4.1.5 Subtask - Run formatting, documentation/link checks, `mix test`, package build, and every supported-target CI job from the same release candidate.
+    - [x] 6.4.1.5 Subtask - Run formatting, documentation/link checks, `mix test`, package build, and every supported-target CI job from the same release candidate.
 
-  - [ ] 6.4.2 Task - Run final SpecLed reconciliation and close the milestone.
+  - [x] 6.4.2 Task - Run final SpecLed reconciliation and close the milestone.
 
     The task makes the acceptance result visible in current truth and leaves no
     bootstrap exception masking unimplemented behavior.

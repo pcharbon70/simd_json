@@ -20,6 +20,7 @@ artifact records the final PR head on Ubuntu 24.04 before merge.
 | Complete local command | `bash scripts/ci/qualify_milestone_1.sh` |
 | CI workflow | [CI](https://github.com/pcharbon70/simd_json/actions/workflows/ci.yml) |
 | CI artifact | `milestone-1-acceptance-<source revision>` |
+| First accepted Ubuntu run | [Run 33250484580](https://github.com/pcharbon70/simd_json/actions/runs/33250484580), merge candidate `ecbc3a8b6a988f0295f3594d08b9457c488d889c`, artifact `milestone-1-acceptance-ecbc3a8b6a988f0295f3594d08b9457c488d889c` |
 
 The CI artifact's `acceptance/environment.txt`, each subject environment file,
 and traceability inventory repeat the full source revision and source tree.
@@ -81,13 +82,15 @@ The clean local run of `63d1899` produced these results:
 | Instrumented NIF | 30 threaded/public tests passed under ASan/UBSan. |
 | Package and build | Required sources, headers, notices, and both licenses were present; generated native artifacts were absent; two network-disabled clean builds agreed and selected `haswell`. |
 | Symbols | The standalone C ABI and NIF dynamic surfaces matched their allowlists; release test hooks and C++ implementation symbols were absent. |
-| Scheduler | 84 heartbeat samples; p50 3.011 ms, p95 5.252 ms, p99/max 17.185 ms; dirty CPU and dirty I/O utilization both 0%. Budgets were p95 50 ms, p99 250 ms, and max 500 ms. |
+| Local scheduler observation | 84 heartbeat samples; p50 3.011 ms, p95 5.252 ms, p99/max 17.185 ms; dirty CPU and dirty I/O utilization both 0%. |
+| Accepted Ubuntu scheduler | Ubuntu 24.04.4, OTP 27.3.4.16/ERTS 15.2.7.12, 4 normal schedulers, virtualized AMD EPYC 7763; 65 samples; p50 3.761 ms, p95 16.084 ms, p99/max 50.804 ms; dirty CPU and dirty I/O utilization both 0%. Budgets were p95 50 ms, p99 250 ms, and max 500 ms. |
 | Lifecycle | Seed 260829001; 20 caller deaths, 16 explicit documents, 16 GC documents, 8 exiting-owner documents, and 3 application cycles; every live native gauge returned to zero after each batch. |
 | SpecLed | 68/68 Milestone 1 requirement/scenario claims had executed strength; 0 threshold failures, findings, warnings, uncovered policy files, or bootstrap exceptions. |
 
-The local scheduler numbers are a compatibility observation, not the Ubuntu
-support measurement. The revision-keyed CI artifact repeats the same protocol
-on the accepted Ubuntu 24.04 runner and is the support authority.
+The revision-keyed CI artifact contains the accepted Ubuntu measurements and
+verified checksums. Later accepted revisions must produce their own green
+revision-keyed artifact; the recorded run is not transferable to changed
+qualification inputs.
 
 ## Evidence layout
 
