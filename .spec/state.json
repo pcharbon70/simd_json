@@ -35,12 +35,132 @@
         "id": "simd_json.off_scheduler_native_execution",
         "status": "accepted",
         "title": "Off-Scheduler Native Execution"
+      },
+      {
+        "affects": [
+          "simd_json.projection_api",
+          "simd_json.projection_engine"
+        ],
+        "date": "2026-08-29",
+        "file": ".spec/decisions/0004-projection-api-and-validation-contract.md",
+        "id": "simd_json.projection_api_and_validation",
+        "status": "accepted",
+        "title": "Projection API and Validation Contract"
+      },
+      {
+        "affects": [
+          "simd_json.projection_engine",
+          "simd_json.projection_api",
+          "simd_json.native_build_and_abi"
+        ],
+        "date": "2026-08-29",
+        "file": ".spec/decisions/0005-prefix-sharing-native-projection-engine.md",
+        "id": "simd_json.prefix_sharing_projection_engine",
+        "status": "accepted",
+        "title": "Prefix-Sharing Native Projection Engine"
+      },
+      {
+        "affects": [
+          "simd_json.projection_execution",
+          "simd_json.projection_api",
+          "simd_json.document_resource",
+          "simd_json.native_execution"
+        ],
+        "date": "2026-08-29",
+        "file": ".spec/decisions/0006-projection-admission-consumption-and-lifetime.md",
+        "id": "simd_json.projection_admission_consumption_and_lifetime",
+        "status": "accepted",
+        "title": "Projection Admission, Consumption, and Lifetime"
       }
     ]
   },
   "findings": [],
   "index": {
-    "exceptions": [],
+    "exceptions": [
+      {
+        "covers": [
+          "simd_json.projection_api.select_contract",
+          "simd_json.projection_api.source_argument_validation",
+          "simd_json.projection_api.projection_grammar",
+          "simd_json.projection_api.complete_preflight_validation",
+          "simd_json.projection_api.output_key_identity",
+          "simd_json.projection_api.scalar_results",
+          "simd_json.projection_api.fresh_string_results",
+          "simd_json.projection_api.atomic_result",
+          "simd_json.projection_api.projection_error_reasons",
+          "simd_json.projection_api.error_path",
+          "simd_json.projection_api.milestone_scope",
+          "simd_json.projection_api.binary_multi_select",
+          "simd_json.projection_api.document_select",
+          "simd_json.projection_api.invalid_source_argument",
+          "simd_json.projection_api.invalid_projection",
+          "simd_json.projection_api.all_scalar_types",
+          "simd_json.projection_api.path_failures",
+          "simd_json.projection_api.atom_and_surface_safety"
+        ],
+        "file": ".spec/specs/projection_api.spec.md",
+        "id": "simd_json.projection_api.milestone_02_bootstrap",
+        "reason": "Milestone 2 projection is not implemented; remove this exception and replace it with executed public API, grammar, result, error, lifetime, atom-safety, and scope evidence before activation.",
+        "subject_id": "simd_json.projection_api"
+      },
+      {
+        "covers": [
+          "simd_json.projection_engine.prefix_sharing_plan",
+          "simd_json.projection_engine.declaration_order_independence",
+          "simd_json.projection_engine.single_guided_traversal",
+          "simd_json.projection_engine.complete_source_validation",
+          "simd_json.projection_engine.duplicate_json_key_policy",
+          "simd_json.projection_engine.scalar_only_materialization",
+          "simd_json.projection_engine.typed_result_slots",
+          "simd_json.projection_engine.transactional_conversion",
+          "simd_json.projection_engine.private_abi_v2",
+          "simd_json.projection_engine.exception_and_failure_cleanup",
+          "simd_json.projection_engine.single_beam_boundary",
+          "simd_json.projection_engine.internal_phase_timing",
+          "simd_json.projection_engine.shared_prefix_and_order",
+          "simd_json.projection_engine.object_array_walk",
+          "simd_json.projection_engine.invalid_unselected_content",
+          "simd_json.projection_engine.duplicate_object_keys",
+          "simd_json.projection_engine.transactional_slot_failure",
+          "simd_json.projection_engine.abi_v2_conformance",
+          "simd_json.projection_engine.one_boundary_with_timing"
+        ],
+        "file": ".spec/specs/projection_engine.spec.md",
+        "id": "simd_json.projection_engine.milestone_02_bootstrap",
+        "reason": "The Milestone 2 native projection engine does not exist yet; remove this exception and replace it with executed plan, traversal, ABI, failure-cleanup, boundary, sanitizer, and full-source-validation evidence before activation.",
+        "subject_id": "simd_json.projection_engine"
+      },
+      {
+        "covers": [
+          "simd_json.projection_execution.threaded_projection",
+          "simd_json.projection_execution.one_correlated_operation",
+          "simd_json.projection_execution.owner_first_admission",
+          "simd_json.projection_execution.exclusive_document_selection",
+          "simd_json.projection_execution.committed_consumption",
+          "simd_json.projection_execution.preadmission_nonconsumption",
+          "simd_json.projection_execution.generation_and_resource_retention",
+          "simd_json.projection_execution.binary_temporary_document",
+          "simd_json.projection_execution.close_interlock",
+          "simd_json.projection_execution.cancellation_boundaries",
+          "simd_json.projection_execution.native_memory_baseline",
+          "simd_json.projection_execution.scheduler_qualification",
+          "simd_json.projection_execution.end_to_end_benchmark",
+          "simd_json.projection_execution.sparse_allocation_advantage",
+          "simd_json.projection_execution.preproduction_boundary",
+          "simd_json.projection_execution.binary_operation_lifetime",
+          "simd_json.projection_execution.document_one_shot",
+          "simd_json.projection_execution.non_owner_and_close_race",
+          "simd_json.projection_execution.submission_rejection_retry",
+          "simd_json.projection_execution.caller_death_and_cancellation",
+          "simd_json.projection_execution.large_projection_responsiveness",
+          "simd_json.projection_execution.jason_sparse_benchmark"
+        ],
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution.milestone_02_bootstrap",
+        "reason": "Milestone 2 threaded projection and qualification do not exist yet; remove this exception and replace it with executed admission, consumption, retention, cancellation, cleanup, scheduler, sanitizer, and benchmark evidence before activation.",
+        "subject_id": "simd_json.projection_execution"
+      }
+    ],
     "requirements": [
       {
         "file": ".spec/specs/document_api.spec.md",
@@ -417,6 +537,310 @@
         "stability": "evolving",
         "statement": "The Mix project shall include SpecLedEx as a commit-pinned development and test dependency that is excluded from runtime releases.",
         "subject_id": "simd_json.package"
+      },
+      {
+        "file": ".spec/specs/projection_api.spec.md",
+        "id": "simd_json.projection_api.atomic_result",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "SimdJson.select/2 shall return one complete result map only after every requested path and the complete JSON source have succeeded, and shall expose no partial result when any later path, parse, conversion, allocation, or cancellation step fails.",
+        "subject_id": "simd_json.projection_api"
+      },
+      {
+        "file": ".spec/specs/projection_api.spec.md",
+        "id": "simd_json.projection_api.complete_preflight_validation",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "The complete projection shall be validated before native admission or document consumption, and every invalid collection, key, path, segment, improper list, empty path, or duplicate output key shall return invalid_projection without inspecting JSON input.",
+        "subject_id": "simd_json.projection_api"
+      },
+      {
+        "file": ".spec/specs/projection_api.spec.md",
+        "id": "simd_json.projection_api.error_path",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "A projection error may expose an optional path copied only from the caller-supplied projection and shall not expose source substrings, automatically created atoms, native addresses, padding, or C++ exception text.",
+        "subject_id": "simd_json.projection_api"
+      },
+      {
+        "file": ".spec/specs/projection_api.spec.md",
+        "id": "simd_json.projection_api.fresh_string_results",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Every selected JSON string shall be copied into a fresh result binary that does not retain the source binary, native padded input, or document resource.",
+        "subject_id": "simd_json.projection_api"
+      },
+      {
+        "file": ".spec/specs/projection_api.spec.md",
+        "id": "simd_json.projection_api.milestone_scope",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Milestone 2 shall expose no public compiled projection, JSONPath, wildcard, recursive descent, filter, optional or default field policy, container materialization, stream, raw cursor, ownership transfer, or eager decode API.",
+        "subject_id": "simd_json.projection_api"
+      },
+      {
+        "file": ".spec/specs/projection_api.spec.md",
+        "id": "simd_json.projection_api.output_key_identity",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "A successful result map shall use the exact caller-supplied atom or binary output keys without creating an atom from projection binaries or JSON input.",
+        "subject_id": "simd_json.projection_api"
+      },
+      {
+        "file": ".spec/specs/projection_api.spec.md",
+        "id": "simd_json.projection_api.projection_error_reasons",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "SimdJson.Error shall add stable invalid_projection, no_such_field, index_out_of_bounds, incorrect_type, number_out_of_range, cursor_consumed, and cancelled reasons while preserving the existing parse, ownership, lifecycle, allocation, and native failure reasons.",
+        "subject_id": "simd_json.projection_api"
+      },
+      {
+        "file": ".spec/specs/projection_api.spec.md",
+        "id": "simd_json.projection_api.projection_grammar",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "A projection shall be a non-empty proper list of unique atom-or-binary output keys paired with non-empty proper paths whose segments are valid UTF-8 binaries or integers from zero through UINT64_MAX.",
+        "subject_id": "simd_json.projection_api"
+      },
+      {
+        "file": ".spec/specs/projection_api.spec.md",
+        "id": "simd_json.projection_api.scalar_results",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Selected string, signed integer, unsigned integer, floating-point, boolean, and null leaves shall become the corresponding binary, exact integer, finite float, boolean, and nil BEAM values, while an object or array leaf shall return incorrect_type without materialization.",
+        "subject_id": "simd_json.projection_api"
+      },
+      {
+        "file": ".spec/specs/projection_api.spec.md",
+        "id": "simd_json.projection_api.select_contract",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "SimdJson.select/2 shall accept a JSON binary or genuine caller-owned SimdJson.Document plus a projection and return either {:ok, map()} or {:error, SimdJson.Error.t()}.",
+        "subject_id": "simd_json.projection_api"
+      },
+      {
+        "file": ".spec/specs/projection_api.spec.md",
+        "id": "simd_json.projection_api.source_argument_validation",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "SimdJson.select/2 shall raise ArgumentError for a source that is neither a binary nor a genuine SimdJson.Document resource before projection work is submitted.",
+        "subject_id": "simd_json.projection_api"
+      },
+      {
+        "file": ".spec/specs/projection_engine.spec.md",
+        "id": "simd_json.projection_engine.complete_source_validation",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "A successful projection shall structurally consume and validate the complete logical JSON value, including unselected branches and content after the last selected value, without materializing those values.",
+        "subject_id": "simd_json.projection_engine"
+      },
+      {
+        "file": ".spec/specs/projection_engine.spec.md",
+        "id": "simd_json.projection_engine.declaration_order_independence",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Projection declaration order shall affect only output-key association and shall not control or constrain source traversal, missing-field detection, or result values.",
+        "subject_id": "simd_json.projection_engine"
+      },
+      {
+        "file": ".spec/specs/projection_engine.spec.md",
+        "id": "simd_json.projection_engine.duplicate_json_key_policy",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "When an object repeats a requested key, the first occurrence in document order shall satisfy that path while later occurrences remain structurally consumed and validated without overwriting the result.",
+        "subject_id": "simd_json.projection_engine"
+      },
+      {
+        "file": ".spec/specs/projection_engine.spec.md",
+        "id": "simd_json.projection_engine.exception_and_failure_cleanup",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Every projection C ABI function shall contain all C++ exceptions and release plan nodes, copied key bytes, slots, and partial traversal state exactly once on construction, execution, conversion, allocation, and cancellation failures.",
+        "subject_id": "simd_json.projection_engine"
+      },
+      {
+        "file": ".spec/specs/projection_engine.spec.md",
+        "id": "simd_json.projection_engine.internal_phase_timing",
+        "priority": "should",
+        "stability": "evolving",
+        "statement": "Test and diagnostic builds shall record redacted compilation, traversal, and term-construction durations without exposing a public telemetry API or source content in Milestone 2.",
+        "subject_id": "simd_json.projection_engine"
+      },
+      {
+        "file": ".spec/specs/projection_engine.spec.md",
+        "id": "simd_json.projection_engine.prefix_sharing_plan",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "The complete validated projection shall compile into one immutable operation-scoped native tree that shares common object and array prefixes and allows multiple output slots at one terminal path.",
+        "subject_id": "simd_json.projection_engine"
+      },
+      {
+        "file": ".spec/specs/projection_engine.spec.md",
+        "id": "simd_json.projection_engine.private_abi_v2",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "Private ABI version 2 shall preserve Milestone 1 parser and document behavior while exposing only fixed-width descriptors, an opaque projection plan with matching destructor, one execution function, typed caller-owned result slots, and stable projection statuses.",
+        "subject_id": "simd_json.projection_engine"
+      },
+      {
+        "file": ".spec/specs/projection_engine.spec.md",
+        "id": "simd_json.projection_engine.scalar_only_materialization",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "The engine shall materialize native slots only for requested scalar terminals and shall skip unselected values and reject requested object or array terminals without constructing equivalent BEAM containers.",
+        "subject_id": "simd_json.projection_engine"
+      },
+      {
+        "file": ".spec/specs/projection_engine.spec.md",
+        "id": "simd_json.projection_engine.single_beam_boundary",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "A complete projection shall cross the BEAM/NIF request boundary once and shall not invoke a NIF per field, path, segment, or result slot.",
+        "subject_id": "simd_json.projection_engine"
+      },
+      {
+        "file": ".spec/specs/projection_engine.spec.md",
+        "id": "simd_json.projection_engine.single_guided_traversal",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "One execution shall advance the On-Demand document once in source order, visit each shared prefix once, and shall not rewind, reparse, or perform an independent lookup for each requested path.",
+        "subject_id": "simd_json.projection_engine"
+      },
+      {
+        "file": ".spec/specs/projection_engine.spec.md",
+        "id": "simd_json.projection_engine.transactional_conversion",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "BEAM result construction shall begin only after complete traversal and slot validation succeed, shall copy borrowed strings before their document lifetime ends, and shall discard every partial term environment on failure or cancellation.",
+        "subject_id": "simd_json.projection_engine"
+      },
+      {
+        "file": ".spec/specs/projection_engine.spec.md",
+        "id": "simd_json.projection_engine.typed_result_slots",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Native traversal shall store each selected value in a fixed-layout tagged slot that preserves signed integer, unsigned integer, floating-point, boolean, null, and borrowed string-view distinctions until Zig conversion.",
+        "subject_id": "simd_json.projection_engine"
+      },
+      {
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution.binary_temporary_document",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Binary-source select shall create, traverse, and destroy an unpublished temporary padded input, parser, document, plan, and slot graph within one threaded operation before returning success or failure.",
+        "subject_id": "simd_json.projection_execution"
+      },
+      {
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution.cancellation_boundaries",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "Projection shall check cancellation before plan compilation, before cursor access, between bounded traversal units, before and during bounded term conversion, and before delivery while retaining state across uninterruptible native work.",
+        "subject_id": "simd_json.projection_execution"
+      },
+      {
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution.close_interlock",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Close, garbage collection, application shutdown, and NIF unload shall prevent new projection admission, cancel active selection at safe boundaries, suppress stale delivery, and join exactly-once dependency-safe cleanup without blocking a normal scheduler.",
+        "subject_id": "simd_json.projection_execution"
+      },
+      {
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution.committed_consumption",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "After a worker crosses its first cursor-access boundary, document projection shall end in consumed on success, parse or path failure, conversion failure, cancellation, caller death, or internal failure and shall never rewind or silently reparse.",
+        "subject_id": "simd_json.projection_execution"
+      },
+      {
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution.end_to_end_benchmark",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "Projection qualification shall compare complete select/2 work against Jason full decode plus equivalent lookups using predeclared fixtures and shall include validation, scheduling, parsing, traversal, result construction, cleanup, latency, throughput, BEAM and native allocation, retained binary memory, garbage collection, and scheduler latency.",
+        "subject_id": "simd_json.projection_execution"
+      },
+      {
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution.exclusive_document_selection",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "A fresh document shall admit at most one projection by moving atomically from fresh to selecting, and no second projection shall access its cursor concurrently.",
+        "subject_id": "simd_json.projection_execution"
+      },
+      {
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution.generation_and_resource_retention",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Every projection operation shall retain its document, input, plan, result environment, and operation state and validate the captured generation before native dereference and delivery until terminal cleanup completes.",
+        "subject_id": "simd_json.projection_execution"
+      },
+      {
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution.native_memory_baseline",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "Test builds shall prove document, parser, input, plan, slot, term-environment, operation, and retained-resource counts return to baseline after every binary and document success, failure, cancellation, caller-death, close, garbage-collection, and application-generation path.",
+        "subject_id": "simd_json.projection_execution"
+      },
+      {
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution.one_correlated_operation",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Each public select/2 call shall create one uniquely correlated native operation with one terminal result, and late, duplicate, stale, mismatched, cancelled, or orphaned projection results shall be discarded only after cleanup.",
+        "subject_id": "simd_json.projection_execution"
+      },
+      {
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution.owner_first_admission",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Document projection shall validate the genuine resource and caller ownership before revealing lifecycle, generation, selecting, or consumed state and before reserving native work.",
+        "subject_id": "simd_json.projection_execution"
+      },
+      {
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution.preadmission_nonconsumption",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Invalid arguments, projection validation failures, non-owner and lifecycle rejection, and proven pre-worker submission rejection shall leave a fresh document unconsumed and eligible for a later valid owner projection.",
+        "subject_id": "simd_json.projection_execution"
+      },
+      {
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution.preproduction_boundary",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Milestone 2 shall continue to identify the Zigler-threaded runtime as pre-production and shall not claim the bounded admission pool, backpressure, or public telemetry assigned to Milestone 4.",
+        "subject_id": "simd_json.projection_execution"
+      },
+      {
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution.scheduler_qualification",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "Large concurrent successful and failing projections shall preserve the accepted normal-scheduler heartbeat budget and shall not use dirty schedulers as the projection queue.",
+        "subject_id": "simd_json.projection_execution"
+      },
+      {
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution.sparse_allocation_advantage",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "Before qualification measurements run, the repository shall declare and then enforce a reproducible sparse-projection acceptance threshold demonstrating substantially lower BEAM allocation than Jason full materialization plus equivalent lookups.",
+        "subject_id": "simd_json.projection_execution"
+      },
+      {
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution.threaded_projection",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "Projection compilation, input-dependent traversal, result conversion, and potentially large cleanup shall execute through the correlated Zigler-threaded path rather than an ordinary or dirty CPU NIF.",
+        "subject_id": "simd_json.projection_execution"
       },
       {
         "file": ".spec/specs/spec_system.spec.md",
@@ -974,6 +1398,432 @@
         "when": [
           "A caller opens a document"
         ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_api.scalar_results",
+          "simd_json.projection_api.fresh_string_results"
+        ],
+        "file": ".spec/specs/projection_api.spec.md",
+        "given": [
+          "Requested string, signed integer, unsigned integer, floating-point, true, false, and null leaves"
+        ],
+        "id": "simd_json.projection_api.all_scalar_types",
+        "subject_id": "simd_json.projection_api",
+        "then": [
+          "Every value has the documented Elixir type and numeric fidelity",
+          "Every selected string remains valid after the source and document are released",
+          "Selecting an object or array leaf returns incorrect_type and no container term"
+        ],
+        "when": [
+          "The projection succeeds"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_api.output_key_identity",
+          "simd_json.projection_api.milestone_scope"
+        ],
+        "file": ".spec/specs/projection_api.spec.md",
+        "given": [
+          "JSON containing many unique object keys and a valid binary-key projection",
+          "The completed Milestone 2 modules, documentation, exports, and typespecs"
+        ],
+        "id": "simd_json.projection_api.atom_and_surface_safety",
+        "subject_id": "simd_json.projection_api",
+        "then": [
+          "No JSON or binary projection key is converted into a new atom",
+          "The result retains its binary output key",
+          "Only select/2 is added to the Milestone 1 API surface and all deferred operations remain absent"
+        ],
+        "when": [
+          "Selection runs and the public surface is enumerated"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_api.select_contract",
+          "simd_json.projection_api.output_key_identity",
+          "simd_json.projection_api.atomic_result"
+        ],
+        "file": ".spec/specs/projection_api.spec.md",
+        "given": [
+          "A valid JSON binary containing nested object and array values",
+          "A projection with atom and binary output keys in an order different from the JSON fields"
+        ],
+        "id": "simd_json.projection_api.binary_multi_select",
+        "subject_id": "simd_json.projection_api",
+        "then": [
+          "It returns one map containing every requested scalar under the exact supplied key",
+          "No unselected container or value appears in the result"
+        ],
+        "when": [
+          "SimdJson.select/2 is called once"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_api.select_contract"
+        ],
+        "file": ".spec/specs/projection_api.spec.md",
+        "given": [
+          "A fresh open document owned by the caller",
+          "A valid multi-path projection"
+        ],
+        "id": "simd_json.projection_api.document_select",
+        "subject_id": "simd_json.projection_api",
+        "then": [
+          "The call returns the same public result shape as the binary form",
+          "The document resource itself is never exposed in the result"
+        ],
+        "when": [
+          "The owner calls SimdJson.select/2"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_api.projection_grammar",
+          "simd_json.projection_api.complete_preflight_validation"
+        ],
+        "file": ".spec/specs/projection_api.spec.md",
+        "given": [
+          "Empty, map-shaped, improper, duplicate-key, invalid-key, empty-path, improper-path, invalid-UTF-8 segment, negative-index, oversized-index, and unsupported-segment projections"
+        ],
+        "id": "simd_json.projection_api.invalid_projection",
+        "subject_id": "simd_json.projection_api",
+        "then": [
+          "Each call returns invalid_projection before JSON parsing or native submission",
+          "The document remains fresh and usable by a later valid projection"
+        ],
+        "when": [
+          "Each projection is submitted with a binary and with a fresh document"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_api.source_argument_validation"
+        ],
+        "file": ".spec/specs/projection_api.spec.md",
+        "given": [
+          "An atom, iolist, map, reference, forged document-shaped value, and resource of another registered type"
+        ],
+        "id": "simd_json.projection_api.invalid_source_argument",
+        "subject_id": "simd_json.projection_api",
+        "then": [
+          "ArgumentError is raised before native admission",
+          "No document or projection state changes"
+        ],
+        "when": [
+          "Each value is supplied as the select source"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_api.projection_error_reasons",
+          "simd_json.projection_api.error_path",
+          "simd_json.projection_api.atomic_result"
+        ],
+        "file": ".spec/specs/projection_api.spec.md",
+        "given": [
+          "Projections containing a missing field, out-of-range index, wrong container segment, unsupported numeric value, and a later failing path after earlier paths succeed"
+        ],
+        "id": "simd_json.projection_api.path_failures",
+        "subject_id": "simd_json.projection_api",
+        "then": [
+          "The documented stable reason and caller-supplied failing path are returned",
+          "No partial map, source substring, native address, or exception text escapes"
+        ],
+        "when": [
+          "Each projection is evaluated"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_engine.private_abi_v2",
+          "simd_json.projection_engine.exception_and_failure_cleanup"
+        ],
+        "file": ".spec/specs/projection_engine.spec.md",
+        "given": [
+          "An independent C11 harness using only the version 2 header"
+        ],
+        "id": "simd_json.projection_engine.abi_v2_conformance",
+        "subject_id": "simd_json.projection_engine",
+        "then": [
+          "Only documented fixed-layout values and stable statuses cross the ABI",
+          "No exception escapes and every constructor has one matching cleanup path",
+          "Release symbols contain only the versioned allowlist"
+        ],
+        "when": [
+          "It compiles, executes, cancels, injects exceptions and allocation failures, and destroys null, partial, and complete projection plans"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_engine.duplicate_json_key_policy"
+        ],
+        "file": ".spec/specs/projection_engine.spec.md",
+        "given": [
+          "Requested object keys repeated at root and nested depths"
+        ],
+        "id": "simd_json.projection_engine.duplicate_object_keys",
+        "subject_id": "simd_json.projection_engine",
+        "then": [
+          "The first occurrence in document order supplies each requested value",
+          "Later occurrences are validated but never overwrite completed slots"
+        ],
+        "when": [
+          "The projection succeeds"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_engine.complete_source_validation",
+          "simd_json.projection_engine.transactional_conversion"
+        ],
+        "file": ".spec/specs/projection_engine.spec.md",
+        "given": [
+          "Malformed JSON before, inside, and after selected paths, including malformed content in an unselected branch"
+        ],
+        "id": "simd_json.projection_engine.invalid_unselected_content",
+        "subject_id": "simd_json.projection_engine",
+        "then": [
+          "Every source returns a parse failure at a logical byte offset when available",
+          "No partial result map or selected value escapes"
+        ],
+        "when": [
+          "Projection runs"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_engine.single_guided_traversal",
+          "simd_json.projection_engine.scalar_only_materialization",
+          "simd_json.projection_engine.typed_result_slots"
+        ],
+        "file": ".spec/specs/projection_engine.spec.md",
+        "given": [
+          "Nested objects and arrays with selected low and high indexes and very large unselected subtrees"
+        ],
+        "id": "simd_json.projection_engine.object_array_walk",
+        "subject_id": "simd_json.projection_engine",
+        "then": [
+          "Objects and arrays advance once in source order",
+          "Requested scalars populate correctly typed slots",
+          "Unselected and container values produce no corresponding BEAM tree"
+        ],
+        "when": [
+          "The projection executes"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_engine.single_beam_boundary",
+          "simd_json.projection_engine.internal_phase_timing"
+        ],
+        "file": ".spec/specs/projection_engine.spec.md",
+        "given": [
+          "A projection containing many fields and shared prefixes"
+        ],
+        "id": "simd_json.projection_engine.one_boundary_with_timing",
+        "subject_id": "simd_json.projection_engine",
+        "then": [
+          "Exactly one request admission and one terminal delivery are observed",
+          "Compilation, traversal, and construction timings are bounded and redacted",
+          "No diagnostic or timing function appears in the release public API"
+        ],
+        "when": [
+          "Boundary and timing diagnostics are enabled in a test build"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_engine.prefix_sharing_plan",
+          "simd_json.projection_engine.declaration_order_independence",
+          "simd_json.projection_engine.single_guided_traversal"
+        ],
+        "file": ".spec/specs/projection_engine.spec.md",
+        "given": [
+          "Paths sharing object and array prefixes, including two output keys for one identical path",
+          "Projection declaration order opposite to JSON object and array-index order"
+        ],
+        "id": "simd_json.projection_engine.shared_prefix_and_order",
+        "subject_id": "simd_json.projection_engine",
+        "then": [
+          "Every shared prefix and identical terminal is evaluated once",
+          "Every output slot receives the value associated with its caller key",
+          "No rewind or per-path reparse occurs"
+        ],
+        "when": [
+          "The plan compiles and executes"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_engine.typed_result_slots",
+          "simd_json.projection_engine.transactional_conversion",
+          "simd_json.projection_engine.exception_and_failure_cleanup"
+        ],
+        "file": ".spec/specs/projection_engine.spec.md",
+        "given": [
+          "Failure injection after each plan allocation, traversal slot, string copy, and BEAM conversion step"
+        ],
+        "id": "simd_json.projection_engine.transactional_slot_failure",
+        "subject_id": "simd_json.projection_engine",
+        "then": [
+          "No partial public result is delivered",
+          "Every owned plan, byte arena, slot, term environment, and retained document reference is released exactly once"
+        ],
+        "when": [
+          "Each failure is triggered after earlier slots have succeeded"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_execution.threaded_projection",
+          "simd_json.projection_execution.one_correlated_operation",
+          "simd_json.projection_execution.binary_temporary_document",
+          "simd_json.projection_execution.native_memory_baseline"
+        ],
+        "file": ".spec/specs/projection_execution.spec.md",
+        "given": [
+          "Valid, malformed, missing-path, and allocation-failing large binary inputs"
+        ],
+        "id": "simd_json.projection_execution.binary_operation_lifetime",
+        "subject_id": "simd_json.projection_execution",
+        "then": [
+          "One correlated worker owns the complete temporary native graph",
+          "Every temporary allocation is gone before return or orphan cleanup",
+          "A successful result remains valid independently of the source"
+        ],
+        "when": [
+          "Each is projected and the caller retains only the terminal result"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_execution.generation_and_resource_retention",
+          "simd_json.projection_execution.close_interlock",
+          "simd_json.projection_execution.cancellation_boundaries",
+          "simd_json.projection_execution.native_memory_baseline"
+        ],
+        "file": ".spec/specs/projection_execution.spec.md",
+        "given": [
+          "Binary and document projections paused at each defined cancellation boundary"
+        ],
+        "id": "simd_json.projection_execution.caller_death_and_cancellation",
+        "subject_id": "simd_json.projection_execution",
+        "then": [
+          "Work stops at the next safe boundary without delivering an orphan result",
+          "Uninterruptible native state remains retained until safe",
+          "All counters return to baseline exactly once"
+        ],
+        "when": [
+          "The caller dies or shutdown requests cancellation"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_execution.owner_first_admission",
+          "simd_json.projection_execution.exclusive_document_selection",
+          "simd_json.projection_execution.committed_consumption",
+          "simd_json.projection_execution.preadmission_nonconsumption"
+        ],
+        "file": ".spec/specs/projection_execution.spec.md",
+        "given": [
+          "Fresh documents and both invalid and valid projections"
+        ],
+        "id": "simd_json.projection_execution.document_one_shot",
+        "subject_id": "simd_json.projection_execution",
+        "then": [
+          "Preflight rejection leaves the document fresh",
+          "Every worker-committed attempt leaves it consumed",
+          "A later selection returns cursor_consumed without native cursor access",
+          "Owner close remains idempotent"
+        ],
+        "when": [
+          "Invalid preflight, successful traversal, missing-path failure, malformed-source failure, and a second owner selection are attempted"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_execution.end_to_end_benchmark",
+          "simd_json.projection_execution.sparse_allocation_advantage"
+        ],
+        "file": ".spec/specs/projection_execution.spec.md",
+        "given": [
+          "Predeclared small, medium, and large sparse-projection fixtures, selected paths, environment, sample policy, and allocation threshold"
+        ],
+        "id": "simd_json.projection_execution.jason_sparse_benchmark",
+        "subject_id": "simd_json.projection_execution",
+        "then": [
+          "The report includes every required timing, scheduler, garbage-collection, retained-memory, and allocation dimension",
+          "The declared BEAM-allocation advantage passes without excluding validation, scheduling, result construction, or cleanup cost"
+        ],
+        "when": [
+          "SimdJson.select/2 is compared with Jason.decode/1 plus equivalent lookups end to end"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_execution.threaded_projection",
+          "simd_json.projection_execution.scheduler_qualification",
+          "simd_json.projection_execution.preproduction_boundary"
+        ],
+        "file": ".spec/specs/projection_execution.spec.md",
+        "given": [
+          "Independent BEAM heartbeats and concurrent large valid, malformed, missing-path, and cancelled sparse projections"
+        ],
+        "id": "simd_json.projection_execution.large_projection_responsiveness",
+        "subject_id": "simd_json.projection_execution",
+        "then": [
+          "Heartbeat latency remains within the accepted budget",
+          "Input-dependent work is observed only on the threaded path",
+          "Results make no production admission-control claim"
+        ],
+        "when": [
+          "The qualification profile records worker entry and normal and dirty scheduler utilization"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_execution.owner_first_admission",
+          "simd_json.projection_execution.generation_and_resource_retention",
+          "simd_json.projection_execution.close_interlock"
+        ],
+        "file": ".spec/specs/projection_execution.spec.md",
+        "given": [
+          "An owner selection in each cancellation boundary and the document term held by another process"
+        ],
+        "id": "simd_json.projection_execution.non_owner_and_close_race",
+        "subject_id": "simd_json.projection_execution",
+        "then": [
+          "The other process receives not_owner without state disclosure or mutation",
+          "Active work retains valid state until cancellation and cleanup reach a safe boundary",
+          "No stale result is delivered after generation invalidation"
+        ],
+        "when": [
+          "The other process attempts selection and cleanup or shutdown begins"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.projection_execution.preadmission_nonconsumption",
+          "simd_json.projection_execution.one_correlated_operation"
+        ],
+        "file": ".spec/specs/projection_execution.spec.md",
+        "given": [
+          "A fresh document and a test seam that rejects projection submission before worker admission"
+        ],
+        "id": "simd_json.projection_execution.submission_rejection_retry",
+        "subject_id": "simd_json.projection_execution",
+        "then": [
+          "The failed call returns the stable native failure without fallback execution",
+          "Its reservation is safely rolled back",
+          "A later valid owner projection can consume the same fresh document"
+        ],
+        "when": [
+          "Submission fails and the seam is then disabled"
+        ]
       }
     ],
     "subjects": [
@@ -1078,7 +1928,7 @@
           "id": "simd_json.package",
           "kind": "package",
           "status": "active",
-          "summary": "Elixir library scaffold, pinned native build tooling, local specification tooling, and implementation roadmap.",
+          "summary": "Active Milestone 1 library and native tooling with a fully specified, phased Milestone 2 projection plan.",
           "surface": [
             ".tool-versions",
             "README.md",
@@ -1090,11 +1940,89 @@
             "native/vendor/simdjson/**",
             "test/**/*.exs",
             "docs/milestones/*.md",
+            ".spec/decisions/*.md",
+            ".spec/planning/**/*.md",
+            ".spec/specs/*.spec.md",
             ".spec/research/*.md"
           ],
           "verification_minimum_strength": null
         },
         "title": "SimdJson Package"
+      },
+      {
+        "file": ".spec/specs/projection_api.spec.md",
+        "id": "simd_json.projection_api",
+        "meta": {
+          "decisions": [
+            "simd_json.projection_api_and_validation",
+            "simd_json.projection_admission_consumption_and_lifetime",
+            "simd_json.document_resource_and_buffer_ownership"
+          ],
+          "id": "simd_json.projection_api",
+          "kind": "api",
+          "status": "planned",
+          "summary": "Milestone 2 exposes validated binary and document projection through one transactional select/2 result.",
+          "surface": [
+            "lib/simd_json.ex",
+            "lib/simd_json/**/*.ex",
+            "test/**/*projection*",
+            "test/**/*select*",
+            "docs/milestones/02-projection-api.md"
+          ],
+          "verification_minimum_strength": null
+        },
+        "title": "Projection API"
+      },
+      {
+        "file": ".spec/specs/projection_engine.spec.md",
+        "id": "simd_json.projection_engine",
+        "meta": {
+          "decisions": [
+            "simd_json.native_stack_and_c_abi",
+            "simd_json.projection_api_and_validation",
+            "simd_json.prefix_sharing_projection_engine"
+          ],
+          "id": "simd_json.projection_engine",
+          "kind": "subsystem",
+          "status": "planned",
+          "summary": "Milestone 2 compiles all requested paths into one native plan and evaluates them transactionally in one complete source-order traversal.",
+          "surface": [
+            "native/include/**",
+            "native/src/**",
+            "native/zig/**",
+            "test/**/*projection*",
+            "scripts/native/**/*projection*",
+            "docs/milestones/02-projection-api.md"
+          ],
+          "verification_minimum_strength": null
+        },
+        "title": "Projection Engine"
+      },
+      {
+        "file": ".spec/specs/projection_execution.spec.md",
+        "id": "simd_json.projection_execution",
+        "meta": {
+          "decisions": [
+            "simd_json.document_resource_and_buffer_ownership",
+            "simd_json.off_scheduler_native_execution",
+            "simd_json.projection_admission_consumption_and_lifetime"
+          ],
+          "id": "simd_json.projection_execution",
+          "kind": "subsystem",
+          "status": "planned",
+          "summary": "Milestone 2 runs one-shot projection off scheduler with owner-first admission, retained resources, deterministic consumption, and qualified cleanup.",
+          "surface": [
+            "native/**",
+            "lib/simd_json/**/*.ex",
+            "test/**/*projection*",
+            "test/**/*scheduler*",
+            "test/qualification/**",
+            "bench/**/*projection*",
+            "docs/milestones/02-projection-api.md"
+          ],
+          "verification_minimum_strength": null
+        },
+        "title": "Projection Execution and Lifecycle"
       },
       {
         "file": ".spec/specs/spec_system.spec.md",
@@ -1323,6 +2251,15 @@
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
         "subject_id": "simd_json.package",
+        "target": ".spec/planning/milestone_02_projection_api/README.md"
+      },
+      {
+        "covers": [
+          "simd_json.package.documentation_layout"
+        ],
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "subject_id": "simd_json.package",
         "target": ".spec/research/simdjson_beam_nif_architecture.md"
       },
       {
@@ -1404,13 +2341,13 @@
   "specification_version": "1.0",
   "summary": {
     "decision_parse_errors": 0,
-    "decisions": 3,
-    "exceptions": 0,
+    "decisions": 6,
+    "exceptions": 3,
     "findings": 0,
-    "requirements": 52,
-    "scenarios": 26,
-    "subjects": 6,
-    "verifications": 23
+    "requirements": 90,
+    "scenarios": 47,
+    "subjects": 9,
+    "verifications": 24
   },
   "verification": {
     "claims": [
@@ -2313,7 +3250,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": ".spec/research/simdjson_beam_nif_architecture.md",
+        "target": ".spec/planning/milestone_02_projection_api/README.md",
         "verification_index": 10
       },
       {
@@ -2324,8 +3261,19 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": ".spec/research/zigler_0_16_threaded_qualification.md",
+        "target": ".spec/research/simdjson_beam_nif_architecture.md",
         "verification_index": 11
+      },
+      {
+        "cover_id": "simd_json.package.documentation_layout",
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.package",
+        "target": ".spec/research/zigler_0_16_threaded_qualification.md",
+        "verification_index": 12
       },
       {
         "cover_id": "simd_json.package.mix_library",
@@ -2336,7 +3284,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.package",
         "target": "mix test",
-        "verification_index": 12
+        "verification_index": 13
       },
       {
         "cover_id": "simd_json.package.native_build_tooling",
@@ -2347,7 +3295,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.package",
         "target": "bash scripts/ci/qualify_native_release.sh",
-        "verification_index": 13
+        "verification_index": 14
       },
       {
         "cover_id": "simd_json.package.native_source_distribution",
@@ -2358,7 +3306,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.package",
         "target": "bash scripts/ci/qualify_native_release.sh",
-        "verification_index": 13
+        "verification_index": 14
       },
       {
         "cover_id": "spec.workspace.readme_present",
@@ -2432,12 +3380,12 @@
     "strength_summary": {
       "claimed": 6,
       "executed": 68,
-      "linked": 18
+      "linked": 19
     },
     "threshold_failures": 0
   },
   "workspace": {
-    "decision_count": 3,
-    "spec_count": 6
+    "decision_count": 6,
+    "spec_count": 9
   }
 }
