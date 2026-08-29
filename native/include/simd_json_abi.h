@@ -22,6 +22,7 @@ extern "C" {
 
 #define SIMD_JSON_ABI_VERSION UINT32_C(2)
 #define SIMD_JSON_REQUIRED_PADDING UINT64_C(64)
+#define SIMD_JSON_MAX_DEPTH UINT64_C(1024)
 #define SIMD_JSON_BYTE_OFFSET_UNAVAILABLE UINT64_MAX
 #define SIMD_JSON_NATIVE_CODE_UNAVAILABLE INT32_MIN
 #define SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE UINT32_MAX
@@ -192,8 +193,9 @@ SIMD_JSON_ABI_EXPORT void simd_json_projection_plan_destroy(
     simd_json_projection_plan *plan) SIMD_JSON_ABI_NOEXCEPT;
 
 /*
- * Executes a compiled plan into caller-owned slots. Phase 2 freezes this
- * signature and slot lifetime; traversal behavior is implemented in Phase 3.
+ * Executes a compiled plan once in source order and publishes caller-owned
+ * typed slots only after the complete logical document validates. Every
+ * failure clears all slots; a second cursor claim returns CURSOR_CONSUMED.
  */
 SIMD_JSON_ABI_EXPORT simd_json_projection_status simd_json_projection_execute(
     simd_json_document *document,

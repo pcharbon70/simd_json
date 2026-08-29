@@ -73,6 +73,10 @@ common_cxx_flags=(
   -c "${repository_root}/native/test/projection_plan_conformance.c" \
   -o "${scratch_root}/projection_plan_conformance.o"
 
+"${zig_executable}" cc "${common_c_flags[@]}" "${profile_flags[@]}" \
+  -c "${repository_root}/native/test/projection_engine_conformance.c" \
+  -o "${scratch_root}/projection_engine_conformance.o"
+
 "${zig_executable}" c++ "${common_cxx_flags[@]}" "${profile_flags[@]}" \
   -c "${repository_root}/native/src/simd_json_abi.cpp" \
   -o "${scratch_root}/simd_json_abi.o"
@@ -103,3 +107,10 @@ env "${runtime_environment[@]}" "${scratch_root}/c_abi_conformance"
   -o "${scratch_root}/projection_plan_conformance"
 
 env "${runtime_environment[@]}" "${scratch_root}/projection_plan_conformance"
+
+"${zig_executable}" c++ "${profile_flags[@]}" \
+  "${scratch_root}/projection_engine_conformance.o" \
+  "${scratch_root}/libsimd_json_abi_test.a" \
+  -o "${scratch_root}/projection_engine_conformance"
+
+env "${runtime_environment[@]}" "${scratch_root}/projection_engine_conformance"

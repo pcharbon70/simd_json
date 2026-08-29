@@ -87,6 +87,17 @@ not exist at this checkpoint. They remain later implementation work; this
 evidence establishes only the decision's pre-admission non-consumption side and
 does not claim that document selection or rollback is implemented.
 
+### Phase 3 native-execution checkpoint
+
+The standalone ABI engine now checks cancellation before its first cursor
+claim and between bounded traversal units. A cancellation before that claim
+leaves the opaque native document eligible for execution; after the atomic
+claim, success and every failure make a second native execution return
+`cursor_consumed`. This defensive native rule is exercised only in C/Zig
+harnesses and does not yet implement the owner-first `fresh -> selecting ->
+consumed` resource state, threaded reservation rollback, close interlock, or
+public lifecycle behavior assigned to Phase 4.
+
 ### Close, cancellation, and shutdown
 
 Close or shutdown prevents new projection admission. If selection is active,

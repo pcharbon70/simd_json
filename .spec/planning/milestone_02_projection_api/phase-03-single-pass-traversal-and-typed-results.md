@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 3 Phase - Execute the native plan in one complete document-order walk
+- [x] 3 Phase - Execute the native plan in one complete document-order walk
   and produce transactional typed scalar slots without constructing BEAM terms.
 
   This phase implements the core On-Demand query engine below the NIF boundary.
@@ -28,122 +28,122 @@ Back to plan: [README](./README.md)
 
 ## 3.1 Section — Guided Object Traversal
 
-- [ ] 3.1 Section - Walk requested and unrequested object fields once in source
+- [x] 3.1 Section - Walk requested and unrequested object fields once in source
   order while matching all relevant projection-tree edges.
 
   This section makes JSON field order independent from caller declaration order
   and defines repeated-key behavior at every depth.
 
-  - [ ] 3.1.1 Task - Match object edges without cursor rewind.
+  - [x] 3.1.1 Task - Match object edges without cursor rewind.
 
     The task uses the plan's object-child index to dispatch fields encountered
     by the On-Demand iterator and recurses only into matching projection nodes.
 
-    - [ ] 3.1.1.1 Subtask - Iterate every source object field exactly once and match its decoded key bytes against the current plan node without converting that key to an atom.
-    - [ ] 3.1.1.2 Subtask - Descend through one shared child node for every requested prefix and fan a completed terminal value into all terminal output slots.
-    - [ ] 3.1.1.3 Subtask - Skip and structurally consume unrequested field values through simdjson without allocating plan nodes, result slots, strings, maps, or lists for them.
-    - [ ] 3.1.1.4 Subtask - Track requested children not satisfied by object end and report the deterministic first missing slot according to caller slot order, not hash or source enumeration order.
+    - [x] 3.1.1.1 Subtask - Iterate every source object field exactly once and match its decoded key bytes against the current plan node without converting that key to an atom.
+    - [x] 3.1.1.2 Subtask - Descend through one shared child node for every requested prefix and fan a completed terminal value into all terminal output slots.
+    - [x] 3.1.1.3 Subtask - Skip and structurally consume unrequested field values through simdjson without allocating plan nodes, result slots, strings, maps, or lists for them.
+    - [x] 3.1.1.4 Subtask - Track requested children not satisfied by object end and report the deterministic first missing slot according to caller slot order, not hash or source enumeration order.
 
-  - [ ] 3.1.2 Task - Enforce the duplicate JSON key policy.
+  - [x] 3.1.2 Task - Enforce the duplicate JSON key policy.
 
     The task makes repeated requested keys deterministic while still validating
     the complete object.
 
-    - [ ] 3.1.2.1 Subtask - Mark a requested object edge satisfied after its first occurrence in document order and prevent later occurrences from overwriting its terminal or descendant slots.
-    - [ ] 3.1.2.2 Subtask - Continue consuming and structurally validating every later duplicate value even after its requested slots are complete.
-    - [ ] 3.1.2.3 Subtask - Apply the same first-occurrence rule independently in nested objects and document it in native conformance fixtures.
+    - [x] 3.1.2.1 Subtask - Mark a requested object edge satisfied after its first occurrence in document order and prevent later occurrences from overwriting its terminal or descendant slots.
+    - [x] 3.1.2.2 Subtask - Continue consuming and structurally validating every later duplicate value even after its requested slots are complete.
+    - [x] 3.1.2.3 Subtask - Apply the same first-occurrence rule independently in nested objects and document it in native conformance fixtures.
 
 ## 3.2 Section — Array Traversal and Scalar Extraction
 
-- [ ] 3.2 Section - Advance arrays monotonically to requested indexes and fill
+- [x] 3.2 Section - Advance arrays monotonically to requested indexes and fill
   correctly typed scalar result slots.
 
   This section completes mixed object/array paths, exact scalar typing, missing
   index behavior, and scalar-only output bounds.
 
-  - [ ] 3.2.1 Task - Traverse requested array indexes in source order.
+  - [x] 3.2.1 Task - Traverse requested array indexes in source order.
 
     The task consumes each array element at most once regardless of projection
     declaration order or how many paths share an indexed prefix.
 
-    - [ ] 3.2.1.1 Subtask - Use ascending plan edges to advance the On-Demand array cursor once, sharing a selected element among all descendant paths at the same index.
-    - [ ] 3.2.1.2 Subtask - Structurally skip every unrequested lower, intervening, and trailing element without BEAM materialization.
-    - [ ] 3.2.1.3 Subtask - Return `index_out_of_bounds` for the deterministic first unsatisfied requested index when array end is reached.
-    - [ ] 3.2.1.4 Subtask - Return `incorrect_type` when an object edge targets a non-object, an index edge targets a non-array, or a terminal resolves to an object or array.
+    - [x] 3.2.1.1 Subtask - Use ascending plan edges to advance the On-Demand array cursor once, sharing a selected element among all descendant paths at the same index.
+    - [x] 3.2.1.2 Subtask - Structurally skip every unrequested lower, intervening, and trailing element without BEAM materialization.
+    - [x] 3.2.1.3 Subtask - Return `index_out_of_bounds` for the deterministic first unsatisfied requested index when array end is reached.
+    - [x] 3.2.1.4 Subtask - Return `incorrect_type` when an object edge targets a non-object, an index edge targets a non-array, or a terminal resolves to an object or array.
 
-  - [ ] 3.2.2 Task - Preserve every supported scalar type.
+  - [x] 3.2.2 Task - Preserve every supported scalar type.
 
     The task translates simdjson On-Demand values into native tagged slots
     without premature BEAM allocation or numeric coercion.
 
-    - [ ] 3.2.2.1 Subtask - Store signed and unsigned 64-bit integers in distinct slots and defer exact BEAM-integer construction to Zig.
-    - [ ] 3.2.2.2 Subtask - Store valid finite floating-point values without converting integer syntax to float and map unsupported numeric range or representation to `number_out_of_range`.
-    - [ ] 3.2.2.3 Subtask - Store booleans and null as closed scalar tags requiring no source-backed allocation.
-    - [ ] 3.2.2.4 Subtask - Store string pointer and logical length as a borrowed view valid only through the retained document lifetime; never append padding or a terminator to logical value length.
+    - [x] 3.2.2.1 Subtask - Store signed and unsigned 64-bit integers in distinct slots and defer exact BEAM-integer construction to Zig.
+    - [x] 3.2.2.2 Subtask - Store valid finite floating-point values without converting integer syntax to float and map unsupported numeric range or representation to `number_out_of_range`.
+    - [x] 3.2.2.3 Subtask - Store booleans and null as closed scalar tags requiring no source-backed allocation.
+    - [x] 3.2.2.4 Subtask - Store string pointer and logical length as a borrowed view valid only through the retained document lifetime; never append padding or a terminator to logical value length.
 
 ## 3.3 Section — Complete Validation, Transactionality, and Diagnostics
 
-- [ ] 3.3 Section - Validate the whole logical source and make every native
+- [x] 3.3 Section - Validate the whole logical source and make every native
   result all-or-nothing across errors, cancellation, and allocation failure.
 
   This section distinguishes skipping materialization from skipping parser
   validation and prepares bounded internal evidence for Phase 4 conversion and
   Phase 6 qualification.
 
-  - [ ] 3.3.1 Task - Consume the complete JSON source.
+  - [x] 3.3.1 Task - Consume the complete JSON source.
 
     The task continues traversal after requested slots fill so a successful
     result always implies valid complete JSON.
 
-    - [ ] 3.3.1.1 Subtask - Traverse or structurally skip every unselected object, array, and scalar branch to the end of the top-level value.
-    - [ ] 3.3.1.2 Subtask - Reject extra trailing non-whitespace data and malformed syntax before, inside, after, and structurally nested outside every selected path.
-    - [ ] 3.3.1.3 Subtask - Preserve simdjson logical byte offsets and stable parse categories without ever reporting padding positions or source excerpts.
-    - [ ] 3.3.1.4 Subtask - Respect the pinned parser depth and numeric bounds with stable errors rather than native recursion overflow, assertion, or exception leakage.
+    - [x] 3.3.1.1 Subtask - Traverse or structurally skip every unselected object, array, and scalar branch to the end of the top-level value.
+    - [x] 3.3.1.2 Subtask - Reject extra trailing non-whitespace data and malformed syntax before, inside, after, and structurally nested outside every selected path.
+    - [x] 3.3.1.3 Subtask - Preserve simdjson logical byte offsets and stable parse categories without ever reporting padding positions or source excerpts.
+    - [x] 3.3.1.4 Subtask - Respect the pinned parser depth and numeric bounds with stable errors rather than native recursion overflow, assertion, or exception leakage.
 
-  - [ ] 3.3.2 Task - Make slot production transactional and cancellable.
+  - [x] 3.3.2 Task - Make slot production transactional and cancellable.
 
     The task ensures native callers see either a complete validated slot set or
     one failure with all intermediate state reclaimed.
 
-    - [ ] 3.3.2.1 Subtask - Initialize every result slot to an explicit unset state and publish success only when all terminals are filled and the complete document has validated.
-    - [ ] 3.3.2.2 Subtask - On missing, index, type, range, parse, allocation, internal, or cancellation failure, clear borrowed views and release auxiliary traversal state before returning one stable status.
-    - [ ] 3.3.2.3 Subtask - Check a testable cancellation flag between bounded object fields, array elements, scalar extractions, and structural skip units without freeing state inside an uninterruptible simdjson call.
-    - [ ] 3.3.2.4 Subtask - Record bounded redacted plan-compilation and traversal durations plus visited-node, shared-prefix, and filled-slot counts in test/diagnostic builds only.
+    - [x] 3.3.2.1 Subtask - Initialize every result slot to an explicit unset state and publish success only when all terminals are filled and the complete document has validated.
+    - [x] 3.3.2.2 Subtask - On missing, index, type, range, parse, allocation, internal, or cancellation failure, clear borrowed views and release auxiliary traversal state before returning one stable status.
+    - [x] 3.3.2.3 Subtask - Check a testable cancellation flag between bounded object fields, array elements, scalar extractions, and structural skip units without freeing state inside an uninterruptible simdjson call.
+    - [x] 3.3.2.4 Subtask - Record bounded redacted plan-compilation and traversal durations plus visited-node, shared-prefix, and filled-slot counts in test/diagnostic builds only.
 
-  - [ ] 3.3.3 Task - Freeze the single-execution boundary.
+  - [x] 3.3.3 Task - Freeze the single-execution boundary.
 
     The task proves the complete plan is evaluated by one ABI execution call and
     prevents helper design from degrading into per-path execution.
 
-    - [ ] 3.3.3.1 Subtask - Implement the ABI v2 projection execution function over one document, one plan, and one complete caller-owned slot array.
-    - [ ] 3.3.3.2 Subtask - Count execution entries and assert one call handles all paths, prefixes, array indexes, and scalar slots in a projection.
-    - [ ] 3.3.3.3 Subtask - Keep slot inspection inside C/Zig native harnesses; expose no NIF or Elixir function per slot, field, segment, cursor, or native pointer.
+    - [x] 3.3.3.1 Subtask - Implement the ABI v2 projection execution function over one document, one plan, and one complete caller-owned slot array.
+    - [x] 3.3.3.2 Subtask - Count execution entries and assert one call handles all paths, prefixes, array indexes, and scalar slots in a projection.
+    - [x] 3.3.3.3 Subtask - Keep slot inspection inside C/Zig native harnesses; expose no NIF or Elixir function per slot, field, segment, cursor, or native pointer.
 
 ## 3.4 Section — Phase 3 Integration Tests
 
-- [ ] 3.4 Section - Prove one-pass traversal, full validation, typed slots,
+- [x] 3.4 Section - Prove one-pass traversal, full validation, typed slots,
   duplicate policy, cancellation, and cleanup through ordinary and sanitizer
   native harnesses.
 
   This section closes the complete native engine before it can operate on a
   public or threaded BEAM resource.
 
-  - [ ] 3.4.1 Task - Run the functional traversal corpus.
+  - [x] 3.4.1 Task - Run the functional traversal corpus.
 
     The task covers path topology, source-order variation, Unicode and escapes,
     scalar types, missing values, and very large skipped content.
 
-    - [ ] 3.4.1.1 Subtask - Execute shared and disjoint object paths, identical paths, nested arrays, low/high indexes, declaration order opposite source order, and all scalar terminals.
-    - [ ] 3.4.1.2 Subtask - Exercise empty and Unicode keys, escaped keys and values, duplicate keys at multiple depths, empty containers, deep valid nesting, and large unselected subtrees.
-    - [ ] 3.4.1.3 Subtask - Verify stable missing-field, index, container-type, scalar-leaf, numeric-range, invalid UTF-8, unexpected EOF, invalid JSON, and logical-offset behavior.
-    - [ ] 3.4.1.4 Subtask - Assert shared-prefix/terminal counters equal the expected topology and one execution entry handles every fixture.
+    - [x] 3.4.1.1 Subtask - Execute shared and disjoint object paths, identical paths, nested arrays, low/high indexes, declaration order opposite source order, and all scalar terminals.
+    - [x] 3.4.1.2 Subtask - Exercise empty and Unicode keys, escaped keys and values, duplicate keys at multiple depths, empty containers, deep valid nesting, and large unselected subtrees.
+    - [x] 3.4.1.3 Subtask - Verify stable missing-field, index, container-type, scalar-leaf, numeric-range, invalid UTF-8, unexpected EOF, invalid JSON, and logical-offset behavior.
+    - [x] 3.4.1.4 Subtask - Assert shared-prefix/terminal counters equal the expected topology and one execution entry handles every fixture.
 
-  - [ ] 3.4.2 Task - Run full-validation and failure-cleanup gates.
+  - [x] 3.4.2 Task - Run full-validation and failure-cleanup gates.
 
     The task attacks every point where early slots could otherwise escape or
     borrowed input could outlive its document.
 
-    - [ ] 3.4.2.1 Subtask - Place malformed syntax before, inside, and after selected paths and in large unselected branches; require failure and no published slots for every case.
-    - [ ] 3.4.2.2 Subtask - Inject cancellation and allocation failure after every plan, traversal, skip, and slot step and require deterministic status plus baseline recovery.
-    - [ ] 3.4.2.3 Subtask - Run ordinary, AddressSanitizer, and UndefinedBehaviorSanitizer projection engine suites with guard-page and borrowed-string lifetime fixtures.
-    - [ ] 3.4.2.4 Subtask - Run the ABI v2, Zig resource, and all Milestone 1 regression suites, `mix spec.next`, and the reported `mix spec.check --base ...` command before marking Phase 3 complete.
+    - [x] 3.4.2.1 Subtask - Place malformed syntax before, inside, and after selected paths and in large unselected branches; require failure and no published slots for every case.
+    - [x] 3.4.2.2 Subtask - Inject cancellation and allocation failure after every plan, traversal, skip, and slot step and require deterministic status plus baseline recovery.
+    - [x] 3.4.2.3 Subtask - Run ordinary, AddressSanitizer, and UndefinedBehaviorSanitizer projection engine suites with guard-page and borrowed-string lifetime fixtures.
+    - [x] 3.4.2.4 Subtask - Run the ABI v2, Zig resource, and all Milestone 1 regression suites, `mix spec.next`, and the reported `mix spec.check --base ...` command before marking Phase 3 complete.

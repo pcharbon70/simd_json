@@ -41,6 +41,19 @@ typedef struct simd_json_test_projection_summary {
   uint64_t topology_hash;
 } simd_json_test_projection_summary;
 
+typedef struct simd_json_test_projection_execution_summary {
+  uint64_t compilation_nanoseconds;
+  uint64_t traversal_nanoseconds;
+  uint64_t execution_entries;
+  uint64_t visited_nodes;
+  uint64_t shared_prefix_visits;
+  uint64_t filled_slots;
+  uint64_t object_fields;
+  uint64_t array_elements;
+  uint64_t skipped_values;
+  uint64_t cancellation_checks;
+} simd_json_test_projection_execution_summary;
+
 void simd_json_test_inject_failure(int32_t point,
                                    int32_t kind) SIMD_JSON_TEST_NOEXCEPT;
 void simd_json_test_clear_failure(void) SIMD_JSON_TEST_NOEXCEPT;
@@ -52,6 +65,12 @@ uint32_t simd_json_test_document_uses_input(
     uint64_t logical_length) SIMD_JSON_TEST_NOEXCEPT;
 simd_json_status simd_json_test_document_revalidate(
     simd_json_document *document) SIMD_JSON_TEST_NOEXCEPT;
+simd_json_status simd_json_test_document_open_unvalidated(
+    simd_json_parser *parser,
+    const uint8_t *data,
+    uint64_t logical_length,
+    uint64_t capacity,
+    simd_json_document **out_document) SIMD_JSON_TEST_NOEXCEPT;
 uint32_t simd_json_test_sanitizer_build(void) SIMD_JSON_TEST_NOEXCEPT;
 void simd_json_test_projection_inject_failure(
     uint64_t successful_checkpoints,
@@ -62,6 +81,10 @@ simd_json_test_projection_accounting simd_json_test_projection_accounting_snapsh
 uint32_t simd_json_test_projection_summary_read(
     const simd_json_projection_plan *plan,
     simd_json_test_projection_summary *out_summary) SIMD_JSON_TEST_NOEXCEPT;
+uint32_t simd_json_test_projection_execution_summary_read(
+    const simd_json_projection_plan *plan,
+    simd_json_test_projection_execution_summary *out_summary)
+    SIMD_JSON_TEST_NOEXCEPT;
 
 #undef SIMD_JSON_TEST_NOEXCEPT
 

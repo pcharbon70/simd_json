@@ -23,9 +23,17 @@ C++ validates the complete descriptor set, copies retained object keys, and
 builds an immutable canonically ordered trie with shared prefixes and multiple
 terminal slots. Independent C/Zig ordinary and sanitizer matrices cover
 layouts, boundary fixtures, every injected constructor checkpoint, exception
-containment, idempotent ownership, and release symbols. Document traversal is
-still Phase 3 work, and the complete subject intentionally remains planned
-under its bootstrap exception until Milestone 2 qualification.
+containment, idempotent ownership, and release symbols. Phase 3 dispatches
+decoded object keys in source order with first-occurrence duplicate handling,
+advances arrays against ascending requested indexes, produces exact typed
+slots, consumes malformed selected and unselected content, enforces the pinned
+depth bound, clears slots transactionally, checks a hidden cancellation probe,
+and records bounded execution diagnostics. Its C/Zig
+integration corpus covers Unicode and escaped paths, large unselected content,
+exact-padding guard pages, borrowed strings, deterministic failures, and every
+injected traversal boundary under ordinary and sanitizer profiles. The subject
+intentionally stays planned under its bootstrap exception until Milestone 2
+qualification.
 
 ```spec-meta
 id: simd_json.projection_engine
@@ -64,7 +72,7 @@ decisions:
   stability: stable
 
 - id: simd_json.projection_engine.complete_source_validation
-  statement: A successful projection shall structurally consume and validate the complete logical JSON value, including unselected branches and content after the last selected value, without materializing those values.
+  statement: A successful projection shall structurally consume and validate the complete logical JSON value, including unselected branches and content after the last selected value, without materializing those values, while rejecting input beyond the pinned 1,024-level native traversal bound.
   priority: must
   stability: stable
 

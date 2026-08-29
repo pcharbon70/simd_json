@@ -70,11 +70,13 @@ required_package_files=(
   native/include/simd_json_abi.h
   native/include/simd_json_nif_internal.h
   native/src/simd_json_abi.cpp
+  native/src/simd_json_native_internal.hpp
   native/src/simd_json_projection.cpp
   native/symbols/c_abi.allowlist
   native/symbols/c_abi.version
   native/symbols/nif.allowlist
   native/test/include/simd_json_test_hooks.h
+  native/test/projection_engine_conformance.c
   native/test/projection_plan_conformance.c
   native/test/projection_plan_test.zig
   native/vendor/simdjson/simdjson.cpp

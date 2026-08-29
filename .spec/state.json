@@ -631,7 +631,7 @@
         "id": "simd_json.projection_engine.complete_source_validation",
         "priority": "must",
         "stability": "stable",
-        "statement": "A successful projection shall structurally consume and validate the complete logical JSON value, including unselected branches and content after the last selected value, without materializing those values.",
+        "statement": "A successful projection shall structurally consume and validate the complete logical JSON value, including unselected branches and content after the last selected value, without materializing those values, while rejecting input beyond the pinned 1,024-level native traversal bound.",
         "subject_id": "simd_json.projection_engine"
       },
       {

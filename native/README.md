@@ -122,7 +122,7 @@ them until equivalent evidence is recorded.
 `mix compile` runs the target, toolchain, lockfile, vendor-digest, and patch
 guards before Zigler invokes the C++ compiler. It then compiles
 `native/src/build_smoke.cpp`, the parser/document shim in
-`native/src/simd_json_abi.cpp`, the projection-plan shim in
+`native/src/simd_json_abi.cpp`, the projection plan and traversal engine in
 `native/src/simd_json_projection.cpp`, and the vendored `simdjson.cpp` through
 Zigler and Zig. The native build never contains a library search for simdjson.
 
@@ -164,14 +164,22 @@ returned through this boundary.
 array, and scalar through the official On-Demand API and rewinds a successful
 document before publishing it. [`src/simd_json_projection.cpp`](./src/simd_json_projection.cpp)
 validates normalized fixed-width descriptors before allocation and builds one
-immutable, canonically ordered prefix-sharing trie. Each C++ boundary catches
-simdjson, allocation, standard, and unknown exceptions. Local ownership keeps
-partial allocations private until a handle is published.
+immutable, canonically ordered prefix-sharing trie. Its execution call consumes
+one document-order walk, validates selected and skipped content, applies the
+first repeated-key occurrence, advances array edges monotonically, and
+publishes exact scalar slots only after complete success. Both document-open
+validation and projection traversal reject nesting beyond the pinned 1,024
+levels before another recursive descent. Every failure clears borrowed slot
+views. The C++-only [`src/simd_json_native_internal.hpp`](./src/simd_json_native_internal.hpp)
+provides hidden opaque-document access, one cursor claim, and a bounded
+operation cancellation probe without expanding the C ABI. Each C++ boundary
+catches simdjson, allocation, standard, and unknown exceptions. Local
+ownership keeps partial allocations private until publication.
 
 The release C ABI shared-artifact and Zigler NIF symbol surfaces are frozen in
 [`symbols`](./symbols). The standalone ABI retains the four ABI v1
 parser/document functions and adds only the ABI v2 plan constructor,
-destructor, and future execution entry. The current statically linked Zigler
+destructor, and single execution entry. The current statically linked Zigler
 NIF needs only `nif_init`; its C ABI and C++ implementation symbols remain
 local. Run
 `scripts/native/verify_release_symbols.sh` after compiling the NIF to compare
@@ -326,12 +334,13 @@ string inspection proves they are absent from the NIF and standalone ABI.
 
 ## Native ABI conformance
 
-The standalone harnesses in [`test/c_abi_conformance.c`](./test/c_abi_conformance.c)
-and [`test/projection_plan_conformance.c`](./test/projection_plan_conformance.c)
-are compiled by `zig cc` as strict C11 against only the production and test C
-header directories. They then link a private archive containing both C++ shims
-and the vendored parser. This prevents either harness from relying on a C++
-declaration, layout, exception, or implementation symbol.
+The standalone harnesses in [`test/c_abi_conformance.c`](./test/c_abi_conformance.c),
+[`test/projection_plan_conformance.c`](./test/projection_plan_conformance.c),
+and [`test/projection_engine_conformance.c`](./test/projection_engine_conformance.c)
+are compiled by `zig cc` as strict C11 against only the production, hidden-NIF,
+and test C header directories. They then link a private archive containing both
+C++ shims and the vendored parser. This prevents the harnesses from relying on
+a C++ declaration, layout, exception, or implementation symbol.
 
 Test builds add one-shot failure points before and after parser allocation,
 during document construction, and immediately before document publication.
@@ -342,9 +351,13 @@ guarded by `SIMD_JSON_TESTING`; release symbol and string checks prove that they
 are absent from distributed artifacts.
 
 Projection test builds additionally inject every constructor checkpoint and
-report only live plan, node, copied-key-byte, and bounded topology counts. The
-C and Zig matrices cover shared and identical paths, canonical edge ordering,
-invalid descriptors, every exception class, serializer allocation failures,
+every bounded traversal/skip/slot checkpoint. They report only live plan, node,
+copied-key-byte, topology, duration, visit, and filled-slot counts. The C and
+Zig matrices cover shared and identical paths, canonical edge ordering, exact
+scalar types, malformed selected/unselected/trailing content, repeated keys,
+missing/index/type/range failures, pre/post-cursor cancellation, the depth
+bound, Unicode and escaped paths, large skipped containers, exact-padding guard
+pages, borrowed strings, serializer/allocation failures, every exception class,
 and repeated null/idempotent caller cleanup.
 
 Run the ordinary and sanitizer matrices with:
