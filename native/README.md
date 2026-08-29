@@ -5,7 +5,9 @@
 This directory contains every source and configuration input needed to build
 the SimdJson NIF. [`manifest.exs`](./manifest.exs) is the authoritative,
 machine-readable record. The prose below explains those pins and the process
-for changing them.
+for changing them. The complete implemented ownership, runtime, public API, and
+qualification contract is in the
+[Milestone 1 operations guide](../docs/milestones/01-native-foundation-operations.md).
 
 The build must not discover a system simdjson installation, follow a mutable
 source reference, or download source while compiling. A supported build uses
@@ -237,12 +239,11 @@ parser, document, resource initialization, or immediately before
 publication—uses the same reverse rollback. A successfully closed state cannot
 be reopened because its invalidated generation is retained.
 
-The BEAM destructor calls only the bounded close-detach transition. Phase 4's
-internal threaded constructor can now place parsed state in a resource; the
-callback-safe dispatcher that consumes detached GC cleanup is therefore the
-next required runtime edge and is described below.
+The BEAM destructor calls only the bounded close-detach transition. Parsed
+state is handed to the callback-safe cleanup dispatcher described below; the
+callback itself never performs input-dependent destruction.
 
-## Phase 4 threaded operation runtime
+## Threaded operation runtime
 
 The internal `SimdJson.Native.ThreadedOperation` adapter now admits a binary by
 copying its term—not its bytes—into a private NIF environment. That environment,
@@ -289,16 +290,17 @@ test harness and remains explicitly unqualified in the pinned Zigler research
 note. This runtime is a Milestone 1 qualification mechanism; production
 admission control and the bounded parse pool remain in Milestone 4.
 
-### Preliminary scheduler profile
+### Scheduler qualification
 
-The Phase 4 integration profile runs concurrent 4 MiB valid and invalid inputs
-while an independent BEAM heartbeat measures wake-up intervals and
+The formal profile runs concurrent 4 MiB valid and invalid inputs while an
+independent BEAM heartbeat measures wake-up intervals and
 `scheduler_wall_time_all` records normal, dirty CPU, and dirty I/O utilization.
 It also injects parse and cleanup submission rejection and proves native worker
 entry never occurs, so no alternative scheduler path can be selected. Exact
-fixtures, thresholds, environment, a development observation, and the Phase 6
-qualification boundary are recorded in
-[`phase_4_scheduler_qualification.md`](../.spec/research/phase_4_scheduler_qualification.md).
+fixtures, percentile rules, thresholds, environment fields, and retained raw
+samples are recorded in
+[`phase_6_scheduler_qualification.md`](../.spec/research/phase_6_scheduler_qualification.md).
+The earlier Phase 4 profile remains historical development evidence only.
 
 Native test builds add aggregate counters for padded buffers, parser/document
 handles, resource records, retained parents, admissions, object destruction,
@@ -336,7 +338,7 @@ leak detection, frame pointers, and fail-fast runtime options.
 The Zig ownership-state and resource-registration checks run with:
 
 ```text
-scripts/native/run_zig_resource_tests.sh
+scripts/native/run_zig_resource_tests.sh ordinary
 scripts/native/run_zig_resource_tests.sh sanitizer
 mix test test/native/document_resource_registration_test.exs
 ```

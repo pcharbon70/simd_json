@@ -23,13 +23,15 @@ concurrent owners, and explicit/GC baseline recovery. Phase 6 Section 6.1 now
 repeats that public corpus against an isolated NIF whose C++ translation units
 are instrumented by AddressSanitizer and UndefinedBehaviorSanitizer. Runtime
 qualification now repeats owner, non-owner, idempotent-close, submission
-failure, and GC behavior in a seeded bounded stress profile. Coordinated subject
-activation remains.
+failure, and GC behavior in a seeded bounded stress profile. Section 6.3
+reconciles the public surface documentation and activates this subject against
+executable API and scope qualification.
 
 ```spec-meta
 id: simd_json.document_api
 kind: api
-status: planned
+status: active
+verification_minimum_strength: executed
 summary: Milestone 1 exposes binary open and idempotent close through opaque documents and stable structured errors.
 surface:
   - lib/simd_json.ex
@@ -204,9 +206,9 @@ decisions:
     - Decode, projection, streaming, cursor, transfer, and native-handle operations are absent
 ```
 
-## Verification
+## Evidence Inventory
 
-```spec-verification
+```yaml
 - kind: test_file
   target: test/simd_json/document_api_test.exs
   covers:
@@ -306,15 +308,16 @@ decisions:
 
 ## Required Closure Evidence
 
-Phase 5 supplies executed public API, typespec, doctest, error mapping,
-redaction, ownership, close, valid-value corpus, malformed-input corpus, UTF-8,
-lifetime, and API-surface tests. Activation remains gated on Phase 6 qualifying
-and activating the native build, resource, and scheduler subjects.
+The executable API-qualification command below supplies public API, typespec,
+doctest, error mapping, redaction, ownership, close, valid-value,
+malformed-input, UTF-8, lifetime, and public-surface evidence.
 
-## Exceptions
+## Verification
 
-```spec-exceptions
-- id: simd_json.document_api.milestone_01_bootstrap
+```spec-verification
+- kind: command
+  target: bash scripts/ci/qualify_document_api.sh
+  execute: true
   covers:
     - simd_json.document_api.open_contract
     - simd_json.document_api.binary_only
@@ -335,5 +338,4 @@ and activating the native build, resource, and scheduler subjects.
     - simd_json.document_api.redacted_failure
     - simd_json.document_api.close_and_non_owner
     - simd_json.document_api.no_future_surface
-  reason: Phase 5 implements the complete public contract and Phase 6 Sections 6.1 and 6.2 repeat it against the sanitizer-instrumented NIF and under seeded owner, close, failure, and GC stress; retain the exception until Sections 6.3 and 6.4 activate every dependent native subject together.
 ```

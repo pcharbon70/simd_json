@@ -29,13 +29,14 @@ proves test accounting stays absent. Section 6.2 executes seeded cancellation,
 submission failure, owner/non-owner close,
 dropped-term, GC, and application-generation batches; every batch returns all
 live native gauges to baseline and the mixed batch counts exactly one cleanup
-per opened document. Coordinated activation remains, so the bootstrap exception
-stays in force.
+per opened document. Section 6.3 reconciles the ownership and operations
+documentation and activates this subject against executable qualification.
 
 ```spec-meta
 id: simd_json.document_resource
 kind: subsystem
-status: planned
+status: active
+verification_minimum_strength: executed
 summary: Documents own padded input, parser state, lifecycle metadata, and single-process authority through one opaque BEAM resource.
 surface:
   - native/**
@@ -186,9 +187,9 @@ decisions:
     - Native leak and double-destruction checks remain clean
 ```
 
-## Verification
+## Evidence Inventory
 
-```spec-verification
+```yaml
 - kind: test_file
   target: test/native/document_resource_registration_test.exs
   covers:
@@ -341,12 +342,17 @@ decisions:
 
 ## Required Closure Evidence
 
-Before activation, replace the bootstrap exception with executed resource tests, allocation-failure injection, process-ownership tests, garbage-collection tests, repeated close races, native memory baseline checks, and sanitizer coverage for use-after-free, leaks, and double destruction.
+The executable resource-qualification command below supplies allocation-failure
+injection, process-ownership, garbage-collection, repeated-close, native-memory
+baseline, and sanitizer evidence for use-after-free, leaks, and double
+destruction.
 
-## Exceptions
+## Verification
 
-```spec-exceptions
-- id: simd_json.document_resource.milestone_01_bootstrap
+```spec-verification
+- kind: command
+  target: bash scripts/ci/qualify_document_resource.sh
+  execute: true
   covers:
     - simd_json.document_resource.opaque_handle
     - simd_json.document_resource.padded_owned_copy
@@ -365,5 +371,4 @@ Before activation, replace the bootstrap exception with executed resource tests,
     - simd_json.document_resource.partial_open_failure
     - simd_json.document_resource.gc_cleanup
     - simd_json.document_resource.native_memory_baseline
-  reason: Phase 6 Sections 6.1 and 6.2 add standalone and NIF sanitizer coverage plus seeded cancellation, failure, owner, close, GC, generation, exactly-once cleanup, and per-batch native-baseline stress; retain the exception until Sections 6.3 and 6.4 reconcile executed proof and activate all dependent subjects together.
 ```

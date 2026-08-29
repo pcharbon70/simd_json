@@ -5,7 +5,7 @@
 [
   schema_version: 1,
   qualified_on: ~D[2026-08-29],
-  input_sha256: "7db54d04debb6e990f16f180eb865d549d77421f2dbb3e2c81d4ed3e7730b7a9",
+  input_sha256: "cbdf966923fd71bcac197a693ac1884d4ffef121a93bf3c7640be8c4ebc259f7",
   randomized_seed: 260_829_001,
   supported_targets: [
     [
@@ -29,6 +29,9 @@
     "bash scripts/native/run_zig_resource_tests.sh sanitizer",
     "bash scripts/native/run_nif_sanitizer_tests.sh",
     "bash scripts/native/verify_release_symbols.sh",
-    "bash scripts/ci/qualify_runtime.sh"
+    "bash scripts/ci/qualify_document_resource.sh",
+    "bash scripts/ci/qualify_runtime.sh",
+    "bash scripts/ci/qualify_document_api.sh",
+    "mix simd_json.verify_traceability"
   ]
 ]

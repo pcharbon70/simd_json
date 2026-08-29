@@ -58,6 +58,9 @@ run_step package_build mix hex.build --unpack --output "${package_root}"
 required_package_files=(
   .tool-versions
   README.md
+  docs/milestones/README.md
+  docs/milestones/01-native-foundation.md
+  docs/milestones/01-native-foundation-operations.md
   mix.exs
   mix.lock
   native/README.md

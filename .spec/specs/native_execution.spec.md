@@ -38,13 +38,15 @@ UndefinedBehaviorSanitizer and binds that command to the checked-in
 qualification fingerprint. The formal scheduler profile and bounded lifecycle
 stress now retain raw percentile/utilization evidence, execute seeded teardown
 races, cycle supported application generations, and restore every live native
-gauge after each batch. The recorded repeated-unload qualification gap and
-coordinated subject activation keep the bootstrap exception in force.
+gauge after each batch. Section 6.3 activates this subject against executable
+runtime qualification while retaining repeated shared-object unload as an
+explicitly unsupported environment rather than an exception to the contract.
 
 ```spec-meta
 id: simd_json.native_execution
 kind: subsystem
-status: planned
+status: active
+verification_minimum_strength: executed
 summary: Input-dependent parse and cleanup work execute through a correlated Zigler-threaded boundary outside normal and dirty schedulers.
 surface:
   - native/**
@@ -200,9 +202,9 @@ decisions:
     - Every retained resource and operation allocation is eventually released exactly once
 ```
 
-## Verification
+## Evidence Inventory
 
-```spec-verification
+```yaml
 - kind: test_file
   target: test/native/threaded_admission_test.exs
   covers:
@@ -377,12 +379,19 @@ decisions:
 
 ## Required Closure Evidence
 
-Before activation, replace the bootstrap exception with executed scheduler heartbeat, request-correlation, caller-death, late-result, submission-failure, garbage-collection, application-shutdown, and NIF-unload tests. Evidence must include normal and dirty scheduler utilization plus the qualification environment and latency budget.
+The executable runtime-qualification command below supplies scheduler heartbeat,
+request-correlation, caller-death, late-result, submission-failure,
+garbage-collection, and supported application-generation evidence. It records
+normal and dirty scheduler utilization, the qualification environment, and the
+latency budget. Repeated shared-object unload is outside the supported target;
+application stop/start generation cleanup is the qualified lifecycle boundary.
 
-## Exceptions
+## Verification
 
-```spec-exceptions
-- id: simd_json.native_execution.milestone_01_bootstrap
+```spec-verification
+- kind: command
+  target: bash scripts/ci/qualify_runtime.sh
+  execute: true
   covers:
     - simd_json.native_execution.threaded_parse
     - simd_json.native_execution.bounded_nif_entry
@@ -401,5 +410,4 @@ Before activation, replace the bootstrap exception with executed scheduler heart
     - simd_json.native_execution.threaded_submission_failure
     - simd_json.native_execution.large_gc_teardown
     - simd_json.native_execution.reload_cleanup
-  reason: Phase 6 Sections 6.1 and 6.2 add sanitizer coverage for the actual correlated path, a formal raw-sample percentile/utilization profile, seeded cancellation and teardown stress, supported application generation cycling, and per-batch baseline recovery; retain the exception until Sections 6.3 and 6.4 reconcile executed proof and activate the subject while preserving the unsupported repeated shared-object unload boundary.
 ```

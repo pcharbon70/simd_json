@@ -94,47 +94,47 @@ Back to plan: [README](./README.md)
 
 ## 6.3 Section — Documentation, Traceability, and Spec Activation
 
-- [ ] 6.3 Section - Reconcile implemented behavior and evidence back into the milestone, ADRs, specs, and package documentation.
+- [x] 6.3 Section - Reconcile implemented behavior and evidence back into the milestone, ADRs, specs, and package documentation.
 
   This section makes current truth honest. It updates descriptions where
   implementation selected an allowed detail, records supported limitations, and
   removes planned exceptions only when machine-linked executed evidence covers
   every obligation.
 
-  - [ ] 6.3.1 Task - Publish implementation and operational documentation.
+  - [x] 6.3.1 Task - Publish implementation and operational documentation.
 
     The task gives maintainers enough detail to upgrade or extend the resource
     safely and gives callers an accurate pre-production Milestone 1 contract.
 
-    - [ ] 6.3.1.1 Subtask - Document the final source layout, build inputs, target matrix, CPU-dispatch diagnostics, native dependency update procedure, and sanitizer commands.
-    - [ ] 6.3.1.2 Subtask - Document the C ABI handle graph, status map, exception boundary, padded allocation contract, resource fields, lifecycle transitions, generation rules, and reverse-destruction order.
-    - [ ] 6.3.1.3 Subtask - Document threaded request correlation, cancellation boundaries, GC handoff, shutdown/unload behavior, scheduler qualification environment, and latency budget.
-    - [ ] 6.3.1.4 Subtask - Document `open/1`, `close/1`, structured error reasons, offset semantics, redaction, owner rules, deterministic close, and the absence of later-milestone APIs.
-    - [ ] 6.3.1.5 Subtask - State explicitly that Milestone 1 threading is qualification-only and that production capacity bounds, backpressure, and telemetry depend on Milestone 4.
+    - [x] 6.3.1.1 Subtask - Document the final source layout, build inputs, target matrix, CPU-dispatch diagnostics, native dependency update procedure, and sanitizer commands.
+    - [x] 6.3.1.2 Subtask - Document the C ABI handle graph, status map, exception boundary, padded allocation contract, resource fields, lifecycle transitions, generation rules, and reverse-destruction order.
+    - [x] 6.3.1.3 Subtask - Document threaded request correlation, cancellation boundaries, GC handoff, shutdown/unload behavior, scheduler qualification environment, and latency budget.
+    - [x] 6.3.1.4 Subtask - Document `open/1`, `close/1`, structured error reasons, offset semantics, redaction, owner rules, deterministic close, and the absence of later-milestone APIs.
+    - [x] 6.3.1.5 Subtask - State explicitly that Milestone 1 threading is qualification-only and that production capacity bounds, backpressure, and telemetry depend on Milestone 4.
 
-  - [ ] 6.3.2 Task - Reconcile every requirement and scenario with executed proof.
+  - [x] 6.3.2 Task - Reconcile every requirement and scenario with executed proof.
 
     The task prevents a bootstrap exception or checked planning box from being
     mistaken for verification.
 
-    - [ ] 6.3.2.1 Subtask - Generate a requirement-to-test and scenario-to-test inventory for all four Milestone 1 subjects and reject missing, stale, or test-only-assertion-free links.
-    - [ ] 6.3.2.2 Subtask - Confirm native commands, sanitizer jobs, scheduler evidence, symbol inspection, clean builds, doctests, public tests, and documentation checks are represented in SpecLed verification.
-    - [ ] 6.3.2.3 Subtask - Remove `simd_json.native_build_and_abi.milestone_01_bootstrap` only after every Native Build and ABI requirement and scenario has executed proof.
-    - [ ] 6.3.2.4 Subtask - Remove `simd_json.document_resource.milestone_01_bootstrap` only after every Document Resource requirement and scenario has executed proof.
-    - [ ] 6.3.2.5 Subtask - Remove `simd_json.native_execution.milestone_01_bootstrap` only after every Native Execution requirement and scenario has executed proof.
-    - [ ] 6.3.2.6 Subtask - Remove `simd_json.document_api.milestone_01_bootstrap` only after every Document API and Errors requirement and scenario has executed proof.
-    - [ ] 6.3.2.7 Subtask - Change each subject from `planned` to `active` in the same reconciled change, regenerate `.spec/state.json`, and require zero errors, warnings, uncovered policy files, and weak spots.
+    - [x] 6.3.2.1 Subtask - Generate a requirement-to-test and scenario-to-test inventory for all four Milestone 1 subjects and reject missing, stale, or test-only-assertion-free links.
+    - [x] 6.3.2.2 Subtask - Confirm native commands, sanitizer jobs, scheduler evidence, symbol inspection, clean builds, doctests, public tests, and documentation checks are represented in SpecLed verification.
+    - [x] 6.3.2.3 Subtask - Remove `simd_json.native_build_and_abi.milestone_01_bootstrap` only after every Native Build and ABI requirement and scenario has executed proof.
+    - [x] 6.3.2.4 Subtask - Remove `simd_json.document_resource.milestone_01_bootstrap` only after every Document Resource requirement and scenario has executed proof.
+    - [x] 6.3.2.5 Subtask - Remove `simd_json.native_execution.milestone_01_bootstrap` only after every Native Execution requirement and scenario has executed proof.
+    - [x] 6.3.2.6 Subtask - Remove `simd_json.document_api.milestone_01_bootstrap` only after every Document API and Errors requirement and scenario has executed proof.
+    - [x] 6.3.2.7 Subtask - Change each subject from `planned` to `active` in the same reconciled change, regenerate `.spec/state.json`, and require zero errors, warnings, uncovered policy files, and weak spots.
 
-  - [ ] 6.3.3 Task - Audit Milestone 1 scope and Milestone 2 readiness.
+  - [x] 6.3.3 Task - Audit Milestone 1 scope and Milestone 2 readiness.
 
     The task closes the foundation only if later traversal can retain the parent
     resource without revising build, ownership, lifecycle, or scheduler
     fundamentals.
 
-    - [ ] 6.3.3.1 Subtask - Enumerate release modules, functions, types, NIF entries, dynamic symbols, and documentation against the Milestone 1 surface allowlists.
-    - [ ] 6.3.3.2 Subtask - Confirm no eager decode, projection, stream, cursor, ownership transfer, raw handle, final worker pool, backpressure, or telemetry behavior landed early.
-    - [ ] 6.3.3.3 Subtask - Review the parent-retention and generation helpers against Milestone 2's cursor needs without adding or exposing a cursor in this phase.
-    - [ ] 6.3.3.4 Subtask - Update the Milestone 1 completion criteria with links to final evidence and record any still-unsupported target without overstating package support.
+    - [x] 6.3.3.1 Subtask - Enumerate release modules, functions, types, NIF entries, dynamic symbols, and documentation against the Milestone 1 surface allowlists.
+    - [x] 6.3.3.2 Subtask - Confirm no eager decode, projection, stream, cursor, ownership transfer, raw handle, final worker pool, backpressure, or telemetry behavior landed early.
+    - [x] 6.3.3.3 Subtask - Review the parent-retention and generation helpers against Milestone 2's cursor needs without adding or exposing a cursor in this phase.
+    - [x] 6.3.3.4 Subtask - Update the Milestone 1 completion criteria with links to final evidence and record any still-unsupported target without overstating package support.
 
 ## 6.4 Section — Phase 6 Integration Tests
 

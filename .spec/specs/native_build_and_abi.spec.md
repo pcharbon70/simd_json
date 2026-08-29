@@ -26,13 +26,14 @@ checked-in qualification fingerprint. Every ABI-, runtime-, harness-, target-,
 workflow-, and evidence-relevant change now makes the recorded proof stale,
 and an isolated pin-change test proves the gate fails closed. Section 6.2 adds
 the formal scheduler and lifecycle evidence commands to the same fingerprinted
-release matrix. Documentation reconciliation and final activation remain, so
-the Milestone 1 bootstrap exception and `planned` status stay in force.
+release matrix. Section 6.3 reconciles the public operations documentation and
+activates this subject against one executable release-qualification command.
 
 ```spec-meta
 id: simd_json.native_build_and_abi
 kind: subsystem
-status: planned
+status: active
+verification_minimum_strength: executed
 summary: Milestone 1 builds a reproducible native stack around an opaque, exception-safe C ABI.
 surface:
   - .tool-versions
@@ -180,7 +181,7 @@ decisions:
 
 ## Required Closure Evidence
 
-Before this subject changes from `planned` to `active`, replace the bootstrap exception with executed verification for:
+The executable release-qualification command below supplies closure evidence for:
 
 - clean-checkout native builds on every supported target;
 - independent C ABI unit tests for success, malformed arguments, exception injection, allocation failure, and repeated destruction;
@@ -189,9 +190,9 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
 - provenance and license checks for the vendored simdjson source;
 - runtime CPU-dispatch qualification.
 
-## Verification
+## Evidence Inventory
 
-```spec-verification
+```yaml
 - kind: source_file
   target: .tool-versions
   covers:
@@ -442,10 +443,12 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
     - simd_json.native_build_and_abi.dependency_upgrade_gate
 ```
 
-## Exceptions
+## Verification
 
-```spec-exceptions
-- id: simd_json.native_build_and_abi.milestone_01_bootstrap
+```spec-verification
+- kind: command
+  target: bash scripts/ci/qualify_native_release.sh
+  execute: true
   covers:
     - simd_json.native_build_and_abi.official_vendored_source
     - simd_json.native_build_and_abi.pinned_toolchain
@@ -462,5 +465,4 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
     - simd_json.native_build_and_abi.release_symbol_surface
     - simd_json.native_build_and_abi.unsupported_target_rejection
     - simd_json.native_build_and_abi.dependency_upgrade_gate
-  reason: Phase 6 Sections 6.1 and 6.2 qualify the supported release package, deterministic ABI stress, standalone and NIF sanitizer corpora, symbol surface, offline build, target rejection, formal scheduler profile, lifecycle stress, and executable dependency-upgrade fingerprint; retain the exception until Sections 6.3 and 6.4 reconcile and activate all four subjects together.
 ```
