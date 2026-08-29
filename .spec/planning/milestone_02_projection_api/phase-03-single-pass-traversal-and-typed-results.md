@@ -28,30 +28,30 @@ Back to plan: [README](./README.md)
 
 ## 3.1 Section — Guided Object Traversal
 
-- [ ] 3.1 Section - Walk requested and unrequested object fields once in source
+- [x] 3.1 Section - Walk requested and unrequested object fields once in source
   order while matching all relevant projection-tree edges.
 
   This section makes JSON field order independent from caller declaration order
   and defines repeated-key behavior at every depth.
 
-  - [ ] 3.1.1 Task - Match object edges without cursor rewind.
+  - [x] 3.1.1 Task - Match object edges without cursor rewind.
 
     The task uses the plan's object-child index to dispatch fields encountered
     by the On-Demand iterator and recurses only into matching projection nodes.
 
-    - [ ] 3.1.1.1 Subtask - Iterate every source object field exactly once and match its decoded key bytes against the current plan node without converting that key to an atom.
-    - [ ] 3.1.1.2 Subtask - Descend through one shared child node for every requested prefix and fan a completed terminal value into all terminal output slots.
-    - [ ] 3.1.1.3 Subtask - Skip and structurally consume unrequested field values through simdjson without allocating plan nodes, result slots, strings, maps, or lists for them.
-    - [ ] 3.1.1.4 Subtask - Track requested children not satisfied by object end and report the deterministic first missing slot according to caller slot order, not hash or source enumeration order.
+    - [x] 3.1.1.1 Subtask - Iterate every source object field exactly once and match its decoded key bytes against the current plan node without converting that key to an atom.
+    - [x] 3.1.1.2 Subtask - Descend through one shared child node for every requested prefix and fan a completed terminal value into all terminal output slots.
+    - [x] 3.1.1.3 Subtask - Skip and structurally consume unrequested field values through simdjson without allocating plan nodes, result slots, strings, maps, or lists for them.
+    - [x] 3.1.1.4 Subtask - Track requested children not satisfied by object end and report the deterministic first missing slot according to caller slot order, not hash or source enumeration order.
 
-  - [ ] 3.1.2 Task - Enforce the duplicate JSON key policy.
+  - [x] 3.1.2 Task - Enforce the duplicate JSON key policy.
 
     The task makes repeated requested keys deterministic while still validating
     the complete object.
 
-    - [ ] 3.1.2.1 Subtask - Mark a requested object edge satisfied after its first occurrence in document order and prevent later occurrences from overwriting its terminal or descendant slots.
-    - [ ] 3.1.2.2 Subtask - Continue consuming and structurally validating every later duplicate value even after its requested slots are complete.
-    - [ ] 3.1.2.3 Subtask - Apply the same first-occurrence rule independently in nested objects and document it in native conformance fixtures.
+    - [x] 3.1.2.1 Subtask - Mark a requested object edge satisfied after its first occurrence in document order and prevent later occurrences from overwriting its terminal or descendant slots.
+    - [x] 3.1.2.2 Subtask - Continue consuming and structurally validating every later duplicate value even after its requested slots are complete.
+    - [x] 3.1.2.3 Subtask - Apply the same first-occurrence rule independently in nested objects and document it in native conformance fixtures.
 
 ## 3.2 Section — Array Traversal and Scalar Extraction
 

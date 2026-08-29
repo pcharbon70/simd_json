@@ -43,6 +43,12 @@ failing slot. Fixed descriptors, result slots, the projection C++ and Zig
 translation units, independent C/Zig conformance, failure accounting,
 sanitizers, package inventory, and release allowlists are now pinned inputs;
 the statically linked NIF still exports only `nif_init`.
+Milestone 2 Phase 3 implements the frozen execution symbol behind the same ABI
+v2 layout. A C++-only hidden coordination header provides opaque document
+cursor access and the operation cancellation probe without adding an exported
+symbol. The guided engine conformance translation unit is packaged and pinned
+as an ordinary and sanitizer qualification input; ABI v1 behavior and the
+seven-symbol private shared-ABI allowlist remain unchanged.
 
 ```spec-meta
 id: simd_json.native_build_and_abi

@@ -1,10 +1,12 @@
 #include "../include/simd_json_nif_internal.h"
 #include "../vendor/simdjson/simdjson.h"
+#include "simd_json_native_internal.hpp"
 
 /* covers: simd_json.native_build_and_abi.opaque_c_contract simd_json.native_build_and_abi.exception_containment simd_json.native_build_and_abi.partial_failure_cleanup simd_json.native_build_and_abi.symbol_visibility simd_json.document_resource.padded_owned_copy simd_json.document_resource.zero_copy_disabled simd_json.document_resource.input_lifetime simd_json.document_resource.partial_open_failure */
 
 #include <cstddef>
 #include <cstdint>
+#include <atomic>
 #include <exception>
 #include <limits>
 #include <memory>
@@ -365,6 +367,9 @@ struct simd_json_document {
   simdjson::ondemand::document value;
   const uint8_t *data;
   uint64_t logical_length;
+  std::atomic<bool> projection_cursor_claimed;
+  void *projection_cancellation_context;
+  simd_json_nif_cancellation_probe projection_cancellation_probe;
 
   simd_json_document(simd_json_parser *owner,
                      simdjson::ondemand::document &&document,
@@ -373,7 +378,10 @@ struct simd_json_document {
       : parser(owner),
         value(std::move(document)),
         data(input),
-        logical_length(length) {
+        logical_length(length),
+        projection_cursor_claimed(false),
+        projection_cancellation_context(nullptr),
+        projection_cancellation_probe(nullptr) {
 #ifdef SIMD_JSON_TESTING
     live_documents.fetch_add(1);
 #endif
@@ -383,6 +391,43 @@ struct simd_json_document {
   ~simd_json_document() { live_documents.fetch_sub(1); }
 #endif
 };
+
+namespace simd_json_native {
+
+simdjson::ondemand::document *document_value(
+    simd_json_document *document) noexcept {
+  return document == nullptr ? nullptr : &document->value;
+}
+
+const uint8_t *document_data(const simd_json_document *document) noexcept {
+  return document == nullptr ? nullptr : document->data;
+}
+
+uint64_t document_logical_length(
+    const simd_json_document *document) noexcept {
+  return document == nullptr ? 0 : document->logical_length;
+}
+
+bool claim_projection_cursor(simd_json_document *document) noexcept {
+  return document != nullptr &&
+         !document->projection_cursor_claimed.exchange(
+             true, std::memory_order_acq_rel);
+}
+
+bool projection_cancelled(simd_json_document *document) noexcept {
+  if (document == nullptr || document->projection_cancellation_probe == nullptr) {
+    return false;
+  }
+
+  try {
+    return document->projection_cancellation_probe(
+               document->projection_cancellation_context) != UINT32_C(0);
+  } catch (...) {
+    return true;
+  }
+}
+
+}  // namespace simd_json_native
 
 extern "C" simd_json_status
 simd_json_parser_create(simd_json_parser **out_parser) noexcept {
@@ -500,6 +545,36 @@ extern "C" simd_json_status simd_json_nif_document_revalidate(
   }
 }
 
+extern "C" void simd_json_nif_projection_set_cancellation(
+    simd_json_document *document,
+    void *context,
+    simd_json_nif_cancellation_probe probe) noexcept {
+  if (document == nullptr) {
+    return;
+  }
+
+  try {
+    document->projection_cancellation_context = context;
+    document->projection_cancellation_probe = probe;
+  } catch (...) {
+    document->projection_cancellation_context = nullptr;
+    document->projection_cancellation_probe = nullptr;
+  }
+}
+
+extern "C" void simd_json_nif_projection_clear_cancellation(
+    simd_json_document *document) noexcept {
+  if (document == nullptr) {
+    return;
+  }
+
+  try {
+    document->projection_cancellation_probe = nullptr;
+    document->projection_cancellation_context = nullptr;
+  } catch (...) {
+  }
+}
+
 #ifdef SIMD_JSON_TESTING
 extern "C" void simd_json_test_inject_failure(int32_t point,
                                                 int32_t kind) noexcept {
@@ -545,6 +620,45 @@ extern "C" uint32_t simd_json_test_document_uses_input(
 extern "C" simd_json_status simd_json_test_document_revalidate(
     simd_json_document *document) noexcept {
   return simd_json_nif_document_revalidate(document);
+}
+
+extern "C" simd_json_status simd_json_test_document_open_unvalidated(
+    simd_json_parser *parser,
+    const uint8_t *data,
+    uint64_t logical_length,
+    uint64_t capacity,
+    simd_json_document **out_document) noexcept {
+  if (out_document == nullptr) {
+    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+  *out_document = nullptr;
+
+  if (parser == nullptr || data == nullptr ||
+      logical_length > simdjson::SIMDJSON_MAXSIZE_BYTES ||
+      exceeds_size_t(logical_length) || exceeds_size_t(capacity) ||
+      logical_length > UINT64_MAX - SIMD_JSON_REQUIRED_PADDING ||
+      capacity < logical_length + SIMD_JSON_REQUIRED_PADDING) {
+    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+
+  try {
+    simdjson::ondemand::document parsed_document;
+    simdjson::error_code error =
+        parser->value
+            .iterate(data, static_cast<size_t>(logical_length),
+                     static_cast<size_t>(capacity))
+            .get(parsed_document);
+    if (error != simdjson::SUCCESS) {
+      return status_from_simdjson(error);
+    }
+
+    auto document = std::make_unique<simd_json_document>(
+        parser, std::move(parsed_document), data, logical_length);
+    *out_document = document.release();
+    return make_status(SIMD_JSON_STATUS_OK);
+  } catch (...) {
+    return status_from_current_exception();
+  }
 }
 
 extern "C" uint32_t simd_json_test_sanitizer_build(void) noexcept {

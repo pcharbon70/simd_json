@@ -32,6 +32,24 @@ SIMD_JSON_NIF_INTERNAL_VISIBILITY simd_json_status
 simd_json_nif_document_revalidate(
     simd_json_document *document) SIMD_JSON_NIF_INTERNAL_NOEXCEPT;
 
+/*
+ * The projection worker installs one operation-owned probe before cursor
+ * access and clears it after execution. The callback performs the atomic read
+ * appropriate to the owning runtime; the C++ traversal invokes it only at
+ * bounded safe points between simdjson calls.
+ */
+typedef uint32_t (*simd_json_nif_cancellation_probe)(void *context);
+
+SIMD_JSON_NIF_INTERNAL_VISIBILITY void
+simd_json_nif_projection_set_cancellation(
+    simd_json_document *document,
+    void *context,
+    simd_json_nif_cancellation_probe probe) SIMD_JSON_NIF_INTERNAL_NOEXCEPT;
+
+SIMD_JSON_NIF_INTERNAL_VISIBILITY void
+simd_json_nif_projection_clear_cancellation(
+    simd_json_document *document) SIMD_JSON_NIF_INTERNAL_NOEXCEPT;
+
 #undef SIMD_JSON_NIF_INTERNAL_NOEXCEPT
 #undef SIMD_JSON_NIF_INTERNAL_VISIBILITY
 
