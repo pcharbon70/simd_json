@@ -466,27 +466,479 @@ static int index_and_type_failure_matrix(void) {
 }
 
 static int numeric_range_matrix(void) {
-  static const uint8_t source[] = "{\"n\":18446744073709551616}";
+  static const uint8_t integer_source[] = "{\"n\":18446744073709551616}";
+  static const uint8_t floating_source[] = "{\"n\":1e400}";
   static const path_segment number_path[] = {KEY_SEGMENT("n")};
   static const path_definition paths[] = {{0, number_path, 1}};
+  const struct {
+    const uint8_t *source;
+    size_t length;
+  } cases[] = {
+      {integer_source, sizeof(integer_source) - 1U},
+      {floating_source, sizeof(floating_source) - 1U},
+  };
+  size_t case_index;
+
+  for (case_index = 0; case_index < sizeof(cases) / sizeof(cases[0]);
+       ++case_index) {
+    simd_json_projection_plan *plan = NULL;
+    document_fixture document;
+    simd_json_result_slot slot = {0};
+    simd_json_projection_status status = build_plan(paths, 1, &plan);
+
+    CHECK(status.code == SIMD_JSON_STATUS_OK && plan != NULL);
+    CHECK(open_document(cases[case_index].source, cases[case_index].length, 0,
+                        &document)
+              .code == SIMD_JSON_STATUS_OK);
+    status = simd_json_projection_execute(document.document, plan, &slot, 1);
+    CHECK(status.code == SIMD_JSON_STATUS_NUMBER_OUT_OF_RANGE);
+    CHECK(status.output_slot == 0);
+    CHECK(status.byte_offset == SIMD_JSON_BYTE_OFFSET_UNAVAILABLE ||
+          status.byte_offset <= cases[case_index].length);
+    CHECK(slot_is_empty(&slot));
+
+    close_document(&document);
+    simd_json_projection_plan_destroy(plan);
+  }
+  CHECK(native_state_is_quiescent());
+  return 0;
+}
+
+static int complete_validation_matrix(void) {
+  static const uint8_t before_selected[] =
+      "{\"bad\":[1,],\"selected\":1}";
+  static const uint8_t inside_selected[] =
+      "{\"selected\":{\"value\":tru}}";
+  static const uint8_t after_selected[] =
+      "{\"selected\":1,\"bad\":{\"x\":tru}}";
+  static const uint8_t trailing_content[] = "{\"selected\":1} true";
+  static const uint8_t unexpected_eof[] =
+      "{\"selected\":1,\"bad\":[1,2";
+  static const uint8_t later_duplicate[] =
+      "{\"selected\":1,\"selected\":[1,]}";
+  static const uint8_t malformed_number[] = "{\"selected\":1e}";
+  static const path_segment selected[] = {KEY_SEGMENT("selected")};
+  static const path_segment selected_value[] = {
+      KEY_SEGMENT("selected"), KEY_SEGMENT("value")};
+  static const path_definition selected_path[] = {{0, selected, 1}};
+  static const path_definition selected_value_path[] = {
+      {0, selected_value, 2}};
+  const struct {
+    const uint8_t *source;
+    size_t length;
+    const path_definition *paths;
+    simd_json_status_code expected;
+  } cases[] = {
+      {before_selected, sizeof(before_selected) - 1U, selected_path,
+       SIMD_JSON_STATUS_INVALID_JSON},
+      {inside_selected, sizeof(inside_selected) - 1U, selected_value_path,
+       SIMD_JSON_STATUS_INVALID_JSON},
+      {after_selected, sizeof(after_selected) - 1U, selected_path,
+       SIMD_JSON_STATUS_INVALID_JSON},
+      {trailing_content, sizeof(trailing_content) - 1U, selected_path,
+       SIMD_JSON_STATUS_UNEXPECTED_EOF},
+      {unexpected_eof, sizeof(unexpected_eof) - 1U, selected_path,
+       SIMD_JSON_STATUS_UNEXPECTED_EOF},
+      {later_duplicate, sizeof(later_duplicate) - 1U, selected_path,
+       SIMD_JSON_STATUS_INVALID_JSON},
+      {malformed_number, sizeof(malformed_number) - 1U, selected_path,
+       SIMD_JSON_STATUS_INVALID_JSON},
+  };
+  size_t case_index;
+  size_t executed_cases = 0;
+
+  for (case_index = 0; case_index < sizeof(cases) / sizeof(cases[0]);
+       ++case_index) {
+    simd_json_projection_plan *plan = NULL;
+    document_fixture document;
+    simd_json_result_slot slot;
+    simd_json_projection_status projection_status;
+    const size_t path_count = cases[case_index].paths == selected_path ? 1U : 1U;
+    const simd_json_status document_status =
+        open_document(cases[case_index].source, cases[case_index].length, 0,
+                      &document);
+
+    CHECK(document_status.code == SIMD_JSON_STATUS_OK ||
+          document_status.code == cases[case_index].expected);
+    if (document_status.code != SIMD_JSON_STATUS_OK) {
+      continue;
+    }
+
+    projection_status =
+        build_plan(cases[case_index].paths, path_count, &plan);
+    CHECK(projection_status.code == SIMD_JSON_STATUS_OK && plan != NULL);
+    memset(&slot, 0xa5, sizeof(slot));
+    slot.reserved = 0;
+    projection_status =
+        simd_json_projection_execute(document.document, plan, &slot, 1);
+    if (projection_status.code != cases[case_index].expected) {
+      fprintf(stderr,
+              "validation case=%zu expected=%" PRId32 " actual=%" PRId32
+              " native=%" PRId32 " offset=%" PRIu64 "\n",
+              case_index, cases[case_index].expected, projection_status.code,
+              projection_status.native_code, projection_status.byte_offset);
+    }
+    CHECK(projection_status.code == cases[case_index].expected);
+    CHECK(projection_status.output_slot == SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE ||
+          projection_status.output_slot == 0);
+    CHECK(projection_status.byte_offset != SIMD_JSON_BYTE_OFFSET_UNAVAILABLE);
+    CHECK(projection_status.byte_offset <= cases[case_index].length);
+    CHECK(slot_is_empty(&slot));
+    ++executed_cases;
+
+    close_document(&document);
+    simd_json_projection_plan_destroy(plan);
+    CHECK(native_state_is_quiescent());
+  }
+
+  CHECK(executed_cases >= 5);
+  return 0;
+}
+
+static int invalid_utf8_matrix(void) {
+  static const uint8_t source[] = {
+      '{', '"', 's', 'e', 'l', 'e', 'c', 't', 'e', 'd', '"', ':', '"',
+      0xff, '"', '}'};
+  document_fixture document;
+  const simd_json_status status =
+      open_document(source, sizeof(source), 0, &document);
+
+  CHECK(status.code == SIMD_JSON_STATUS_INVALID_UTF8);
+  CHECK(document.document == NULL);
+  CHECK(native_state_is_quiescent());
+  return 0;
+}
+
+typedef struct cancellation_context {
+  uint64_t successful_checks;
+} cancellation_context;
+
+static uint32_t cancellation_probe(void *opaque) {
+  cancellation_context *context = (cancellation_context *)opaque;
+  if (context->successful_checks == 0) {
+    return UINT32_C(1);
+  }
+  --context->successful_checks;
+  return UINT32_C(0);
+}
+
+static void dirty_slots(simd_json_result_slot *slots, size_t slot_count) {
+  size_t index;
+  memset(slots, 0xa5, slot_count * sizeof(*slots));
+  for (index = 0; index < slot_count; ++index) {
+    slots[index].reserved = 0;
+  }
+}
+
+static int slots_are_empty(const simd_json_result_slot *slots,
+                           size_t slot_count) {
+  size_t index;
+  for (index = 0; index < slot_count; ++index) {
+    if (!slot_is_empty(&slots[index])) {
+      return 0;
+    }
+  }
+  return 1;
+}
+
+static int cancellation_matrix(void) {
+  static const uint8_t source[] =
+      "{\"skip\":[{\"x\":[1,2,3]},{\"y\":false}],"
+      "\"root\":{\"b\":2,\"a\":\"value\"},"
+      "\"tail\":[null,{\"deep\":[4,5,6]}]}";
+  static const path_segment a_path[] = {
+      KEY_SEGMENT("root"), KEY_SEGMENT("a")};
+  static const path_segment b_path[] = {
+      KEY_SEGMENT("root"), KEY_SEGMENT("b")};
+  static const path_definition paths[] = {
+      {0, a_path, 2}, {1, b_path, 2}, {2, a_path, 2}};
+  simd_json_projection_plan *plan = NULL;
+  simd_json_projection_status status = build_plan(paths, 3, &plan);
+  uint64_t boundary;
+  int observed_success = 0;
+
+  CHECK(status.code == SIMD_JSON_STATUS_OK && plan != NULL);
+
+  {
+    document_fixture document;
+    simd_json_result_slot slots[3];
+    cancellation_context context = {0};
+    CHECK(open_document(source, sizeof(source) - 1U, 1, &document).code ==
+          SIMD_JSON_STATUS_OK);
+    dirty_slots(slots, 3);
+    simd_json_nif_projection_set_cancellation(
+        document.document, &context, cancellation_probe);
+    status = simd_json_projection_execute(document.document, plan, slots, 3);
+    CHECK(status.code == SIMD_JSON_STATUS_CANCELLED);
+    CHECK(slots_are_empty(slots, 3));
+    simd_json_nif_projection_clear_cancellation(document.document);
+    status = simd_json_projection_execute(document.document, plan, slots, 3);
+    CHECK(status.code == SIMD_JSON_STATUS_OK);
+    close_document(&document);
+  }
+
+  {
+    document_fixture document;
+    simd_json_result_slot slots[3];
+    cancellation_context context = {5};
+    CHECK(open_document(source, sizeof(source) - 1U, 1, &document).code ==
+          SIMD_JSON_STATUS_OK);
+    dirty_slots(slots, 3);
+    simd_json_nif_projection_set_cancellation(
+        document.document, &context, cancellation_probe);
+    status = simd_json_projection_execute(document.document, plan, slots, 3);
+    CHECK(status.code == SIMD_JSON_STATUS_CANCELLED);
+    CHECK(slots_are_empty(slots, 3));
+    simd_json_nif_projection_clear_cancellation(document.document);
+    status = simd_json_projection_execute(document.document, plan, slots, 3);
+    CHECK(status.code == SIMD_JSON_STATUS_CURSOR_CONSUMED);
+    CHECK(slots_are_empty(slots, 3));
+    close_document(&document);
+  }
+
+  for (boundary = 0; boundary < UINT64_C(1024); ++boundary) {
+    document_fixture document;
+    simd_json_result_slot slots[3];
+    cancellation_context context = {boundary};
+    CHECK(open_document(source, sizeof(source) - 1U, 1, &document).code ==
+          SIMD_JSON_STATUS_OK);
+    dirty_slots(slots, 3);
+    simd_json_nif_projection_set_cancellation(
+        document.document, &context, cancellation_probe);
+    status = simd_json_projection_execute(document.document, plan, slots, 3);
+    simd_json_nif_projection_clear_cancellation(document.document);
+
+    if (status.code == SIMD_JSON_STATUS_OK) {
+      observed_success = 1;
+      CHECK(boundary > 10);
+      close_document(&document);
+      break;
+    }
+
+    CHECK(status.code == SIMD_JSON_STATUS_CANCELLED);
+    CHECK(slots_are_empty(slots, 3));
+    close_document(&document);
+  }
+
+  CHECK(observed_success);
+  simd_json_projection_plan_destroy(plan);
+  CHECK(native_state_is_quiescent());
+  return 0;
+}
+
+static simd_json_status_code expected_execution_injection(int32_t kind) {
+  switch (kind) {
+    case SIMD_JSON_TEST_FAILURE_SIMDJSON:
+      return SIMD_JSON_STATUS_INVALID_JSON;
+    case SIMD_JSON_TEST_FAILURE_BAD_ALLOC:
+      return SIMD_JSON_STATUS_OUT_OF_MEMORY;
+    case SIMD_JSON_TEST_FAILURE_STANDARD:
+    case SIMD_JSON_TEST_FAILURE_UNKNOWN:
+      return SIMD_JSON_STATUS_INTERNAL_FAILURE;
+    default:
+      return SIMD_JSON_STATUS_INTERNAL_FAILURE;
+  }
+}
+
+static int traversal_failure_injection_matrix(void) {
+  static const uint8_t source[] =
+      "{\"skip\":[1,{\"nested\":[2,3]}],"
+      "\"root\":{\"left\":\"value\",\"right\":9},"
+      "\"tail\":false}";
+  static const path_segment left[] = {
+      KEY_SEGMENT("root"), KEY_SEGMENT("left")};
+  static const path_segment right[] = {
+      KEY_SEGMENT("root"), KEY_SEGMENT("right")};
+  static const path_definition paths[] = {
+      {0, left, 2}, {1, right, 2}, {2, left, 2}};
+  static const int32_t exception_kinds[] = {
+      SIMD_JSON_TEST_FAILURE_SIMDJSON,
+      SIMD_JSON_TEST_FAILURE_STANDARD,
+      SIMD_JSON_TEST_FAILURE_UNKNOWN,
+  };
+  simd_json_projection_plan *plan = NULL;
+  simd_json_projection_status status = build_plan(paths, 3, &plan);
+  uint64_t checkpoint;
+  size_t kind_index;
+  int observed_success = 0;
+
+  CHECK(status.code == SIMD_JSON_STATUS_OK && plan != NULL);
+  for (checkpoint = 0; checkpoint < UINT64_C(1024); ++checkpoint) {
+    document_fixture document;
+    simd_json_result_slot slots[3];
+    CHECK(open_document(source, sizeof(source) - 1U, 1, &document).code ==
+          SIMD_JSON_STATUS_OK);
+    dirty_slots(slots, 3);
+    simd_json_test_projection_inject_failure(
+        checkpoint, SIMD_JSON_TEST_FAILURE_BAD_ALLOC);
+    status = simd_json_projection_execute(document.document, plan, slots, 3);
+    simd_json_test_projection_clear_failure();
+
+    if (status.code == SIMD_JSON_STATUS_OK) {
+      observed_success = 1;
+      CHECK(checkpoint > 10);
+      close_document(&document);
+      break;
+    }
+
+    CHECK(status.code == SIMD_JSON_STATUS_OUT_OF_MEMORY);
+    CHECK(status.output_slot == SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE);
+    CHECK(slots_are_empty(slots, 3));
+    close_document(&document);
+  }
+  CHECK(observed_success);
+
+  for (kind_index = 0;
+       kind_index < sizeof(exception_kinds) / sizeof(exception_kinds[0]);
+       ++kind_index) {
+    document_fixture document;
+    simd_json_result_slot slots[3];
+    CHECK(open_document(source, sizeof(source) - 1U, 1, &document).code ==
+          SIMD_JSON_STATUS_OK);
+    dirty_slots(slots, 3);
+    simd_json_test_projection_inject_failure(5, exception_kinds[kind_index]);
+    status = simd_json_projection_execute(document.document, plan, slots, 3);
+    simd_json_test_projection_clear_failure();
+    CHECK(status.code == expected_execution_injection(exception_kinds[kind_index]));
+    CHECK(slots_are_empty(slots, 3));
+    close_document(&document);
+  }
+
+  simd_json_projection_plan_destroy(plan);
+  simd_json_test_projection_clear_failure();
+  CHECK(native_state_is_quiescent());
+  return 0;
+}
+
+static int execution_argument_and_cursor_matrix(void) {
+  static const uint8_t source[] = "{\"value\":7}";
+  static const path_segment value_path[] = {KEY_SEGMENT("value")};
+  static const path_definition paths[] = {{0, value_path, 1}};
   simd_json_projection_plan *plan = NULL;
   document_fixture document;
-  simd_json_result_slot slot = {0};
+  simd_json_result_slot slots[2];
   simd_json_projection_status status = build_plan(paths, 1, &plan);
 
   CHECK(status.code == SIMD_JSON_STATUS_OK && plan != NULL);
-  CHECK(open_document(source, sizeof(source) - 1U, 0, &document).code ==
+  CHECK(open_document(source, sizeof(source) - 1U, 1, &document).code ==
         SIMD_JSON_STATUS_OK);
-  status = simd_json_projection_execute(document.document, plan, &slot, 1);
-  CHECK(status.code == SIMD_JSON_STATUS_NUMBER_OUT_OF_RANGE);
-  CHECK(status.output_slot == 0);
-  CHECK(status.byte_offset == SIMD_JSON_BYTE_OFFSET_UNAVAILABLE ||
-        status.byte_offset <= sizeof(source) - 1U);
-  CHECK(slot_is_empty(&slot));
+
+  dirty_slots(slots, 2);
+  status = simd_json_projection_execute(document.document, plan, slots, 2);
+  CHECK(status.code == SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  CHECK(slots[0].tag != SIMD_JSON_RESULT_EMPTY);
+
+  dirty_slots(slots, 2);
+  slots[0].reserved = 1;
+  status = simd_json_projection_execute(document.document, plan, slots, 1);
+  CHECK(status.code == SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  CHECK(slots[0].tag != SIMD_JSON_RESULT_EMPTY);
+
+  slots[0].reserved = 0;
+  status = simd_json_projection_execute(document.document, plan, slots, 1);
+  CHECK(status.code == SIMD_JSON_STATUS_OK);
+  CHECK(slots[0].tag == SIMD_JSON_RESULT_SIGNED_INTEGER);
+  CHECK(slots[0].value.signed_integer == 7);
+
+  dirty_slots(slots, 1);
+  status = simd_json_projection_execute(document.document, plan, slots, 1);
+  CHECK(status.code == SIMD_JSON_STATUS_CURSOR_CONSUMED);
+  CHECK(slot_is_empty(&slots[0]));
+
+  status = simd_json_projection_execute(NULL, plan, slots, 1);
+  CHECK(status.code == SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  status = simd_json_projection_execute(document.document, plan, NULL, 1);
+  CHECK(status.code == SIMD_JSON_STATUS_INVALID_ARGUMENT);
 
   close_document(&document);
   simd_json_projection_plan_destroy(plan);
   CHECK(native_state_is_quiescent());
+  return 0;
+}
+
+static uint8_t *nested_object_source(size_t depth, size_t *out_length) {
+  const size_t length = depth * 6U + 1U;
+  uint8_t *source = (uint8_t *)malloc(length);
+  size_t cursor = 0;
+  size_t index;
+
+  if (source == NULL) {
+    return NULL;
+  }
+  for (index = 0; index < depth; ++index) {
+    memcpy(source + cursor, "{\"d\":", 5);
+    cursor += 5;
+  }
+  source[cursor++] = '1';
+  for (index = 0; index < depth; ++index) {
+    source[cursor++] = '}';
+  }
+  if (cursor != length) {
+    free(source);
+    return NULL;
+  }
+  *out_length = length;
+  return source;
+}
+
+static int depth_and_recursion_bound_matrix(void) {
+  static const size_t valid_depth = 256U;
+  static const size_t excessive_depth = 1100U;
+  const size_t depths[] = {valid_depth, excessive_depth};
+  size_t case_index;
+
+  for (case_index = 0; case_index < sizeof(depths) / sizeof(depths[0]);
+       ++case_index) {
+    const size_t depth = depths[case_index];
+    path_segment *segments =
+        (path_segment *)calloc(depth, sizeof(path_segment));
+    path_definition path;
+    simd_json_projection_plan *plan = NULL;
+    document_fixture document;
+    simd_json_result_slot slot = {0};
+    simd_json_projection_status projection_status;
+    simd_json_status document_status;
+    uint8_t *source;
+    size_t source_length = 0;
+    size_t index;
+
+    CHECK(segments != NULL);
+    source = nested_object_source(depth, &source_length);
+    CHECK(source != NULL);
+    for (index = 0; index < depth; ++index) {
+      segments[index] =
+          (path_segment)KEY_SEGMENT("d");
+    }
+    path = (path_definition){0, segments, depth};
+    projection_status = build_plan(&path, 1, &plan);
+    CHECK(projection_status.code == SIMD_JSON_STATUS_OK && plan != NULL);
+
+    document_status = open_document(
+        source, source_length, depth == valid_depth ? 1 : 0, &document);
+    if (depth == valid_depth) {
+      CHECK(document_status.code == SIMD_JSON_STATUS_OK);
+      projection_status =
+          simd_json_projection_execute(document.document, plan, &slot, 1);
+      CHECK(projection_status.code == SIMD_JSON_STATUS_OK);
+      CHECK(slot.tag == SIMD_JSON_RESULT_SIGNED_INTEGER);
+      CHECK(slot.value.signed_integer == 1);
+      close_document(&document);
+    } else if (document_status.code == SIMD_JSON_STATUS_OK) {
+      projection_status =
+          simd_json_projection_execute(document.document, plan, &slot, 1);
+      CHECK(projection_status.code == SIMD_JSON_STATUS_INVALID_JSON);
+      CHECK(projection_status.native_code != SIMD_JSON_NATIVE_CODE_UNAVAILABLE);
+      CHECK(slot_is_empty(&slot));
+      close_document(&document);
+    } else {
+      CHECK(document_status.code == SIMD_JSON_STATUS_INVALID_JSON);
+    }
+
+    simd_json_projection_plan_destroy(plan);
+    free(source);
+    free(segments);
+    CHECK(native_state_is_quiescent());
+  }
   return 0;
 }
 
@@ -499,6 +951,12 @@ int main(void) {
   CHECK(typed_array_and_scalar_matrix() == 0);
   CHECK(index_and_type_failure_matrix() == 0);
   CHECK(numeric_range_matrix() == 0);
+  CHECK(complete_validation_matrix() == 0);
+  CHECK(invalid_utf8_matrix() == 0);
+  CHECK(cancellation_matrix() == 0);
+  CHECK(traversal_failure_injection_matrix() == 0);
+  CHECK(execution_argument_and_cursor_matrix() == 0);
+  CHECK(depth_and_recursion_bound_matrix() == 0);
   CHECK(native_state_is_quiescent());
   printf("projection engine conformance passed abi=%" PRIu32 "\n",
          SIMD_JSON_ABI_VERSION);

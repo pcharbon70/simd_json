@@ -53,6 +53,11 @@ only from standalone C/Zig conformance. There is still no projection operation
 kind, request admission, worker traversal, result conversion, or callback
 cleanup path; the release NIF symbol surface remains exactly `nif_init` and all
 Milestone 1 scheduler behavior is unchanged.
+Milestone 2 Phase 3 replaces the execution placeholder and tests traversal plus
+an operation-owned cancellation probe only in standalone native harnesses. The
+NIF still has no projection entrypoint or operation kind, so no input-dependent
+projection runs on a BEAM scheduler and the existing threaded runtime remains
+unchanged until Phase 4 admission integrates this private engine.
 
 ```spec-meta
 id: simd_json.native_execution

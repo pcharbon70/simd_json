@@ -680,7 +680,12 @@ simd_json_projection_status status_from_simdjson(
       code = SIMD_JSON_STATUS_INDEX_OUT_OF_BOUNDS;
       break;
     case simdjson::INCORRECT_TYPE:
-      code = SIMD_JSON_STATUS_INCORRECT_TYPE;
+      /*
+       * Guided path mismatches are detected from json_type and reported by the
+       * engine itself. Receiving INCORRECT_TYPE after invoking the matching
+       * typed parser is therefore malformed source, not a projection mismatch.
+       */
+      code = SIMD_JSON_STATUS_INVALID_JSON;
       break;
     case simdjson::BIGINT_ERROR:
     case simdjson::NUMBER_OUT_OF_RANGE:
@@ -772,11 +777,13 @@ uint32_t first_array_child_output_slot(
 
 simd_json_projection_status validate_unselected_value(
     simdjson::ondemand::value &value,
-    traversal_context &context);
+    traversal_context &context,
+    uint64_t depth);
 
 simd_json_projection_status validate_unselected_array(
     simdjson::ondemand::array &array,
-    traversal_context &context) {
+    traversal_context &context,
+    uint64_t depth) {
   for (auto child_result : array) {
     if (cancellation_requested(context)) {
       return make_status(SIMD_JSON_STATUS_CANCELLED);
@@ -790,7 +797,7 @@ simd_json_projection_status validate_unselected_array(
     }
 
     simd_json_projection_status status =
-        validate_unselected_value(child, context);
+        validate_unselected_value(child, context, depth + 1);
     if (status.code != SIMD_JSON_STATUS_OK) {
       return status;
     }
@@ -801,7 +808,8 @@ simd_json_projection_status validate_unselected_array(
 
 simd_json_projection_status validate_unselected_object(
     simdjson::ondemand::object &object,
-    traversal_context &context) {
+    traversal_context &context,
+    uint64_t depth) {
   for (auto field_result : object) {
     if (cancellation_requested(context)) {
       return make_status(SIMD_JSON_STATUS_CANCELLED);
@@ -822,7 +830,7 @@ simd_json_projection_status validate_unselected_object(
     (void)key;
 
     simd_json_projection_status status =
-        validate_unselected_value(field.value(), context);
+        validate_unselected_value(field.value(), context, depth + 1);
     if (status.code != SIMD_JSON_STATUS_OK) {
       return status;
     }
@@ -833,7 +841,11 @@ simd_json_projection_status validate_unselected_object(
 
 simd_json_projection_status validate_unselected_value(
     simdjson::ondemand::value &value,
-    traversal_context &context) {
+    traversal_context &context,
+    uint64_t depth) {
+  if (depth > SIMD_JSON_MAX_DEPTH) {
+    return status_from_simdjson(simdjson::DEPTH_ERROR, context);
+  }
   if (cancellation_requested(context)) {
     return make_status(SIMD_JSON_STATUS_CANCELLED);
   }
@@ -850,14 +862,14 @@ simd_json_projection_status validate_unselected_value(
       simdjson::ondemand::array array;
       error = value.get_array().get(array);
       return error == simdjson::SUCCESS
-                 ? validate_unselected_array(array, context)
+                 ? validate_unselected_array(array, context, depth)
                  : status_from_simdjson(error, context);
     }
     case simdjson::ondemand::json_type::object: {
       simdjson::ondemand::object object;
       error = value.get_object().get(object);
       return error == simdjson::SUCCESS
-                 ? validate_unselected_object(object, context)
+                 ? validate_unselected_object(object, context, depth)
                  : status_from_simdjson(error, context);
     }
     case simdjson::ondemand::json_type::number: {
@@ -1032,12 +1044,14 @@ simd_json_projection_status materialize_scalar(
 simd_json_projection_status traverse_value(
     simdjson::ondemand::value &value,
     const projection_node &node,
-    traversal_context &context);
+    traversal_context &context,
+    uint64_t depth);
 
 simd_json_projection_status traverse_object(
     simdjson::ondemand::object &object,
     const projection_node &node,
-    traversal_context &context) {
+    traversal_context &context,
+    uint64_t depth) {
   if (!node.terminal_slots.empty()) {
     record_path_failure(context, SIMD_JSON_STATUS_INCORRECT_TYPE,
                         node.terminal_slots.front());
@@ -1076,9 +1090,9 @@ simd_json_projection_status traverse_object(
         byte_equal(edge->key.bytes(), key_bytes, key.size()) &&
         context.satisfied_object_edges[edge->execution_id] == 0) {
       context.satisfied_object_edges[edge->execution_id] = UINT8_C(1);
-      status = traverse_value(field.value(), *edge->child, context);
+      status = traverse_value(field.value(), *edge->child, context, depth + 1);
     } else {
-      status = validate_unselected_value(field.value(), context);
+      status = validate_unselected_value(field.value(), context, depth + 1);
     }
 
     if (status.code != SIMD_JSON_STATUS_OK) {
@@ -1099,7 +1113,8 @@ simd_json_projection_status traverse_object(
 simd_json_projection_status traverse_array(
     simdjson::ondemand::array &array,
     const projection_node &node,
-    traversal_context &context) {
+    traversal_context &context,
+    uint64_t depth) {
   if (!node.terminal_slots.empty()) {
     record_path_failure(context, SIMD_JSON_STATUS_INCORRECT_TYPE,
                         node.terminal_slots.front());
@@ -1125,10 +1140,11 @@ simd_json_projection_status traverse_array(
     if (requested_position < node.array_edges.size() &&
         node.array_edges[requested_position].index == source_index) {
       status = traverse_value(
-          child, *node.array_edges[requested_position].child, context);
+          child, *node.array_edges[requested_position].child, context,
+          depth + 1);
       ++requested_position;
     } else {
-      status = validate_unselected_value(child, context);
+      status = validate_unselected_value(child, context, depth + 1);
     }
 
     if (status.code != SIMD_JSON_STATUS_OK) {
@@ -1152,7 +1168,11 @@ simd_json_projection_status traverse_array(
 simd_json_projection_status traverse_value(
     simdjson::ondemand::value &value,
     const projection_node &node,
-    traversal_context &context) {
+    traversal_context &context,
+    uint64_t depth) {
+  if (depth > SIMD_JSON_MAX_DEPTH) {
+    return status_from_simdjson(simdjson::DEPTH_ERROR, context);
+  }
   if (cancellation_requested(context)) {
     return make_status(SIMD_JSON_STATUS_CANCELLED);
   }
@@ -1169,14 +1189,14 @@ simd_json_projection_status traverse_value(
       simdjson::ondemand::object object;
       error = value.get_object().get(object);
       return error == simdjson::SUCCESS
-                 ? traverse_object(object, node, context)
+                 ? traverse_object(object, node, context, depth)
                  : status_from_simdjson(error, context);
     }
     case simdjson::ondemand::json_type::array: {
       simdjson::ondemand::array array;
       error = value.get_array().get(array);
       return error == simdjson::SUCCESS
-                 ? traverse_array(array, node, context)
+                 ? traverse_array(array, node, context, depth)
                  : status_from_simdjson(error, context);
     }
     case simdjson::ondemand::json_type::number:
@@ -1280,14 +1300,14 @@ simd_json_projection_status traverse_document(
       simdjson::ondemand::object object;
       error = context.document.get_object().get(object);
       return error == simdjson::SUCCESS
-                 ? traverse_object(object, *plan.root, context)
+                 ? traverse_object(object, *plan.root, context, 1)
                  : status_from_simdjson(error, context);
     }
     case simdjson::ondemand::json_type::array: {
       simdjson::ondemand::array array;
       error = context.document.get_array().get(array);
       return error == simdjson::SUCCESS
-                 ? traverse_array(array, *plan.root, context)
+                 ? traverse_array(array, *plan.root, context, 1)
                  : status_from_simdjson(error, context);
     }
     case simdjson::ondemand::json_type::number:

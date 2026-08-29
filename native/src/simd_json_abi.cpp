@@ -157,9 +157,11 @@ constexpr bool exceeds_size_t(uint64_t value) noexcept {
   }
 }
 
-simdjson::error_code validate_value(simdjson::ondemand::value &value) noexcept;
+simdjson::error_code validate_value(simdjson::ondemand::value &value,
+                                    uint64_t depth) noexcept;
 
-simdjson::error_code validate_array(simdjson::ondemand::array &array) noexcept {
+simdjson::error_code validate_array(simdjson::ondemand::array &array,
+                                    uint64_t depth) noexcept {
   for (auto child_result : array) {
     simdjson::ondemand::value child;
     simdjson::error_code error = child_result.get(child);
@@ -168,7 +170,7 @@ simdjson::error_code validate_array(simdjson::ondemand::array &array) noexcept {
       return error;
     }
 
-    error = validate_value(child);
+    error = validate_value(child, depth + 1);
 
     if (error != simdjson::SUCCESS) {
       return error;
@@ -179,7 +181,8 @@ simdjson::error_code validate_array(simdjson::ondemand::array &array) noexcept {
 }
 
 simdjson::error_code validate_object(
-    simdjson::ondemand::object &object) noexcept {
+    simdjson::ondemand::object &object,
+    uint64_t depth) noexcept {
   for (auto field_result : object) {
     simdjson::ondemand::field field;
     simdjson::error_code error = std::move(field_result).get(field);
@@ -196,7 +199,7 @@ simdjson::error_code validate_object(
     }
 
     (void)key;
-    error = validate_value(field.value());
+    error = validate_value(field.value(), depth + 1);
 
     if (error != simdjson::SUCCESS) {
       return error;
@@ -206,7 +209,12 @@ simdjson::error_code validate_object(
   return simdjson::SUCCESS;
 }
 
-simdjson::error_code validate_value(simdjson::ondemand::value &value) noexcept {
+simdjson::error_code validate_value(simdjson::ondemand::value &value,
+                                    uint64_t depth) noexcept {
+  if (depth > SIMD_JSON_MAX_DEPTH) {
+    return simdjson::DEPTH_ERROR;
+  }
+
   simdjson::ondemand::json_type type;
   simdjson::error_code error = value.type().get(type);
 
@@ -218,12 +226,12 @@ simdjson::error_code validate_value(simdjson::ondemand::value &value) noexcept {
     case simdjson::ondemand::json_type::array: {
       simdjson::ondemand::array array;
       error = value.get_array().get(array);
-      return error == simdjson::SUCCESS ? validate_array(array) : error;
+      return error == simdjson::SUCCESS ? validate_array(array, depth) : error;
     }
     case simdjson::ondemand::json_type::object: {
       simdjson::ondemand::object object;
       error = value.get_object().get(object);
-      return error == simdjson::SUCCESS ? validate_object(object) : error;
+      return error == simdjson::SUCCESS ? validate_object(object, depth) : error;
     }
     case simdjson::ondemand::json_type::number: {
       simdjson::ondemand::number number;
@@ -269,13 +277,13 @@ simdjson::error_code validate_document(
     case simdjson::ondemand::json_type::array: {
       simdjson::ondemand::array array;
       error = document.get_array().get(array);
-      error = error == simdjson::SUCCESS ? validate_array(array) : error;
+      error = error == simdjson::SUCCESS ? validate_array(array, 1) : error;
       break;
     }
     case simdjson::ondemand::json_type::object: {
       simdjson::ondemand::object object;
       error = document.get_object().get(object);
-      error = error == simdjson::SUCCESS ? validate_object(object) : error;
+      error = error == simdjson::SUCCESS ? validate_object(object, 1) : error;
       break;
     }
     case simdjson::ondemand::json_type::number: {

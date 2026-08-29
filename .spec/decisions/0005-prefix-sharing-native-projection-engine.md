@@ -94,6 +94,11 @@ including unselected branches and bytes after the last selected value. Skipping
 means no materialization, not no validation. Invalid JSON anywhere in the
 logical input returns the corresponding parse error.
 
+Traversal and the document-open validation walk share the fixed ABI depth
+limit of 1,024 JSON levels. They check that limit before recursive descent and
+map excess depth to the stable invalid-JSON category, so a build profile cannot
+turn deeply nested input into an unbounded native-stack walk.
+
 When a JSON object repeats a key requested by the plan, the first occurrence in
 document order supplies that path. Later duplicates are still structurally
 consumed and validated but do not overwrite a completed result slot. This
@@ -115,6 +120,24 @@ complete result map across one BEAM/NIF request boundary.
 Internal, redacted timing may record projection compilation, traversal, and
 term-construction durations. It is test/diagnostic data for later telemetry and
 is not a Milestone 2 public API.
+
+### Phase 3 implementation checkpoint
+
+The frozen execution call now performs one document-order object/array walk,
+matches decoded keys without atomization, advances requested indexes in
+ascending order, applies first-occurrence duplicate handling, and fans one
+scalar parse into every identical-path slot. Signed, unsigned, finite double,
+boolean, null, and borrowed string representations remain distinct through the
+Zig owner.
+
+Both selected and structurally skipped content use typed On-Demand reads, and
+the engine continues through trailing fields/elements after all requested slots
+fill. Stable missing, bounds, type, numeric-range, parse, consumed-cursor,
+cancellation, allocation, and internal statuses clear the complete slot array.
+A hidden operation callback is checked between bounded units, while test-only
+summaries record compilation/traversal duration and topology/visit/slot counts.
+Ordinary and ASan/UBSan C/Zig harnesses cover every construction and traversal
+checkpoint without adding an Elixir or NIF projection entrypoint.
 
 ## Consequences
 

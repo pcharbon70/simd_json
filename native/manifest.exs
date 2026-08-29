@@ -74,6 +74,7 @@
       {"LICENSE-MIT", "9ed0a34979f22fc33fc13d942233f22d44906c236d876bd05fadf18cb5abf7da"}
     ],
     padding_bytes: 64,
+    maximum_document_depth: 1024,
     input_alignment_bytes: 64,
     language_standard: "c++17",
     supported_compilers: ["Clang 6 or newer", "GCC 7 or newer", "MSVC 2017 or newer"],

@@ -522,6 +522,8 @@ pub fn Implementation(comptime c: type) type {
         comptime {
             if (c.SIMD_JSON_ABI_VERSION != 2)
                 @compileError("projection ownership requires private ABI version 2");
+            if (c.SIMD_JSON_MAX_DEPTH != 1024)
+                @compileError("projection traversal depth bound changed");
             if (c.SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE != std.math.maxInt(u32) or
                 c.SIMD_JSON_BYTE_OFFSET_UNAVAILABLE != std.math.maxInt(u64))
                 @compileError("ABI v2 sentinels changed");

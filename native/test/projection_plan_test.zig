@@ -3,6 +3,7 @@ const projection_module = @import("projection_plan");
 const c = @cImport({
     @cDefine("SIMD_JSON_TESTING", "1");
     @cInclude("simd_json_abi.h");
+    @cInclude("simd_json_nif_internal.h");
     @cInclude("simd_json_test_hooks.h");
 });
 const projection = projection_module.Implementation(c);
@@ -351,6 +352,90 @@ test "one Zig execution returns exact typed slots and preserves borrowed bytes" 
     try std.testing.expectEqual(@as(u64, 7), summary.visited_nodes);
     try std.testing.expectEqual(@as(u64, 3), summary.shared_prefix_visits);
     try std.testing.expectEqual(@as(u64, 6), summary.filled_slots);
+}
+
+const CancelContext = struct {
+    remaining: usize,
+};
+
+fn cancellationProbe(context_pointer: ?*anyopaque) callconv(.c) u32 {
+    const context: *CancelContext = @ptrCast(@alignCast(context_pointer.?));
+    if (context.remaining == 0) return 1;
+    context.remaining -= 1;
+    return 0;
+}
+
+test "Zig execution adapts failures and cancellation without retaining slots" {
+    const selected = [_]projection.Segment{.{ .object_key = "selected" }};
+    const paths = [_]projection.NormalizedPath{
+        .{ .path_slot = 0, .segments = &selected },
+    };
+    const entries = [_]projection.NormalizedEntry{
+        .{ .output_slot = 0, .path_slot = 0 },
+    };
+
+    var plan = try projection.OwnedPlan.init(std.testing.allocator, .{
+        .entries = &entries,
+        .paths = &paths,
+    });
+    defer plan.deinit();
+
+    {
+        var document = try NativeDocument.init(
+            "{\"unselected\":[1,2,3],\"selected\":\"value\"}",
+        );
+        defer document.deinit();
+
+        var tiny_storage: [1]u8 = undefined;
+        var fixed = std.heap.FixedBufferAllocator.init(&tiny_storage);
+        const allocation_failure = plan.execute(fixed.allocator(), document.document);
+        try std.testing.expectEqual(
+            projection.FailureCode.out_of_memory,
+            allocation_failure.failure.code,
+        );
+
+        var context = CancelContext{ .remaining = 0 };
+        c.simd_json_nif_projection_set_cancellation(
+            document.document,
+            &context,
+            cancellationProbe,
+        );
+        const cancelled = plan.execute(std.testing.allocator, document.document);
+        try std.testing.expectEqual(
+            projection.FailureCode.cancelled,
+            cancelled.failure.code,
+        );
+        try std.testing.expectEqual(@as(?u32, null), cancelled.failure.output_slot);
+
+        c.simd_json_nif_projection_clear_cancellation(document.document);
+        var results = switch (plan.execute(
+            std.testing.allocator,
+            document.document,
+        )) {
+            .success => |owned| owned,
+            .failure => return error.UnexpectedProjectionFailure,
+        };
+        defer results.deinit();
+        try std.testing.expectEqualStrings("value", results.scalar(0).?.string);
+    }
+
+    {
+        var document = try NativeDocument.init("{\"other\":1}");
+        defer document.deinit();
+
+        const missing = plan.execute(std.testing.allocator, document.document);
+        try std.testing.expectEqual(
+            projection.FailureCode.missing_field,
+            missing.failure.code,
+        );
+        try std.testing.expectEqual(@as(?u32, 0), missing.failure.output_slot);
+
+        const consumed = plan.execute(std.testing.allocator, document.document);
+        try std.testing.expectEqual(
+            projection.FailureCode.cursor_consumed,
+            consumed.failure.code,
+        );
+    }
 }
 
 // covers: simd_json.projection_engine.prefix_sharing_plan simd_json.projection_engine.single_guided_traversal simd_json.projection_engine.scalar_only_materialization simd_json.projection_engine.typed_result_slots simd_json.projection_engine.transactional_conversion simd_json.projection_engine.private_abi_v2 simd_json.projection_engine.exception_and_failure_cleanup simd_json.projection_engine.object_array_walk simd_json.projection_engine.abi_v2_conformance

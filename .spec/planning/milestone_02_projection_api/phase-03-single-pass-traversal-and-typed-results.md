@@ -83,41 +83,41 @@ Back to plan: [README](./README.md)
 
 ## 3.3 Section — Complete Validation, Transactionality, and Diagnostics
 
-- [ ] 3.3 Section - Validate the whole logical source and make every native
+- [x] 3.3 Section - Validate the whole logical source and make every native
   result all-or-nothing across errors, cancellation, and allocation failure.
 
   This section distinguishes skipping materialization from skipping parser
   validation and prepares bounded internal evidence for Phase 4 conversion and
   Phase 6 qualification.
 
-  - [ ] 3.3.1 Task - Consume the complete JSON source.
+  - [x] 3.3.1 Task - Consume the complete JSON source.
 
     The task continues traversal after requested slots fill so a successful
     result always implies valid complete JSON.
 
-    - [ ] 3.3.1.1 Subtask - Traverse or structurally skip every unselected object, array, and scalar branch to the end of the top-level value.
-    - [ ] 3.3.1.2 Subtask - Reject extra trailing non-whitespace data and malformed syntax before, inside, after, and structurally nested outside every selected path.
-    - [ ] 3.3.1.3 Subtask - Preserve simdjson logical byte offsets and stable parse categories without ever reporting padding positions or source excerpts.
-    - [ ] 3.3.1.4 Subtask - Respect the pinned parser depth and numeric bounds with stable errors rather than native recursion overflow, assertion, or exception leakage.
+    - [x] 3.3.1.1 Subtask - Traverse or structurally skip every unselected object, array, and scalar branch to the end of the top-level value.
+    - [x] 3.3.1.2 Subtask - Reject extra trailing non-whitespace data and malformed syntax before, inside, after, and structurally nested outside every selected path.
+    - [x] 3.3.1.3 Subtask - Preserve simdjson logical byte offsets and stable parse categories without ever reporting padding positions or source excerpts.
+    - [x] 3.3.1.4 Subtask - Respect the pinned parser depth and numeric bounds with stable errors rather than native recursion overflow, assertion, or exception leakage.
 
-  - [ ] 3.3.2 Task - Make slot production transactional and cancellable.
+  - [x] 3.3.2 Task - Make slot production transactional and cancellable.
 
     The task ensures native callers see either a complete validated slot set or
     one failure with all intermediate state reclaimed.
 
-    - [ ] 3.3.2.1 Subtask - Initialize every result slot to an explicit unset state and publish success only when all terminals are filled and the complete document has validated.
-    - [ ] 3.3.2.2 Subtask - On missing, index, type, range, parse, allocation, internal, or cancellation failure, clear borrowed views and release auxiliary traversal state before returning one stable status.
-    - [ ] 3.3.2.3 Subtask - Check a testable cancellation flag between bounded object fields, array elements, scalar extractions, and structural skip units without freeing state inside an uninterruptible simdjson call.
-    - [ ] 3.3.2.4 Subtask - Record bounded redacted plan-compilation and traversal durations plus visited-node, shared-prefix, and filled-slot counts in test/diagnostic builds only.
+    - [x] 3.3.2.1 Subtask - Initialize every result slot to an explicit unset state and publish success only when all terminals are filled and the complete document has validated.
+    - [x] 3.3.2.2 Subtask - On missing, index, type, range, parse, allocation, internal, or cancellation failure, clear borrowed views and release auxiliary traversal state before returning one stable status.
+    - [x] 3.3.2.3 Subtask - Check a testable cancellation flag between bounded object fields, array elements, scalar extractions, and structural skip units without freeing state inside an uninterruptible simdjson call.
+    - [x] 3.3.2.4 Subtask - Record bounded redacted plan-compilation and traversal durations plus visited-node, shared-prefix, and filled-slot counts in test/diagnostic builds only.
 
-  - [ ] 3.3.3 Task - Freeze the single-execution boundary.
+  - [x] 3.3.3 Task - Freeze the single-execution boundary.
 
     The task proves the complete plan is evaluated by one ABI execution call and
     prevents helper design from degrading into per-path execution.
 
-    - [ ] 3.3.3.1 Subtask - Implement the ABI v2 projection execution function over one document, one plan, and one complete caller-owned slot array.
-    - [ ] 3.3.3.2 Subtask - Count execution entries and assert one call handles all paths, prefixes, array indexes, and scalar slots in a projection.
-    - [ ] 3.3.3.3 Subtask - Keep slot inspection inside C/Zig native harnesses; expose no NIF or Elixir function per slot, field, segment, cursor, or native pointer.
+    - [x] 3.3.3.1 Subtask - Implement the ABI v2 projection execution function over one document, one plan, and one complete caller-owned slot array.
+    - [x] 3.3.3.2 Subtask - Count execution entries and assert one call handles all paths, prefixes, array indexes, and scalar slots in a projection.
+    - [x] 3.3.3.3 Subtask - Keep slot inspection inside C/Zig native harnesses; expose no NIF or Elixir function per slot, field, segment, cursor, or native pointer.
 
 ## 3.4 Section — Phase 3 Integration Tests
 

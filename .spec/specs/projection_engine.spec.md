@@ -24,13 +24,13 @@ builds an immutable canonically ordered trie with shared prefixes and multiple
 terminal slots. Independent C/Zig ordinary and sanitizer matrices cover
 layouts, boundary fixtures, every injected constructor checkpoint, exception
 containment, idempotent ownership, and release symbols. Phase 3 Sections 3.1
-and 3.2 now dispatch decoded object keys in source order with first-occurrence
-duplicate handling, advance arrays against ascending requested indexes, and
-produce exact signed, unsigned, floating-point, boolean, null, and borrowed
-string slots through C and Zig harnesses. Complete failure injection,
-cancellation, malformed-source, and integration closure remain in Sections 3.3
-and 3.4, so the subject intentionally stays planned under its bootstrap
-exception until Milestone 2 qualification.
+through 3.3 now dispatch decoded object keys in source order with
+first-occurrence duplicate handling, advance arrays against ascending requested
+indexes, produce exact typed slots, consume malformed selected and unselected
+content, enforce the pinned depth bound, clear slots transactionally, check a
+hidden cancellation probe, and record bounded execution diagnostics. Section
+3.4 integration closure remains, and the subject intentionally stays planned
+under its bootstrap exception until Milestone 2 qualification.
 
 ```spec-meta
 id: simd_json.projection_engine
@@ -69,7 +69,7 @@ decisions:
   stability: stable
 
 - id: simd_json.projection_engine.complete_source_validation
-  statement: A successful projection shall structurally consume and validate the complete logical JSON value, including unselected branches and content after the last selected value, without materializing those values.
+  statement: A successful projection shall structurally consume and validate the complete logical JSON value, including unselected branches and content after the last selected value, without materializing those values, while rejecting input beyond the pinned 1,024-level native traversal bound.
   priority: must
   stability: stable
 

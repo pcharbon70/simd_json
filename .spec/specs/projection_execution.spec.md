@@ -19,12 +19,14 @@ operation state, advance the generation, or alter document lifecycle. No
 projection worker, reservation, selecting/consumed state, or binary temporary
 document exists yet, so the subject remains planned under its complete
 bootstrap exception.
-Phase 2 freezes the future C execution signature and adds an idempotent Zig
-plan owner, but exercises construction and cleanup only in standalone native
-harnesses. The execution entry returns a bounded internal placeholder for a
-structurally valid call until Phase 3 supplies traversal; it performs no
-document access, admission, consumption, cancellation, result conversion, or
-delivery and does not change this subject's planned lifecycle state.
+Phase 2 freezes the C execution signature and adds an idempotent Zig plan owner.
+Phase 3 now exercises that single execution call in standalone C/Zig harnesses,
+claims the native cursor once, supports a hidden operation-owned cancellation
+probe, and frees temporary slot storage on success and every failure. It still
+adds no projection operation kind, owner-first reservation, threaded admission,
+BEAM term conversion, temporary binary document, callback cleanup, or delivery;
+those Phase 4 lifecycle requirements remain planned under the complete
+bootstrap exception.
 
 ```spec-meta
 id: simd_json.projection_execution

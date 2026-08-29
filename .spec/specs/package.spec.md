@@ -22,11 +22,12 @@ extends the common error representation with reserved projection reasons and
 an optional redacted path. Phase 2 packages ABI v2 descriptors, the opaque
 C++ prefix-sharing plan, its Zig serializer/owner, independent conformance
 harnesses, and the expanded private shared-ABI allowlist. Phase 3 now packages
-the C++-only document/traversal coordination header and an independent guided
-object-traversal corpus alongside the still-private execution engine. These
-remain internal build inputs: the root module still exports only the Milestone
-1 `open/1` and `close/1` operations, the NIF still exports only `nif_init`, and
-no `select/2` or public compiled-plan surface is present yet.
+the C++-only document/traversal coordination header, complete C guided-engine
+corpus, and Zig typed-slot/cancellation cases alongside the still-private
+execution engine. These remain internal build inputs: the root module still
+exports only the Milestone 1 `open/1` and `close/1` operations, the NIF still
+exports only `nif_init`, and no `select/2` or public compiled-plan surface is
+present yet.
 
 ```spec-meta
 id: simd_json.package
