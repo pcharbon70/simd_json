@@ -72,6 +72,8 @@ pub fn Implementation(comptime c: type) type {
 
                 _ = std.math.cast(u64, normalized.entries.len) orelse
                     return error.InvalidProjection;
+                if (segment_count > std.math.maxInt(u32))
+                    return error.InvalidProjection;
                 _ = std.math.cast(u64, segment_count) orelse
                     return error.InvalidProjection;
                 _ = std.math.cast(u64, key_byte_count) orelse
@@ -212,7 +214,8 @@ pub fn Implementation(comptime c: type) type {
                 return error.InvalidProjection;
 
             for (normalized.paths, 0..) |path, path_index| {
-                if (path.segments.len == 0 or path.path_slot > std.math.maxInt(u32))
+                if (path.segments.len == 0 or path.path_slot >= normalized.paths.len or
+                    path.path_slot > std.math.maxInt(u32))
                     return error.InvalidProjection;
                 for (normalized.paths[0..path_index]) |previous| {
                     if (previous.path_slot == path.path_slot)

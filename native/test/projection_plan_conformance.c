@@ -17,6 +17,9 @@
     }                                                                          \
   } while (0)
 
+#define DEEP_PATH_SEGMENTS 256U
+#define LARGE_PLAN_ENTRIES 1024U
+
 typedef struct shared_fixture {
   uint8_t key_bytes[13];
   simd_json_projection_segment segments[4];
@@ -53,6 +56,58 @@ static int status_metadata_is_safe(simd_json_projection_status status) {
   return status.byte_offset == SIMD_JSON_BYTE_OFFSET_UNAVAILABLE &&
          status.output_slot == SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE &&
          status.reserved == UINT32_C(0);
+}
+
+static int status_and_result_contract_matrix(void) {
+  static const simd_json_status_code projection_statuses[] = {
+      SIMD_JSON_STATUS_MISSING_FIELD,
+      SIMD_JSON_STATUS_INDEX_OUT_OF_BOUNDS,
+      SIMD_JSON_STATUS_INCORRECT_TYPE,
+      SIMD_JSON_STATUS_NUMBER_OUT_OF_RANGE,
+      SIMD_JSON_STATUS_CURSOR_CONSUMED,
+      SIMD_JSON_STATUS_CANCELLED,
+  };
+  static const uint8_t borrowed[] = "borrowed";
+  simd_json_result_slot slots[7] = {0};
+  size_t left;
+  size_t right;
+
+  for (left = 0;
+       left < sizeof(projection_statuses) / sizeof(projection_statuses[0]);
+       ++left) {
+    CHECK(projection_statuses[left] == (simd_json_status_code)(left + 7));
+    for (right = left + 1;
+         right < sizeof(projection_statuses) / sizeof(projection_statuses[0]);
+         ++right) {
+      CHECK(projection_statuses[left] != projection_statuses[right]);
+    }
+  }
+
+  slots[0].tag = SIMD_JSON_RESULT_SIGNED_INTEGER;
+  slots[0].value.signed_integer = INT64_MIN;
+  slots[1].tag = SIMD_JSON_RESULT_UNSIGNED_INTEGER;
+  slots[1].value.unsigned_integer = UINT64_MAX;
+  slots[2].tag = SIMD_JSON_RESULT_DOUBLE;
+  slots[2].value.floating_point = 1.25;
+  slots[3].tag = SIMD_JSON_RESULT_BOOLEAN;
+  slots[3].value.boolean = UINT64_C(1);
+  slots[4].tag = SIMD_JSON_RESULT_NULL;
+  slots[5].tag = SIMD_JSON_RESULT_STRING;
+  slots[5].value.string.data = borrowed;
+  slots[5].value.string.length = sizeof(borrowed) - 1;
+  slots[6].tag = SIMD_JSON_RESULT_EMPTY;
+
+  CHECK(slots[0].value.signed_integer == INT64_MIN);
+  CHECK(slots[1].value.unsigned_integer == UINT64_MAX);
+  CHECK(slots[2].value.floating_point == 1.25);
+  CHECK(slots[3].value.boolean == UINT64_C(1));
+  CHECK(slots[4].tag == SIMD_JSON_RESULT_NULL);
+  CHECK(slots[5].value.string.data == borrowed);
+  CHECK(slots[5].value.string.length == sizeof(borrowed) - 1);
+  CHECK(memcmp(slots[5].value.string.data, "borrowed",
+               (size_t)slots[5].value.string.length) == 0);
+  CHECK(slots[6].tag == SIMD_JSON_RESULT_EMPTY);
+  return 0;
 }
 
 static simd_json_projection_status create_shared_plan(
@@ -140,6 +195,98 @@ static int typed_edge_matrix(void) {
   CHECK(summary.terminals == 2);
   CHECK(summary.maximum_depth == 2);
   simd_json_projection_plan_destroy(plan);
+  CHECK(at_accounting_baseline());
+  return 0;
+}
+
+static int boundary_and_scale_matrix(void) {
+  static const uint8_t unicode_key[] = {0xe9, 0x9b, 0xaa};
+  simd_json_projection_segment deep_segments[DEEP_PATH_SEGMENTS];
+  simd_json_projection_segment large_segments[LARGE_PLAN_ENTRIES];
+  simd_json_projection_entry large_entries[LARGE_PLAN_ENTRIES];
+  simd_json_projection_entry entry = {0, 0, 0, 1};
+  simd_json_projection_plan *plan = NULL;
+  simd_json_test_projection_summary summary;
+  simd_json_projection_status status;
+  uint32_t index;
+
+  {
+    const simd_json_projection_segment empty_key = {
+        SIMD_JSON_PROJECTION_SEGMENT_OBJECT_KEY, 0, 0, 0, 0};
+    status = simd_json_projection_plan_create(&entry, 1, &empty_key, 1, NULL,
+                                              0, &plan);
+    CHECK(status.code == SIMD_JSON_STATUS_OK);
+    CHECK(simd_json_test_projection_summary_read(plan, &summary) == 1);
+    CHECK(summary.output_slots == 1 && summary.nodes == 2);
+    CHECK(summary.object_edges == 1 && summary.key_bytes == 0);
+    simd_json_projection_plan_destroy(plan);
+    plan = NULL;
+  }
+
+  {
+    const simd_json_projection_segment unicode_segment = {
+        SIMD_JSON_PROJECTION_SEGMENT_OBJECT_KEY, 0, 0,
+        sizeof(unicode_key), 0};
+    status = simd_json_projection_plan_create(
+        &entry, 1, &unicode_segment, 1, unicode_key, sizeof(unicode_key),
+        &plan);
+    CHECK(status.code == SIMD_JSON_STATUS_OK);
+    CHECK(simd_json_test_projection_summary_read(plan, &summary) == 1);
+    CHECK(summary.nodes == 2 && summary.key_bytes == sizeof(unicode_key));
+    simd_json_projection_plan_destroy(plan);
+    plan = NULL;
+  }
+
+  entry.segment_count = DEEP_PATH_SEGMENTS;
+  for (index = 0; index < DEEP_PATH_SEGMENTS; ++index) {
+    deep_segments[index] = (simd_json_projection_segment){
+        SIMD_JSON_PROJECTION_SEGMENT_OBJECT_KEY, 0, 0, 1, 0};
+  }
+  status = simd_json_projection_plan_create(
+      &entry, 1, deep_segments, DEEP_PATH_SEGMENTS, (const uint8_t *)"d", 1,
+      &plan);
+  CHECK(status.code == SIMD_JSON_STATUS_OK);
+  CHECK(simd_json_test_projection_summary_read(plan, &summary) == 1);
+  CHECK(summary.nodes == DEEP_PATH_SEGMENTS + 1);
+  CHECK(summary.object_edges == DEEP_PATH_SEGMENTS);
+  CHECK(summary.maximum_depth == DEEP_PATH_SEGMENTS);
+  simd_json_projection_plan_destroy(plan);
+  plan = NULL;
+
+  for (index = 0; index < DEEP_PATH_SEGMENTS; ++index) {
+    deep_segments[index] = (simd_json_projection_segment){
+        SIMD_JSON_PROJECTION_SEGMENT_ARRAY_INDEX, 0, 0, 0, index};
+  }
+  status = simd_json_projection_plan_create(
+      &entry, 1, deep_segments, DEEP_PATH_SEGMENTS, NULL, 0, &plan);
+  CHECK(status.code == SIMD_JSON_STATUS_OK);
+  CHECK(simd_json_test_projection_summary_read(plan, &summary) == 1);
+  CHECK(summary.nodes == DEEP_PATH_SEGMENTS + 1);
+  CHECK(summary.array_edges == DEEP_PATH_SEGMENTS);
+  CHECK(summary.maximum_depth == DEEP_PATH_SEGMENTS);
+  simd_json_projection_plan_destroy(plan);
+  plan = NULL;
+
+  for (index = 0; index < LARGE_PLAN_ENTRIES; ++index) {
+    large_segments[index] = (simd_json_projection_segment){
+        SIMD_JSON_PROJECTION_SEGMENT_ARRAY_INDEX, 0, 0, 0,
+        LARGE_PLAN_ENTRIES - index};
+    large_entries[index] =
+        (simd_json_projection_entry){index, 0, index, 1};
+  }
+  status = simd_json_projection_plan_create(
+      large_entries, LARGE_PLAN_ENTRIES, large_segments, LARGE_PLAN_ENTRIES,
+      NULL, 0, &plan);
+  CHECK(status.code == SIMD_JSON_STATUS_OK);
+  CHECK(simd_json_test_projection_summary_read(plan, &summary) == 1);
+  CHECK(summary.output_slots == LARGE_PLAN_ENTRIES);
+  CHECK(summary.nodes == LARGE_PLAN_ENTRIES + 1);
+  CHECK(summary.array_edges == LARGE_PLAN_ENTRIES);
+  CHECK(summary.terminals == LARGE_PLAN_ENTRIES);
+  CHECK(summary.maximum_depth == 1);
+  simd_json_projection_plan_destroy(plan);
+  plan = NULL;
+
   CHECK(at_accounting_baseline());
   return 0;
 }
@@ -339,8 +486,10 @@ static int exception_and_allocation_matrix(void) {
 int main(void) {
   simd_json_test_projection_clear_failure();
   CHECK(at_accounting_baseline());
+  CHECK(status_and_result_contract_matrix() == 0);
   CHECK(shared_prefix_and_copy_matrix() == 0);
   CHECK(typed_edge_matrix() == 0);
+  CHECK(boundary_and_scale_matrix() == 0);
   CHECK(invalid_descriptor_matrix() == 0);
   CHECK(exception_and_allocation_matrix() == 0);
   CHECK(at_accounting_baseline());

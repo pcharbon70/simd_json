@@ -19,9 +19,12 @@ Milestone 2 is defined by three accepted projection ADRs, three planned
 subjects with explicit bootstrap exceptions, and a six-phase implementation
 plan. Phase 1 now packages an undocumented internal projection validator and
 extends the common error representation with reserved projection reasons and
-an optional redacted path. The root module still exports only the Milestone 1
-`open/1` and `close/1` operations; no `select/2`, compiled plan, or native
-projection surface is present yet.
+an optional redacted path. Phase 2 packages ABI v2 descriptors, the opaque
+C++ prefix-sharing plan, its Zig serializer/owner, independent conformance
+harnesses, and the expanded private shared-ABI allowlist. These remain internal
+build inputs: the root module still exports only the Milestone 1 `open/1` and
+`close/1` operations, the NIF still exports only `nif_init`, and no `select/2`
+or public compiled-plan surface is present yet.
 
 ```spec-meta
 id: simd_json.package

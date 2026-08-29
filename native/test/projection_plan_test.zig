@@ -110,6 +110,12 @@ test "serialization rejects inconsistent normalized structures before native all
     const invalid_paths = [_]projection.NormalizedPath{
         .{ .path_slot = 0, .segments = &invalid_utf8 },
     };
+    const noncanonical_paths = [_]projection.NormalizedPath{
+        .{ .path_slot = 1, .segments = &key_path },
+    };
+    const noncanonical_entry = [_]projection.NormalizedEntry{
+        .{ .output_slot = 0, .path_slot = 1 },
+    };
 
     try std.testing.expectError(error.InvalidProjection, projection.OwnedPlan.init(
         std.testing.allocator,
@@ -130,6 +136,10 @@ test "serialization rejects inconsistent normalized structures before native all
     try std.testing.expectError(error.InvalidProjection, projection.OwnedPlan.init(
         std.testing.allocator,
         .{ .entries = &valid_entries, .paths = &invalid_paths },
+    ));
+    try std.testing.expectError(error.InvalidProjection, projection.OwnedPlan.init(
+        std.testing.allocator,
+        .{ .entries = &noncanonical_entry, .paths = &noncanonical_paths },
     ));
     try expectQuiescent();
 }

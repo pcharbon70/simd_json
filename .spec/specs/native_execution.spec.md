@@ -48,6 +48,11 @@ entirely before that boundary, and integration tests prove invalid terms leave
 the counter, correlated request state, native allocation gauges, worker-entry
 count, and generation unchanged. No projection operation kind or threaded
 native execution exists yet, and release builds expose none of the test seam.
+Milestone 2 Phase 2 compiles the ABI v2 plan owner into the NIF but invokes it
+only from standalone C/Zig conformance. There is still no projection operation
+kind, request admission, worker traversal, result conversion, or callback
+cleanup path; the release NIF symbol surface remains exactly `nif_init` and all
+Milestone 1 scheduler behavior is unchanged.
 
 ```spec-meta
 id: simd_json.native_execution

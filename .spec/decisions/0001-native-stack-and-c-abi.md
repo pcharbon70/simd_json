@@ -122,6 +122,23 @@ versions, seed, input digest, package inventory, commands, and outputs. The
 Milestone 1 supported matrix remains exactly Ubuntu 24.04 x86-64; experimental
 targets receive no generic artifact or fallback claim.
 
+### Milestone 2 Phase 2 ABI checkpoint
+
+Projection advances the canonical header's compile-time version to 2 without
+altering the four parser/document signatures, their 16-byte status record, or
+their ABI v1 symbol version. Projection functions use a distinct 24-byte status
+that adds the optional failing output slot, so the Milestone 1 calling
+convention remains intact. The standalone artifact adds only the versioned
+projection-plan constructor, null-safe destructor, and reserved execution
+entry; the statically linked NIF continues to export only `nif_init`.
+
+The new C++ plan boundary validates every count, pointer/count pair, segment
+range, tag, reserved field, output slot, byte range, and structural reference
+before allocation. It catches known, allocation, standard, and unknown
+exceptions, and one reverse-order ownership arena releases copied key bytes and
+nodes after every partial or complete construction. Its independent C11 and
+Zig ordinary/sanitizer harnesses join the qualification fingerprint.
+
 ### Build and target qualification
 
 The native build is driven through the pinned Zig/Zigler integration and produces the NIF from a clean checkout without requiring a preinstalled simdjson library. It must fail with a clear unsupported-target error rather than silently compile an unqualified combination.

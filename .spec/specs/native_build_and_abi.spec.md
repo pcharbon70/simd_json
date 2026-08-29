@@ -34,6 +34,15 @@ symbol allowlists unchanged. Its new BEAM validator and executable preflight
 corpus are nevertheless runtime- and evidence-relevant, so both are added to
 the qualification input manifest. Any later edit to either now invalidates the
 recorded fingerprint and must pass the same Milestone 1 release gates.
+Milestone 2 Phase 2 advances the canonical compile-time constant to ABI version
+2 but retains all four parser/document functions under their ABI v1 symbol
+version with the original 16-byte status and behavior. Three ABI v2 symbols add
+an opaque projection-plan constructor/destructor pair and the frozen future
+execution signature. A separate 24-byte projection status carries the optional
+failing slot. Fixed descriptors, result slots, the projection C++ and Zig
+translation units, independent C/Zig conformance, failure accounting,
+sanitizers, package inventory, and release allowlists are now pinned inputs;
+the statically linked NIF still exports only `nif_init`.
 
 ```spec-meta
 id: simd_json.native_build_and_abi
