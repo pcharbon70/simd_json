@@ -100,7 +100,7 @@
         ],
         "file": ".spec/specs/projection_api.spec.md",
         "id": "simd_json.projection_api.milestone_02_bootstrap",
-        "reason": "Milestone 2 projection is not implemented; remove this exception and replace it with executed public API, grammar, result, error, lifetime, atom-safety, and scope evidence before activation.",
+        "reason": "Milestone 2 Phases 1 through 4 implement grammar plus a test-only internal binary/document result and error seam, but SimdJson.select/2 is intentionally absent; keep this complete-subject exception until Phase 5 supplies executed public API, typespec, doctest, argument, redaction, atom-safety, and surface evidence.",
         "subject_id": "simd_json.projection_api"
       },
       {
@@ -127,7 +127,7 @@
         ],
         "file": ".spec/specs/projection_engine.spec.md",
         "id": "simd_json.projection_engine.milestone_02_bootstrap",
-        "reason": "The Milestone 2 native projection engine does not exist yet; remove this exception and replace it with executed plan, traversal, ABI, failure-cleanup, boundary, sanitizer, and full-source-validation evidence before activation.",
+        "reason": "Milestone 2 Phases 2 through 4 implement and exercise the private plan, guided traversal, transactional threaded conversion, one join boundary, and redacted timing; keep this complete-subject exception until Phase 5 exposes the public call and Phase 6 supplies final NIF sanitizer, supported-target, lifecycle, and benchmark evidence before activation.",
         "subject_id": "simd_json.projection_engine"
       },
       {
@@ -157,7 +157,7 @@
         ],
         "file": ".spec/specs/projection_execution.spec.md",
         "id": "simd_json.projection_execution.milestone_02_bootstrap",
-        "reason": "Milestone 2 threaded projection and qualification do not exist yet; remove this exception and replace it with executed admission, consumption, retention, cancellation, cleanup, scheduler, sanitizer, and benchmark evidence before activation.",
+        "reason": "Milestone 2 Phases 1 through 4 implement and exercise the private threaded projection, admission, consumption, retention, cancellation, cleanup, and preliminary scheduler slice; keep this complete-subject exception until Phase 5 publishes select/2 and Phase 6 supplies the final sanitizer, supported-target scheduler, lifecycle, and Jason benchmark evidence required for activation.",
         "subject_id": "simd_json.projection_execution"
       }
     ],

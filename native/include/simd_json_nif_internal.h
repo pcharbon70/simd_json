@@ -33,6 +33,19 @@ simd_json_nif_document_revalidate(
     simd_json_document *document) SIMD_JSON_NIF_INTERNAL_NOEXCEPT;
 
 /*
+ * Binary projection performs complete validation in the prefix-sharing
+ * execution engine. This constructor establishes the unpublished On-Demand
+ * document without first walking and rewinding the whole source.
+ */
+SIMD_JSON_NIF_INTERNAL_VISIBILITY simd_json_status
+simd_json_nif_document_open_unvalidated(
+    simd_json_parser *parser,
+    const uint8_t *data,
+    uint64_t logical_length,
+    uint64_t capacity,
+    simd_json_document **out_document) SIMD_JSON_NIF_INTERNAL_NOEXCEPT;
+
+/*
  * The projection worker installs one operation-owned probe before cursor
  * access and clears it after execution. The callback performs the atomic read
  * appropriate to the owning runtime; the C++ traversal invokes it only at

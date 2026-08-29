@@ -35,6 +35,12 @@ pub fn Implementation(comptime c: type) type {
             closed,
         };
 
+        pub const ProjectionState = enum(u8) {
+            fresh,
+            selecting,
+            consumed,
+        };
+
         pub const CloseClaim = enum {
             cleanup_owner,
             closing,
@@ -43,6 +49,16 @@ pub fn Implementation(comptime c: type) type {
 
         pub const OperationAdmission = struct {
             generation: u64,
+        };
+
+        pub const ProjectionReservation = struct {
+            generation: u64,
+        };
+
+        pub const ProjectionReserveOutcome = union(enum) {
+            reserved: ProjectionReservation,
+            cursor_consumed,
+            closed,
         };
 
         pub const CancellationBoundary = enum {
@@ -205,6 +221,7 @@ pub fn Implementation(comptime c: type) type {
             lifecycle: std.atomic.Value(u8),
             generation: std.atomic.Value(u64),
             admitted_operations: std.atomic.Value(usize),
+            projection_state: std.atomic.Value(u8),
             cleanup_started: std.atomic.Value(bool),
             record_accounted: bool,
 
@@ -219,6 +236,7 @@ pub fn Implementation(comptime c: type) type {
                     .lifecycle = .init(@intFromEnum(Lifecycle.closed)),
                     .generation = .init(0),
                     .admitted_operations = .init(0),
+                    .projection_state = .init(@intFromEnum(ProjectionState.fresh)),
                     .cleanup_started = .init(false),
                     .record_accounted = false,
                 };
@@ -226,6 +244,10 @@ pub fn Implementation(comptime c: type) type {
 
             pub fn lifecycleState(self: *const DocumentState) Lifecycle {
                 return @enumFromInt(self.lifecycle.load(.acquire));
+            }
+
+            pub fn projectionState(self: *const DocumentState) ProjectionState {
+                return @enumFromInt(self.projection_state.load(.acquire));
             }
 
             pub fn hasOwnedNativeState(self: *const DocumentState) bool {
@@ -242,7 +264,7 @@ pub fn Implementation(comptime c: type) type {
                 allocator: std.mem.Allocator,
                 source: []const u8,
             ) NativeStatus {
-                return self.openOwnedWithFailure(allocator, source, .none, null);
+                return self.openOwnedWithFailure(allocator, source, .none, null, true);
             }
 
             /// The threaded constructor supplies a probe whose atomic read is
@@ -254,7 +276,19 @@ pub fn Implementation(comptime c: type) type {
                 source: []const u8,
                 cancellation: CancellationProbe,
             ) NativeStatus {
-                return self.openOwnedWithFailure(allocator, source, .none, cancellation);
+                return self.openOwnedWithFailure(allocator, source, .none, cancellation, true);
+            }
+
+            /// A temporary binary projection validates the complete source in
+            /// the projection engine itself, so its unpublished document skips
+            /// the public open-time validation-and-rewind pass.
+            pub fn openOwnedProjectionCancellable(
+                self: *DocumentState,
+                allocator: std.mem.Allocator,
+                source: []const u8,
+                cancellation: CancellationProbe,
+            ) NativeStatus {
+                return self.openOwnedWithFailure(allocator, source, .none, cancellation, false);
             }
 
             fn openOwnedWithFailure(
@@ -263,6 +297,7 @@ pub fn Implementation(comptime c: type) type {
                 source: []const u8,
                 comptime failure: ConstructionFailurePoint,
                 cancellation: ?CancellationProbe,
+                validate_before_publication: bool,
             ) NativeStatus {
                 if (cancellation) |probe| {
                     if (probe.cancelledAt(.before_copy))
@@ -324,13 +359,32 @@ pub fn Implementation(comptime c: type) type {
                 }
 
                 var document: ?*c.simd_json_document = null;
-                status = adaptStatus(c.simd_json_document_open(
-                    parser.?,
-                    owned.ptr,
-                    @intCast(source.len),
-                    @intCast(capacity),
-                    &document,
-                ));
+                status = if (validate_before_publication)
+                    adaptStatus(c.simd_json_document_open(
+                        parser.?,
+                        owned.ptr,
+                        @intCast(source.len),
+                        @intCast(capacity),
+                        &document,
+                    ))
+                else if (comptime @hasDecl(c, "simd_json_nif_document_open_unvalidated"))
+                    adaptStatus(c.simd_json_nif_document_open_unvalidated(
+                        parser.?,
+                        owned.ptr,
+                        @intCast(source.len),
+                        @intCast(capacity),
+                        &document,
+                    ))
+                else if (comptime @hasDecl(c, "simd_json_test_document_open_unvalidated"))
+                    adaptStatus(c.simd_json_test_document_open_unvalidated(
+                        parser.?,
+                        owned.ptr,
+                        @intCast(source.len),
+                        @intCast(capacity),
+                        &document,
+                    ))
+                else
+                    @compileError("unvalidated document constructor is not present in this build");
                 if (status != .ok or document == null) {
                     self.rollbackConstruction();
                     return if (status == .ok)
@@ -354,6 +408,7 @@ pub fn Implementation(comptime c: type) type {
                 }
 
                 self.cleanup_started.store(false, .release);
+                self.projection_state.store(@intFromEnum(ProjectionState.fresh), .release);
                 if (failure == .after_resource_initialization) {
                     self.rollbackConstruction();
                     return statusWithoutDiagnostics(.internal_failure);
@@ -379,6 +434,7 @@ pub fn Implementation(comptime c: type) type {
             fn rollbackConstruction(self: *DocumentState) void {
                 self.releaseOwnedFields();
                 self.generation.store(0, .release);
+                self.projection_state.store(@intFromEnum(ProjectionState.fresh), .release);
                 self.cleanup_started.store(false, .release);
                 self.lifecycle.store(@intFromEnum(Lifecycle.closed), .release);
             }
@@ -425,6 +481,115 @@ pub fn Implementation(comptime c: type) type {
 
                 self.releaseAdmissionCount();
                 return null;
+            }
+
+            /// Atomically reserves the one-shot projection cursor while also
+            /// holding the ordinary admitted-operation count that prevents
+            /// close from destroying native state. Callers must validate the
+            /// immutable BEAM owner before invoking this method.
+            pub fn reserveProjection(self: *DocumentState) ProjectionReserveOutcome {
+                if (self.projectionState() != .fresh) return .cursor_consumed;
+                if (self.lifecycleState() != .open) return .closed;
+
+                _ = self.admitted_operations.fetchAdd(1, .acq_rel);
+                if (test_build) _ = Accounting.admitted_operations.fetchAdd(1, .acq_rel);
+
+                const generation = self.generation.load(.acquire);
+                if (self.lifecycleState() != .open or generation == 0) {
+                    self.releaseAdmissionCount();
+                    return .closed;
+                }
+
+                if (self.projection_state.cmpxchgStrong(
+                    @intFromEnum(ProjectionState.fresh),
+                    @intFromEnum(ProjectionState.selecting),
+                    .acq_rel,
+                    .acquire,
+                ) != null) {
+                    self.releaseAdmissionCount();
+                    return .cursor_consumed;
+                }
+
+                if (self.lifecycleState() != .open or
+                    generation != self.generation.load(.acquire))
+                {
+                    _ = self.projection_state.cmpxchgStrong(
+                        @intFromEnum(ProjectionState.selecting),
+                        @intFromEnum(ProjectionState.fresh),
+                        .acq_rel,
+                        .acquire,
+                    );
+                    self.releaseAdmissionCount();
+                    return .closed;
+                }
+
+                return .{ .reserved = .{ .generation = generation } };
+            }
+
+            /// A reservation may be retried only while the worker has not
+            /// committed cursor access. This method also releases the cleanup
+            /// interlock held by `reserveProjection`.
+            pub fn rollbackProjection(
+                self: *DocumentState,
+                reservation: ProjectionReservation,
+            ) bool {
+                if (reservation.generation == 0) return false;
+                const rolled_back = self.projection_state.cmpxchgStrong(
+                    @intFromEnum(ProjectionState.selecting),
+                    @intFromEnum(ProjectionState.fresh),
+                    .acq_rel,
+                    .acquire,
+                ) == null;
+                if (rolled_back) self.releaseAdmissionCount();
+                return rolled_back;
+            }
+
+            /// Commits one selecting document immediately before native
+            /// cursor access. The cleanup admission remains held until the
+            /// coordinator releases the terminal operation.
+            pub fn commitProjection(
+                self: *DocumentState,
+                reservation: ProjectionReservation,
+            ) bool {
+                if (reservation.generation == 0 or
+                    reservation.generation != self.generation.load(.acquire) or
+                    self.lifecycleState() != .open)
+                    return false;
+
+                return self.projection_state.cmpxchgStrong(
+                    @intFromEnum(ProjectionState.selecting),
+                    @intFromEnum(ProjectionState.consumed),
+                    .acq_rel,
+                    .acquire,
+                ) == null;
+            }
+
+            pub fn releaseCommittedProjection(
+                self: *DocumentState,
+                reservation: ProjectionReservation,
+            ) void {
+                std.debug.assert(reservation.generation != 0);
+                std.debug.assert(self.projectionState() == .consumed);
+                self.releaseAdmissionCount();
+            }
+
+            pub fn projectionDocument(
+                self: *const DocumentState,
+                reservation: ProjectionReservation,
+            ) ?*c.simd_json_document {
+                if (reservation.generation != self.generation.load(.acquire) or
+                    self.projectionState() != .consumed or
+                    self.lifecycleState() != .open)
+                    return null;
+                return self.document_handle;
+            }
+
+            /// Temporary binary-source projection owns this state entirely on
+            /// one worker, so no BEAM reservation is needed. The handle still
+            /// remains private to the Zig ownership layer.
+            pub fn ownedOperationDocument(self: *const DocumentState) ?*c.simd_json_document {
+                if (self.lifecycleState() != .open) return null;
+                return self.document_handle;
             }
 
             pub fn releaseAdmission(
@@ -590,7 +755,7 @@ pub fn Implementation(comptime c: type) type {
                 comptime point: FailurePoint,
             ) NativeStatus {
                 std.debug.assert(point != .none);
-                return state.openOwnedWithFailure(allocator, source, point, null);
+                return state.openOwnedWithFailure(allocator, source, point, null, true);
             }
 
             pub fn snapshot() Snapshot {

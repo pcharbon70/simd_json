@@ -189,7 +189,8 @@ controls are absent.
 `scripts/native/run_nif_sanitizer_tests.sh` performs an isolated NIF build in
 which the C++ shim and simdjson translation units are instrumented with
 AddressSanitizer and UndefinedBehaviorSanitizer. It runs the threaded operation
-and public API corpora with fail-fast runtimes preloaded. LeakSanitizer is
+public API, and private binary/document projection corpora with fail-fast
+runtimes preloaded. LeakSanitizer is
 disabled only for the long-lived BEAM host process, whose allocator ownership
 is outside the NIF; standalone C and Zig sanitizer harnesses keep leak
 detection enabled, and BEAM tests require every bounded native gauge to return
@@ -217,9 +218,20 @@ payload contains the destructible native state plus the opening process PID;
 the state reserves fields for the aligned padded allocation, logical length,
 opaque C handles, lifecycle, generation, and admitted-operation count. Explicit
 load, upgrade, unload, and destructor callbacks perform only bounded
-bookkeeping. In Phase 3 no production constructor can put parsed state in the
-resource, so its destructor never copies, parses, waits, or destroys large
-native allocations on a normal scheduler. Phase 4 attaches deferred teardown.
+bookkeeping. Milestone 1's threaded constructor and deferred dispatcher own all
+input-dependent creation and destruction, so the resource callback never
+copies, parses, waits, or destroys large native allocations on a normal
+scheduler.
+
+Milestone 2 Phase 4 adds an independent projection state beside the unchanged
+`open -> closing -> closed` lifecycle. An owner-first bounded entry atomically
+reserves `fresh -> selecting`; a proven pre-worker rejection may roll it back,
+while the worker commits `selecting -> consumed` immediately before its first
+cursor access. The admitted-operation count interlocks that reservation with
+close. The document, parser, padded input, and resource control remain retained
+through plan execution, copied-string construction, join, and terminal release.
+Binary projection uses the same state implementation in an unpublished
+worker-local document graph.
 
 The two fixture functions on the internal `SimdJson.Native.BuildSmoke` module
 exist solely to prove resource registration and opacity. They create only the
@@ -285,6 +297,25 @@ Every failed or cancelled construction edge uses the same reverse rollback as
 the native ownership tests. Parser failures return only the closed internal
 status, optional native code, and optional logical byte offset.
 
+`threaded_projection_execute` is registered through the same generated
+threaded path. Admission retains the complete normalized projection and either
+the binary source term or document resource in one operation environment. The
+worker decodes one plan, calls the shared guided projection engine once, owns
+every typed slot, and constructs one complete scalar map only after traversal
+succeeds. Binary calls create and destroy an unpublished padded
+input/parser/document graph inside that operation rather than chaining public
+open and close calls. Document calls reserve and commit the single-use cursor
+through the resource interlock above.
+
+Projection result maps belong to the worker's private environment. The
+resource-shaped `JoinCopiedTerm` Zigler adapter performs an explicit
+`beam.copy` into the generated join environment; it does not publish an
+adapter resource. Selected strings are fresh binaries before source teardown,
+and any allocation, cancellation, stale-generation, or later delivery failure
+discards the whole private environment. Test-only diagnostics expose only
+threaded context, redacted phase durations, boundary counts, and aggregate
+lifetime gauges.
+
 `SimdJson.Native.OperationCoordinator` is the stable owner of each generated
 Zigler thread resource. The original caller can die without destroying the
 thread metadata: the coordinator marks the retained operation cancelled,
@@ -312,6 +343,14 @@ exercised. Repeated in-process shared-object unload is not supported by that
 test harness and remains explicitly unqualified in the pinned Zigler research
 note. This runtime is a Milestone 1 qualification mechanism; production
 admission control and the bounded parse pool remain in Milestone 4.
+
+Milestone 2 projection reuses this same qualification runtime. Its integration
+matrix forces out-of-order binary/document completion, submission rejection,
+caller death at all six projection boundaries, close and shutdown cancellation,
+GC handoff rejection/retry, and complete gauge recovery. A preliminary
+concurrent 4 MiB profile checks continued BEAM heartbeats and exact threaded
+projection worker entries. Phase 6 of Milestone 2 owns formal percentile,
+normal/dirty utilization, and end-to-end benchmark qualification.
 
 ### Scheduler qualification
 

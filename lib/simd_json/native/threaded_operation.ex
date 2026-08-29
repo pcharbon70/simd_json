@@ -13,7 +13,7 @@ defmodule SimdJson.Native.ThreadedOperation do
     @doc false
     def initialize_admission_counter_for_test do
       case :persistent_term.get(@admission_counter_key, nil) do
-        nil -> :persistent_term.put(@admission_counter_key, :counters.new(4, [:atomics]))
+        nil -> :persistent_term.put(@admission_counter_key, :counters.new(5, [:atomics]))
         _counter -> :ok
       end
 
@@ -25,7 +25,8 @@ defmodule SimdJson.Native.ThreadedOperation do
             total: non_neg_integer(),
             document_open: non_neg_integer(),
             document_cleanup: non_neg_integer(),
-            threaded_smoke: non_neg_integer()
+            threaded_smoke: non_neg_integer(),
+            projection: non_neg_integer()
           }
     def admission_snapshot_for_test do
       counter = :persistent_term.get(@admission_counter_key)
@@ -34,7 +35,8 @@ defmodule SimdJson.Native.ThreadedOperation do
         total: :counters.get(counter, 1),
         document_open: :counters.get(counter, 2),
         document_cleanup: :counters.get(counter, 3),
-        threaded_smoke: :counters.get(counter, 4)
+        threaded_smoke: :counters.get(counter, 4),
+        projection: :counters.get(counter, 5)
       }
     end
   end
@@ -42,7 +44,7 @@ defmodule SimdJson.Native.ThreadedOperation do
   @type operation :: %{
           resource: reference(),
           request_ref: reference(),
-          kind: :document_open | :document_cleanup | :threaded_smoke,
+          kind: :document_open | :document_cleanup | :threaded_smoke | :projection,
           generation: pos_integer()
         }
 
@@ -76,6 +78,49 @@ defmodule SimdJson.Native.ThreadedOperation do
       kind: kind,
       generation: generation
     }
+  end
+
+  @spec admit_projection(
+          binary() | reference(),
+          term(),
+          :binary | :document,
+          pid(),
+          pos_integer()
+        ) :: {:ok, operation()} | {:error, atom()}
+  def admit_projection(source, normalized, source_kind, owner, generation)
+      when source_kind in [:binary, :document] and is_pid(owner) and is_integer(generation) and
+             generation > 0 do
+    record_projection_admission()
+
+    case BuildSmoke.projection_operation_admit(
+           source,
+           normalized,
+           owner,
+           source_kind,
+           generation
+         ) do
+      %{status: :ok, operation: resource} when is_reference(resource) ->
+        {request_ref, :projection, ^generation, :queued} =
+          BuildSmoke.operation_metadata(resource)
+
+        {:ok,
+         %{
+           resource: resource,
+           request_ref: request_ref,
+           kind: :projection,
+           generation: generation
+         }}
+
+      %{status: status, operation: nil} when is_atom(status) ->
+        {:error, status}
+    end
+  end
+
+  @spec project(:binary | :document, binary() | reference(), term(), keyword()) ::
+          {:ok, map()} | {:error, map()}
+  def project(source_kind, source, normalized, options \\ [])
+      when source_kind in [:binary, :document] and is_list(options) do
+    OperationCoordinator.project(source_kind, source, normalized, options)
   end
 
   @spec smoke(binary()) :: map()
@@ -149,10 +194,12 @@ defmodule SimdJson.Native.ThreadedOperation do
     {:ok, submitter.()}
   rescue
     _error ->
+      rollback_projection(operation)
       _ = BuildSmoke.operation_finish(operation.resource, :discarded)
       {:error, %{reason: :native_failure, stage: :threaded_submission}}
   catch
     _kind, _reason ->
+      rollback_projection(operation)
       _ = BuildSmoke.operation_finish(operation.resource, :discarded)
       {:error, %{reason: :native_failure, stage: :threaded_submission}}
   end
@@ -169,6 +216,8 @@ defmodule SimdJson.Native.ThreadedOperation do
   end
 
   if @test_hooks do
+    defp record_projection_admission, do: record_admission_for_test(:projection)
+
     defp record_admission_for_test(kind) do
       counter = :persistent_term.get(@admission_counter_key)
       :counters.add(counter, 1, 1)
@@ -177,8 +226,18 @@ defmodule SimdJson.Native.ThreadedOperation do
         :document_open -> :counters.add(counter, 2, 1)
         :document_cleanup -> :counters.add(counter, 3, 1)
         :threaded_smoke -> :counters.add(counter, 4, 1)
+        :projection -> :counters.add(counter, 5, 1)
         _other -> :ok
       end
     end
+  else
+    defp record_projection_admission, do: :ok
   end
+
+  defp rollback_projection(%{kind: :projection, resource: resource}) do
+    _ = BuildSmoke.projection_operation_rollback(resource)
+    :ok
+  end
+
+  defp rollback_projection(_operation), do: :ok
 end

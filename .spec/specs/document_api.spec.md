@@ -37,6 +37,13 @@ parser/document signatures, their 16-byte status, document error translation,
 and every `open/1`/`close/1` result remain unchanged. No projection descriptor,
 plan, result slot, pointer, status, or diagnostic is reachable from the public
 Elixir API or release NIF exports.
+Milestone 2 Phases 3 and 4 add the private guided engine and threaded
+projection integration without changing that public boundary. The test-only
+projection adapter reuses the reserved error reasons and optional validated
+path, while `open/1`, `close/1`, their translations, the opaque document, and
+the exported root operation set remain unchanged. No projection timing,
+normalized term, one-shot state, native resource identity, or test accounting
+is exposed through the Milestone 1 API.
 
 ```spec-meta
 id: simd_json.document_api

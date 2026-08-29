@@ -42,6 +42,12 @@ pub const OperationKind = enum(u8) {
     document_open,
     document_cleanup,
     threaded_smoke,
+    projection,
+};
+
+pub const ProjectionSourceKind = enum(u8) {
+    binary,
+    document,
 };
 
 pub const OperationState = enum(u8) {
@@ -64,6 +70,11 @@ pub const OperationBoundary = enum(u8) {
     before_parse,
     after_parse,
     before_publication,
+    before_plan_compilation,
+    before_cursor_access,
+    during_traversal,
+    before_term_construction,
+    during_term_construction,
     before_delivery,
 };
 
@@ -92,6 +103,17 @@ const ExecutionAccounting = struct {
     var dispatcher_completed_cleanup = std.atomic.Value(usize).init(0);
     var retained_failed_cleanup = std.atomic.Value(usize).init(0);
     var cleanup_submission_failures = std.atomic.Value(usize).init(0);
+    var live_projection_operations = std.atomic.Value(usize).init(0);
+    var retained_projection_binaries = std.atomic.Value(usize).init(0);
+    var retained_projection_documents = std.atomic.Value(usize).init(0);
+    var live_projection_environments = std.atomic.Value(usize).init(0);
+    var live_projection_plans = std.atomic.Value(usize).init(0);
+    var live_projection_slots = std.atomic.Value(usize).init(0);
+    var live_projection_temporary_document_graphs = std.atomic.Value(usize).init(0);
+    var completed_projection_deliveries = std.atomic.Value(usize).init(0);
+    var discarded_projection_deliveries = std.atomic.Value(usize).init(0);
+    var projection_worker_entries = std.atomic.Value(usize).init(0);
+    var projection_boundary_entries = std.atomic.Value(usize).init(0);
 };
 
 const Runtime = struct {
@@ -228,10 +250,59 @@ const Runtime = struct {
 
 var runtime_ref = std.atomic.Value(?*Runtime).init(null);
 
+const JoinCopiedTermPayload = struct {
+    term: beam.term,
+};
+
+/// Zigler 0.16 stores a threaded return value in the worker environment and
+/// encodes it later in the generated join NIF. A raw `beam.term` field would
+/// therefore belong to the wrong environment at join time. This deliberately
+/// resource-shaped adapter selects Zigler's custom `make` dispatch and copies
+/// the completed term into the join environment. Its registered resource type
+/// is only a compile-time integration requirement; no instance is allocated.
+pub const JoinCopiedTerm = struct {
+    pub const __is_zigler_resource = true;
+
+    __payload: *JoinCopiedTermPayload,
+    __should_release: bool = false,
+
+    pub fn init(comptime module: []const u8, init_opts: anytype) *e.ErlNifResourceType {
+        var init_struct = e.ErlNifResourceTypeInit{
+            .dtor = null,
+            .stop = null,
+            .down = null,
+            .dyncall = null,
+            .members = 0,
+        };
+        return e.enif_init_resource_type(
+            init_opts.env,
+            @typeName(JoinCopiedTermPayload) ++ "-" ++ module,
+            &init_struct,
+            e.ERL_NIF_RT_CREATE,
+            null,
+        ).?;
+    }
+
+    pub fn make(self: JoinCopiedTerm, make_opts: anytype) beam.term {
+        return beam.copy(make_opts.env, self.__payload.term);
+    }
+
+    pub fn release(_: JoinCopiedTerm) void {}
+};
+
 const OperationRecord = struct {
     allocator: std.mem.Allocator,
     private_env: beam.env,
     input_term: beam.term,
+    projection_term: ?beam.term,
+    projection_source_kind: ?ProjectionSourceKind,
+    projection_document: ?*DocumentControl,
+    projection_reservation: ?document_resource.ProjectionReservation,
+    projection_reservation_active: std.atomic.Value(bool),
+    projection_committed: std.atomic.Value(bool),
+    projection_boundaries: std.atomic.Value(usize),
+    projection_failure_after: std.atomic.Value(usize),
+    projection_result_payload: JoinCopiedTermPayload,
     request_ref: beam.term,
     owner: beam.pid,
     kind: OperationKind,
@@ -278,6 +349,8 @@ const OperationRecord = struct {
         self.accountDequeued();
         _ = ExecutionAccounting.running_operations.fetchAdd(1, .acq_rel);
         _ = ExecutionAccounting.worker_entries.fetchAdd(1, .acq_rel);
+        if (self.kind == .projection)
+            _ = ExecutionAccounting.projection_worker_entries.fetchAdd(1, .acq_rel);
         return true;
     }
 
@@ -341,6 +414,8 @@ const OperationRecord = struct {
                     ) == null) {
                         self.accountDequeued();
                         _ = ExecutionAccounting.discarded_results.fetchAdd(1, .acq_rel);
+                        if (self.kind == .projection)
+                            _ = ExecutionAccounting.discarded_projection_deliveries.fetchAdd(1, .acq_rel);
                         return true;
                     }
                 },
@@ -358,8 +433,12 @@ const OperationRecord = struct {
                     ) == null) {
                         if (terminal == .completed) {
                             _ = ExecutionAccounting.delivered_results.fetchAdd(1, .acq_rel);
+                            if (self.kind == .projection)
+                                _ = ExecutionAccounting.completed_projection_deliveries.fetchAdd(1, .acq_rel);
                         } else {
                             _ = ExecutionAccounting.discarded_results.fetchAdd(1, .acq_rel);
+                            if (self.kind == .projection)
+                                _ = ExecutionAccounting.discarded_projection_deliveries.fetchAdd(1, .acq_rel);
                         }
                         return true;
                     }
@@ -382,8 +461,62 @@ const OperationRecord = struct {
         return binary.data[0..binary.size];
     }
 
+    fn projectionTerm(self: *const OperationRecord) !beam.term {
+        return self.projection_term orelse error.invalid_projection_payload;
+    }
+
+    fn rollbackProjectionReservation(self: *OperationRecord) bool {
+        if (!self.projection_reservation_active.load(.acquire) or
+            self.projection_committed.load(.acquire))
+            return false;
+        const control = self.projection_document orelse return false;
+        const reservation = self.projection_reservation orelse return false;
+        if (self.projection_reservation_active.cmpxchgStrong(
+            true,
+            false,
+            .acq_rel,
+            .acquire,
+        ) != null) return false;
+        return control.native.rollbackProjection(reservation);
+    }
+
+    fn commitProjectionReservation(self: *OperationRecord) bool {
+        if (!self.projection_reservation_active.load(.acquire) or
+            self.projection_committed.load(.acquire))
+            return false;
+        const control = self.projection_document orelse return false;
+        const reservation = self.projection_reservation orelse return false;
+        if (control.module_generation != self.generation) return false;
+        if (!control.native.commitProjection(reservation)) return false;
+        self.projection_committed.store(true, .release);
+        return true;
+    }
+
+    fn projectionDocumentHandle(self: *OperationRecord) ?*c.simd_json_document {
+        const control = self.projection_document orelse return null;
+        const reservation = self.projection_reservation orelse return null;
+        if (!self.projection_reservation_active.load(.acquire) or
+            !self.projection_committed.load(.acquire))
+            return null;
+        return control.native.projectionDocument(reservation);
+    }
+
+    fn releaseProjectionReservation(self: *OperationRecord) bool {
+        if (self.projection_source_kind != .document or
+            !self.projection_reservation_active.swap(false, .acq_rel))
+            return false;
+        const control = self.projection_document orelse return false;
+        const reservation = self.projection_reservation orelse return false;
+        if (self.projection_committed.load(.acquire)) {
+            control.native.releaseCommittedProjection(reservation);
+            return true;
+        }
+        return control.native.rollbackProjection(reservation);
+    }
+
     fn pauseAt(self: *OperationRecord, boundary: OperationBoundary) void {
         if (self.pause_boundary.load(.acquire) != @intFromEnum(boundary)) return;
+        if (self.pause_released.load(.acquire) or self.cancelled.load(.acquire)) return;
 
         if (self.pause_observer) |observer| {
             const request_ref = beam.copy(beam.context.env, self.request_ref);
@@ -403,11 +536,190 @@ const OperationRecord = struct {
     }
 };
 
+const DecodedProjection = struct {
+    allocator: std.mem.Allocator,
+    entries: []projection_plan.NormalizedEntry,
+    paths: []projection_plan.NormalizedPath,
+    output_keys: []beam.term,
+
+    fn deinit(self: *DecodedProjection) void {
+        for (self.paths) |path| {
+            if (path.segments.len != 0) self.allocator.free(path.segments);
+        }
+        self.allocator.free(self.output_keys);
+        self.allocator.free(self.paths);
+        self.allocator.free(self.entries);
+        self.* = undefined;
+    }
+
+    fn normalized(self: *const DecodedProjection) projection_plan.NormalizedProjection {
+        return .{ .entries = self.entries, .paths = self.paths };
+    }
+};
+
+const ProjectionDecodeError = error{ OutOfMemory, InvalidProjection };
+
+fn tupleElements(
+    env: beam.env,
+    term: beam.term,
+    expected_arity: c_int,
+) ?[*c]const e.ErlNifTerm {
+    var arity: c_int = 0;
+    var elements: [*c]const e.ErlNifTerm = undefined;
+    if (e.enif_get_tuple(env, term.v, &arity, &elements) == 0 or
+        arity != expected_arity)
+        return null;
+    return elements;
+}
+
+fn properListLength(env: beam.env, term: beam.term) ?usize {
+    var length: c_uint = 0;
+    if (e.enif_get_list_length(env, term.v, &length) == 0) return null;
+    return @intCast(length);
+}
+
+fn uint64Term(env: beam.env, term: e.ErlNifTerm) ?u64 {
+    var value: u64 = 0;
+    if (e.enif_get_uint64(env, term, &value) == 0) return null;
+    return value;
+}
+
+fn decodeProjection(record: *const OperationRecord) ProjectionDecodeError!DecodedProjection {
+    const env = record.private_env;
+    const projection = record.projectionTerm() catch return error.InvalidProjection;
+    const root_elements = tupleElements(env, projection, 3) orelse
+        return error.InvalidProjection;
+    const expected_tag = beam.make_into_atom("simd_json_projection_v1", .{ .env = env });
+    if (e.enif_compare(root_elements[0], expected_tag.v) != 0)
+        return error.InvalidProjection;
+
+    const entries_term = beam.term{ .v = root_elements[1] };
+    const paths_term = beam.term{ .v = root_elements[2] };
+    const entry_count = properListLength(env, entries_term) orelse
+        return error.InvalidProjection;
+    const path_count = properListLength(env, paths_term) orelse
+        return error.InvalidProjection;
+    if (entry_count == 0 or path_count == 0) return error.InvalidProjection;
+
+    const allocator = beam.allocator;
+    const entries = allocator.alloc(projection_plan.NormalizedEntry, entry_count) catch
+        return error.OutOfMemory;
+    errdefer allocator.free(entries);
+    const paths = allocator.alloc(projection_plan.NormalizedPath, path_count) catch
+        return error.OutOfMemory;
+    errdefer allocator.free(paths);
+    for (paths) |*path| path.* = .{ .path_slot = 0, .segments = &.{} };
+    errdefer for (paths) |path| {
+        if (path.segments.len != 0) allocator.free(path.segments);
+    };
+    const output_keys = allocator.alloc(beam.term, entry_count) catch
+        return error.OutOfMemory;
+    errdefer allocator.free(output_keys);
+    const seen_slots = allocator.alloc(bool, entry_count) catch
+        return error.OutOfMemory;
+    defer allocator.free(seen_slots);
+    @memset(seen_slots, false);
+
+    var list = entries_term.v;
+    for (entries) |*entry| {
+        var head: e.ErlNifTerm = undefined;
+        var tail: e.ErlNifTerm = undefined;
+        if (e.enif_get_list_cell(env, list, &head, &tail) == 0)
+            return error.InvalidProjection;
+        list = tail;
+        const fields = tupleElements(env, .{ .v = head }, 3) orelse
+            return error.InvalidProjection;
+        const output_slot = uint64Term(env, fields[0]) orelse
+            return error.InvalidProjection;
+        const path_slot = uint64Term(env, fields[2]) orelse
+            return error.InvalidProjection;
+        const slot_index = std.math.cast(usize, output_slot) orelse
+            return error.InvalidProjection;
+        if (slot_index >= output_keys.len or seen_slots[slot_index])
+            return error.InvalidProjection;
+        if (e.enif_is_atom(env, fields[1]) == 0 and
+            e.enif_is_binary(env, fields[1]) == 0)
+            return error.InvalidProjection;
+
+        seen_slots[slot_index] = true;
+        output_keys[slot_index] = .{ .v = fields[1] };
+        entry.* = .{ .output_slot = output_slot, .path_slot = path_slot };
+    }
+
+    list = paths_term.v;
+    for (paths) |*path| {
+        var head: e.ErlNifTerm = undefined;
+        var tail: e.ErlNifTerm = undefined;
+        if (e.enif_get_list_cell(env, list, &head, &tail) == 0)
+            return error.InvalidProjection;
+        list = tail;
+        const fields = tupleElements(env, .{ .v = head }, 2) orelse
+            return error.InvalidProjection;
+        const path_slot = uint64Term(env, fields[0]) orelse
+            return error.InvalidProjection;
+        const segments_term = beam.term{ .v = fields[1] };
+        const segment_count = properListLength(env, segments_term) orelse
+            return error.InvalidProjection;
+        if (segment_count == 0) return error.InvalidProjection;
+        const segments = allocator.alloc(projection_plan.Segment, segment_count) catch
+            return error.OutOfMemory;
+        path.* = .{ .path_slot = path_slot, .segments = segments };
+
+        var segment_list = segments_term.v;
+        for (segments) |*segment| {
+            var segment_head: e.ErlNifTerm = undefined;
+            var segment_tail: e.ErlNifTerm = undefined;
+            if (e.enif_get_list_cell(
+                env,
+                segment_list,
+                &segment_head,
+                &segment_tail,
+            ) == 0) return error.InvalidProjection;
+            segment_list = segment_tail;
+
+            var binary: e.ErlNifBinary = undefined;
+            if (e.enif_inspect_binary(env, segment_head, &binary) != 0) {
+                segment.* = .{ .object_key = binary.data[0..binary.size] };
+            } else {
+                const index = uint64Term(env, segment_head) orelse
+                    return error.InvalidProjection;
+                segment.* = .{ .array_index = index };
+            }
+        }
+    }
+
+    for (seen_slots) |seen| if (!seen) return error.InvalidProjection;
+    return .{
+        .allocator = allocator,
+        .entries = entries,
+        .paths = paths,
+        .output_keys = output_keys,
+    };
+}
+
 const OperationResourceCallbacks = struct {
     pub fn dtor(payload: **OperationRecord) void {
         const operation = payload.*;
         _ = operation.finish(.discarded);
+        _ = operation.releaseProjectionReservation();
         beam.free_env(operation.private_env);
+
+        if (operation.kind == .projection) {
+            const environments = ExecutionAccounting.live_projection_environments.fetchSub(1, .acq_rel);
+            std.debug.assert(environments > 0);
+            const projections = ExecutionAccounting.live_projection_operations.fetchSub(1, .acq_rel);
+            std.debug.assert(projections > 0);
+            switch (operation.projection_source_kind orelse unreachable) {
+                .binary => {
+                    const retained = ExecutionAccounting.retained_projection_binaries.fetchSub(1, .acq_rel);
+                    std.debug.assert(retained > 0);
+                },
+                .document => {
+                    const retained = ExecutionAccounting.retained_projection_documents.fetchSub(1, .acq_rel);
+                    std.debug.assert(retained > 0);
+                },
+            }
+        }
         operation.allocator.destroy(operation);
 
         const retained = ExecutionAccounting.retained_inputs.fetchSub(1, .acq_rel);
@@ -440,6 +752,17 @@ pub const ExecutionSnapshot = struct {
     dispatcher_completed_cleanup: usize,
     retained_failed_cleanup: usize,
     cleanup_submission_failures: usize,
+    live_projection_operations: usize,
+    retained_projection_binaries: usize,
+    retained_projection_documents: usize,
+    live_projection_environments: usize,
+    live_projection_plans: usize,
+    live_projection_slots: usize,
+    live_projection_temporary_document_graphs: usize,
+    completed_projection_deliveries: usize,
+    discarded_projection_deliveries: usize,
+    projection_worker_entries: usize,
+    projection_boundary_entries: usize,
 };
 
 pub const ThreadedSmokeResult = struct {
@@ -506,6 +829,64 @@ pub const DocumentOwnerState = enum(u8) {
     not_owner,
 };
 
+pub const DocumentProjectionOwnerState = enum(u8) {
+    fresh,
+    selecting,
+    consumed,
+    closing,
+    closed,
+    not_owner,
+};
+
+pub const ProjectionAdmissionStatus = enum(u8) {
+    ok,
+    invalid_source,
+    invalid_projection,
+    not_owner,
+    closed,
+    cursor_consumed,
+    execution_unavailable,
+};
+
+pub const ProjectionAdmissionResult = struct {
+    status: ProjectionAdmissionStatus,
+    operation: ?OperationResource,
+};
+
+pub const ProjectionStatus = enum(u8) {
+    ok,
+    cancelled,
+    execution_unavailable,
+    invalid_projection,
+    invalid_json,
+    invalid_utf8,
+    unexpected_eof,
+    out_of_memory,
+    invalid_argument,
+    internal_failure,
+    missing_field,
+    index_out_of_bounds,
+    incorrect_type,
+    number_out_of_range,
+    cursor_consumed,
+};
+
+pub const ProjectionResult = struct {
+    status: ProjectionStatus,
+    kind: OperationKind,
+    generation: u64,
+    worker_context: ExecutionContext,
+    native_code: ?i32,
+    byte_offset: ?u64,
+    output_slot: ?u32,
+    result: ?JoinCopiedTerm,
+    ready_for_delivery: bool,
+    compilation_nanoseconds: u64,
+    traversal_nanoseconds: u64,
+    term_construction_nanoseconds: u64,
+    boundary_count: usize,
+};
+
 var module_loaded = std.atomic.Value(bool).init(false);
 var module_generation = std.atomic.Value(u64).init(0);
 
@@ -527,6 +908,41 @@ fn pidsEqual(left: beam.pid, right: beam.pid) bool {
 fn operationCancelled(context: ?*anyopaque) bool {
     const operation: *OperationRecord = @ptrCast(@alignCast(context.?));
     return operation.cancelled.load(.acquire);
+}
+
+fn projectionBoundary(record: *OperationRecord, boundary: OperationBoundary) void {
+    _ = record.projection_boundaries.fetchAdd(1, .acq_rel);
+    _ = ExecutionAccounting.projection_boundary_entries.fetchAdd(1, .acq_rel);
+    record.pauseAt(boundary);
+}
+
+fn projectionCheckpointFails(record: *OperationRecord) bool {
+    while (true) {
+        const remaining = record.projection_failure_after.load(.acquire);
+        if (remaining == std.math.maxInt(usize)) return false;
+        if (remaining == 0) {
+            return record.projection_failure_after.cmpxchgWeak(
+                0,
+                std.math.maxInt(usize),
+                .acq_rel,
+                .acquire,
+            ) == null;
+        }
+        if (record.projection_failure_after.cmpxchgWeak(
+            remaining,
+            remaining - 1,
+            .acq_rel,
+            .acquire,
+        ) == null) return false;
+    }
+}
+
+fn projectionCancellation(context: ?*anyopaque) callconv(.c) u32 {
+    const record: *OperationRecord = @ptrCast(@alignCast(context.?));
+    projectionBoundary(record, .during_traversal);
+    const stale = !module_loaded.load(.acquire) or
+        record.generation != module_generation.load(.acquire);
+    return @intFromBool(stale or record.cancelled.load(.acquire));
 }
 
 fn operationBoundary(
@@ -618,13 +1034,8 @@ fn cleanupDetachedDocument(control: *DocumentControl) void {
 
 fn completeThreadedDocumentCleanup(control: *DocumentControl) bool {
     switch (control.native.beginClose()) {
-        .cleanup_owner => {
-            while (!control.native.completeCleanup()) std.atomic.spinLoopHint();
-        },
-        .closing => {
-            while (control.native.lifecycleState() != .closed) std.atomic.spinLoopHint();
-        },
-        .closed => {},
+        .cleanup_owner, .closing => while (!control.native.completeCleanup()) std.atomic.spinLoopHint(),
+        .closed => return true,
     }
     return control.native.lifecycleState() == .closed;
 }
@@ -686,26 +1097,34 @@ fn createDocumentControl(owner: beam.pid, generation: u64) !*DocumentControl {
     return control;
 }
 
-/// Bounded admission retains a private-env reference to the binary; it does
-/// not copy caller bytes. The worker later performs the sole owned JSON copy.
-pub fn operation_admit(
+fn operationAdmissionAvailable(generation: u64) bool {
+    const runtime = runtime_ref.load(.acquire) orelse return false;
+    return module_loaded.load(.acquire) and
+        runtime.accepting.load(.acquire) and
+        generation != 0 and
+        generation == module_generation.load(.acquire);
+}
+
+fn validProjectionEnvelope(projection: beam.term) bool {
+    var arity: c_int = 0;
+    var elements: [*c]const e.ErlNifTerm = undefined;
+    if (e.enif_get_tuple(beam.context.env, projection.v, &arity, &elements) == 0 or
+        arity != 3)
+        return false;
+    const expected = beam.make_into_atom("simd_json_projection_v1", .{});
+    return e.enif_compare(elements[0], expected.v) == 0;
+}
+
+fn createOperation(
     input: beam.term,
+    projection: ?beam.term,
     owner: beam.pid,
     kind: OperationKind,
     generation: u64,
+    projection_source_kind: ?ProjectionSourceKind,
+    projection_document: ?*DocumentControl,
+    projection_reservation: ?document_resource.ProjectionReservation,
 ) !OperationResource {
-    const runtime = runtime_ref.load(.acquire) orelse
-        return error.execution_unavailable;
-    if (!module_loaded.load(.acquire) or
-        !runtime.accepting.load(.acquire) or
-        generation == 0 or
-        generation != module_generation.load(.acquire))
-        return error.execution_unavailable;
-
-    var inspected: e.ErlNifBinary = undefined;
-    if (e.enif_inspect_binary(beam.context.env, input.v, &inspected) == 0)
-        return error.invalid_input;
-
     const private_env = beam.alloc_env();
     errdefer beam.free_env(private_env);
 
@@ -718,6 +1137,15 @@ pub fn operation_admit(
         .allocator = allocator,
         .private_env = private_env,
         .input_term = beam.copy(private_env, input),
+        .projection_term = if (projection) |term| beam.copy(private_env, term) else null,
+        .projection_source_kind = projection_source_kind,
+        .projection_document = projection_document,
+        .projection_reservation = projection_reservation,
+        .projection_reservation_active = .init(projection_reservation != null),
+        .projection_committed = .init(false),
+        .projection_boundaries = .init(0),
+        .projection_failure_after = .init(std.math.maxInt(usize)),
+        .projection_result_payload = .{ .term = beam.make(null, .{ .env = private_env }) },
         .request_ref = beam.copy(private_env, request_ref),
         .owner = owner,
         .kind = kind,
@@ -735,7 +1163,126 @@ pub fn operation_admit(
     _ = ExecutionAccounting.queued_operations.fetchAdd(1, .acq_rel);
     if (kind == .document_cleanup)
         _ = ExecutionAccounting.queued_cleanup.fetchAdd(1, .acq_rel);
+    if (kind == .projection) {
+        _ = ExecutionAccounting.live_projection_operations.fetchAdd(1, .acq_rel);
+        _ = ExecutionAccounting.live_projection_environments.fetchAdd(1, .acq_rel);
+        switch (projection_source_kind orelse unreachable) {
+            .binary => _ = ExecutionAccounting.retained_projection_binaries.fetchAdd(1, .acq_rel),
+            .document => _ = ExecutionAccounting.retained_projection_documents.fetchAdd(1, .acq_rel),
+        }
+    }
     return resource;
+}
+
+/// Bounded admission retains a private-env reference to the binary; it does
+/// not copy caller bytes. The worker later performs the sole owned JSON copy.
+pub fn operation_admit(
+    input: beam.term,
+    owner: beam.pid,
+    kind: OperationKind,
+    generation: u64,
+) !OperationResource {
+    if (!operationAdmissionAvailable(generation))
+        return error.execution_unavailable;
+
+    var inspected: e.ErlNifBinary = undefined;
+    if (e.enif_inspect_binary(beam.context.env, input.v, &inspected) == 0)
+        return error.invalid_input;
+
+    return createOperation(input, null, owner, kind, generation, null, null, null);
+}
+
+/// Bounded projection admission retains the normalized descriptor and source
+/// term in the operation's private environment. Document sources validate the
+/// registered resource and immutable owner before reserving one projection.
+pub fn projection_operation_admit(
+    source: beam.term,
+    projection: beam.term,
+    owner: beam.pid,
+    source_kind: ProjectionSourceKind,
+    generation: u64,
+) !ProjectionAdmissionResult {
+    if (!operationAdmissionAvailable(generation)) return .{
+        .status = .execution_unavailable,
+        .operation = null,
+    };
+    if (!validProjectionEnvelope(projection)) return .{
+        .status = .invalid_projection,
+        .operation = null,
+    };
+
+    var control: ?*DocumentControl = null;
+    var reservation: ?document_resource.ProjectionReservation = null;
+
+    switch (source_kind) {
+        .binary => {
+            var inspected: e.ErlNifBinary = undefined;
+            if (e.enif_inspect_binary(beam.context.env, source.v, &inspected) == 0)
+                return .{ .status = .invalid_source, .operation = null };
+        },
+        .document => {
+            var document: DocumentResource = undefined;
+            document.get(source, .{ .released = false }) catch
+                return .{ .status = .invalid_source, .operation = null };
+            control = document.__payload.control orelse
+                return .{ .status = .closed, .operation = null };
+
+            // Ownership is deliberately checked before lifecycle, generation,
+            // or one-shot state so another process learns nothing about them.
+            if (!pidsEqual(owner, control.?.owner))
+                return .{ .status = .not_owner, .operation = null };
+            if (control.?.module_generation != generation)
+                return .{ .status = .execution_unavailable, .operation = null };
+
+            switch (control.?.native.reserveProjection()) {
+                .reserved => |value| reservation = value,
+                .cursor_consumed => return .{
+                    .status = .cursor_consumed,
+                    .operation = null,
+                },
+                .closed => return .{ .status = .closed, .operation = null },
+            }
+        },
+    }
+
+    errdefer if (reservation) |value| {
+        _ = control.?.native.rollbackProjection(value);
+    };
+
+    const operation = try createOperation(
+        source,
+        projection,
+        owner,
+        .projection,
+        generation,
+        source_kind,
+        control,
+        reservation,
+    );
+    return .{ .status = .ok, .operation = operation };
+}
+
+pub fn projection_operation_rollback(operation: OperationResource) bool {
+    const record = operation.unpack();
+    if (record.kind != .projection) return false;
+    return record.rollbackProjectionReservation();
+}
+
+pub fn projection_operation_release(operation: OperationResource) bool {
+    const record = operation.unpack();
+    if (record.kind != .projection) return false;
+    if (record.projection_source_kind == .binary) return true;
+    return record.releaseProjectionReservation();
+}
+
+pub fn projection_operation_inject_failure(
+    operation: OperationResource,
+    successful_checkpoints: usize,
+) bool {
+    const record = operation.unpack();
+    if (record.kind != .projection or record.currentState() != .queued) return false;
+    record.projection_failure_after.store(successful_checkpoints, .release);
+    return true;
 }
 
 pub fn operation_metadata(operation: OperationResource) beam.term {
@@ -812,6 +1359,410 @@ pub fn threaded_context_smoke(operation: OperationResource) !ThreadedSmokeResult
     return result;
 }
 
+fn projectionResult(
+    status: ProjectionStatus,
+    record: *const OperationRecord,
+    ready_for_delivery: bool,
+) ProjectionResult {
+    return .{
+        .status = status,
+        .kind = record.kind,
+        .generation = record.generation,
+        .worker_context = executionContext(),
+        .native_code = null,
+        .byte_offset = null,
+        .output_slot = null,
+        .result = null,
+        .ready_for_delivery = ready_for_delivery,
+        .compilation_nanoseconds = 0,
+        .traversal_nanoseconds = 0,
+        .term_construction_nanoseconds = 0,
+        .boundary_count = record.projection_boundaries.load(.acquire),
+    };
+}
+
+fn elapsedNanoseconds(start: std.Io.Timestamp) u64 {
+    const elapsed = start.untilNow(beam.context.io, .awake).nanoseconds;
+    if (elapsed <= 0) return 0;
+    if (elapsed > std.math.maxInt(u64)) return std.math.maxInt(u64);
+    return @intCast(elapsed);
+}
+
+fn finishProjectionResult(
+    record: *OperationRecord,
+    result: ProjectionResult,
+) ProjectionResult {
+    var finished = result;
+    const ready = record.markReadyForDelivery();
+    finished.ready_for_delivery = ready;
+    finished.boundary_count = record.projection_boundaries.load(.acquire);
+    if (!ready) {
+        finished.status = .cancelled;
+        finished.result = null;
+    }
+    return finished;
+}
+
+fn projectionFailureResult(
+    record: *const OperationRecord,
+    failure: projection_plan.Failure,
+    compilation_nanoseconds: u64,
+    traversal_nanoseconds: u64,
+) ProjectionResult {
+    var result = projectionResult(switch (failure.code) {
+        .invalid_json => .invalid_json,
+        .invalid_utf8 => .invalid_utf8,
+        .unexpected_eof => .unexpected_eof,
+        .out_of_memory => .out_of_memory,
+        .invalid_argument => .invalid_argument,
+        .internal_failure => .internal_failure,
+        .missing_field => .missing_field,
+        .index_out_of_bounds => .index_out_of_bounds,
+        .incorrect_type => .incorrect_type,
+        .number_out_of_range => .number_out_of_range,
+        .cursor_consumed => .cursor_consumed,
+        .cancelled => .cancelled,
+    }, record, false);
+    result.native_code = failure.native_code;
+    result.byte_offset = failure.byte_offset;
+    result.output_slot = failure.output_slot;
+    result.compilation_nanoseconds = compilation_nanoseconds;
+    result.traversal_nanoseconds = traversal_nanoseconds;
+    return result;
+}
+
+fn projectionOpenFailureResult(
+    record: *const OperationRecord,
+    status: document_resource.NativeStatus,
+    compilation_nanoseconds: u64,
+) ProjectionResult {
+    var result = projectionResult(.internal_failure, record, false);
+    const diagnostics: ?document_resource.Diagnostics = switch (status) {
+        .ok => null,
+        .invalid_json => |value| blk: {
+            result.status = .invalid_json;
+            break :blk value;
+        },
+        .invalid_utf8 => |value| blk: {
+            result.status = .invalid_utf8;
+            break :blk value;
+        },
+        .unexpected_eof => |value| blk: {
+            result.status = .unexpected_eof;
+            break :blk value;
+        },
+        .out_of_memory => |value| blk: {
+            result.status = .out_of_memory;
+            break :blk value;
+        },
+        .invalid_argument => |value| blk: {
+            result.status = .invalid_argument;
+            break :blk value;
+        },
+        .internal_failure => |value| blk: {
+            result.status = .internal_failure;
+            break :blk value;
+        },
+    };
+    if (diagnostics) |value| {
+        result.native_code = value.native_code;
+        result.byte_offset = value.byte_offset;
+    }
+    result.compilation_nanoseconds = compilation_nanoseconds;
+    return result;
+}
+
+const ProjectionConversionError = error{ OutOfMemory, InvalidSlot, Cancelled };
+
+fn scalarTerm(
+    env: beam.env,
+    scalar: projection_plan.Scalar,
+) ProjectionConversionError!beam.term {
+    return switch (scalar) {
+        .signed_integer => |value| beam.make(value, .{ .env = env }),
+        .unsigned_integer => |value| beam.make(value, .{ .env = env }),
+        .floating_point => |value| beam.make(value, .{ .env = env }),
+        .boolean => |value| beam.make(value, .{ .env = env }),
+        .null => beam.make(null, .{ .env = env }),
+        .string => |value| beam.make(value, .{ .env = env }),
+    };
+}
+
+fn constructProjectionMap(
+    record: *OperationRecord,
+    decoded: *const DecodedProjection,
+    results: *const projection_plan.OwnedResults,
+) ProjectionConversionError!beam.term {
+    const env = record.private_env;
+    if (projectionCheckpointFails(record)) return error.OutOfMemory;
+    var map = beam.term{ .v = e.enif_make_new_map(env) };
+
+    for (decoded.output_keys, 0..) |key, output_slot| {
+        if (output_slot % 64 == 0) {
+            projectionBoundary(record, .during_term_construction);
+            if (record.cancelled.load(.acquire)) return error.Cancelled;
+        }
+        if (projectionCheckpointFails(record)) return error.OutOfMemory;
+
+        const scalar = results.scalar(output_slot) orelse return error.InvalidSlot;
+        const value = try scalarTerm(env, scalar);
+        var next: e.ErlNifTerm = undefined;
+        if (e.enif_make_map_put(env, map.v, key.v, value.v, &next) == 0)
+            return error.OutOfMemory;
+        map = .{ .v = next };
+    }
+
+    return map;
+}
+
+pub fn threaded_projection_execute(operation: OperationResource) ProjectionResult {
+    const record = operation.unpack();
+    if (!record.beginRunning()) return projectionResult(.cancelled, record, false);
+    var worker_finished = false;
+    defer if (!worker_finished) record.abortRunning();
+
+    if (!module_loaded.load(.acquire) or
+        record.generation != module_generation.load(.acquire))
+    {
+        worker_finished = true;
+        return finishProjectionResult(
+            record,
+            projectionResult(.execution_unavailable, record, false),
+        );
+    }
+
+    projectionBoundary(record, .before_plan_compilation);
+    if (record.cancelled.load(.acquire)) {
+        worker_finished = true;
+        return finishProjectionResult(
+            record,
+            projectionResult(.cancelled, record, false),
+        );
+    }
+
+    if (projectionCheckpointFails(record)) {
+        worker_finished = true;
+        return finishProjectionResult(
+            record,
+            projectionResult(.out_of_memory, record, false),
+        );
+    }
+
+    const compilation_started = std.Io.Timestamp.now(beam.context.io, .awake);
+    var decoded = decodeProjection(record) catch |err| {
+        var failed = projectionResult(switch (err) {
+            error.OutOfMemory => .out_of_memory,
+            error.InvalidProjection => .invalid_projection,
+        }, record, false);
+        failed.compilation_nanoseconds = elapsedNanoseconds(compilation_started);
+        worker_finished = true;
+        return finishProjectionResult(record, failed);
+    };
+    defer decoded.deinit();
+
+    if (projectionCheckpointFails(record)) {
+        var failed = projectionResult(.out_of_memory, record, false);
+        failed.compilation_nanoseconds = elapsedNanoseconds(compilation_started);
+        worker_finished = true;
+        return finishProjectionResult(record, failed);
+    }
+
+    var plan = projection_plan.OwnedPlan.init(
+        beam.allocator,
+        decoded.normalized(),
+    ) catch |err| {
+        var failed = projectionResult(switch (err) {
+            error.OutOfMemory => .out_of_memory,
+            error.InvalidProjection => .invalid_projection,
+            error.NativeFailure => .internal_failure,
+        }, record, false);
+        failed.compilation_nanoseconds = elapsedNanoseconds(compilation_started);
+        worker_finished = true;
+        return finishProjectionResult(record, failed);
+    };
+    _ = ExecutionAccounting.live_projection_plans.fetchAdd(1, .acq_rel);
+    defer {
+        plan.deinit();
+        const live = ExecutionAccounting.live_projection_plans.fetchSub(1, .acq_rel);
+        std.debug.assert(live > 0);
+    }
+    const compilation_nanoseconds = elapsedNanoseconds(compilation_started);
+
+    var temporary_document = document_resource.DocumentState.empty();
+    const binary_source = record.projection_source_kind == .binary;
+    var temporary_graph_accounted = false;
+    defer if (binary_source) {
+        _ = temporary_document.closeAndDestroy();
+        if (temporary_graph_accounted) {
+            const live = ExecutionAccounting.live_projection_temporary_document_graphs.fetchSub(1, .acq_rel);
+            std.debug.assert(live > 0);
+        }
+    };
+
+    var document: ?*c.simd_json_document = null;
+    if (binary_source) {
+        if (projectionCheckpointFails(record)) {
+            var failed = projectionResult(.out_of_memory, record, false);
+            failed.compilation_nanoseconds = compilation_nanoseconds;
+            worker_finished = true;
+            return finishProjectionResult(record, failed);
+        }
+        const input = record.inputBytes() catch {
+            var failed = projectionResult(.invalid_argument, record, false);
+            failed.compilation_nanoseconds = compilation_nanoseconds;
+            worker_finished = true;
+            return finishProjectionResult(record, failed);
+        };
+        const open_status = temporary_document.openOwnedProjectionCancellable(
+            beam.allocator,
+            input,
+            .{
+                .context = record,
+                .is_cancelled = operationCancelled,
+                .at_boundary = operationBoundary,
+            },
+        );
+        if (open_status != .ok) {
+            worker_finished = true;
+            return finishProjectionResult(
+                record,
+                projectionOpenFailureResult(record, open_status, compilation_nanoseconds),
+            );
+        }
+        _ = ExecutionAccounting.live_projection_temporary_document_graphs.fetchAdd(1, .acq_rel);
+        temporary_graph_accounted = true;
+        document = temporary_document.ownedOperationDocument();
+    }
+
+    projectionBoundary(record, .before_cursor_access);
+    if (record.cancelled.load(.acquire)) {
+        worker_finished = true;
+        return finishProjectionResult(
+            record,
+            projectionResult(.cancelled, record, false),
+        );
+    }
+
+    if (!binary_source) {
+        if (!record.commitProjectionReservation()) {
+            worker_finished = true;
+            return finishProjectionResult(
+                record,
+                projectionResult(.execution_unavailable, record, false),
+            );
+        }
+        document = record.projectionDocumentHandle();
+    }
+
+    const native_document = document orelse {
+        var failed = projectionResult(.execution_unavailable, record, false);
+        failed.compilation_nanoseconds = compilation_nanoseconds;
+        worker_finished = true;
+        return finishProjectionResult(record, failed);
+    };
+
+    if (projectionCheckpointFails(record)) {
+        var failed = projectionResult(.out_of_memory, record, false);
+        failed.compilation_nanoseconds = compilation_nanoseconds;
+        worker_finished = true;
+        return finishProjectionResult(record, failed);
+    }
+
+    const traversal_started = std.Io.Timestamp.now(beam.context.io, .awake);
+    c.simd_json_nif_projection_set_cancellation(
+        native_document,
+        record,
+        projectionCancellation,
+    );
+    const execute_outcome = plan.execute(beam.allocator, native_document);
+    c.simd_json_nif_projection_clear_cancellation(native_document);
+    const traversal_nanoseconds = elapsedNanoseconds(traversal_started);
+
+    switch (execute_outcome) {
+        .failure => |failure| {
+            worker_finished = true;
+            return finishProjectionResult(
+                record,
+                projectionFailureResult(
+                    record,
+                    failure,
+                    compilation_nanoseconds,
+                    traversal_nanoseconds,
+                ),
+            );
+        },
+        .success => |owned| {
+            var results = owned;
+            const slot_count = results.native_slots.len;
+            _ = ExecutionAccounting.live_projection_slots.fetchAdd(slot_count, .acq_rel);
+            defer {
+                results.deinit();
+                const live = ExecutionAccounting.live_projection_slots.fetchSub(slot_count, .acq_rel);
+                std.debug.assert(live >= slot_count);
+            }
+
+            projectionBoundary(record, .before_term_construction);
+            if (record.cancelled.load(.acquire)) {
+                var failed = projectionResult(.cancelled, record, false);
+                failed.compilation_nanoseconds = compilation_nanoseconds;
+                failed.traversal_nanoseconds = traversal_nanoseconds;
+                worker_finished = true;
+                return finishProjectionResult(record, failed);
+            }
+
+            const construction_started = std.Io.Timestamp.now(beam.context.io, .awake);
+            const private_map = constructProjectionMap(record, &decoded, &results) catch |err| {
+                var failed = projectionResult(switch (err) {
+                    error.OutOfMemory => .out_of_memory,
+                    error.InvalidSlot => .internal_failure,
+                    error.Cancelled => .cancelled,
+                }, record, false);
+                failed.compilation_nanoseconds = compilation_nanoseconds;
+                failed.traversal_nanoseconds = traversal_nanoseconds;
+                failed.term_construction_nanoseconds = elapsedNanoseconds(construction_started);
+                worker_finished = true;
+                return finishProjectionResult(record, failed);
+            };
+            const construction_nanoseconds = elapsedNanoseconds(construction_started);
+
+            if (projectionCheckpointFails(record)) {
+                var failed = projectionResult(.out_of_memory, record, false);
+                failed.compilation_nanoseconds = compilation_nanoseconds;
+                failed.traversal_nanoseconds = traversal_nanoseconds;
+                failed.term_construction_nanoseconds = construction_nanoseconds;
+                worker_finished = true;
+                return finishProjectionResult(record, failed);
+            }
+
+            projectionBoundary(record, .before_delivery);
+            const stale = !module_loaded.load(.acquire) or
+                record.generation != module_generation.load(.acquire) or
+                (!binary_source and record.projectionDocumentHandle() == null);
+            if (stale or record.cancelled.load(.acquire)) {
+                var failed = projectionResult(
+                    if (record.cancelled.load(.acquire)) .cancelled else .execution_unavailable,
+                    record,
+                    false,
+                );
+                failed.compilation_nanoseconds = compilation_nanoseconds;
+                failed.traversal_nanoseconds = traversal_nanoseconds;
+                failed.term_construction_nanoseconds = construction_nanoseconds;
+                worker_finished = true;
+                return finishProjectionResult(record, failed);
+            }
+
+            var completed = projectionResult(.ok, record, false);
+            record.projection_result_payload.term = private_map;
+            completed.result = .{ .__payload = &record.projection_result_payload };
+            completed.compilation_nanoseconds = compilation_nanoseconds;
+            completed.traversal_nanoseconds = traversal_nanoseconds;
+            completed.term_construction_nanoseconds = construction_nanoseconds;
+            worker_finished = true;
+            return finishProjectionResult(record, completed);
+        },
+    }
+}
+
 pub fn execution_snapshot() ExecutionSnapshot {
     return .{
         .live_operations = ExecutionAccounting.live_operations.load(.acquire),
@@ -830,6 +1781,17 @@ pub fn execution_snapshot() ExecutionSnapshot {
         .dispatcher_completed_cleanup = ExecutionAccounting.dispatcher_completed_cleanup.load(.acquire),
         .retained_failed_cleanup = ExecutionAccounting.retained_failed_cleanup.load(.acquire),
         .cleanup_submission_failures = ExecutionAccounting.cleanup_submission_failures.load(.acquire),
+        .live_projection_operations = ExecutionAccounting.live_projection_operations.load(.acquire),
+        .retained_projection_binaries = ExecutionAccounting.retained_projection_binaries.load(.acquire),
+        .retained_projection_documents = ExecutionAccounting.retained_projection_documents.load(.acquire),
+        .live_projection_environments = ExecutionAccounting.live_projection_environments.load(.acquire),
+        .live_projection_plans = ExecutionAccounting.live_projection_plans.load(.acquire),
+        .live_projection_slots = ExecutionAccounting.live_projection_slots.load(.acquire),
+        .live_projection_temporary_document_graphs = ExecutionAccounting.live_projection_temporary_document_graphs.load(.acquire),
+        .completed_projection_deliveries = ExecutionAccounting.completed_projection_deliveries.load(.acquire),
+        .discarded_projection_deliveries = ExecutionAccounting.discarded_projection_deliveries.load(.acquire),
+        .projection_worker_entries = ExecutionAccounting.projection_worker_entries.load(.acquire),
+        .projection_boundary_entries = ExecutionAccounting.projection_boundary_entries.load(.acquire),
     };
 }
 
@@ -1054,6 +2016,35 @@ pub fn document_owner_state(document: DocumentResource) !DocumentOwnerState {
     return switch (control.native.lifecycleState()) {
         .open => .open,
         .closing => .closing,
+        .closed => .closed,
+    };
+}
+
+pub fn document_projection_owner_state(
+    document: DocumentResource,
+) !DocumentProjectionOwnerState {
+    const control = document.__payload.control orelse return .closed;
+    if (!pidsEqual(try beam.self(.{}), control.owner)) return .not_owner;
+
+    return switch (control.native.projectionState()) {
+        .selecting => .selecting,
+        .consumed => .consumed,
+        .fresh => switch (control.native.lifecycleState()) {
+            .open => .fresh,
+            .closing => .closing,
+            .closed => .closed,
+        },
+    };
+}
+
+/// Coordinator-only bounded close reservation. Public ownership has already
+/// been checked by the ordinary owner-state entry; this transition prevents
+/// later projection reservations while threaded cleanup performs teardown.
+pub fn document_prepare_cleanup(document: DocumentResource) DocumentOwnerState {
+    const control = document.__payload.control orelse return .closed;
+
+    return switch (control.native.beginClose()) {
+        .cleanup_owner, .closing => .closing,
         .closed => .closed,
     };
 }

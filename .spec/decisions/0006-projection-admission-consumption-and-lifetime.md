@@ -98,6 +98,35 @@ harnesses and does not yet implement the owner-first `fresh -> selecting ->
 consumed` resource state, threaded reservation rollback, close interlock, or
 public lifecycle behavior assigned to Phase 4.
 
+### Phase 4 internal runtime checkpoint
+
+The private runtime now implements the complete admission and lifetime model.
+A genuine document resource is checked owner-first, reserves one atomic
+projection generation, retains its control graph in one correlated operation,
+and moves from `fresh` to `selecting`. Invalid preflight and lifecycle or owner
+rejection create no reservation. Injected submission rejection proves that no
+worker can observe the operation before rolling `selecting` back to `fresh`.
+Immediately before the first native cursor handle is obtained, the worker
+commits the reservation; success, path/type/range/allocation failure,
+cancellation, caller death, close, and shutdown then all release it as
+`consumed`.
+
+Binary selection creates its padded input, parser, unpublished document, plan,
+slots, and private result environment inside the same worker and destroys the
+temporary native graph before completion delivery. Document selection retains
+the existing resource until copied strings and the complete result map have
+crossed the generated join. Close cancels every matching active reservation and
+waits for terminal release before reverse destruction. Generation checks guard
+admission, document dereference, and delivery.
+
+Deterministic integration controls pause all six cancellation boundaries. The
+Phase 4 matrices force binary and document results to complete out of order,
+kill callers at each boundary, race selecting documents with close and
+application shutdown, reject and retry GC cleanup handoff, force conversion
+allocation failures, and compare every live projection/document gauge with its
+baseline. This checkpoint remains an undocumented internal seam; Phase 5 owns
+the public `SimdJson.select/2` contract and error translation.
+
 ### Close, cancellation, and shutdown
 
 Close or shutdown prevents new projection admission. If selection is active,

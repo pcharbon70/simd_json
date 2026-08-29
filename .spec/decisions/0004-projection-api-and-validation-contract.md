@@ -142,6 +142,24 @@ bounds forged reason and numeric fields. Test-only snapshot and source seams are
 compile-time gated, and no public `select/2`, compiled projection, serializer,
 protocol, or native handle is introduced by this checkpoint.
 
+### Phase 4 internal result checkpoint
+
+An undocumented, test-build-only `SimdJson.Native.ProjectionOperation` now
+connects the validated representation to the private threaded engine. It
+preserves exact caller atom and binary keys, returns exact signed/unsigned
+integers, finite floats, booleans, nil, and newly allocated binaries, and
+discards the whole map on every traversal or conversion failure. Stable native
+statuses are translated once into the reserved projection reason vocabulary;
+an available output slot is resolved only against the validated normalized
+projection before its copied caller path is attached. Offsets and native codes
+remain bounded and diagnostics contain no source keys, values, paths, or
+addresses.
+
+This seam exists solely to exercise the complete internal vertical slice. It
+is compiled only in tests and does not add `SimdJson.select/2`, documentation,
+typespecs, protocols, or another public struct/resource. Phase 5 still owns the
+public argument order, root-module function, doctests, and surface activation.
+
 ### Deferred surface
 
 Milestone 2 exposes no public compiled-projection resource, JSONPath parser,

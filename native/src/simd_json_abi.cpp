@@ -553,6 +553,45 @@ extern "C" simd_json_status simd_json_nif_document_revalidate(
   }
 }
 
+extern "C" simd_json_status simd_json_nif_document_open_unvalidated(
+    simd_json_parser *parser,
+    const uint8_t *data,
+    uint64_t logical_length,
+    uint64_t capacity,
+    simd_json_document **out_document) noexcept {
+  if (out_document == nullptr) {
+    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+  *out_document = nullptr;
+
+  if (parser == nullptr || data == nullptr ||
+      logical_length > simdjson::SIMDJSON_MAXSIZE_BYTES ||
+      exceeds_size_t(logical_length) || exceeds_size_t(capacity) ||
+      logical_length > UINT64_MAX - SIMD_JSON_REQUIRED_PADDING ||
+      capacity < logical_length + SIMD_JSON_REQUIRED_PADDING) {
+    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+
+  try {
+    simdjson::ondemand::document parsed_document;
+    const simdjson::error_code error =
+        parser->value
+            .iterate(data, static_cast<size_t>(logical_length),
+                     static_cast<size_t>(capacity))
+            .get(parsed_document);
+    if (error != simdjson::SUCCESS) {
+      return status_from_simdjson(error);
+    }
+
+    auto document = std::make_unique<simd_json_document>(
+        parser, std::move(parsed_document), data, logical_length);
+    *out_document = document.release();
+    return make_status(SIMD_JSON_STATUS_OK);
+  } catch (...) {
+    return status_from_current_exception();
+  }
+}
+
 extern "C" void simd_json_nif_projection_set_cancellation(
     simd_json_document *document,
     void *context,
@@ -636,37 +675,8 @@ extern "C" simd_json_status simd_json_test_document_open_unvalidated(
     uint64_t logical_length,
     uint64_t capacity,
     simd_json_document **out_document) noexcept {
-  if (out_document == nullptr) {
-    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
-  }
-  *out_document = nullptr;
-
-  if (parser == nullptr || data == nullptr ||
-      logical_length > simdjson::SIMDJSON_MAXSIZE_BYTES ||
-      exceeds_size_t(logical_length) || exceeds_size_t(capacity) ||
-      logical_length > UINT64_MAX - SIMD_JSON_REQUIRED_PADDING ||
-      capacity < logical_length + SIMD_JSON_REQUIRED_PADDING) {
-    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
-  }
-
-  try {
-    simdjson::ondemand::document parsed_document;
-    simdjson::error_code error =
-        parser->value
-            .iterate(data, static_cast<size_t>(logical_length),
-                     static_cast<size_t>(capacity))
-            .get(parsed_document);
-    if (error != simdjson::SUCCESS) {
-      return status_from_simdjson(error);
-    }
-
-    auto document = std::make_unique<simd_json_document>(
-        parser, std::move(parsed_document), data, logical_length);
-    *out_document = document.release();
-    return make_status(SIMD_JSON_STATUS_OK);
-  } catch (...) {
-    return status_from_current_exception();
-  }
+  return simd_json_nif_document_open_unvalidated(
+      parser, data, logical_length, capacity, out_document);
 }
 
 extern "C" uint32_t simd_json_test_sanitizer_build(void) noexcept {

@@ -115,6 +115,28 @@ per-buffer, parser/document-handle, resource-record, retained-parent, and
 reverse-destruction accounting. The combined evidence therefore proves the
 complete graph without adding a public pointer, content, or counter surface.
 
+### Milestone 2 Phase 4 projection checkpoint
+
+The resource now carries a projection state independent of its monotonic
+lifecycle: `fresh -> selecting -> consumed`. A bounded owner-first admission
+reserves the single cursor, captures the document generation, and holds an
+admitted-operation interlock. A proven pre-worker rejection can roll that
+reservation back to `fresh`; once the worker claims cursor access, every
+terminal outcome remains `consumed`. Close first prevents new reservations,
+cancels matching projection operations through the stable coordinator, and
+waits on the existing threaded cleanup path until the committed reservation is
+released.
+
+Document projection retains the resource control, parser, document, and padded
+input through traversal, copied-string construction, join, and terminal
+discard. Binary projection uses the same ownership implementation in an
+unpublished temporary document graph wholly owned by its worker. The Phase 4
+integration matrix destroys source documents and drops caller input before
+reusing returned strings, kills binary and document callers at every defined
+projection boundary, and restores all live document and projection gauges to
+baseline. The root API still exposes no projection operation until Milestone 2
+Phase 5.
+
 ## Consequences
 
 The input remains valid for the complete parser lifetime and zero-copy ambiguity cannot cause an over-read. Explicit close releases large native allocations deterministically, while garbage collection safely handles abandoned documents.

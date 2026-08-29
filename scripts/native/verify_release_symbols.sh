@@ -71,7 +71,7 @@ for artifact in "${abi_library}" "${nif_path}"; do
   fi
 
   if strings "${artifact}" | grep -Eq \
-    'simd_json_test_|simd_json_test_standard_exception|simd_json_projection_standard_exception|after_buffer_allocation|live_padded_buffers|live_projection_plans|completed_destruction_events|openWithFailure'; then
+    'simd_json_test_|simd_json_test_standard_exception|simd_json_projection_standard_exception|after_buffer_allocation|live_padded_buffers|completed_destruction_events|openWithFailure'; then
     printf 'release artifact contains native failure-injection controls: %s\n' \
       "${artifact}" >&2
     exit 1

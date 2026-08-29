@@ -13,17 +13,20 @@ defmodule SimdJson.Native.OperationCoordinator do
             requests: %{},
             caller_monitors: %{},
             worker_monitors: %{},
+            closing_documents: MapSet.new(),
             rejected_submissions: MapSet.new(),
             open_failure_for_test: nil
 
   @type request :: %{
-          kind: :document_open | :document_cleanup,
+          kind: :document_open | :document_cleanup | :projection,
           operation: ThreadedOperation.operation(),
           from: GenServer.from() | nil,
           caller: pid() | nil,
           caller_monitor: reference() | nil,
           worker: pid(),
           worker_monitor: reference(),
+          document_target: reference() | nil,
+          diagnostics?: boolean(),
           orphaned?: boolean()
         }
 
@@ -56,6 +59,17 @@ defmodule SimdJson.Native.OperationCoordinator do
     )
   end
 
+  @spec project(:binary | :document, binary() | reference(), term(), keyword()) ::
+          {:ok, map()} | {:error, map()}
+  def project(source_kind, source, normalized, options)
+      when source_kind in [:binary, :document] and is_list(options) do
+    GenServer.call(
+      __MODULE__,
+      {:project, source_kind, source, normalized, options},
+      :infinity
+    )
+  end
+
   @spec snapshot() :: %{accepting?: boolean(), live_requests: non_neg_integer()}
   def snapshot do
     GenServer.call(__MODULE__, :snapshot)
@@ -73,11 +87,11 @@ defmodule SimdJson.Native.OperationCoordinator do
 
   if @test_hooks do
     @spec set_submission_rejection_for_test(
-            :document_open | :document_cleanup,
+            :document_open | :document_cleanup | :projection,
             boolean()
           ) :: :ok
     def set_submission_rejection_for_test(kind, reject?)
-        when kind in [:document_open, :document_cleanup] and is_boolean(reject?) do
+        when kind in [:document_open, :document_cleanup, :projection] and is_boolean(reject?) do
       GenServer.call(__MODULE__, {:set_submission_rejection_for_test, kind, reject?})
     end
 
@@ -100,7 +114,7 @@ defmodule SimdJson.Native.OperationCoordinator do
 
   def handle_call(:begin_shutdown, _from, state) do
     Enum.each(state.requests, fn {_request_ref, request} ->
-      if request.kind == :document_open do
+      if request.kind in [:document_open, :projection] do
         _ = BuildSmoke.operation_cancel(request.operation.resource)
       end
     end)
@@ -151,6 +165,110 @@ defmodule SimdJson.Native.OperationCoordinator do
     end
   end
 
+  def handle_call({:project, source_kind, source, normalized, options}, from, state) do
+    caller = elem(from, 0)
+
+    if state.accepting? do
+      generation = BuildSmoke.execution_generation()
+
+      case ThreadedOperation.admit_projection(
+             source,
+             normalized,
+             source_kind,
+             caller,
+             generation
+           ) do
+        {:ok, operation} ->
+          configure_pause(operation, options)
+          configure_failure_injection(operation, options)
+          reject_submission? = submission_rejected?(state, :projection)
+          document_target = if source_kind == :document, do: source
+          diagnostics? = Keyword.get(options, :diagnostics, false) == true
+
+          {:noreply,
+           start_request(
+             state,
+             :projection,
+             operation,
+             nil,
+             from,
+             caller,
+             reject_submission?,
+             nil,
+             document_target,
+             diagnostics?
+           )}
+
+        {:error, reason} ->
+          {:reply, {:error, %{reason: reason}}, state}
+      end
+    else
+      {:reply, native_error(:admission_rejected), state}
+    end
+  rescue
+    _error -> {:reply, native_error(:admission_rejected), state}
+  catch
+    _kind, _reason -> {:reply, native_error(:admission_rejected), state}
+  end
+
+  def handle_call({:submit, :document_cleanup, operation, document}, from, state) do
+    caller = elem(from, 0)
+
+    with true <- state.accepting?,
+         :document_cleanup <- operation.kind,
+         true <- BuildSmoke.operation_owner_is(operation.resource, caller),
+         true <- operation.generation == BuildSmoke.execution_generation(),
+         false <- Map.has_key?(state.requests, operation.request_ref) do
+      reject_submission? = submission_rejected?(state, :document_cleanup)
+
+      if reject_submission? do
+        # The deterministic rejection seam proves no generated worker can own
+        # cleanup, so preserve the original open lifecycle for a safe retry.
+        {:noreply,
+         start_request(
+           state,
+           :document_cleanup,
+           operation,
+           document,
+           from,
+           caller,
+           true,
+           nil,
+           document
+         )}
+      else
+        case BuildSmoke.document_prepare_cleanup(document) do
+          owner_state when owner_state in [:closing, :closed] ->
+            state =
+              state
+              |> cancel_document_projections(document)
+              |> Map.update!(:closing_documents, &MapSet.put(&1, document))
+
+            {:noreply,
+             start_request(
+               state,
+               :document_cleanup,
+               operation,
+               document,
+               from,
+               caller,
+               false,
+               nil,
+               document
+             )}
+
+          _other ->
+            _ = BuildSmoke.operation_finish(operation.resource, :discarded)
+            {:reply, native_error(:admission_rejected), state}
+        end
+      end
+    else
+      _ ->
+        _ = BuildSmoke.operation_finish(operation.resource, :discarded)
+        {:reply, native_error(:admission_rejected), state}
+    end
+  end
+
   def handle_call({:submit, kind, operation, payload}, from, state) do
     caller = elem(from, 0)
 
@@ -171,7 +289,8 @@ defmodule SimdJson.Native.OperationCoordinator do
          from,
          caller,
          reject_submission?,
-         open_failure_for_test
+         open_failure_for_test,
+         nil
        )}
     else
       _ ->
@@ -208,7 +327,7 @@ defmodule SimdJson.Native.OperationCoordinator do
       request_ref = state.caller_monitors[monitor] ->
         request = Map.fetch!(state.requests, request_ref)
 
-        if request.kind == :document_open do
+        if request.kind in [:document_open, :projection] do
           _ = BuildSmoke.operation_cancel(request.operation.resource)
         end
 
@@ -225,6 +344,7 @@ defmodule SimdJson.Native.OperationCoordinator do
         # A normal worker sends completion before it exits, so reaching this
         # branch means no correlated completion was produced.
         request = Map.fetch!(state.requests, request_ref)
+        release_projection_reservation(request.operation)
         _ = BuildSmoke.operation_finish(request.operation.resource, :discarded)
         maybe_reply(request, native_error(:worker_terminated))
         {:noreply, remove_request(state, request_ref, request)}
@@ -242,7 +362,9 @@ defmodule SimdJson.Native.OperationCoordinator do
          from,
          caller,
          reject_submission? \\ false,
-         open_failure_for_test \\ nil
+         open_failure_for_test \\ nil,
+         document_target \\ nil,
+         diagnostics? \\ false
        ) do
     coordinator = self()
     caller_monitor = Process.monitor(caller)
@@ -270,6 +392,8 @@ defmodule SimdJson.Native.OperationCoordinator do
       caller_monitor: caller_monitor,
       worker: worker,
       worker_monitor: worker_monitor,
+      document_target: document_target,
+      diagnostics?: diagnostics?,
       orphaned?: false
     }
 
@@ -319,6 +443,10 @@ defmodule SimdJson.Native.OperationCoordinator do
     BuildSmoke.threaded_document_cleanup(operation.resource, payload)
   end
 
+  defp execute_operation(:projection, operation, _payload, nil) do
+    BuildSmoke.threaded_projection_execute(operation.resource)
+  end
+
   defp complete_request(state, request_ref, request, {:ok, native_result}) do
     correlated? =
       native_result.kind == request.kind and
@@ -327,33 +455,37 @@ defmodule SimdJson.Native.OperationCoordinator do
 
     cond do
       not correlated? ->
+        release_projection_reservation(request.operation)
         _ = BuildSmoke.operation_finish(request.operation.resource, :discarded)
         maybe_reply(request, native_error(:completion_mismatch))
         {:noreply, remove_request(state, request_ref, request)}
 
       request.orphaned? ->
+        release_projection_reservation(request.operation)
         _ = BuildSmoke.operation_finish(request.operation.resource, :discarded)
         state = maybe_cleanup_orphan(state, native_result)
         {:noreply, remove_request(state, request_ref, request)}
 
       true ->
-        response = normalize_result(native_result)
+        response = normalize_result(native_result, request.diagnostics?)
         maybe_reply(request, response)
+        release_projection_reservation(request.operation)
         _ = BuildSmoke.operation_finish(request.operation.resource, :delivered)
         {:noreply, remove_request(state, request_ref, request)}
     end
   end
 
   defp complete_request(state, request_ref, request, {:error, error}) do
+    release_projection_reservation(request.operation)
     maybe_reply(request, {:error, error})
     {:noreply, remove_request(state, request_ref, request)}
   end
 
-  defp normalize_result(%{kind: :document_open, status: :ok, document: document}) do
+  defp normalize_result(%{kind: :document_open, status: :ok, document: document}, _diagnostics?) do
     {:ok, document}
   end
 
-  defp normalize_result(%{kind: :document_open} = result) do
+  defp normalize_result(%{kind: :document_open} = result, _diagnostics?) do
     {:error,
      %{
        reason: result.status,
@@ -362,10 +494,37 @@ defmodule SimdJson.Native.OperationCoordinator do
      }}
   end
 
-  defp normalize_result(%{kind: :document_cleanup, status: :closed}), do: :ok
+  defp normalize_result(%{kind: :document_cleanup, status: :closed}, _diagnostics?), do: :ok
 
-  defp normalize_result(%{kind: :document_cleanup, status: status}) do
+  defp normalize_result(%{kind: :document_cleanup, status: status}, _diagnostics?) do
     native_error(status)
+  end
+
+  defp normalize_result(%{kind: :projection, status: :ok, result: result} = native, true)
+       when is_map(result) do
+    {:ok, %{result: result, diagnostics: projection_diagnostics(native)}}
+  end
+
+  defp normalize_result(%{kind: :projection, status: :ok, result: result}, false)
+       when is_map(result),
+       do: {:ok, result}
+
+  defp normalize_result(%{kind: :projection} = result, diagnostics?) do
+    error = %{
+      reason: result.status,
+      native_code: result.native_code,
+      byte_offset: result.byte_offset,
+      output_slot: result.output_slot
+    }
+
+    error =
+      if diagnostics? do
+        Map.put(error, :diagnostics, projection_diagnostics(result))
+      else
+        error
+      end
+
+    {:error, error}
   end
 
   defp maybe_cleanup_orphan(state, %{kind: :document_open, document: document})
@@ -397,11 +556,72 @@ defmodule SimdJson.Native.OperationCoordinator do
       Process.demonitor(request.caller_monitor, [:flush])
     end
 
-    %{
+    state = %{
       state
       | requests: Map.delete(state.requests, request_ref),
         caller_monitors: Map.delete(state.caller_monitors, request.caller_monitor),
         worker_monitors: Map.delete(state.worker_monitors, request.worker_monitor)
     }
+
+    if request.kind == :document_cleanup and request.document_target do
+      %{
+        state
+        | closing_documents: MapSet.delete(state.closing_documents, request.document_target)
+      }
+    else
+      state
+    end
   end
+
+  defp configure_pause(operation, options) do
+    case Keyword.get(options, :pause) do
+      nil ->
+        :ok
+
+      {boundary, observer} when is_atom(boundary) and is_pid(observer) ->
+        true = BuildSmoke.operation_configure_pause(operation.resource, boundary, observer)
+    end
+  end
+
+  defp configure_failure_injection(operation, options) do
+    case Keyword.get(options, :failure_after) do
+      nil ->
+        :ok
+
+      successful_checkpoints
+      when is_integer(successful_checkpoints) and successful_checkpoints >= 0 ->
+        true =
+          BuildSmoke.projection_operation_inject_failure(
+            operation.resource,
+            successful_checkpoints
+          )
+    end
+  end
+
+  defp projection_diagnostics(result) do
+    %{
+      worker_context: result.worker_context,
+      compilation_nanoseconds: result.compilation_nanoseconds,
+      traversal_nanoseconds: result.traversal_nanoseconds,
+      term_construction_nanoseconds: result.term_construction_nanoseconds,
+      boundary_count: result.boundary_count
+    }
+  end
+
+  defp cancel_document_projections(state, document) do
+    Enum.each(state.requests, fn {_request_ref, request} ->
+      if request.kind == :projection and request.document_target == document do
+        _ = BuildSmoke.operation_cancel(request.operation.resource)
+      end
+    end)
+
+    state
+  end
+
+  defp release_projection_reservation(%{kind: :projection, resource: resource}) do
+    _ = BuildSmoke.projection_operation_release(resource)
+    :ok
+  end
+
+  defp release_projection_reservation(_operation), do: :ok
 end
