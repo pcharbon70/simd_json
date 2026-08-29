@@ -6,14 +6,17 @@ document is its reviewable index.
 
 ## Acceptance status
 
-**Status:** Pending the final clean, committed release-candidate run.
+**Status:** Accepted on the qualified target when the revision-keyed CI job is
+green. The local immutable candidate below passed the complete gate; the CI
+artifact records the final PR head on Ubuntu 24.04 before merge.
 
 | Identity | Value |
 | --- | --- |
-| Local release-candidate revision | To be recorded after the clean committed run |
-| Local source tree | To be recorded after the clean committed run |
-| Qualification-input SHA-256 | To be recorded after the clean committed run |
+| Local release-candidate revision | `d0f817921018d9b41428c7ecf1aa73d31e09257b` |
+| Local source tree | `9c3e88f7c95d061747a4e8231619bc15e450a71a` |
+| Qualification-input SHA-256 | `d6034e5c55d3bf31636622599d989f1801335820142a66dc19da1600cc5e5c08` |
 | Qualification date | 2026-08-29 |
+| Local observation host | Linux Mint 22.1, x86-64, kernel 6.8.0; compatibility evidence only, not an added supported target |
 | Complete local command | `bash scripts/ci/qualify_milestone_1.sh` |
 | CI workflow | [CI](https://github.com/pcharbon70/simd_json/actions/workflows/ci.yml) |
 | CI artifact | `milestone-1-acceptance-<source revision>` |
@@ -64,9 +67,24 @@ The SpecLed check executes the four owning subject commands:
 
 ## Results
 
-The final clean run must populate this section with its sanitizer summaries,
-scheduler measurements, lifecycle baseline, full-suite result, and SpecLed
-claim count before the status changes to accepted.
+The clean local run of `d0f8179` produced these results:
+
+| Gate | Result |
+| --- | --- |
+| Formatting and documentation | `mix format --check-formatted` passed; ExDoc generated HTML and EPUB with warnings treated as errors. |
+| Full Elixir suite | 6 doctests and 68 tests passed with seed 0. |
+| C ABI | Ordinary and ASan/UBSan profiles each passed the deterministic corpus plus 512 randomized cases with seed 260829001. |
+| Zig ownership | Ordinary profile passed 10/10 tests. ASan/UBSan passed 9 tests with the documented concurrent-close case skipped because GCC's preloaded ASan cannot unmap Zig 0.16 custom thread stacks; the ordinary profile owns that race proof and the instrumented NIF exercises the threaded path. |
+| Instrumented NIF | 30 threaded/public tests passed under ASan/UBSan. |
+| Package and build | Required sources, headers, notices, and both licenses were present; generated native artifacts were absent; two network-disabled clean builds agreed and selected `haswell`. |
+| Symbols | The standalone C ABI and NIF dynamic surfaces matched their allowlists; release test hooks and C++ implementation symbols were absent. |
+| Scheduler | 86 heartbeat samples; p50 3.032 ms, p95 7.410 ms, p99/max 10.523 ms; dirty CPU and dirty I/O utilization both 0%. Budgets were p95 50 ms, p99 250 ms, and max 500 ms. |
+| Lifecycle | Seed 260829001; 20 caller deaths, 16 explicit documents, 16 GC documents, 8 exiting-owner documents, and 3 application cycles; every live native gauge returned to zero after each batch. |
+| SpecLed | 68/68 Milestone 1 requirement/scenario claims had executed strength; 0 threshold failures, findings, warnings, uncovered policy files, or bootstrap exceptions. |
+
+The local scheduler numbers are a compatibility observation, not the Ubuntu
+support measurement. The revision-keyed CI artifact repeats the same protocol
+on the accepted Ubuntu 24.04 runner and is the support authority.
 
 ## Evidence layout
 

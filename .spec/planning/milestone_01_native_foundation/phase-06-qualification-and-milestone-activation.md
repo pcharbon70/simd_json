@@ -149,10 +149,10 @@ Back to plan: [README](./README.md)
     The task proves all accepted decisions and all four subject specs against one
     immutable source revision.
 
-    - [ ] 6.4.1.1 Subtask - Run provenance, vendor checksum, patch, license, offline clean-build, target guard, runtime-dispatch, package-content, and release-symbol checks.
-    - [ ] 6.4.1.2 Subtask - Run the independent C ABI harness plus Zig resource and failure-injection suites in ordinary, AddressSanitizer, and UndefinedBehaviorSanitizer profiles.
-    - [ ] 6.4.1.3 Subtask - Run the complete public valid/invalid corpus, argument, redaction, owner, lifecycle, concurrent-open, caller-death, submission-failure, GC, baseline, shutdown, and reload suites.
-    - [ ] 6.4.1.4 Subtask - Run the formal scheduler qualification and assert the recorded normal-scheduler latency and dirty-scheduler utilization budgets.
+    - [x] 6.4.1.1 Subtask - Run provenance, vendor checksum, patch, license, offline clean-build, target guard, runtime-dispatch, package-content, and release-symbol checks.
+    - [x] 6.4.1.2 Subtask - Run the independent C ABI harness plus Zig resource and failure-injection suites in ordinary, AddressSanitizer, and UndefinedBehaviorSanitizer profiles.
+    - [x] 6.4.1.3 Subtask - Run the complete public valid/invalid corpus, argument, redaction, owner, lifecycle, concurrent-open, caller-death, submission-failure, GC, baseline, shutdown, and reload suites.
+    - [x] 6.4.1.4 Subtask - Run the formal scheduler qualification and assert the recorded normal-scheduler latency and dirty-scheduler utilization budgets.
     - [ ] 6.4.1.5 Subtask - Run formatting, documentation/link checks, `mix test`, package build, and every supported-target CI job from the same release candidate.
 
   - [ ] 6.4.2 Task - Run final SpecLed reconciliation and close the milestone.
@@ -160,7 +160,7 @@ Back to plan: [README](./README.md)
     The task makes the acceptance result visible in current truth and leaves no
     bootstrap exception masking unimplemented behavior.
 
-    - [ ] 6.4.2.1 Subtask - Run `mix spec.next` and resolve every requested subject or decision reconciliation without weakening an accepted safety boundary.
-    - [ ] 6.4.2.2 Subtask - Run the reported `mix spec.check --base ...` command and require zero errors, warnings, findings, uncovered policy files, and weak spots.
-    - [ ] 6.4.2.3 Subtask - Confirm all four subjects are active, all four Milestone 1 bootstrap exceptions are absent, and generated state links every requirement and scenario to executed proof.
-    - [ ] 6.4.2.4 Subtask - Record the immutable release revision, supported-target matrix, complete command list, CI artifacts, sanitizer summaries, scheduler measurements, memory-baseline result, and remaining non-goals in the Milestone 1 acceptance record.
+    - [x] 6.4.2.1 Subtask - Run `mix spec.next` and resolve every requested subject or decision reconciliation without weakening an accepted safety boundary.
+    - [x] 6.4.2.2 Subtask - Run the reported `mix spec.check --base ...` command and require zero errors, warnings, findings, uncovered policy files, and weak spots.
+    - [x] 6.4.2.3 Subtask - Confirm all four subjects are active, all four Milestone 1 bootstrap exceptions are absent, and generated state links every requirement and scenario to executed proof.
+    - [x] 6.4.2.4 Subtask - Record the immutable release revision, supported-target matrix, complete command list, CI artifacts, sanitizer summaries, scheduler measurements, memory-baseline result, and remaining non-goals in the Milestone 1 acceptance record.
