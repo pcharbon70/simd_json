@@ -1,6 +1,6 @@
 # Milestone 1 — Native Foundation and Opaque Document Resource
 
-[Back to the architecture overview](../../.spec/research/simdjson_beam_nif_architecture.md#proposed-implementation-milestones)
+[Back to the architecture overview](https://github.com/pcharbon70/simd_json/blob/main/.spec/research/simdjson_beam_nif_architecture.md#proposed-implementation-milestones)
 
 ## Outcome
 
@@ -12,20 +12,33 @@ The purpose is architectural confidence, not a broad user-facing API or headline
 
 Milestone 1 is governed by these accepted architecture decisions:
 
-- [Native Stack and C ABI Boundary](../../.spec/decisions/0001-native-stack-and-c-abi.md)
-- [Document Resource and Input Buffer Ownership](../../.spec/decisions/0002-document-resource-and-buffer-ownership.md)
-- [Off-Scheduler Native Execution](../../.spec/decisions/0003-off-scheduler-native-execution.md)
+- [Native Stack and C ABI Boundary](https://github.com/pcharbon70/simd_json/blob/main/.spec/decisions/0001-native-stack-and-c-abi.md)
+- [Document Resource and Input Buffer Ownership](https://github.com/pcharbon70/simd_json/blob/main/.spec/decisions/0002-document-resource-and-buffer-ownership.md)
+- [Off-Scheduler Native Execution](https://github.com/pcharbon70/simd_json/blob/main/.spec/decisions/0003-off-scheduler-native-execution.md)
 
-Its implementation and closure evidence are defined by these planned specifications:
+Its implementation and closure evidence are defined by these active specifications:
 
-- [Native Build and ABI](../../.spec/specs/native_build_and_abi.spec.md)
-- [Document Resource](../../.spec/specs/document_resource.spec.md)
-- [Native Execution](../../.spec/specs/native_execution.spec.md)
-- [Document API and Errors](../../.spec/specs/document_api.spec.md)
+- [Native Build and ABI](https://github.com/pcharbon70/simd_json/blob/main/.spec/specs/native_build_and_abi.spec.md)
+- [Document Resource](https://github.com/pcharbon70/simd_json/blob/main/.spec/specs/document_resource.spec.md)
+- [Native Execution](https://github.com/pcharbon70/simd_json/blob/main/.spec/specs/native_execution.spec.md)
+- [Document API and Errors](https://github.com/pcharbon70/simd_json/blob/main/.spec/specs/document_api.spec.md)
 
-Implementation is sequenced by the [Milestone 1 Native Foundation Implementation Plan](../../.spec/planning/milestone_01_native_foundation/README.md).
+Implementation is sequenced by the [Milestone 1 Native Foundation Implementation Plan](https://github.com/pcharbon70/simd_json/blob/main/.spec/planning/milestone_01_native_foundation/README.md).
 
-The planned specifications use explicit bootstrap exceptions while the native foundation is absent. Milestone 1 is not complete until those exceptions are removed and replaced by the executed build, API, ownership, failure-injection, sanitizer, and scheduler evidence required by each specification.
+The four specifications have executable verification and no bootstrap
+exceptions. The implementation, operating limits, maintenance workflow, and
+qualification commands are collected in the
+[Milestone 1 Native Foundation Operations](./01-native-foundation-operations.md)
+guide. The immutable qualification identity, supported target, results, and
+artifact layout are collected in the
+[Milestone 1 Acceptance Record](./01-native-foundation-acceptance.md).
+
+## Status
+
+Milestone 1 is active for the single supported Ubuntu 24.04 x86-64 target. Its
+package, ABI, resource, threaded execution, public API, sanitizer, scheduler,
+lifecycle, shutdown, scope, and traceability gates are reproducible in CI.
+Experimental and unsupported targets do not inherit that claim.
 
 ## Scope
 
@@ -246,6 +259,12 @@ Milestone 1 is complete when:
 - explicit close and resource destruction are idempotent and sanitizer-clean;
 - C++ exceptions cannot cross the C ABI;
 - the resource model is documented well enough for Milestone 2 to add traversal without changing ownership fundamentals.
+
+The completion evidence is produced by the checked-in qualification commands
+and summarized by the
+[Milestone 1 Acceptance Record](./01-native-foundation-acceptance.md). The
+parent-retention and generation helpers are ready for a later cursor, but no
+cursor or traversal API is exposed in this milestone.
 
 ## Decisions to record
 

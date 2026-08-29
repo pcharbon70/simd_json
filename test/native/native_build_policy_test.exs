@@ -22,7 +22,8 @@ defmodule SimdJson.Native.BuildPolicyTest do
 
     assert build_configuration =~ "native/vendor/simdjson/simdjson.cpp"
     assert build_configuration =~ "link_libcpp: true"
-    refute build_configuration =~ "link_lib:"
+    assert build_configuration =~ "link_lib: @sanitizer_libraries"
+    refute build_configuration =~ ~s({:system, "simdjson"})
 
     nif =
       :simd_json
@@ -69,7 +70,8 @@ defmodule SimdJson.Native.BuildPolicyTest do
 
   # covers: simd_json.package.native_source_distribution
   test "package files include every clean consumer native input" do
-    package_files = Mix.Project.config() |> Keyword.fetch!(:package) |> Keyword.fetch!(:files)
+    package = Mix.Project.config() |> Keyword.fetch!(:package)
+    package_files = Keyword.fetch!(package, :files)
 
     for entry <- ["lib", "native", ".tool-versions", "mix.exs", "mix.lock"] do
       assert entry in package_files
@@ -96,6 +98,10 @@ defmodule SimdJson.Native.BuildPolicyTest do
         ] do
       assert File.regular?(path)
     end
+
+    assert Keyword.fetch!(package, :licenses) == ["Apache-2.0", "MIT"]
+    assert Keyword.fetch!(package, :links)["GitHub"] == "https://github.com/pcharbon70/simd_json"
+    assert ~r/\.Elixir\..*\.zig$/ in Keyword.fetch!(package, :exclude_patterns)
   end
 
   # covers: simd_json.native_build_and_abi.pinned_toolchain

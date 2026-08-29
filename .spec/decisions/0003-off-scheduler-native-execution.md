@@ -93,6 +93,32 @@ Milestone 1 must include a repeatable scheduler-responsiveness test. Independent
 
 Native throughput alone cannot close the milestone. The evidence must show that unrelated BEAM work continues making progress and that dirty schedulers are not the hidden execution pool.
 
+### Phase 6 formal qualification checkpoint
+
+The supported-target profile uses public `open/1` and `close/1` with concurrent
+4 MiB valid and invalid inputs, a 2 ms independent heartbeat, scheduler wall
+time, exact threaded worker-entry accounting, and native gauge recovery. It
+retains at least 40 raw samples and applies nearest-rank percentiles. The
+engineering budget is p95 at or below 50 ms; shared CI additionally rejects
+p99 above 250 ms or a maximum above 500 ms. Dirty CPU and dirty I/O utilization
+must each stay below 25 percent and remain paired with structural threaded-only
+registration and submission-failure proof.
+
+The same qualification revision runs deterministic seeded lifecycle batches:
+caller death at every cancellation boundary, parse and cleanup submission
+rejection, callback-handoff retry, owner and non-owner close, repeated close,
+dropped terms, forced GC, and application generation cycling. Every batch must
+quiesce with live operation, retained environment, document/control, dispatcher,
+and failed-handoff gauges at baseline. Standalone Zig sanitizer accounting
+continues to cover padded buffers, parser/document handles, resources, and
+retained parents that are not individually exposed to the BEAM test seam.
+
+OTP 27.3 application stop/start is supported and qualified. Repeated
+in-process shared-object unload remains unsupported by the available harness,
+so no reload claim is inferred from application restart. CI archives the full
+environment, raw samples, seed, commands, and results for the immutable source
+revision.
+
 ## Consequences
 
 The first native vertical slice protects normal and dirty schedulers while keeping the final worker-pool design deferred to its owning milestone. Request correlation, cancellation-safe resource retention, and deferred cleanup are established early enough for later APIs to reuse.

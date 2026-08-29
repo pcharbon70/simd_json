@@ -32,14 +32,21 @@ same redacted public translator without synchronous fallback. Section 5.3
 labels this threaded layer as a qualification runtime and assigns production
 admission control and its bounded worker pool to Milestone 4. Section 5.4 adds
 a private threaded lifetime probe, concurrent public-owner correlation, and
-explicit/GC cleanup-baseline evidence. The formal Phase 6 scheduler profile and
-the recorded repeated-unload qualification gap keep the bootstrap exception in
-force.
+explicit/GC cleanup-baseline evidence. Phase 6 Section 6.1 now instruments the
+actual threaded/public NIF path with AddressSanitizer and
+UndefinedBehaviorSanitizer and binds that command to the checked-in
+qualification fingerprint. The formal scheduler profile and bounded lifecycle
+stress now retain raw percentile/utilization evidence, execute seeded teardown
+races, cycle supported application generations, and restore every live native
+gauge after each batch. Section 6.3 activates this subject against executable
+runtime qualification while retaining repeated shared-object unload as an
+explicitly unsupported environment rather than an exception to the contract.
 
 ```spec-meta
 id: simd_json.native_execution
 kind: subsystem
-status: planned
+status: active
+verification_minimum_strength: executed
 summary: Input-dependent parse and cleanup work execute through a correlated Zigler-threaded boundary outside normal and dirty schedulers.
 surface:
   - native/**
@@ -195,9 +202,9 @@ decisions:
     - Every retained resource and operation allocation is eventually released exactly once
 ```
 
-## Verification
+## Evidence Inventory
 
-```spec-verification
+```yaml
 - kind: test_file
   target: test/native/threaded_admission_test.exs
   covers:
@@ -293,16 +300,63 @@ decisions:
     - simd_json.native_execution.retained_resources
     - simd_json.native_execution.threaded_cleanup
     - simd_json.native_execution.threaded_submission_failure
-```
 
-## Required Closure Evidence
+- kind: command
+  target: bash scripts/native/run_nif_sanitizer_tests.sh
+  covers:
+    - simd_json.native_execution.threaded_parse
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.request_correlation
+    - simd_json.native_execution.retained_resources
+    - simd_json.native_execution.late_result_cleanup
+    - simd_json.native_execution.cancellation_boundaries
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.shutdown_cleanup
+    - simd_json.native_execution.caller_dies_while_running
+    - simd_json.native_execution.result_reference_mismatch
+    - simd_json.native_execution.threaded_submission_failure
+    - simd_json.native_execution.large_gc_teardown
+    - simd_json.native_execution.reload_cleanup
 
-Before activation, replace the bootstrap exception with executed scheduler heartbeat, request-correlation, caller-death, late-result, submission-failure, garbage-collection, application-shutdown, and NIF-unload tests. Evidence must include normal and dirty scheduler utilization plus the qualification environment and latency budget.
+- kind: source_file
+  target: .spec/research/phase_6_scheduler_qualification.md
+  covers:
+    - simd_json.native_execution.threaded_parse
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.scheduler_qualification
+    - simd_json.native_execution.preproduction_boundary
+    - simd_json.native_execution.large_parse_responsiveness
 
-## Exceptions
+- kind: test_file
+  target: test/qualification/scheduler_qualification_test.exs
+  covers:
+    - simd_json.native_execution.threaded_parse
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.scheduler_qualification
+    - simd_json.native_execution.preproduction_boundary
+    - simd_json.native_execution.large_parse_responsiveness
 
-```spec-exceptions
-- id: simd_json.native_execution.milestone_01_bootstrap
+- kind: test_file
+  target: test/qualification/lifecycle_memory_qualification_test.exs
+  covers:
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.retained_resources
+    - simd_json.native_execution.late_result_cleanup
+    - simd_json.native_execution.cancellation_boundaries
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.shutdown_cleanup
+    - simd_json.native_execution.caller_dies_while_running
+    - simd_json.native_execution.threaded_submission_failure
+    - simd_json.native_execution.large_gc_teardown
+    - simd_json.native_execution.reload_cleanup
+
+- kind: command
+  target: bash scripts/ci/qualify_runtime.sh
   covers:
     - simd_json.native_execution.threaded_parse
     - simd_json.native_execution.bounded_nif_entry
@@ -321,5 +375,39 @@ Before activation, replace the bootstrap exception with executed scheduler heart
     - simd_json.native_execution.threaded_submission_failure
     - simd_json.native_execution.large_gc_teardown
     - simd_json.native_execution.reload_cleanup
-  reason: Phase 4 implements retained threaded construction, correlation, cancellation, explicit/orphan/GC teardown, application generations, and the preliminary scheduler matrix; Phase 5 adds the complete public API, failure, lifetime, ownership, concurrency, and cleanup-baseline matrix. Phase 6 must establish the final percentile budget and retain the recorded repeated shared-object unload gap until a supported harness supplies that evidence.
+```
+
+## Required Closure Evidence
+
+The executable runtime-qualification command below supplies scheduler heartbeat,
+request-correlation, caller-death, late-result, submission-failure,
+garbage-collection, and supported application-generation evidence. It records
+normal and dirty scheduler utilization, the qualification environment, and the
+latency budget. Repeated shared-object unload is outside the supported target;
+application stop/start generation cleanup is the qualified lifecycle boundary.
+
+## Verification
+
+```spec-verification
+- kind: command
+  target: bash scripts/ci/qualify_runtime.sh
+  execute: true
+  covers:
+    - simd_json.native_execution.threaded_parse
+    - simd_json.native_execution.bounded_nif_entry
+    - simd_json.native_execution.no_fallback
+    - simd_json.native_execution.request_correlation
+    - simd_json.native_execution.retained_resources
+    - simd_json.native_execution.late_result_cleanup
+    - simd_json.native_execution.cancellation_boundaries
+    - simd_json.native_execution.threaded_cleanup
+    - simd_json.native_execution.scheduler_qualification
+    - simd_json.native_execution.preproduction_boundary
+    - simd_json.native_execution.shutdown_cleanup
+    - simd_json.native_execution.large_parse_responsiveness
+    - simd_json.native_execution.caller_dies_while_running
+    - simd_json.native_execution.result_reference_mismatch
+    - simd_json.native_execution.threaded_submission_failure
+    - simd_json.native_execution.large_gc_teardown
+    - simd_json.native_execution.reload_cleanup
 ```

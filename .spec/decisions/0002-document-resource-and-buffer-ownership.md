@@ -100,6 +100,21 @@ accessor, ownership transfer, cursor, serialization, or document operation
 beyond close. This checkpoint implements the existing decision without changing
 the single-owner or lifecycle model.
 
+### Phase 6 lifecycle-qualification checkpoint
+
+The final bounded stress profile randomizes caller death across all five native
+cancellation boundaries, injects parse, explicit-cleanup, and callback-handoff
+submission rejection, mixes owner/repeated/non-owner close with dropped terms
+and forced GC, and cycles supported application generations. Each batch waits
+for bounded quiescence and compares every BEAM-exposed live native gauge with
+its recorded baseline. The mixed batch also requires exactly one completed
+document cleanup for every successfully opened document.
+
+The standalone Zig ordinary and sanitizer profiles remain the authority for
+per-buffer, parser/document-handle, resource-record, retained-parent, and
+reverse-destruction accounting. The combined evidence therefore proves the
+complete graph without adding a public pointer, content, or counter surface.
+
 ## Consequences
 
 The input remains valid for the complete parser lifetime and zero-copy ambiguity cannot cause an over-read. Explicit close releases large native allocations deterministically, while garbage collection safely handles abandoned documents.

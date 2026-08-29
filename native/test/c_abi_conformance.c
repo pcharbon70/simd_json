@@ -17,6 +17,36 @@
     }                                                                         \
   } while (0)
 
+#define RANDOMIZED_CASES 512U
+
+static uint64_t randomized_seed(void) {
+  const char *configured = getenv("SIMD_JSON_QUALIFICATION_SEED");
+  char *end = NULL;
+  uint64_t seed;
+
+  if (configured == NULL || configured[0] == '\0') {
+    return UINT64_C(260829001);
+  }
+
+  seed = strtoull(configured, &end, 10);
+  if (end == configured || *end != '\0' || seed == 0) {
+    fprintf(stderr, "invalid SIMD_JSON_QUALIFICATION_SEED: %s\n", configured);
+    exit(2);
+  }
+
+  return seed;
+}
+
+static uint64_t next_random(uint64_t *state) {
+  uint64_t value = *state;
+
+  value ^= value << 13;
+  value ^= value >> 7;
+  value ^= value << 17;
+  *state = value;
+  return value;
+}
+
 static uint8_t *padded_copy(const uint8_t *input,
                             uint64_t logical_length,
                             uint64_t *capacity) {
@@ -293,15 +323,76 @@ static int document_failure_matrix(void) {
   return 0;
 }
 
+static int randomized_malformed_and_lifecycle_matrix(uint64_t seed) {
+  uint8_t input[256];
+  uint32_t case_index;
+  uint64_t state = seed;
+
+  for (case_index = 0; case_index < RANDOMIZED_CASES; ++case_index) {
+    const uint64_t logical_length = next_random(&state) % sizeof(input);
+    uint64_t capacity = 0;
+    uint8_t *copy;
+    simd_json_parser *parser = NULL;
+    simd_json_document *document = NULL;
+    simd_json_status status;
+    uint64_t byte_index;
+
+    for (byte_index = 0; byte_index < logical_length; ++byte_index) {
+      input[byte_index] = (uint8_t)(next_random(&state) & UINT64_C(0xff));
+    }
+
+    copy = padded_copy(input, logical_length, &capacity);
+    CHECK(copy != NULL);
+    status = simd_json_parser_create(&parser);
+    CHECK(status.code == SIMD_JSON_STATUS_OK);
+    CHECK(parser != NULL);
+
+    status = simd_json_document_open(parser, copy, logical_length, capacity,
+                                     &document);
+    CHECK(status.code >= SIMD_JSON_STATUS_OK);
+    CHECK(status.code <= SIMD_JSON_STATUS_INTERNAL_FAILURE);
+    CHECK(status_has_safe_metadata(status, logical_length));
+
+    if (status.code == SIMD_JSON_STATUS_OK) {
+      CHECK(document != NULL);
+      simd_json_document_destroy(document);
+      document = NULL;
+    } else {
+      CHECK(document == NULL);
+    }
+
+    if ((next_random(&state) & UINT64_C(1)) != 0) {
+      simd_json_document_destroy(NULL);
+    }
+
+    simd_json_parser_destroy(parser);
+    parser = NULL;
+
+    if ((next_random(&state) & UINT64_C(1)) != 0) {
+      simd_json_parser_destroy(NULL);
+    }
+
+    free(copy);
+    CHECK(simd_json_test_live_parser_count() == 0);
+    CHECK(simd_json_test_live_document_count() == 0);
+  }
+
+  return 0;
+}
+
 int main(void) {
+  const uint64_t seed = randomized_seed();
+
   simd_json_test_clear_failure();
   CHECK(valid_input_matrix() == 0);
   CHECK(malformed_input_matrix() == 0);
   CHECK(invalid_argument_matrix() == 0);
   CHECK(parser_failure_matrix() == 0);
   CHECK(document_failure_matrix() == 0);
+  CHECK(randomized_malformed_and_lifecycle_matrix(seed) == 0);
   CHECK(simd_json_test_live_parser_count() == 0);
   CHECK(simd_json_test_live_document_count() == 0);
-  puts("C ABI conformance passed");
+  printf("C ABI conformance passed seed=%" PRIu64 " randomized_cases=%u\n",
+         seed, RANDOMIZED_CASES);
   return 0;
 }

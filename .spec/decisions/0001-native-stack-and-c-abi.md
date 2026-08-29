@@ -103,6 +103,25 @@ across the C++ traversal. Its generated NIF entry remains confined to the
 undocumented native bridge. Native failure-injection and accounting hooks stay
 absent from release symbol tables and strings.
 
+### Phase 6 release-qualification checkpoint
+
+Release qualification is bound to a checked-in SHA-256 fingerprint over every
+ABI-, runtime-, harness-, workflow-, and evidence-relevant path declared by the
+native manifest. The record itself is not an input to its digest, so it can
+store the expected value without self-reference. Any other input change makes
+`mix simd_json.verify_qualification` fail until the complete qualification
+matrix runs for the new revision; an isolated pin-change test freezes that
+fail-closed behavior.
+
+The matrix builds and inspects the unpacked Hex artifact, replays vendor and
+offline-build verification, checks runtime CPU dispatch and unsupported-target
+rejection, runs deterministic and seeded-random C ABI cases, executes C, Zig,
+threaded-operation, and public API sanitizer corpora, and inspects release
+symbols and strings. CI archives the source revision/tree, target, tool
+versions, seed, input digest, package inventory, commands, and outputs. The
+Milestone 1 supported matrix remains exactly Ubuntu 24.04 x86-64; experimental
+targets receive no generic artifact or fallback claim.
+
 ### Build and target qualification
 
 The native build is driven through the pinned Zig/Zigler integration and produces the NIF from a clean checkout without requiring a preinstalled simdjson library. It must fail with a clear unsupported-target error rather than silently compile an unqualified combination.

@@ -12,6 +12,9 @@ README, module, milestone, export, typespec, and protocol checks establish that
 no decode, projection, streaming, cursor, transfer, or raw native-handle
 surface is exposed. Public corpora, ownership, lifetime, concurrency, and
 native-baseline tests now exercise the packaged vertical slice.
+Phase 6 Section 6.1 also makes the Hex archive buildable with explicit package
+metadata, excludes generated Zigler intermediates, and inspects the unpacked
+artifact for every required native source, header, provenance, and license.
 
 ```spec-meta
 id: simd_json.package
@@ -131,4 +134,10 @@ surface:
   target: mix test
   covers:
     - simd_json.package.mix_library
+
+- kind: command
+  target: bash scripts/ci/qualify_native_release.sh
+  covers:
+    - simd_json.package.native_build_tooling
+    - simd_json.package.native_source_distribution
 ```

@@ -22,14 +22,21 @@ threaded destruction. Public documentation and API allowlists preserve that
 authority model. Its public integration matrix now drops the original BEAM
 input before threaded native revalidation, crosses open and closed terms between
 processes, queues repeated owner closes, isolates concurrent owners, and returns
-explicit and GC cleanup batches to native gauge baselines. Final sanitizer and
-cross-target qualification remain in Phase 6, so the bootstrap exception stays
-in force.
+explicit and GC cleanup batches to native gauge baselines. Phase 6 Section 6.1
+now runs the Zig ownership harness plus the actual threaded/public NIF corpus
+under AddressSanitizer and UndefinedBehaviorSanitizer, while release inspection
+proves test accounting stays absent. Section 6.2 executes seeded cancellation,
+submission failure, owner/non-owner close,
+dropped-term, GC, and application-generation batches; every batch returns all
+live native gauges to baseline and the mixed batch counts exactly one cleanup
+per opened document. Section 6.3 reconciles the ownership and operations
+documentation and activates this subject against executable qualification.
 
 ```spec-meta
 id: simd_json.document_resource
 kind: subsystem
-status: planned
+status: active
+verification_minimum_strength: executed
 summary: Documents own padded input, parser state, lifecycle metadata, and single-process authority through one opaque BEAM resource.
 surface:
   - native/**
@@ -180,9 +187,9 @@ decisions:
     - Native leak and double-destruction checks remain clean
 ```
 
-## Verification
+## Evidence Inventory
 
-```spec-verification
+```yaml
 - kind: test_file
   target: test/native/document_resource_registration_test.exs
   covers:
@@ -280,16 +287,39 @@ decisions:
   target: bash scripts/native/verify_release_symbols.sh
   covers:
     - simd_json.document_resource.test_accounting
-```
 
-## Required Closure Evidence
+- kind: command
+  target: bash scripts/native/run_nif_sanitizer_tests.sh
+  covers:
+    - simd_json.document_resource.opaque_handle
+    - simd_json.document_resource.padded_owned_copy
+    - simd_json.document_resource.complete_ownership
+    - simd_json.document_resource.single_owner
+    - simd_json.document_resource.lifecycle
+    - simd_json.document_resource.idempotent_close
+    - simd_json.document_resource.reverse_destruction
+    - simd_json.document_resource.deferred_large_cleanup
+    - simd_json.document_resource.input_lifetime
+    - simd_json.document_resource.repeated_close
+    - simd_json.document_resource.non_owner_rejection
+    - simd_json.document_resource.gc_cleanup
+    - simd_json.document_resource.native_memory_baseline
 
-Before activation, replace the bootstrap exception with executed resource tests, allocation-failure injection, process-ownership tests, garbage-collection tests, repeated close races, native memory baseline checks, and sanitizer coverage for use-after-free, leaks, and double destruction.
+- kind: test_file
+  target: test/qualification/lifecycle_memory_qualification_test.exs
+  covers:
+    - simd_json.document_resource.single_owner
+    - simd_json.document_resource.lifecycle
+    - simd_json.document_resource.idempotent_close
+    - simd_json.document_resource.reverse_destruction
+    - simd_json.document_resource.deferred_large_cleanup
+    - simd_json.document_resource.repeated_close
+    - simd_json.document_resource.non_owner_rejection
+    - simd_json.document_resource.gc_cleanup
+    - simd_json.document_resource.native_memory_baseline
 
-## Exceptions
-
-```spec-exceptions
-- id: simd_json.document_resource.milestone_01_bootstrap
+- kind: command
+  target: bash scripts/ci/qualify_runtime.sh
   covers:
     - simd_json.document_resource.opaque_handle
     - simd_json.document_resource.padded_owned_copy
@@ -308,5 +338,37 @@ Before activation, replace the bootstrap exception with executed resource tests,
     - simd_json.document_resource.partial_open_failure
     - simd_json.document_resource.gc_cleanup
     - simd_json.document_resource.native_memory_baseline
-  reason: Phases 3 and 4 implement native ownership plus threaded explicit/GC teardown, and Phase 5 adds opaque public reachability, owner-first open/closed validation, deterministic repeated close, original-input lifetime revalidation, concurrent-owner isolation, and explicit/GC gauge-baseline proof; retain the exception until Phase 6 completes final sanitizer and supported-target qualification.
+```
+
+## Required Closure Evidence
+
+The executable resource-qualification command below supplies allocation-failure
+injection, process-ownership, garbage-collection, repeated-close, native-memory
+baseline, and sanitizer evidence for use-after-free, leaks, and double
+destruction.
+
+## Verification
+
+```spec-verification
+- kind: command
+  target: bash scripts/ci/qualify_document_resource.sh
+  execute: true
+  covers:
+    - simd_json.document_resource.opaque_handle
+    - simd_json.document_resource.padded_owned_copy
+    - simd_json.document_resource.zero_copy_disabled
+    - simd_json.document_resource.complete_ownership
+    - simd_json.document_resource.single_owner
+    - simd_json.document_resource.lifecycle
+    - simd_json.document_resource.idempotent_close
+    - simd_json.document_resource.reverse_destruction
+    - simd_json.document_resource.parent_retention
+    - simd_json.document_resource.deferred_large_cleanup
+    - simd_json.document_resource.test_accounting
+    - simd_json.document_resource.input_lifetime
+    - simd_json.document_resource.repeated_close
+    - simd_json.document_resource.non_owner_rejection
+    - simd_json.document_resource.partial_open_failure
+    - simd_json.document_resource.gc_cleanup
+    - simd_json.document_resource.native_memory_baseline
 ```

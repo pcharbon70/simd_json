@@ -19,13 +19,19 @@ revealing open or closed lifecycle state. Module, README, milestone, export,
 typespec, and protocol checks lock the public scope. The Phase 5 integration
 matrix now exercises all valid top-level values, malformed and invalid argument
 families, failure redaction, input lifetime, owner boundaries, repeated close,
-concurrent owners, and explicit/GC baseline recovery. Phase 6 retains final
-cross-target qualification and subject activation.
+concurrent owners, and explicit/GC baseline recovery. Phase 6 Section 6.1 now
+repeats that public corpus against an isolated NIF whose C++ translation units
+are instrumented by AddressSanitizer and UndefinedBehaviorSanitizer. Runtime
+qualification now repeats owner, non-owner, idempotent-close, submission
+failure, and GC behavior in a seeded bounded stress profile. Section 6.3
+reconciles the public surface documentation and activates this subject against
+executable API and scope qualification.
 
 ```spec-meta
 id: simd_json.document_api
 kind: api
-status: planned
+status: active
+verification_minimum_strength: executed
 summary: Milestone 1 exposes binary open and idempotent close through opaque documents and stable structured errors.
 surface:
   - lib/simd_json.ex
@@ -200,9 +206,9 @@ decisions:
     - Decode, projection, streaming, cursor, transfer, and native-handle operations are absent
 ```
 
-## Verification
+## Evidence Inventory
 
-```spec-verification
+```yaml
 - kind: test_file
   target: test/simd_json/document_api_test.exs
   covers:
@@ -266,19 +272,9 @@ decisions:
   target: test/native/document_resource_policy_test.exs
   covers:
     - simd_json.document_api.milestone_scope
-```
 
-## Required Closure Evidence
-
-Phase 5 supplies executed public API, typespec, doctest, error mapping,
-redaction, ownership, close, valid-value corpus, malformed-input corpus, UTF-8,
-lifetime, and API-surface tests. Activation remains gated on Phase 6 qualifying
-and activating the native build, resource, and scheduler subjects.
-
-## Exceptions
-
-```spec-exceptions
-- id: simd_json.document_api.milestone_01_bootstrap
+- kind: command
+  target: bash scripts/native/run_nif_sanitizer_tests.sh
   covers:
     - simd_json.document_api.open_contract
     - simd_json.document_api.binary_only
@@ -299,5 +295,47 @@ and activating the native build, resource, and scheduler subjects.
     - simd_json.document_api.redacted_failure
     - simd_json.document_api.close_and_non_owner
     - simd_json.document_api.no_future_surface
-  reason: Phase 5 implements the complete binary document boundary, owner-first cleanup, closed redacted error vocabulary, public documentation and scope allowlist, plus the valid/invalid corpus, lifetime, race, concurrency, and native-baseline integration matrix; retain the exception until Phase 6 completes cross-target qualification and activates every dependent native subject.
+
+- kind: test_file
+  target: test/qualification/lifecycle_memory_qualification_test.exs
+  covers:
+    - simd_json.document_api.open_contract
+    - simd_json.document_api.close_contract
+    - simd_json.document_api.structured_error
+    - simd_json.document_api.initial_error_reasons
+    - simd_json.document_api.close_and_non_owner
+```
+
+## Required Closure Evidence
+
+The executable API-qualification command below supplies public API, typespec,
+doctest, error mapping, redaction, ownership, close, valid-value,
+malformed-input, UTF-8, lifetime, and public-surface evidence.
+
+## Verification
+
+```spec-verification
+- kind: command
+  target: bash scripts/ci/qualify_document_api.sh
+  execute: true
+  covers:
+    - simd_json.document_api.open_contract
+    - simd_json.document_api.binary_only
+    - simd_json.document_api.close_contract
+    - simd_json.document_api.document_argument_validation
+    - simd_json.document_api.opaque_document_type
+    - simd_json.document_api.structured_error
+    - simd_json.document_api.initial_error_reasons
+    - simd_json.document_api.logical_offsets
+    - simd_json.document_api.error_redaction
+    - simd_json.document_api.valid_json_values
+    - simd_json.document_api.milestone_scope
+    - simd_json.document_api.open_and_close
+    - simd_json.document_api.all_top_level_values
+    - simd_json.document_api.invalid_input_errors
+    - simd_json.document_api.non_binary_argument
+    - simd_json.document_api.invalid_document_argument
+    - simd_json.document_api.redacted_failure
+    - simd_json.document_api.close_and_non_owner
+    - simd_json.document_api.no_future_surface
 ```
