@@ -6,6 +6,39 @@ defmodule SimdJson.Native.ThreadedOperation do
 
   @test_hooks Mix.env() == :test
 
+  if @test_hooks do
+    @admission_counter_key {__MODULE__, :admission_counter}
+    @on_load :initialize_admission_counter_for_test
+
+    @doc false
+    def initialize_admission_counter_for_test do
+      case :persistent_term.get(@admission_counter_key, nil) do
+        nil -> :persistent_term.put(@admission_counter_key, :counters.new(4, [:atomics]))
+        _counter -> :ok
+      end
+
+      :ok
+    end
+
+    @doc false
+    @spec admission_snapshot_for_test() :: %{
+            total: non_neg_integer(),
+            document_open: non_neg_integer(),
+            document_cleanup: non_neg_integer(),
+            threaded_smoke: non_neg_integer()
+          }
+    def admission_snapshot_for_test do
+      counter = :persistent_term.get(@admission_counter_key)
+
+      %{
+        total: :counters.get(counter, 1),
+        document_open: :counters.get(counter, 2),
+        document_cleanup: :counters.get(counter, 3),
+        threaded_smoke: :counters.get(counter, 4)
+      }
+    end
+  end
+
   @type operation :: %{
           resource: reference(),
           request_ref: reference(),
@@ -22,6 +55,8 @@ defmodule SimdJson.Native.ThreadedOperation do
 
   def admit(input, kind, generation)
       when is_binary(input) and is_atom(kind) and is_integer(generation) and generation > 0 do
+    if @test_hooks, do: record_admission_for_test(kind)
+
     resource = BuildSmoke.operation_admit(input, self(), kind, generation)
     {request_ref, ^kind, ^generation, :queued} = BuildSmoke.operation_metadata(resource)
 
@@ -121,5 +156,19 @@ defmodule SimdJson.Native.ThreadedOperation do
   @spec correlated?(operation(), map()) :: boolean()
   def correlated?(operation, result) do
     operation.kind == result.kind and operation.generation == result.generation
+  end
+
+  if @test_hooks do
+    defp record_admission_for_test(kind) do
+      counter = :persistent_term.get(@admission_counter_key)
+      :counters.add(counter, 1, 1)
+
+      case kind do
+        :document_open -> :counters.add(counter, 2, 1)
+        :document_cleanup -> :counters.add(counter, 3, 1)
+        :threaded_smoke -> :counters.add(counter, 4, 1)
+        _other -> :ok
+      end
+    end
   end
 end

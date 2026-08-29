@@ -23,6 +23,7 @@ defmodule SimdJson.Error do
           | :out_of_memory
           | :closed
           | :not_owner
+          | :invalid_projection
           | :native_failure
 
   @enforce_keys [:reason, :message]
