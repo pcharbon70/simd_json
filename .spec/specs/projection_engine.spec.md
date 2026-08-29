@@ -23,9 +23,14 @@ C++ validates the complete descriptor set, copies retained object keys, and
 builds an immutable canonically ordered trie with shared prefixes and multiple
 terminal slots. Independent C/Zig ordinary and sanitizer matrices cover
 layouts, boundary fixtures, every injected constructor checkpoint, exception
-containment, idempotent ownership, and release symbols. Document traversal is
-still Phase 3 work, and the complete subject intentionally remains planned
-under its bootstrap exception until Milestone 2 qualification.
+containment, idempotent ownership, and release symbols. Phase 3 Sections 3.1
+and 3.2 now dispatch decoded object keys in source order with first-occurrence
+duplicate handling, advance arrays against ascending requested indexes, and
+produce exact signed, unsigned, floating-point, boolean, null, and borrowed
+string slots through C and Zig harnesses. Complete failure injection,
+cancellation, malformed-source, and integration closure remain in Sections 3.3
+and 3.4, so the subject intentionally stays planned under its bootstrap
+exception until Milestone 2 qualification.
 
 ```spec-meta
 id: simd_json.projection_engine

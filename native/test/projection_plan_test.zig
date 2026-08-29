@@ -11,6 +11,54 @@ fn expectQuiescent() !void {
     try std.testing.expect(projection.testing.accounting().isQuiescent());
 }
 
+const NativeDocument = struct {
+    storage: []u8,
+    parser: ?*c.simd_json_parser,
+    document: ?*c.simd_json_document,
+
+    fn init(source: []const u8) !NativeDocument {
+        const capacity = try std.math.add(
+            usize,
+            source.len,
+            @intCast(c.SIMD_JSON_REQUIRED_PADDING),
+        );
+        const storage = try std.testing.allocator.alloc(u8, capacity);
+        errdefer std.testing.allocator.free(storage);
+        @memcpy(storage[0..source.len], source);
+        @memset(storage[source.len..], 0);
+
+        var parser: ?*c.simd_json_parser = null;
+        const parser_status = c.simd_json_parser_create(&parser);
+        if (parser_status.code != c.SIMD_JSON_STATUS_OK or parser == null)
+            return error.NativeParserCreate;
+        errdefer c.simd_json_parser_destroy(parser);
+
+        var document: ?*c.simd_json_document = null;
+        const document_status = c.simd_json_document_open(
+            parser,
+            storage.ptr,
+            @intCast(source.len),
+            @intCast(capacity),
+            &document,
+        );
+        if (document_status.code != c.SIMD_JSON_STATUS_OK or document == null)
+            return error.NativeDocumentOpen;
+
+        return .{
+            .storage = storage,
+            .parser = parser,
+            .document = document,
+        };
+    }
+
+    fn deinit(self: *NativeDocument) void {
+        c.simd_json_document_destroy(self.document);
+        c.simd_json_parser_destroy(self.parser);
+        std.testing.allocator.free(self.storage);
+        self.* = undefined;
+    }
+};
+
 test "real Phase 1 normalized fixture round-trips without output keys" {
     const shared = [_]projection.Segment{
         .{ .object_key = "customer" },
@@ -228,4 +276,81 @@ test "every native construction checkpoint returns through owned Zig cleanup" {
     try expectQuiescent();
 }
 
-// covers: simd_json.projection_engine.prefix_sharing_plan simd_json.projection_engine.private_abi_v2 simd_json.projection_engine.exception_and_failure_cleanup simd_json.projection_engine.abi_v2_conformance
+test "one Zig execution returns exact typed slots and preserves borrowed bytes" {
+    const string_path = [_]projection.Segment{
+        .{ .object_key = "values" },
+        .{ .array_index = 4 },
+    };
+    const signed_path = [_]projection.Segment{
+        .{ .object_key = "values" },
+        .{ .array_index = 0 },
+    };
+    const unsigned_path = [_]projection.Segment{
+        .{ .object_key = "values" },
+        .{ .array_index = 1 },
+    };
+    const double_path = [_]projection.Segment{
+        .{ .object_key = "values" },
+        .{ .array_index = 2 },
+    };
+    const null_path = [_]projection.Segment{
+        .{ .object_key = "values" },
+        .{ .array_index = 3 },
+    };
+    const paths = [_]projection.NormalizedPath{
+        .{ .path_slot = 0, .segments = &string_path },
+        .{ .path_slot = 1, .segments = &signed_path },
+        .{ .path_slot = 2, .segments = &unsigned_path },
+        .{ .path_slot = 3, .segments = &double_path },
+        .{ .path_slot = 4, .segments = &null_path },
+    };
+    const entries = [_]projection.NormalizedEntry{
+        .{ .output_slot = 0, .path_slot = 0 },
+        .{ .output_slot = 1, .path_slot = 1 },
+        .{ .output_slot = 2, .path_slot = 2 },
+        .{ .output_slot = 3, .path_slot = 3 },
+        .{ .output_slot = 4, .path_slot = 4 },
+        .{ .output_slot = 5, .path_slot = 0 },
+    };
+
+    var plan = try projection.OwnedPlan.init(std.testing.allocator, .{
+        .entries = &entries,
+        .paths = &paths,
+    });
+    defer plan.deinit();
+    var document = try NativeDocument.init(
+        "{\"unused\":{\"tree\":[1,2]},\"values\":[-7," ++
+            "18446744073709551615,1.5,null,\"snow \\u2603\"]}",
+    );
+    defer document.deinit();
+
+    var results = switch (plan.execute(
+        std.testing.allocator,
+        document.document,
+    )) {
+        .success => |owned| owned,
+        .failure => |failure| {
+            std.debug.print("unexpected projection failure: {any}\n", .{failure});
+            return error.UnexpectedProjectionFailure;
+        },
+    };
+    defer results.deinit();
+
+    try std.testing.expectEqualStrings("snow ☃", results.scalar(0).?.string);
+    try std.testing.expectEqual(@as(i64, -7), results.scalar(1).?.signed_integer);
+    try std.testing.expectEqual(
+        std.math.maxInt(u64),
+        results.scalar(2).?.unsigned_integer,
+    );
+    try std.testing.expectEqual(@as(f64, 1.5), results.scalar(3).?.floating_point);
+    try std.testing.expect(results.scalar(4).? == .null);
+    try std.testing.expectEqualStrings("snow ☃", results.scalar(5).?.string);
+
+    const summary = projection.testing.executionSummary(&plan).?;
+    try std.testing.expectEqual(@as(u64, 1), summary.execution_entries);
+    try std.testing.expectEqual(@as(u64, 7), summary.visited_nodes);
+    try std.testing.expectEqual(@as(u64, 3), summary.shared_prefix_visits);
+    try std.testing.expectEqual(@as(u64, 6), summary.filled_slots);
+}
+
+// covers: simd_json.projection_engine.prefix_sharing_plan simd_json.projection_engine.single_guided_traversal simd_json.projection_engine.scalar_only_materialization simd_json.projection_engine.typed_result_slots simd_json.projection_engine.transactional_conversion simd_json.projection_engine.private_abi_v2 simd_json.projection_engine.exception_and_failure_cleanup simd_json.projection_engine.object_array_walk simd_json.projection_engine.abi_v2_conformance

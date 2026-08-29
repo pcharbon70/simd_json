@@ -35,6 +35,85 @@ pub fn Implementation(comptime c: type) type {
             NativeFailure,
         };
 
+        pub const FailureCode = enum {
+            invalid_json,
+            invalid_utf8,
+            unexpected_eof,
+            out_of_memory,
+            invalid_argument,
+            internal_failure,
+            missing_field,
+            index_out_of_bounds,
+            incorrect_type,
+            number_out_of_range,
+            cursor_consumed,
+            cancelled,
+        };
+
+        pub const Failure = struct {
+            code: FailureCode,
+            native_code: ?i32,
+            byte_offset: ?u64,
+            output_slot: ?u32,
+        };
+
+        pub const Scalar = union(enum) {
+            signed_integer: i64,
+            unsigned_integer: u64,
+            floating_point: f64,
+            boolean: bool,
+            null,
+            string: []const u8,
+        };
+
+        pub const OwnedResults = struct {
+            allocator: std.mem.Allocator,
+            native_slots: []c.simd_json_result_slot,
+
+            pub fn deinit(self: *OwnedResults) void {
+                @memset(std.mem.sliceAsBytes(self.native_slots), 0);
+                self.allocator.free(self.native_slots);
+                self.* = undefined;
+            }
+
+            pub fn scalar(self: *const OwnedResults, index: usize) ?Scalar {
+                if (index >= self.native_slots.len) return null;
+                const slot = self.native_slots[index];
+                if (slot.reserved != 0) return null;
+
+                return switch (slot.tag) {
+                    c.SIMD_JSON_RESULT_SIGNED_INTEGER =>
+                    .{ .signed_integer = slot.value.signed_integer },
+                    c.SIMD_JSON_RESULT_UNSIGNED_INTEGER =>
+                    .{ .unsigned_integer = slot.value.unsigned_integer },
+                    c.SIMD_JSON_RESULT_DOUBLE =>
+                    .{ .floating_point = slot.value.floating_point },
+                    c.SIMD_JSON_RESULT_BOOLEAN => switch (slot.value.boolean) {
+                        0 => .{ .boolean = false },
+                        1 => .{ .boolean = true },
+                        else => null,
+                    },
+                    c.SIMD_JSON_RESULT_NULL => .null,
+                    c.SIMD_JSON_RESULT_STRING => stringScalar(slot),
+                    else => null,
+                };
+            }
+
+            fn stringScalar(slot: c.simd_json_result_slot) ?Scalar {
+                const length = std.math.cast(usize, slot.value.string.length) orelse
+                    return null;
+                if (length == 0) return .{ .string = "" };
+                const data = slot.value.string.data;
+                if (data == null) return null;
+                return .{ .string = data[0..length] };
+            }
+        };
+
+        pub const ExecuteOutcome = union(enum) {
+            success: OwnedResults,
+            failure: Failure,
+        };
+
         const SerializedProjection = struct {
             allocator: std.mem.Allocator,
             entries: []c.simd_json_projection_entry,
@@ -165,6 +244,7 @@ pub fn Implementation(comptime c: type) type {
 
         pub const OwnedPlan = struct {
             handle: ?*c.simd_json_projection_plan = null,
+            output_slots: usize = 0,
 
             pub fn init(
                 allocator: std.mem.Allocator,
@@ -193,19 +273,101 @@ pub fn Implementation(comptime c: type) type {
                     };
                 }
 
-                return .{ .handle = handle };
+                return .{
+                    .handle = handle,
+                    .output_slots = normalized.entries.len,
+                };
             }
 
             pub fn deinit(self: *OwnedPlan) void {
                 const handle = self.handle orelse return;
                 self.handle = null;
+                self.output_slots = 0;
                 c.simd_json_projection_plan_destroy(handle);
             }
 
             pub fn isAlive(self: *const OwnedPlan) bool {
                 return self.handle != null;
             }
+
+            /// Executes the whole immutable plan through one ABI call. The
+            /// returned string slices borrow the retained document and must be
+            /// copied by the Phase 4 term-conversion owner before cleanup.
+            pub fn execute(
+                self: *const OwnedPlan,
+                allocator: std.mem.Allocator,
+                document: ?*c.simd_json_document,
+            ) ExecuteOutcome {
+                const handle = self.handle orelse return .{
+                    .failure = failureWithoutDiagnostics(.invalid_argument),
+                };
+                const slots = allocator.alloc(
+                    c.simd_json_result_slot,
+                    self.output_slots,
+                ) catch return .{
+                    .failure = failureWithoutDiagnostics(.out_of_memory),
+                };
+                @memset(std.mem.sliceAsBytes(slots), 0);
+
+                const status = c.simd_json_projection_execute(
+                    document,
+                    handle,
+                    slots.ptr,
+                    @intCast(slots.len),
+                );
+                if (status.code != c.SIMD_JSON_STATUS_OK) {
+                    @memset(std.mem.sliceAsBytes(slots), 0);
+                    allocator.free(slots);
+                    return .{ .failure = adaptFailure(status) };
+                }
+
+                return .{ .success = .{
+                    .allocator = allocator,
+                    .native_slots = slots,
+                } };
+            }
         };
+
+        fn failureWithoutDiagnostics(code: FailureCode) Failure {
+            return .{
+                .code = code,
+                .native_code = null,
+                .byte_offset = null,
+                .output_slot = null,
+            };
+        }
+
+        fn adaptFailure(status: c.simd_json_projection_status) Failure {
+            const code: FailureCode = switch (status.code) {
+                c.SIMD_JSON_STATUS_INVALID_JSON => .invalid_json,
+                c.SIMD_JSON_STATUS_INVALID_UTF8 => .invalid_utf8,
+                c.SIMD_JSON_STATUS_UNEXPECTED_EOF => .unexpected_eof,
+                c.SIMD_JSON_STATUS_OUT_OF_MEMORY => .out_of_memory,
+                c.SIMD_JSON_STATUS_INVALID_ARGUMENT => .invalid_argument,
+                c.SIMD_JSON_STATUS_MISSING_FIELD => .missing_field,
+                c.SIMD_JSON_STATUS_INDEX_OUT_OF_BOUNDS => .index_out_of_bounds,
+                c.SIMD_JSON_STATUS_INCORRECT_TYPE => .incorrect_type,
+                c.SIMD_JSON_STATUS_NUMBER_OUT_OF_RANGE => .number_out_of_range,
+                c.SIMD_JSON_STATUS_CURSOR_CONSUMED => .cursor_consumed,
+                c.SIMD_JSON_STATUS_CANCELLED => .cancelled,
+                else => .internal_failure,
+            };
+            return .{
+                .code = code,
+                .native_code = if (status.native_code == c.SIMD_JSON_NATIVE_CODE_UNAVAILABLE)
+                    null
+                else
+                    status.native_code,
+                .byte_offset = if (status.byte_offset == c.SIMD_JSON_BYTE_OFFSET_UNAVAILABLE)
+                    null
+                else
+                    status.byte_offset,
+                .output_slot = if (status.output_slot == c.SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE)
+                    null
+                else
+                    status.output_slot,
+            };
+        }
 
         fn validateShape(normalized: NormalizedProjection) BuildError!void {
             if (normalized.entries.len == 0 or normalized.paths.len == 0 or
@@ -288,6 +450,19 @@ pub fn Implementation(comptime c: type) type {
                 }
             };
 
+            pub const ExecutionSummary = struct {
+                compilation_nanoseconds: u64,
+                traversal_nanoseconds: u64,
+                execution_entries: u64,
+                visited_nodes: u64,
+                shared_prefix_visits: u64,
+                filled_slots: u64,
+                object_fields: u64,
+                array_elements: u64,
+                skipped_values: u64,
+                cancellation_checks: u64,
+            };
+
             pub fn summary(plan: *const OwnedPlan) ?Summary {
                 const handle = plan.handle orelse return null;
                 var native: c.simd_json_test_projection_summary = undefined;
@@ -311,6 +486,27 @@ pub fn Implementation(comptime c: type) type {
                     .live_plans = native.live_plans,
                     .live_nodes = native.live_nodes,
                     .live_key_bytes = native.live_key_bytes,
+                };
+            }
+
+            pub fn executionSummary(plan: *const OwnedPlan) ?ExecutionSummary {
+                const handle = plan.handle orelse return null;
+                var native: c.simd_json_test_projection_execution_summary = undefined;
+                if (c.simd_json_test_projection_execution_summary_read(
+                    handle,
+                    &native,
+                ) == 0) return null;
+                return .{
+                    .compilation_nanoseconds = native.compilation_nanoseconds,
+                    .traversal_nanoseconds = native.traversal_nanoseconds,
+                    .execution_entries = native.execution_entries,
+                    .visited_nodes = native.visited_nodes,
+                    .shared_prefix_visits = native.shared_prefix_visits,
+                    .filled_slots = native.filled_slots,
+                    .object_fields = native.object_fields,
+                    .array_elements = native.array_elements,
+                    .skipped_values = native.skipped_values,
+                    .cancellation_checks = native.cancellation_checks,
                 };
             }
 

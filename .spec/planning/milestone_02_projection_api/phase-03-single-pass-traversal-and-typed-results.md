@@ -55,31 +55,31 @@ Back to plan: [README](./README.md)
 
 ## 3.2 Section — Array Traversal and Scalar Extraction
 
-- [ ] 3.2 Section - Advance arrays monotonically to requested indexes and fill
+- [x] 3.2 Section - Advance arrays monotonically to requested indexes and fill
   correctly typed scalar result slots.
 
   This section completes mixed object/array paths, exact scalar typing, missing
   index behavior, and scalar-only output bounds.
 
-  - [ ] 3.2.1 Task - Traverse requested array indexes in source order.
+  - [x] 3.2.1 Task - Traverse requested array indexes in source order.
 
     The task consumes each array element at most once regardless of projection
     declaration order or how many paths share an indexed prefix.
 
-    - [ ] 3.2.1.1 Subtask - Use ascending plan edges to advance the On-Demand array cursor once, sharing a selected element among all descendant paths at the same index.
-    - [ ] 3.2.1.2 Subtask - Structurally skip every unrequested lower, intervening, and trailing element without BEAM materialization.
-    - [ ] 3.2.1.3 Subtask - Return `index_out_of_bounds` for the deterministic first unsatisfied requested index when array end is reached.
-    - [ ] 3.2.1.4 Subtask - Return `incorrect_type` when an object edge targets a non-object, an index edge targets a non-array, or a terminal resolves to an object or array.
+    - [x] 3.2.1.1 Subtask - Use ascending plan edges to advance the On-Demand array cursor once, sharing a selected element among all descendant paths at the same index.
+    - [x] 3.2.1.2 Subtask - Structurally skip every unrequested lower, intervening, and trailing element without BEAM materialization.
+    - [x] 3.2.1.3 Subtask - Return `index_out_of_bounds` for the deterministic first unsatisfied requested index when array end is reached.
+    - [x] 3.2.1.4 Subtask - Return `incorrect_type` when an object edge targets a non-object, an index edge targets a non-array, or a terminal resolves to an object or array.
 
-  - [ ] 3.2.2 Task - Preserve every supported scalar type.
+  - [x] 3.2.2 Task - Preserve every supported scalar type.
 
     The task translates simdjson On-Demand values into native tagged slots
     without premature BEAM allocation or numeric coercion.
 
-    - [ ] 3.2.2.1 Subtask - Store signed and unsigned 64-bit integers in distinct slots and defer exact BEAM-integer construction to Zig.
-    - [ ] 3.2.2.2 Subtask - Store valid finite floating-point values without converting integer syntax to float and map unsupported numeric range or representation to `number_out_of_range`.
-    - [ ] 3.2.2.3 Subtask - Store booleans and null as closed scalar tags requiring no source-backed allocation.
-    - [ ] 3.2.2.4 Subtask - Store string pointer and logical length as a borrowed view valid only through the retained document lifetime; never append padding or a terminator to logical value length.
+    - [x] 3.2.2.1 Subtask - Store signed and unsigned 64-bit integers in distinct slots and defer exact BEAM-integer construction to Zig.
+    - [x] 3.2.2.2 Subtask - Store valid finite floating-point values without converting integer syntax to float and map unsupported numeric range or representation to `number_out_of_range`.
+    - [x] 3.2.2.3 Subtask - Store booleans and null as closed scalar tags requiring no source-backed allocation.
+    - [x] 3.2.2.4 Subtask - Store string pointer and logical length as a borrowed view valid only through the retained document lifetime; never append padding or a terminator to logical value length.
 
 ## 3.3 Section — Complete Validation, Transactionality, and Diagnostics
 

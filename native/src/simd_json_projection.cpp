@@ -543,6 +543,73 @@ void saturating_increment(uint64_t &value) noexcept {
   }
 }
 
+bool valid_json_number_syntax(std::string_view token) noexcept {
+  size_t start = 0;
+  size_t end = token.size();
+  const auto whitespace = [](char byte) noexcept {
+    return byte == ' ' || byte == '\t' || byte == '\r' || byte == '\n';
+  };
+  while (start < end && whitespace(token[start])) {
+    ++start;
+  }
+  while (end > start && whitespace(token[end - 1])) {
+    --end;
+  }
+  if (start == end) {
+    return false;
+  }
+
+  size_t position = start;
+  if (token[position] == '-') {
+    ++position;
+    if (position == end) {
+      return false;
+    }
+  }
+
+  if (token[position] == '0') {
+    ++position;
+  } else if (token[position] >= '1' && token[position] <= '9') {
+    do {
+      ++position;
+    } while (position < end && token[position] >= '0' &&
+             token[position] <= '9');
+  } else {
+    return false;
+  }
+
+  if (position < end && token[position] == '.') {
+    ++position;
+    const size_t fraction_start = position;
+    while (position < end && token[position] >= '0' &&
+           token[position] <= '9') {
+      ++position;
+    }
+    if (position == fraction_start) {
+      return false;
+    }
+  }
+
+  if (position < end &&
+      (token[position] == 'e' || token[position] == 'E')) {
+    ++position;
+    if (position < end &&
+        (token[position] == '+' || token[position] == '-')) {
+      ++position;
+    }
+    const size_t exponent_start = position;
+    while (position < end && token[position] >= '0' &&
+           token[position] <= '9') {
+      ++position;
+    }
+    if (position == exponent_start) {
+      return false;
+    }
+  }
+
+  return position == end;
+}
+
 struct traversal_counters {
   uint64_t visited_nodes = 0;
   uint64_t shared_prefix_visits = 0;
@@ -794,9 +861,16 @@ simd_json_projection_status validate_unselected_value(
                  : status_from_simdjson(error, context);
     }
     case simdjson::ondemand::json_type::number: {
+      const std::string_view raw = value.raw_json_token();
       simdjson::ondemand::number number;
       error = value.get_number().get(number);
       if (error != simdjson::SUCCESS) {
+        if (error == simdjson::NUMBER_ERROR &&
+            valid_json_number_syntax(raw)) {
+          return make_status(SIMD_JSON_STATUS_NUMBER_OUT_OF_RANGE,
+                             static_cast<int32_t>(error),
+                             current_byte_offset(context));
+        }
         return status_from_simdjson(error, context);
       }
       if (number.get_number_type() ==
@@ -854,9 +928,18 @@ simd_json_projection_status materialize_scalar(
 
   switch (type) {
     case simdjson::ondemand::json_type::number: {
+      const std::string_view raw = value.raw_json_token();
       simdjson::ondemand::number number;
       error = value.get_number().get(number);
       if (error != simdjson::SUCCESS) {
+        if (error == simdjson::NUMBER_ERROR &&
+            valid_json_number_syntax(raw)) {
+          return make_status(
+              SIMD_JSON_STATUS_NUMBER_OUT_OF_RANGE,
+              static_cast<int32_t>(error), current_byte_offset(context),
+              node.terminal_slots.empty() ? SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE
+                                          : node.terminal_slots.front());
+        }
         return status_from_simdjson(
             error, context,
             node.terminal_slots.empty() ? SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE
@@ -1118,8 +1201,19 @@ simd_json_projection_status consume_root_scalar(
 
   switch (type) {
     case simdjson::ondemand::json_type::number: {
+      std::string_view raw;
+      simdjson::error_code raw_error =
+          context.document.raw_json_token().get(raw);
+      if (raw_error != simdjson::SUCCESS) {
+        return status_from_simdjson(raw_error, context);
+      }
       simdjson::ondemand::number number;
       error = context.document.get_number().get(number);
+      if (error == simdjson::NUMBER_ERROR && valid_json_number_syntax(raw)) {
+        return make_status(SIMD_JSON_STATUS_NUMBER_OUT_OF_RANGE,
+                           static_cast<int32_t>(error),
+                           current_byte_offset(context));
+      }
       if (error == simdjson::SUCCESS &&
           (number.get_number_type() ==
                simdjson::ondemand::number_type::big_integer ||
