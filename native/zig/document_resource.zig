@@ -650,13 +650,15 @@ pub fn Implementation(comptime c: type) type {
                 @compileError("C status code width differs from Zig i32");
             if (@typeInfo(c.simd_json_status_code).int.signedness != .signed)
                 @compileError("C status code must remain signed");
-            if (@sizeOf(c.simd_json_status) != 16)
+            if (@sizeOf(c.simd_json_status) != 24)
                 @compileError("C status layout changed");
             if (@alignOf(c.simd_json_status) != @alignOf(u64))
                 @compileError("C status alignment changed");
             if (@offsetOf(c.simd_json_status, "code") != 0 or
                 @offsetOf(c.simd_json_status, "native_code") != 4 or
-                @offsetOf(c.simd_json_status, "byte_offset") != 8)
+                @offsetOf(c.simd_json_status, "byte_offset") != 8 or
+                @offsetOf(c.simd_json_status, "output_slot") != 16 or
+                @offsetOf(c.simd_json_status, "reserved") != 20)
                 @compileError("C status field offsets changed");
 
             const status_values = [_]c.simd_json_status_code{

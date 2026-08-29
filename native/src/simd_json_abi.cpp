@@ -100,8 +100,9 @@ void maybe_inject(int32_t) noexcept {}
 constexpr simd_json_status make_status(
     simd_json_status_code code,
     int32_t native_code = SIMD_JSON_NATIVE_CODE_UNAVAILABLE,
-    uint64_t byte_offset = SIMD_JSON_BYTE_OFFSET_UNAVAILABLE) noexcept {
-  return {code, native_code, byte_offset};
+    uint64_t byte_offset = SIMD_JSON_BYTE_OFFSET_UNAVAILABLE,
+    uint32_t output_slot = SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE) noexcept {
+  return {code, native_code, byte_offset, output_slot, UINT32_C(0)};
 }
 
 simd_json_status status_from_simdjson(
