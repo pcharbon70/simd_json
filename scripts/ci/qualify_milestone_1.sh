@@ -54,6 +54,7 @@ source_tree="$(git rev-parse HEAD^{tree})"
   printf 'github_actions=%s\n' "${GITHUB_ACTIONS:-false}"
 } >"${evidence_root}/environment.txt"
 
+run_step formatter_plugin mix deps.compile zigler --force
 run_step formatting mix format --check-formatted
 run_step documentation mix docs --warnings-as-errors
 run_step full_test_suite env MIX_ENV=test mix test --seed 0

@@ -40,15 +40,18 @@ scheduler, or lifecycle claim.
 ## Executed matrix
 
 The master command requires a clean committed worktree, records its revision,
-and runs this sequence without weakening any subject's executable threshold:
+and runs this sequence without weakening any subject's executable threshold.
+The formatter dependency is rebuilt first so a restored test-environment cache
+cannot omit Zigler's generated Zig formatter plugin:
 
-1. `mix format --check-formatted`;
-2. `mix docs --warnings-as-errors`;
-3. `MIX_ENV=test mix test --seed 0`;
-4. `mix spec.next --base <base>`;
-5. `mix spec.check --base <base>`;
-6. `mix simd_json.verify_traceability`;
-7. a canonical-state diff check and evidence checksum inventory.
+1. `mix deps.compile zigler --force`;
+2. `mix format --check-formatted`;
+3. `mix docs --warnings-as-errors`;
+4. `MIX_ENV=test mix test --seed 0`;
+5. `mix spec.next --base <base>`;
+6. `mix spec.check --base <base>`;
+7. `mix simd_json.verify_traceability`;
+8. a canonical-state diff check and evidence checksum inventory.
 
 The SpecLed check executes the four owning subject commands:
 
