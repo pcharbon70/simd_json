@@ -32,8 +32,16 @@ and records bounded execution diagnostics. Its C/Zig
 integration corpus covers Unicode and escaped paths, large unselected content,
 exact-padding guard pages, borrowed strings, deterministic failures, and every
 injected traversal boundary under ordinary and sanitizer profiles. The subject
-intentionally stays planned under its bootstrap exception until Milestone 2
-qualification.
+now also has a Phase 4 threaded integration: the worker decodes the normalized
+term, owns one plan and slot graph, calls the Phase 3 engine once, and converts
+only a complete success into exact scalar BEAM values in a private environment.
+Strings are copied before source teardown, conversion checks cancellation in
+bounded chunks, and one join adapter copies the complete map into the caller
+environment. Binary projection creates an unpublished temporary document and
+document projection retains its existing resource. Failure injection and
+binary/document lifetime tests prove transactional discard and gauge recovery.
+The subject intentionally stays planned under its bootstrap exception until
+the public Phase 5 boundary and complete Milestone 2 qualification.
 
 ```spec-meta
 id: simd_json.projection_engine
@@ -244,5 +252,5 @@ tests.
     - simd_json.projection_engine.transactional_slot_failure
     - simd_json.projection_engine.abi_v2_conformance
     - simd_json.projection_engine.one_boundary_with_timing
-  reason: The Milestone 2 native projection engine does not exist yet; remove this exception and replace it with executed plan, traversal, ABI, failure-cleanup, boundary, sanitizer, and full-source-validation evidence before activation.
+  reason: Milestone 2 Phases 2 through 4 implement and exercise the private plan, guided traversal, transactional threaded conversion, one join boundary, and redacted timing; keep this complete-subject exception until Phase 5 exposes the public call and Phase 6 supplies final NIF sanitizer, supported-target, lifecycle, and benchmark evidence before activation.
 ```

@@ -58,6 +58,17 @@ an operation-owned cancellation probe only in standalone native harnesses. The
 NIF still has no projection entrypoint or operation kind, so no input-dependent
 projection runs on a BEAM scheduler and the existing threaded runtime remains
 unchanged until Phase 4 admission integrates this private engine.
+Milestone 2 Phase 4 now integrates a private projection kind into that same
+coordinator. Admission retains normalized terms plus the binary/document
+source, and exactly one Zigler-threaded worker performs plan compilation,
+traversal, bounded map conversion, and join-time environment copying. Caller
+death, close, and application stop cancel at six deterministic boundaries;
+submission rejection records no projection worker entry and chooses no
+fallback. Concurrent 4 MiB valid, malformed, and missing-path cases report only
+the threaded context while independent heartbeats progress, and every retained
+operation, environment, source, plan, slot, document, and callback-retry gauge
+returns to baseline. Formal projection scheduler utilization and percentile
+qualification remains Milestone 2 Phase 6 work.
 
 ```spec-meta
 id: simd_json.native_execution

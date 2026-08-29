@@ -119,6 +119,28 @@ so no reload claim is inferred from application restart. CI archives the full
 environment, raw samples, seed, commands, and results for the immutable source
 revision.
 
+### Milestone 2 Phase 4 projection checkpoint
+
+Projection now reuses the same stable coordinator and generated Zigler
+threaded boundary as document open and cleanup. Ordinary admission validates
+the registered source resource, owner, generation, and atomic reservation,
+then retains the normalized projection and source term in one operation-owned
+private environment. One worker compiles one plan, traverses once, converts the
+complete scalar map, and returns one correlated terminal result; submission
+rejection never enters worker code or selects an alternative scheduler.
+
+Because the complete map is created in the worker's private environment, a
+resource-shaped Zigler marshalling adapter explicitly copies that finished term
+into the generated join environment. No adapter resource is published to the
+caller, and no raw private-environment term crosses the join. Caller death,
+document close, and application stop cancel at the six projection boundaries
+and leave the coordinator responsible for join and discard. Concurrent 4 MiB
+success, malformed-input, and missing-path integration tests observe only the
+threaded worker context, exact projection worker-entry counts, continuing BEAM
+heartbeats, and complete native-gauge recovery. This is preliminary
+non-regression evidence; the formal supported-target projection profile remains
+Milestone 2 Phase 6 work.
+
 ## Consequences
 
 The first native vertical slice protects normal and dirty schedulers while keeping the final worker-pool design deferred to its owning milestone. Request correlation, cancellation-safe resource retention, and deferred cleanup are established early enough for later APIs to reuse.

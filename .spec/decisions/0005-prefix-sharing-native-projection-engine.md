@@ -139,6 +139,32 @@ summaries record compilation/traversal duration and topology/visit/slot counts.
 Ordinary and ASan/UBSan C/Zig harnesses cover every construction and traversal
 checkpoint without adding an Elixir or NIF projection entrypoint.
 
+### Phase 4 threaded conversion checkpoint
+
+The engine is now integrated behind a test-only BEAM seam without changing its
+single-traversal contract. One threaded operation decodes the complete
+normalized projection from retained private-environment terms, constructs one
+`OwnedPlan`, invokes the Phase 3 execution function exactly once, and owns the
+full typed-slot array until conversion ends. Binary inputs use an unpublished
+owned document constructor so the Phase 3 engine performs the one authoritative
+complete validation/traversal rather than chaining through public `open/1` or
+running a second validation walk.
+
+Only a completely successful slot set is converted into exact signed and
+unsigned integers, finite floats, booleans, nil, and newly allocated string
+binaries. Caller atom and binary output keys are copied unchanged. The map is
+built in the operation environment with cancellation checks every 64 slots;
+allocation, cancellation, stale generation, or any later failure discards the
+whole environment. A join-time adapter performs the sole explicit environment
+copy into the caller-side generated join result. Redacted compilation,
+traversal, construction, worker, and boundary diagnostics remain private.
+
+Focused tests cover integer limits, embedded-NUL and Unicode strings, malformed
+unselected input, missing/type/range failures, every deterministic allocation
+checkpoint, 128-slot cancellation, independent binary/document result
+lifetimes, and exact plan/slot/environment baseline recovery. The public
+`select/2` boundary remains Phase 5 work.
+
 ## Consequences
 
 The engine's work follows the JSON document rather than the caller's path

@@ -41,6 +41,15 @@ Milestone 2 Phase 2 adds an operation-scoped projection plan type beside, not
 inside, the document resource. Plan conformance never publishes a plan as a
 BEAM resource, never admits against a document, and does not change document,
 parser, padded-input, parent-retention, generation, or cleanup ownership.
+Milestone 2 Phase 3 claims the underlying C++ cursor defensively only in native
+harnesses. Phase 4 now adds the resource-level single-use projection state and
+an admitted-operation interlock beside the unchanged lifecycle. Owner-first
+reservation, pre-worker rollback, committed consumption, close cancellation,
+generation validation, and retained-document conversion are exercised through
+private integration seams. Binary projection reuses the same owned padded
+constructor in an unpublished worker-local document graph. No projection
+resource or operation is added to the public document representation before
+Milestone 2 Phase 5.
 
 ```spec-meta
 id: simd_json.document_resource

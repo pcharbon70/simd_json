@@ -24,6 +24,14 @@ conformance: its Zig serializer deliberately omits output keys and raw BEAM
 terms, and its C++ plan remains an opaque operation detail. It adds no Elixir
 function, protocol, struct, resource, error translation, or compiled-plan API;
 the existing preflight and public-surface boundaries therefore remain intact.
+Phase 3 implements the guided scalar engine only below the BEAM. Phase 4 now
+uses an undocumented test-only adapter to exercise both accepted source forms,
+exact caller keys and scalar values, fresh copied strings, atomic maps, stable
+reasons, and validated caller paths through the real threaded runtime. Invalid
+projection still stops before source classification or native admission. The
+root module deliberately still has no `select/2`, and no projection
+documentation, typespec, resource, protocol, or diagnostic has become public;
+Phase 5 owns that surface and its final argument/error boundary.
 
 ```spec-meta
 id: simd_json.projection_api
@@ -224,5 +232,5 @@ document sources must run through the real native projection path.
     - simd_json.projection_api.all_scalar_types
     - simd_json.projection_api.path_failures
     - simd_json.projection_api.atom_and_surface_safety
-  reason: Milestone 2 projection is not implemented; remove this exception and replace it with executed public API, grammar, result, error, lifetime, atom-safety, and scope evidence before activation.
+  reason: Milestone 2 Phases 1 through 4 implement grammar plus a test-only internal binary/document result and error seam, but SimdJson.select/2 is intentionally absent; keep this complete-subject exception until Phase 5 supplies executed public API, typespec, doctest, argument, redaction, atom-safety, and surface evidence.
 ```

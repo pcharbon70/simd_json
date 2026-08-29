@@ -66,6 +66,14 @@ Additional ownership rules follow directly from the pinned implementation:
 - Terms owned by a private environment are copied into the destination
   environment before delivery. No private-environment term escapes by raw
   value.
+- Milestone 2 projection constructs a complete map inside the operation's
+  private environment. Returning its raw `beam.term` through Zigler's generated
+  threaded result encoder is unsafe because that value belongs to a different
+  environment. `JoinCopiedTerm` is therefore a resource-shaped marshalling
+  adapter whose join-side `make` callback calls `beam.copy` into the generated
+  join environment. It creates no caller-visible resource instance; the
+  operation keeps the source environment alive until that one explicit copy
+  completes.
 - Worker messages use `enif_send` with the allocated environment. Callback
   handoff uses the callback environment and bounded native queue metadata.
 
@@ -94,6 +102,15 @@ SimdJson contains those limitations as follows:
   dispatcher with bounded work and returns immediately;
 - unload rejects admission, waits for coordinator quiescence, drains the
   cleanup dispatcher, and only then releases module state.
+
+Milestone 2 Phase 4 applies the same containment to projection. The stable
+coordinator owns the generated thread through join, correlates the operation's
+kind/reference/generation tuple, and cancels orphaned work at six native
+boundaries. Binary source terms and document resources are copied or retained
+in the operation environment before launch. Plan compilation, On-Demand
+traversal, typed-slot conversion, and complete map construction occur only in
+the threaded context; the adapter above performs the sole result-environment
+crossing after the worker has finished.
 
 The cleanup dispatcher is not a parse executor, has no public admission queue,
 and does not claim the backpressure or telemetry guarantees assigned to the

@@ -27,6 +27,19 @@ adds no projection operation kind, owner-first reservation, threaded admission,
 BEAM term conversion, temporary binary document, callback cleanup, or delivery;
 those Phase 4 lifecycle requirements remain planned under the complete
 bootstrap exception.
+Phase 4 now implements that private vertical slice. One correlated threaded
+projection retains either a binary or genuine document, compiles one plan,
+executes one guided traversal, constructs one complete private-environment map,
+and explicitly copies it through the generated join. Documents implement
+owner-first `fresh -> selecting -> consumed`, proven pre-worker rollback, a
+cursor-commit point, close interlock, and generation checks. Binary operations
+own unpublished padded input/parser/document graphs. Integration tests force
+out-of-order completion, every binary/document cancellation boundary,
+conversion allocation failure, close and application shutdown, GC handoff
+retry, copied-result independence, a preliminary 4 MiB heartbeat profile, and
+all live gauges back to baseline. The subject stays planned only because the
+public Phase 5 boundary and the formal sanitizer/scheduler/Jason qualification
+in Phase 6 have not activated the complete Milestone 2 contract.
 
 ```spec-meta
 id: simd_json.projection_execution
@@ -264,5 +277,5 @@ threshold must be committed before the accepted measurement record.
     - simd_json.projection_execution.caller_death_and_cancellation
     - simd_json.projection_execution.large_projection_responsiveness
     - simd_json.projection_execution.jason_sparse_benchmark
-  reason: Milestone 2 threaded projection and qualification do not exist yet; remove this exception and replace it with executed admission, consumption, retention, cancellation, cleanup, scheduler, sanitizer, and benchmark evidence before activation.
+  reason: Milestone 2 Phases 1 through 4 implement and exercise the private threaded projection, admission, consumption, retention, cancellation, cleanup, and preliminary scheduler slice; keep this complete-subject exception until Phase 5 publishes select/2 and Phase 6 supplies the final sanitizer, supported-target scheduler, lifecycle, and Jason benchmark evidence required for activation.
 ```

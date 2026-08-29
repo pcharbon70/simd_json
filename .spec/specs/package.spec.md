@@ -24,7 +24,11 @@ C++ prefix-sharing plan, its Zig serializer/owner, independent conformance
 harnesses, and the expanded private shared-ABI allowlist. Phase 3 now packages
 the C++-only document/traversal coordination header, complete C guided-engine
 corpus, and Zig typed-slot/cancellation cases alongside the still-private
-execution engine. These remain internal build inputs: the root module still
+execution engine. Phase 4 packages the private projection operation adapter,
+correlated threaded worker, one-shot document reservation, worker-local binary
+document graph, join-time map copy, bounded diagnostics/accounting, and focused
+threading/lifetime/teardown integration matrices. These remain internal build
+inputs: the root module still
 exports only the Milestone 1 `open/1` and `close/1` operations, the NIF still
 exports only `nif_init`, and no `select/2` or public compiled-plan surface is
 present yet.
