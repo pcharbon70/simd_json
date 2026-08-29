@@ -49,13 +49,13 @@ static int at_accounting_baseline(void) {
          snapshot.live_key_bytes == 0;
 }
 
-static int status_metadata_is_safe(simd_json_status status) {
+static int status_metadata_is_safe(simd_json_projection_status status) {
   return status.byte_offset == SIMD_JSON_BYTE_OFFSET_UNAVAILABLE &&
          status.output_slot == SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE &&
          status.reserved == UINT32_C(0);
 }
 
-static simd_json_status create_shared_plan(
+static simd_json_projection_status create_shared_plan(
     shared_fixture *fixture,
     simd_json_projection_plan **out_plan) {
   return simd_json_projection_plan_create(
@@ -69,7 +69,7 @@ static int shared_prefix_and_copy_matrix(void) {
   simd_json_projection_plan *second = NULL;
   simd_json_test_projection_summary first_summary;
   simd_json_test_projection_summary second_summary;
-  simd_json_status status;
+  simd_json_projection_status status;
 
   initialize_shared_fixture(&fixture);
   status = create_shared_plan(&fixture, &first);
@@ -127,7 +127,7 @@ static int typed_edge_matrix(void) {
   };
   simd_json_projection_plan *plan = NULL;
   simd_json_test_projection_summary summary;
-  simd_json_status status = simd_json_projection_plan_create(
+  simd_json_projection_status status = simd_json_projection_plan_create(
       entries, 2, segments, 3, key_bytes, sizeof(key_bytes), &plan);
 
   CHECK(status.code == SIMD_JSON_STATUS_OK);
@@ -152,7 +152,7 @@ static int expect_invalid(const simd_json_projection_entry *entries,
                           uint64_t key_bytes_length) {
   simd_json_projection_plan *plan =
       (simd_json_projection_plan *)(uintptr_t)UINTPTR_MAX;
-  const simd_json_status status = simd_json_projection_plan_create(
+  const simd_json_projection_status status = simd_json_projection_plan_create(
       entries, entry_count, segments, segment_count, key_bytes,
       key_bytes_length, &plan);
 
@@ -168,7 +168,7 @@ static int invalid_descriptor_matrix(void) {
   simd_json_projection_entry entries[3];
   simd_json_projection_segment segments[4];
   simd_json_projection_plan *plan = NULL;
-  simd_json_status status;
+  simd_json_projection_status status;
 
   initialize_shared_fixture(&fixture);
   status = simd_json_projection_plan_create(
@@ -295,7 +295,7 @@ static int exception_and_allocation_matrix(void) {
        ++kind_index) {
     simd_json_projection_plan *plan =
         (simd_json_projection_plan *)(uintptr_t)UINTPTR_MAX;
-    simd_json_status status;
+    simd_json_projection_status status;
 
     simd_json_test_projection_inject_failure(7, exception_kinds[kind_index]);
     status = create_shared_plan(&fixture, &plan);
@@ -308,7 +308,7 @@ static int exception_and_allocation_matrix(void) {
   for (checkpoint = 0; checkpoint < 256; ++checkpoint) {
     simd_json_projection_plan *plan =
         (simd_json_projection_plan *)(uintptr_t)UINTPTR_MAX;
-    simd_json_status status;
+    simd_json_projection_status status;
 
     simd_json_test_projection_inject_failure(
         checkpoint, SIMD_JSON_TEST_FAILURE_BAD_ALLOC);

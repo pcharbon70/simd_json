@@ -3,7 +3,12 @@ const beam = @import("beam");
 const e = @import("erl_nif");
 const c = @import("simd_json_abi");
 const document_resource = @import("document_resource").Implementation(c);
+const projection_plan = @import("projection_plan").Implementation(c);
 const root = @import("root");
+
+comptime {
+    _ = projection_plan;
+}
 
 extern fn simd_json_build_smoke_version() callconv(.c) u32;
 extern fn simd_json_build_smoke_padding() callconv(.c) u32;

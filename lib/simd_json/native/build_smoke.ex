@@ -33,7 +33,10 @@ defmodule SimdJson.Native.BuildSmoke do
     otp_app: :simd_json,
     zig_code_path: "./native/zig/build_smoke.zig",
     optimize: {:env, :safe},
-    extra_modules: [document_resource: {"./native/zig/document_resource.zig", []}],
+    extra_modules: [
+      document_resource: {"./native/zig/document_resource.zig", []},
+      projection_plan: {"./native/zig/projection_plan.zig", []}
+    ],
     resources: [:DocumentResource, :OperationResource],
     callbacks: [
       on_load: :resource_on_load,
@@ -74,6 +77,7 @@ defmodule SimdJson.Native.BuildSmoke do
       src: [
         {"../../../native/src/build_smoke.cpp", @cxx_flags},
         {"../../../native/src/simd_json_abi.cpp", @cxx_flags},
+        {"../../../native/src/simd_json_projection.cpp", @cxx_flags},
         {"../../../native/vendor/simdjson/simdjson.cpp", @cxx_flags}
       ],
       link_lib: @sanitizer_libraries,

@@ -7,3 +7,10 @@ SIMD_JSON_ABI_1 {
   local:
     *;
 };
+
+SIMD_JSON_ABI_2 {
+  global:
+    simd_json_projection_execute;
+    simd_json_projection_plan_create;
+    simd_json_projection_plan_destroy;
+} SIMD_JSON_ABI_1;

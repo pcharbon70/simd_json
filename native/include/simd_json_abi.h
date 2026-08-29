@@ -50,9 +50,19 @@ typedef struct simd_json_status {
   simd_json_status_code code;
   int32_t native_code;
   uint64_t byte_offset;
+} simd_json_status;
+
+/*
+ * Projection functions extend the unchanged Milestone 1 status layout with a
+ * failing output slot. The sentinel is used when failure is not slot-specific.
+ */
+typedef struct simd_json_projection_status {
+  simd_json_status_code code;
+  int32_t native_code;
+  uint64_t byte_offset;
   uint32_t output_slot;
   uint32_t reserved;
-} simd_json_status;
+} simd_json_projection_status;
 
 typedef uint32_t simd_json_projection_segment_tag;
 
@@ -168,7 +178,7 @@ simd_json_document_destroy(simd_json_document *document) SIMD_JSON_ABI_NOEXCEPT;
  * Entries must use unique output slots in [0, entry_count). All pointer/count
  * pairs must be representable by the host, and every path must be non-empty.
  */
-SIMD_JSON_ABI_EXPORT simd_json_status simd_json_projection_plan_create(
+SIMD_JSON_ABI_EXPORT simd_json_projection_status simd_json_projection_plan_create(
     const simd_json_projection_entry *entries,
     uint64_t entry_count,
     const simd_json_projection_segment *segments,
@@ -185,7 +195,7 @@ SIMD_JSON_ABI_EXPORT void simd_json_projection_plan_destroy(
  * Executes a compiled plan into caller-owned slots. Phase 2 freezes this
  * signature and slot lifetime; traversal behavior is implemented in Phase 3.
  */
-SIMD_JSON_ABI_EXPORT simd_json_status simd_json_projection_execute(
+SIMD_JSON_ABI_EXPORT simd_json_projection_status simd_json_projection_execute(
     simd_json_document *document,
     const simd_json_projection_plan *plan,
     simd_json_result_slot *result_slots,
@@ -216,12 +226,20 @@ SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_status, native_code) == 4,
                             "native code layout changed");
 SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_status, byte_offset) == 8,
                             "byte offset layout changed");
-SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_status, output_slot) == 16,
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_status) == 16,
+                            "Milestone 1 status layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_projection_status, code) == 0,
+                            "projection status code layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_projection_status, native_code) == 4,
+                            "projection native code layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_projection_status, byte_offset) == 8,
+                            "projection byte offset layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_projection_status, output_slot) == 16,
                             "output slot layout changed");
-SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_status, reserved) == 20,
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_projection_status, reserved) == 20,
                             "status reserved layout changed");
-SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_status) == 24,
-                            "status layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_projection_status) == 24,
+                            "projection status layout changed");
 SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_projection_segment_tag) == 4,
                             "projection segment tags must be four bytes");
 SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_projection_entry, output_slot) == 0,

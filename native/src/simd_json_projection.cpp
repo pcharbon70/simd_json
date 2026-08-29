@@ -23,7 +23,7 @@
 
 namespace {
 
-constexpr simd_json_status make_status(
+constexpr simd_json_projection_status make_status(
     simd_json_status_code code,
     int32_t native_code = SIMD_JSON_NATIVE_CODE_UNAVAILABLE,
     uint64_t byte_offset = SIMD_JSON_BYTE_OFFSET_UNAVAILABLE,
@@ -309,7 +309,7 @@ bool descriptor_set_is_valid(const simd_json_projection_entry *entries,
   return true;
 }
 
-simd_json_status status_from_current_exception() noexcept {
+simd_json_projection_status status_from_current_exception() noexcept {
   try {
     throw;
   } catch (const simdjson::simdjson_error &error) {
@@ -486,7 +486,7 @@ uint64_t retained_topology_hash(
 
 }  // namespace
 
-extern "C" simd_json_status simd_json_projection_plan_create(
+extern "C" simd_json_projection_status simd_json_projection_plan_create(
     const simd_json_projection_entry *entries,
     uint64_t entry_count,
     const simd_json_projection_segment *segments,
@@ -536,7 +536,7 @@ extern "C" void simd_json_projection_plan_destroy(
   }
 }
 
-extern "C" simd_json_status simd_json_projection_execute(
+extern "C" simd_json_projection_status simd_json_projection_execute(
     simd_json_document *document,
     const simd_json_projection_plan *plan,
     simd_json_result_slot *result_slots,

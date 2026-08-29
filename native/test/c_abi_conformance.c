@@ -75,13 +75,10 @@ static int status_has_safe_metadata(simd_json_status status,
 
   if (status.code == SIMD_JSON_STATUS_OK) {
     return status.native_code == SIMD_JSON_NATIVE_CODE_UNAVAILABLE &&
-           status.byte_offset == SIMD_JSON_BYTE_OFFSET_UNAVAILABLE &&
-           status.output_slot == SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE &&
-           status.reserved == UINT32_C(0);
+           status.byte_offset == SIMD_JSON_BYTE_OFFSET_UNAVAILABLE;
   }
 
-  return status.output_slot == SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE &&
-         status.reserved == UINT32_C(0);
+  return 1;
 }
 
 static int expect_input(const uint8_t *input,

@@ -14,13 +14,13 @@ int main(void) {
                                     simd_json_document **) =
       simd_json_document_open;
   void (*document_destroy)(simd_json_document *) = simd_json_document_destroy;
-  simd_json_status (*plan_create)(
+  simd_json_projection_status (*plan_create)(
       const simd_json_projection_entry *, uint64_t,
       const simd_json_projection_segment *, uint64_t, const uint8_t *, uint64_t,
       simd_json_projection_plan **) = simd_json_projection_plan_create;
   void (*plan_destroy)(simd_json_projection_plan *) =
       simd_json_projection_plan_destroy;
-  simd_json_status (*projection_execute)(
+  simd_json_projection_status (*projection_execute)(
       simd_json_document *, const simd_json_projection_plan *,
       simd_json_result_slot *, uint64_t) = simd_json_projection_execute;
 

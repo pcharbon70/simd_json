@@ -12,8 +12,6 @@ test "canonical C status values adapt to a closed Zig status" {
         .code = c.SIMD_JSON_STATUS_OK,
         .native_code = c.SIMD_JSON_NATIVE_CODE_UNAVAILABLE,
         .byte_offset = c.SIMD_JSON_BYTE_OFFSET_UNAVAILABLE,
-        .output_slot = c.SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE,
-        .reserved = 0,
     });
     try std.testing.expect(success == .ok);
 
@@ -21,8 +19,6 @@ test "canonical C status values adapt to a closed Zig status" {
         .code = std.math.maxInt(i32),
         .native_code = 99,
         .byte_offset = 7,
-        .output_slot = 3,
-        .reserved = 0,
     });
     try std.testing.expect(unknown == .internal_failure);
     try std.testing.expectEqual(@as(?i32, 99), unknown.internal_failure.native_code);

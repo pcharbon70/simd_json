@@ -2,3 +2,6 @@ simd_json_document_destroy
 simd_json_document_open
 simd_json_parser_create
 simd_json_parser_destroy
+simd_json_projection_execute
+simd_json_projection_plan_create
+simd_json_projection_plan_destroy
