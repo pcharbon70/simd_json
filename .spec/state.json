@@ -239,7 +239,7 @@
         "id": "simd_json.document_api.structured_error",
         "priority": "must",
         "stability": "evolving",
-        "statement": "SimdJson.Error shall provide a stable reason, optional logical byte offset, optional native diagnostic code, and explanatory message without making message text machine-readable.",
+        "statement": "SimdJson.Error shall provide a stable reason, optional logical byte offset, optional native diagnostic code, optional validated caller projection path, and explanatory message without making message text machine-readable.",
         "subject_id": "simd_json.document_api"
       },
       {

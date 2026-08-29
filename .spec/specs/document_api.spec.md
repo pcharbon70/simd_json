@@ -27,6 +27,12 @@ failure, and GC behavior in a seeded bounded stress profile. Section 6.3
 reconciles the public surface documentation and activates this subject against
 executable API and scope qualification.
 
+Milestone 2 Phase 1 additively reserves the projection error reasons and an
+optional validated caller-path field in `SimdJson.Error`. Existing open and
+close paths retain their original meanings and continue to return `path: nil`.
+Default inspection omits both message and path contents and defensively bounds
+forged fields, while the root public operation set remains unchanged.
+
 ```spec-meta
 id: simd_json.document_api
 kind: api
@@ -74,7 +80,7 @@ decisions:
   stability: stable
 
 - id: simd_json.document_api.structured_error
-  statement: SimdJson.Error shall provide a stable reason, optional logical byte offset, optional native diagnostic code, and explanatory message without making message text machine-readable.
+  statement: SimdJson.Error shall provide a stable reason, optional logical byte offset, optional native diagnostic code, optional validated caller projection path, and explanatory message without making message text machine-readable.
   priority: must
   stability: evolving
 

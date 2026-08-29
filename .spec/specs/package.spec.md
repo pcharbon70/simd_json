@@ -15,10 +15,13 @@ native-baseline tests now exercise the packaged vertical slice.
 Phase 6 Section 6.1 also makes the Hex archive buildable with explicit package
 metadata, excludes generated Zigler intermediates, and inspects the unpacked
 artifact for every required native source, header, provenance, and license.
-Milestone 2 is now defined by three accepted projection ADRs, three planned
+Milestone 2 is defined by three accepted projection ADRs, three planned
 subjects with explicit bootstrap exceptions, and a six-phase implementation
-plan. Those documents specify future `select/2` behavior but do not change the
-currently packaged or exported Milestone 1 runtime surface.
+plan. Phase 1 now packages an undocumented internal projection validator and
+extends the common error representation with reserved projection reasons and
+an optional redacted path. The root module still exports only the Milestone 1
+`open/1` and `close/1` operations; no `select/2`, compiled plan, or native
+projection surface is present yet.
 
 ```spec-meta
 id: simd_json.package

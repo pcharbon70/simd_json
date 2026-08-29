@@ -10,6 +10,16 @@ paths while allocating only the requested BEAM values. It fixes the public term
 grammar and error behavior before implementation so native details, cursor
 position, and arbitrary JSON keys cannot leak into the caller contract.
 
+Phase 1 now implements the grammar as an undocumented BEAM preflight module.
+It assigns declaration-order output slots, preserves exact caller keys and
+paths, deterministically interns identical paths, validates proper-list shape,
+UTF-8 object segments, and the complete unsigned 64-bit index domain, and
+returns one controlled `invalid_projection` error before any native admission.
+`SimdJson.Error` now carries the reserved Milestone 2 reason union and optional
+redacted caller path. The public `select/2` operation and every native result
+behavior remain unimplemented, so this subject stays planned under its complete
+bootstrap exception.
+
 ```spec-meta
 id: simd_json.projection_api
 kind: api

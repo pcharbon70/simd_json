@@ -72,6 +72,21 @@ The generation captured at reservation is checked before every native
 dereference and before delivery. Operation resources retain the document and
 its input until traversal, conversion, discard, and terminal cleanup finish.
 
+### Phase 1 pre-admission checkpoint
+
+Phase 1 stops deliberately before projection reservation. A private test seam
+accepts a binary or genuine open document term but sends only the projection to
+the BEAM validator, making source independence observable before `select/2`
+exists. Test builds count every attempted entry through the existing
+`ThreadedOperation.admit/3` boundary. Invalid and valid preflight both leave
+those counters, the coordinator request set, native allocation gauges, worker
+entries, module generation, and the existing document lifecycle unchanged.
+
+The `fresh -> selecting -> consumed` state and the projection operation kind do
+not exist at this checkpoint. They remain later implementation work; this
+evidence establishes only the decision's pre-admission non-consumption side and
+does not claim that document selection or rollback is implemented.
+
 ### Close, cancellation, and shutdown
 
 Close or shutdown prevents new projection admission. If selection is active,

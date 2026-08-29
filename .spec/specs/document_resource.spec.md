@@ -32,6 +32,12 @@ live native gauges to baseline and the mixed batch counts exactly one cleanup
 per opened document. Section 6.3 reconciles the ownership and operations
 documentation and activates this subject against executable qualification.
 
+Milestone 2 Phase 1 exercises a genuine open document only through the private
+BEAM preflight seam. Invalid projection terms create no native admission,
+request, allocation, generation change, lifecycle transition, or cursor state;
+the accepted Milestone 1 resource graph and close behavior therefore remain
+unchanged until projection admission is implemented in a later phase.
+
 ```spec-meta
 id: simd_json.document_resource
 kind: subsystem

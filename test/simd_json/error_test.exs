@@ -31,6 +31,13 @@ defmodule SimdJson.ErrorTest do
       out_of_memory: "native JSON allocation failed",
       closed: "document is closed",
       not_owner: "document belongs to another process",
+      invalid_projection: "invalid projection",
+      no_such_field: "requested field does not exist",
+      index_out_of_bounds: "requested array index is out of bounds",
+      incorrect_type: "selected value has an incorrect type",
+      number_out_of_range: "selected number is out of range",
+      cursor_consumed: "document cursor has already been consumed",
+      cancelled: "JSON operation was cancelled",
       native_failure: "native JSON operation failed"
     }
 
@@ -40,6 +47,7 @@ defmodule SimdJson.ErrorTest do
       assert error.message == message
       assert error.byte_offset == nil
       assert error.native_code == nil
+      assert error.path == nil
     end
   end
 
@@ -150,6 +158,51 @@ defmodule SimdJson.ErrorTest do
              "#SimdJson.Error<reason: :native_failure, byte_offset: 12, native_code: 42>"
 
     refute inspect(error) =~ secret
+  end
+
+  # covers: simd_json.projection_api.projection_error_reasons simd_json.projection_api.error_path
+  test "projection path metadata preserves caller terms but inspection redacts its contents" do
+    secret = "caller-path-secret-4892"
+    path = [secret, "", 0, 18_446_744_073_709_551_615]
+
+    error = %Error{
+      reason: :no_such_field,
+      path: path,
+      message: "requested field does not exist"
+    }
+
+    assert error.path === path
+
+    assert inspect(error) ==
+             "#SimdJson.Error<reason: :no_such_field, byte_offset: nil, native_code: nil, " <>
+               "path: <caller-supplied>>"
+
+    refute inspect(error) =~ secret
+  end
+
+  # covers: simd_json.document_api.error_redaction simd_json.projection_api.error_path
+  test "inspection stays bounded and redacted for forged fields" do
+    secret = "forged-path-and-exception-secret-7741"
+
+    error = %Error{
+      reason: self(),
+      byte_offset: secret,
+      native_code: self(),
+      path: List.duplicate(secret, 100_000),
+      message: "C++ exception at 0x7ffee123: #{secret}"
+    }
+
+    rendered = inspect(error)
+
+    assert rendered ==
+             "#SimdJson.Error<reason: :native_failure, byte_offset: nil, native_code: nil, " <>
+               "path: <caller-supplied>>"
+
+    assert byte_size(rendered) < 160
+    refute rendered =~ secret
+    refute rendered =~ inspect(self())
+    refute rendered =~ "0x"
+    refute rendered =~ "C++"
   end
 
   defp safe_messages do

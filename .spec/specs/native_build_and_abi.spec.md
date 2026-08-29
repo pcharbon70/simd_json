@@ -29,6 +29,12 @@ the formal scheduler and lifecycle evidence commands to the same fingerprinted
 release matrix. Section 6.3 reconciles the public operations documentation and
 activates this subject against one executable release-qualification command.
 
+Milestone 2 Phase 1 leaves ABI version 1, native sources, build profiles, and
+symbol allowlists unchanged. Its new BEAM validator and executable preflight
+corpus are nevertheless runtime- and evidence-relevant, so both are added to
+the qualification input manifest. Any later edit to either now invalidates the
+recorded fingerprint and must pass the same Milestone 1 release gates.
+
 ```spec-meta
 id: simd_json.native_build_and_abi
 kind: subsystem

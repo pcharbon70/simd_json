@@ -122,6 +122,26 @@ Missing fields, out-of-range indexes, type failures, malformed JSON, lifecycle
 failures, and cancellation are fail-fast errors for the whole projection. No
 partial result map escapes.
 
+### Phase 1 implementation checkpoint
+
+Milestone 2 Phase 1 implements the grammar in an undocumented
+`SimdJson.Projection` module. Validation walks the outer and path lists without
+enumerating caller maps, rejects improper or malformed tails, checks UTF-8 only
+for path binaries, preserves arbitrary binary output keys exactly, and accepts
+integer segments only through `UINT64_MAX`. The opaque normalized term assigns
+output slots by declaration position and interns equal complete paths by their
+first declaration, so multiple keys can reference one stable path slot without
+using map enumeration order as output.
+
+The validator is the only constructor for that term. Invalid input returns a
+controlled `invalid_projection` error with `path: nil`; it never atomizes a
+binary or examines the supplied JSON source. The common error type now reserves
+the complete reason union and optional accepted-path shape. Default inspection
+reports only that a caller path is present, never its bytes, and defensively
+bounds forged reason and numeric fields. Test-only snapshot and source seams are
+compile-time gated, and no public `select/2`, compiled projection, serializer,
+protocol, or native handle is introduced by this checkpoint.
+
 ### Deferred surface
 
 Milestone 2 exposes no public compiled-projection resource, JSONPath parser,

@@ -11,6 +11,15 @@ binary and document forms share one correlated native operation model, a
 forward-only document has deterministic post-attempt state, and no result or
 worker can outlive the resources it dereferences.
 
+Phase 1 now establishes and executes the pre-admission half of that boundary.
+The complete projection is validated in reduction-yielding Elixir code before
+source inspection or request creation; test-only admission accounting plus a
+genuine fresh document prove invalid terms do not enter Zigler, allocate native
+operation state, advance the generation, or alter document lifecycle. No
+projection worker, reservation, selecting/consumed state, or binary temporary
+document exists yet, so the subject remains planned under its complete
+bootstrap exception.
+
 ```spec-meta
 id: simd_json.projection_execution
 kind: subsystem
