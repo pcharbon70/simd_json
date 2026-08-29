@@ -23,14 +23,17 @@ C++ validates the complete descriptor set, copies retained object keys, and
 builds an immutable canonically ordered trie with shared prefixes and multiple
 terminal slots. Independent C/Zig ordinary and sanitizer matrices cover
 layouts, boundary fixtures, every injected constructor checkpoint, exception
-containment, idempotent ownership, and release symbols. Phase 3 Sections 3.1
-through 3.3 now dispatch decoded object keys in source order with
-first-occurrence duplicate handling, advance arrays against ascending requested
-indexes, produce exact typed slots, consume malformed selected and unselected
-content, enforce the pinned depth bound, clear slots transactionally, check a
-hidden cancellation probe, and record bounded execution diagnostics. Section
-3.4 integration closure remains, and the subject intentionally stays planned
-under its bootstrap exception until Milestone 2 qualification.
+containment, idempotent ownership, and release symbols. Phase 3 dispatches
+decoded object keys in source order with first-occurrence duplicate handling,
+advances arrays against ascending requested indexes, produces exact typed
+slots, consumes malformed selected and unselected content, enforces the pinned
+depth bound, clears slots transactionally, checks a hidden cancellation probe,
+and records bounded execution diagnostics. Its C/Zig
+integration corpus covers Unicode and escaped paths, large unselected content,
+exact-padding guard pages, borrowed strings, deterministic failures, and every
+injected traversal boundary under ordinary and sanitizer profiles. The subject
+intentionally stays planned under its bootstrap exception until Milestone 2
+qualification.
 
 ```spec-meta
 id: simd_json.projection_engine

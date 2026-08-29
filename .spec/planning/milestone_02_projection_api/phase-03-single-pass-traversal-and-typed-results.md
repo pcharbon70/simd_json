@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 3 Phase - Execute the native plan in one complete document-order walk
+- [x] 3 Phase - Execute the native plan in one complete document-order walk
   and produce transactional typed scalar slots without constructing BEAM terms.
 
   This phase implements the core On-Demand query engine below the NIF boundary.
@@ -121,29 +121,29 @@ Back to plan: [README](./README.md)
 
 ## 3.4 Section — Phase 3 Integration Tests
 
-- [ ] 3.4 Section - Prove one-pass traversal, full validation, typed slots,
+- [x] 3.4 Section - Prove one-pass traversal, full validation, typed slots,
   duplicate policy, cancellation, and cleanup through ordinary and sanitizer
   native harnesses.
 
   This section closes the complete native engine before it can operate on a
   public or threaded BEAM resource.
 
-  - [ ] 3.4.1 Task - Run the functional traversal corpus.
+  - [x] 3.4.1 Task - Run the functional traversal corpus.
 
     The task covers path topology, source-order variation, Unicode and escapes,
     scalar types, missing values, and very large skipped content.
 
-    - [ ] 3.4.1.1 Subtask - Execute shared and disjoint object paths, identical paths, nested arrays, low/high indexes, declaration order opposite source order, and all scalar terminals.
-    - [ ] 3.4.1.2 Subtask - Exercise empty and Unicode keys, escaped keys and values, duplicate keys at multiple depths, empty containers, deep valid nesting, and large unselected subtrees.
-    - [ ] 3.4.1.3 Subtask - Verify stable missing-field, index, container-type, scalar-leaf, numeric-range, invalid UTF-8, unexpected EOF, invalid JSON, and logical-offset behavior.
-    - [ ] 3.4.1.4 Subtask - Assert shared-prefix/terminal counters equal the expected topology and one execution entry handles every fixture.
+    - [x] 3.4.1.1 Subtask - Execute shared and disjoint object paths, identical paths, nested arrays, low/high indexes, declaration order opposite source order, and all scalar terminals.
+    - [x] 3.4.1.2 Subtask - Exercise empty and Unicode keys, escaped keys and values, duplicate keys at multiple depths, empty containers, deep valid nesting, and large unselected subtrees.
+    - [x] 3.4.1.3 Subtask - Verify stable missing-field, index, container-type, scalar-leaf, numeric-range, invalid UTF-8, unexpected EOF, invalid JSON, and logical-offset behavior.
+    - [x] 3.4.1.4 Subtask - Assert shared-prefix/terminal counters equal the expected topology and one execution entry handles every fixture.
 
-  - [ ] 3.4.2 Task - Run full-validation and failure-cleanup gates.
+  - [x] 3.4.2 Task - Run full-validation and failure-cleanup gates.
 
     The task attacks every point where early slots could otherwise escape or
     borrowed input could outlive its document.
 
-    - [ ] 3.4.2.1 Subtask - Place malformed syntax before, inside, and after selected paths and in large unselected branches; require failure and no published slots for every case.
-    - [ ] 3.4.2.2 Subtask - Inject cancellation and allocation failure after every plan, traversal, skip, and slot step and require deterministic status plus baseline recovery.
-    - [ ] 3.4.2.3 Subtask - Run ordinary, AddressSanitizer, and UndefinedBehaviorSanitizer projection engine suites with guard-page and borrowed-string lifetime fixtures.
-    - [ ] 3.4.2.4 Subtask - Run the ABI v2, Zig resource, and all Milestone 1 regression suites, `mix spec.next`, and the reported `mix spec.check --base ...` command before marking Phase 3 complete.
+    - [x] 3.4.2.1 Subtask - Place malformed syntax before, inside, and after selected paths and in large unselected branches; require failure and no published slots for every case.
+    - [x] 3.4.2.2 Subtask - Inject cancellation and allocation failure after every plan, traversal, skip, and slot step and require deterministic status plus baseline recovery.
+    - [x] 3.4.2.3 Subtask - Run ordinary, AddressSanitizer, and UndefinedBehaviorSanitizer projection engine suites with guard-page and borrowed-string lifetime fixtures.
+    - [x] 3.4.2.4 Subtask - Run the ABI v2, Zig resource, and all Milestone 1 regression suites, `mix spec.next`, and the reported `mix spec.check --base ...` command before marking Phase 3 complete.

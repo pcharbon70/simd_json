@@ -82,12 +82,9 @@ pub fn Implementation(comptime c: type) type {
                 if (slot.reserved != 0) return null;
 
                 return switch (slot.tag) {
-                    c.SIMD_JSON_RESULT_SIGNED_INTEGER =>
-                    .{ .signed_integer = slot.value.signed_integer },
-                    c.SIMD_JSON_RESULT_UNSIGNED_INTEGER =>
-                    .{ .unsigned_integer = slot.value.unsigned_integer },
-                    c.SIMD_JSON_RESULT_DOUBLE =>
-                    .{ .floating_point = slot.value.floating_point },
+                    c.SIMD_JSON_RESULT_SIGNED_INTEGER => .{ .signed_integer = slot.value.signed_integer },
+                    c.SIMD_JSON_RESULT_UNSIGNED_INTEGER => .{ .unsigned_integer = slot.value.unsigned_integer },
+                    c.SIMD_JSON_RESULT_DOUBLE => .{ .floating_point = slot.value.floating_point },
                     c.SIMD_JSON_RESULT_BOOLEAN => switch (slot.value.boolean) {
                         0 => .{ .boolean = false },
                         1 => .{ .boolean = true },

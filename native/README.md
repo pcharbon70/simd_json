@@ -356,8 +356,9 @@ copied-key-byte, topology, duration, visit, and filled-slot counts. The C and
 Zig matrices cover shared and identical paths, canonical edge ordering, exact
 scalar types, malformed selected/unselected/trailing content, repeated keys,
 missing/index/type/range failures, pre/post-cursor cancellation, the depth
-bound, serializer/allocation failures, every exception class, and repeated
-null/idempotent caller cleanup.
+bound, Unicode and escaped paths, large skipped containers, exact-padding guard
+pages, borrowed strings, serializer/allocation failures, every exception class,
+and repeated null/idempotent caller cleanup.
 
 Run the ordinary and sanitizer matrices with:
 
