@@ -23,7 +23,8 @@ defmodule Mix.Tasks.SimdJson.VerifyTraceability do
     index = Map.fetch!(state, "index")
 
     inventory = Enum.map(@subjects, &inventory_subject!(index, &1))
-    write_inventory!(inventory)
+    verify_executed_state!(state, inventory)
+    write_inventory!(state, inventory)
 
     Enum.each(inventory, fn item ->
       Mix.shell().info(
@@ -121,6 +122,51 @@ defmodule Mix.Tasks.SimdJson.VerifyTraceability do
     |> Map.fetch!(kind)
     |> Enum.filter(&(&1["subject_id"] == subject_id))
     |> Enum.map(&Map.fetch!(&1, "id"))
+  end
+
+  defp verify_executed_state!(state, inventory) do
+    if Map.get(state, "findings", []) != [] do
+      fail!("generated SpecLed state retains findings")
+    end
+
+    verification =
+      Map.get(state, "verification") || fail!("SpecLed verification result is absent")
+
+    unless verification["threshold_failures"] == 0 do
+      fail!("SpecLed verification retains strength-threshold failures")
+    end
+
+    expected_ids =
+      inventory
+      |> Enum.flat_map(&Enum.map(&1["claims"], fn claim -> claim["id"] end))
+      |> MapSet.new()
+
+    claims =
+      verification
+      |> Map.fetch!("claims")
+      |> Enum.filter(&(&1["subject_id"] in @subjects))
+
+    actual_ids = claims |> Enum.map(& &1["cover_id"]) |> MapSet.new()
+
+    unless MapSet.equal?(expected_ids, actual_ids) do
+      missing = MapSet.difference(expected_ids, actual_ids) |> MapSet.to_list() |> Enum.sort()
+      stale = MapSet.difference(actual_ids, expected_ids) |> MapSet.to_list() |> Enum.sort()
+
+      fail!(
+        "executed SpecLed claims do not match current truth; " <>
+          "missing=#{inspect(missing)} stale=#{inspect(stale)}"
+      )
+    end
+
+    weak =
+      Enum.reject(claims, fn claim ->
+        claim["strength"] == "executed" and claim["required_strength"] == "executed" and
+          claim["meets_minimum"] == true
+      end)
+
+    if weak != [] do
+      fail!("Milestone 1 retains non-executed SpecLed claims: #{inspect(weak)}")
+    end
   end
 
   defp verify_command_evidence!(target) when is_binary(target) and target != "" do
@@ -222,7 +268,7 @@ defmodule Mix.Tasks.SimdJson.VerifyTraceability do
     |> :json.decode()
   end
 
-  defp write_inventory!(inventory) do
+  defp write_inventory!(state, inventory) do
     directory =
       System.get_env("SIMD_JSON_QUALIFICATION_DIR") ||
         "_build/qualification/traceability"
@@ -231,7 +277,10 @@ defmodule Mix.Tasks.SimdJson.VerifyTraceability do
 
     record = %{
       "schema_version" => 1,
+      "qualification_input_sha256" => SimdJson.Native.BuildGuard.qualification_fingerprint(),
       "source_revision" => source_revision(),
+      "source_tree" => source_tree(),
+      "verification_strength" => get_in(state, ["verification", "strength_summary"]),
       "subjects" => inventory
     }
 
@@ -241,6 +290,13 @@ defmodule Mix.Tasks.SimdJson.VerifyTraceability do
   defp source_revision do
     case System.cmd("git", ["rev-parse", "HEAD"], stderr_to_stdout: true) do
       {revision, 0} -> String.trim(revision)
+      _other -> "unavailable"
+    end
+  end
+
+  defp source_tree do
+    case System.cmd("git", ["rev-parse", "HEAD^{tree}"], stderr_to_stdout: true) do
+      {tree, 0} -> String.trim(tree)
       _other -> "unavailable"
     end
   end

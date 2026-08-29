@@ -261,6 +261,13 @@ resource accessor, raw handle, capacity control, backpressure, or telemetry.
 After dependencies and Zig are available:
 
 ```console
+./scripts/ci/qualify_milestone_1.sh
+```
+
+That clean-worktree command runs and records the complete matrix. Its subject
+commands can also be run independently while diagnosing a failure:
+
+```console
 mix simd_json.verify_vendor
 mix simd_json.verify_qualification
 bash scripts/ci/qualify_native_release.sh
@@ -274,5 +281,6 @@ mix spec.check --base main
 The CI artifacts retain the revision/tree, environment, commands, package
 inventory, native source fingerprint, runtime dispatch, deterministic seeds,
 sanitizer summaries, raw scheduler data, lifecycle baseline, surface inventory,
-and SpecLed traceability inventory. The final acceptance record links those
-artifacts to one immutable release-candidate revision.
+and SpecLed traceability inventory. The
+[Milestone 1 Acceptance Record](./01-native-foundation-acceptance.md) links
+those artifacts to one immutable release-candidate revision.

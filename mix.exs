@@ -14,7 +14,8 @@ defmodule SimdJson.MixProject do
         extras: [
           "README.md",
           "docs/milestones/01-native-foundation.md",
-          "docs/milestones/01-native-foundation-operations.md"
+          "docs/milestones/01-native-foundation-operations.md",
+          "docs/milestones/01-native-foundation-acceptance.md"
         ]
       ],
       package: package(),

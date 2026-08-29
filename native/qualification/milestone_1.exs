@@ -5,7 +5,7 @@
 [
   schema_version: 1,
   qualified_on: ~D[2026-08-29],
-  input_sha256: "cbdf966923fd71bcac197a693ac1884d4ffef121a93bf3c7640be8c4ebc259f7",
+  input_sha256: "d6034e5c55d3bf31636622599d989f1801335820142a66dc19da1600cc5e5c08",
   randomized_seed: 260_829_001,
   supported_targets: [
     [
@@ -32,6 +32,7 @@
     "bash scripts/ci/qualify_document_resource.sh",
     "bash scripts/ci/qualify_runtime.sh",
     "bash scripts/ci/qualify_document_api.sh",
-    "mix simd_json.verify_traceability"
+    "mix simd_json.verify_traceability",
+    "bash scripts/ci/qualify_milestone_1.sh"
   ]
 ]

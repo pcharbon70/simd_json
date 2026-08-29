@@ -104,6 +104,8 @@ The milestones are deliberately sequential. Later work may begin experimentally,
 
 [Implementation and qualification operations](01-native-foundation-operations.md)
 
+[Acceptance record](01-native-foundation-acceptance.md)
+
 **Status:** Active on the qualified Ubuntu 24.04 x86-64 target.
 
 ### Goal

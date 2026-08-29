@@ -47,4 +47,6 @@ The Milestone 1 architecture and acceptance boundary are documented in
 Maintainers should also read the
 [`Milestone 1 Native Foundation Operations`](docs/milestones/01-native-foundation-operations.md)
 guide before changing a native dependency, ownership rule, or threaded
-execution boundary.
+execution boundary. The
+[`Milestone 1 Acceptance Record`](docs/milestones/01-native-foundation-acceptance.md)
+identifies the qualified target, immutable evidence, and remaining non-goals.

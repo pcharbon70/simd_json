@@ -29,7 +29,9 @@ The four specifications have executable verification and no bootstrap
 exceptions. The implementation, operating limits, maintenance workflow, and
 qualification commands are collected in the
 [Milestone 1 Native Foundation Operations](./01-native-foundation-operations.md)
-guide.
+guide. The immutable qualification identity, supported target, results, and
+artifact layout are collected in the
+[Milestone 1 Acceptance Record](./01-native-foundation-acceptance.md).
 
 ## Status
 
@@ -259,9 +261,10 @@ Milestone 1 is complete when:
 - the resource model is documented well enough for Milestone 2 to add traversal without changing ownership fundamentals.
 
 The completion evidence is produced by the checked-in qualification commands
-and summarized by the Milestone 1 acceptance record. The parent-retention and
-generation helpers are ready for a later cursor, but no cursor or traversal API
-is exposed in this milestone.
+and summarized by the
+[Milestone 1 Acceptance Record](./01-native-foundation-acceptance.md). The
+parent-retention and generation helpers are ready for a later cursor, but no
+cursor or traversal API is exposed in this milestone.
 
 ## Decisions to record
 

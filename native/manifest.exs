@@ -170,6 +170,7 @@
     "native/zig/build_smoke.zig",
     "native/zig/document_resource.zig",
     "scripts/ci/qualify_native_release.sh",
+    "scripts/ci/qualify_milestone_1.sh",
     "scripts/ci/qualify_document_api.sh",
     "scripts/ci/qualify_document_resource.sh",
     "scripts/ci/qualify_runtime.sh",
