@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "simd_json_abi.h"
 #include "simd_json_nif_internal.h"
 #include "simd_json_test_hooks.h"
@@ -7,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <unistd.h>
 
 /* covers: simd_json.projection_engine.declaration_order_independence simd_json.projection_engine.single_guided_traversal simd_json.projection_engine.complete_source_validation simd_json.projection_engine.duplicate_json_key_policy simd_json.projection_engine.scalar_only_materialization simd_json.projection_engine.typed_result_slots simd_json.projection_engine.transactional_conversion simd_json.projection_engine.exception_and_failure_cleanup simd_json.projection_engine.shared_prefix_and_order simd_json.projection_engine.object_array_walk simd_json.projection_engine.invalid_unselected_content simd_json.projection_engine.duplicate_object_keys simd_json.projection_engine.transactional_slot_failure simd_json.projection_engine.abi_v2_conformance simd_json.projection_engine.one_boundary_with_timing */
 
@@ -942,6 +946,178 @@ static int depth_and_recursion_bound_matrix(void) {
   return 0;
 }
 
+static int unicode_nested_array_matrix(void) {
+  static const uint8_t source[] =
+      "{\"雪\":{\"items\":[{\"名\":\"值\"},[],{}]},"
+      "\"unused\":{\"深\":[1,2,3]}}";
+  static const uint8_t expected[] = {0xe5, 0x80, 0xbc};
+  static const path_segment selected[] = {
+      KEY_SEGMENT("雪"), KEY_SEGMENT("items"), INDEX_SEGMENT(UINT64_C(0)),
+      KEY_SEGMENT("名")};
+  static const path_definition paths[] = {{0, selected, 4}};
+  static const path_segment empty_array_index[] = {
+      KEY_SEGMENT("雪"), KEY_SEGMENT("items"), INDEX_SEGMENT(UINT64_C(1)),
+      INDEX_SEGMENT(UINT64_C(0))};
+  static const path_definition empty_array_path[] = {
+      {0, empty_array_index, 4}};
+  simd_json_projection_plan *plan = NULL;
+  document_fixture document;
+  simd_json_result_slot slot = {0};
+  simd_json_projection_status status = build_plan(paths, 1, &plan);
+
+  CHECK(status.code == SIMD_JSON_STATUS_OK && plan != NULL);
+  CHECK(open_document(source, sizeof(source) - 1U, 1, &document).code ==
+        SIMD_JSON_STATUS_OK);
+  status = simd_json_projection_execute(document.document, plan, &slot, 1);
+  CHECK(status.code == SIMD_JSON_STATUS_OK);
+  CHECK(slot_is_bytes(&slot, expected, sizeof(expected)));
+  close_document(&document);
+  simd_json_projection_plan_destroy(plan);
+
+  plan = NULL;
+  memset(&slot, 0, sizeof(slot));
+  CHECK(build_plan(empty_array_path, 1, &plan).code == SIMD_JSON_STATUS_OK);
+  CHECK(open_document(source, sizeof(source) - 1U, 1, &document).code ==
+        SIMD_JSON_STATUS_OK);
+  status = simd_json_projection_execute(document.document, plan, &slot, 1);
+  CHECK(status.code == SIMD_JSON_STATUS_INDEX_OUT_OF_BOUNDS);
+  CHECK(status.output_slot == 0);
+  CHECK(slot_is_empty(&slot));
+  close_document(&document);
+  simd_json_projection_plan_destroy(plan);
+  CHECK(native_state_is_quiescent());
+  return 0;
+}
+
+static uint8_t *large_unselected_source(size_t element_count,
+                                        int malformed_tail,
+                                        size_t *out_length) {
+  static const char prefix[] = "{\"selected\":\"ok\",\"unselected\":[";
+  static const char valid_suffix[] = "0]}";
+  static const char malformed_suffix[] = "tru]}";
+  const char *suffix = malformed_tail != 0 ? malformed_suffix : valid_suffix;
+  const size_t suffix_length = strlen(suffix);
+  const size_t repeated = element_count == 0 ? 0 : (element_count - 1U) * 2U;
+  const size_t length = sizeof(prefix) - 1U + repeated + suffix_length;
+  uint8_t *source = (uint8_t *)malloc(length);
+  size_t cursor = 0;
+  size_t index;
+
+  if (source == NULL || element_count == 0) {
+    free(source);
+    return NULL;
+  }
+  memcpy(source + cursor, prefix, sizeof(prefix) - 1U);
+  cursor += sizeof(prefix) - 1U;
+  for (index = 1; index < element_count; ++index) {
+    source[cursor++] = '0';
+    source[cursor++] = ',';
+  }
+  memcpy(source + cursor, suffix, suffix_length);
+  cursor += suffix_length;
+  if (cursor != length) {
+    free(source);
+    return NULL;
+  }
+  *out_length = length;
+  return source;
+}
+
+static int large_unselected_validation_matrix(void) {
+  static const size_t element_count = 100000U;
+  static const path_segment selected[] = {KEY_SEGMENT("selected")};
+  static const path_definition paths[] = {{0, selected, 1}};
+  int malformed;
+
+  for (malformed = 0; malformed <= 1; ++malformed) {
+    size_t source_length = 0;
+    uint8_t *source =
+        large_unselected_source(element_count, malformed, &source_length);
+    simd_json_projection_plan *plan = NULL;
+    document_fixture document;
+    simd_json_result_slot slot = {0};
+    simd_json_test_projection_execution_summary summary;
+    simd_json_projection_status status;
+
+    CHECK(source != NULL);
+    CHECK(build_plan(paths, 1, &plan).code == SIMD_JSON_STATUS_OK);
+    CHECK(open_document(source, source_length, malformed == 0, &document).code ==
+          SIMD_JSON_STATUS_OK);
+    status = simd_json_projection_execute(document.document, plan, &slot, 1);
+
+    if (malformed == 0) {
+      CHECK(status.code == SIMD_JSON_STATUS_OK);
+      CHECK(slot_is_string(&slot, "ok"));
+      CHECK(simd_json_test_projection_execution_summary_read(plan, &summary) ==
+            1);
+      CHECK(summary.array_elements == element_count);
+      CHECK(summary.skipped_values >= element_count);
+    } else {
+      CHECK(status.code == SIMD_JSON_STATUS_INVALID_JSON);
+      CHECK(status.byte_offset != SIMD_JSON_BYTE_OFFSET_UNAVAILABLE);
+      CHECK(status.byte_offset <= source_length);
+      CHECK(slot_is_empty(&slot));
+    }
+
+    close_document(&document);
+    simd_json_projection_plan_destroy(plan);
+    free(source);
+    CHECK(native_state_is_quiescent());
+  }
+  return 0;
+}
+
+static int guard_page_and_borrowed_string_matrix(void) {
+  static const uint8_t source[] =
+      "{\"selected\":\"edge\\u0000雪\",\"tail\":[1,2,3]}";
+  static const uint8_t expected[] = {
+      'e', 'd', 'g', 'e', 0, 0xe9, 0x9b, 0xaa};
+  static const path_segment selected[] = {KEY_SEGMENT("selected")};
+  static const path_definition paths[] = {{0, selected, 1}};
+  const long reported_page_size = sysconf(_SC_PAGESIZE);
+  const size_t logical_length = sizeof(source) - 1U;
+  const size_t capacity = logical_length + (size_t)SIMD_JSON_REQUIRED_PADDING;
+  size_t page_size;
+  uint8_t *mapping;
+  uint8_t *input;
+  simd_json_parser *parser = NULL;
+  simd_json_document *document = NULL;
+  simd_json_projection_plan *plan = NULL;
+  simd_json_result_slot slot = {0};
+  simd_json_status document_status;
+  simd_json_projection_status projection_status;
+
+  CHECK(reported_page_size > 0);
+  page_size = (size_t)reported_page_size;
+  CHECK(capacity < page_size);
+  mapping = (uint8_t *)mmap(NULL, page_size * 2U, PROT_READ | PROT_WRITE,
+                            MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  CHECK(mapping != MAP_FAILED);
+  CHECK(mprotect(mapping + page_size, page_size, PROT_NONE) == 0);
+  input = mapping + page_size - capacity;
+  memcpy(input, source, logical_length);
+  memset(input + logical_length, 0, (size_t)SIMD_JSON_REQUIRED_PADDING);
+
+  document_status = simd_json_parser_create(&parser);
+  CHECK(document_status.code == SIMD_JSON_STATUS_OK && parser != NULL);
+  document_status = simd_json_document_open(
+      parser, input, logical_length, capacity, &document);
+  CHECK(document_status.code == SIMD_JSON_STATUS_OK && document != NULL);
+  projection_status = build_plan(paths, 1, &plan);
+  CHECK(projection_status.code == SIMD_JSON_STATUS_OK && plan != NULL);
+  projection_status =
+      simd_json_projection_execute(document, plan, &slot, 1);
+  CHECK(projection_status.code == SIMD_JSON_STATUS_OK);
+  CHECK(slot_is_bytes(&slot, expected, sizeof(expected)));
+
+  simd_json_projection_plan_destroy(plan);
+  simd_json_document_destroy(document);
+  simd_json_parser_destroy(parser);
+  CHECK(munmap(mapping, page_size * 2U) == 0);
+  CHECK(native_state_is_quiescent());
+  return 0;
+}
+
 int main(void) {
   simd_json_test_clear_failure();
   simd_json_test_projection_clear_failure();
@@ -957,6 +1133,9 @@ int main(void) {
   CHECK(traversal_failure_injection_matrix() == 0);
   CHECK(execution_argument_and_cursor_matrix() == 0);
   CHECK(depth_and_recursion_bound_matrix() == 0);
+  CHECK(unicode_nested_array_matrix() == 0);
+  CHECK(large_unselected_validation_matrix() == 0);
+  CHECK(guard_page_and_borrowed_string_matrix() == 0);
   CHECK(native_state_is_quiescent());
   printf("projection engine conformance passed abi=%" PRIu32 "\n",
          SIMD_JSON_ABI_VERSION);
