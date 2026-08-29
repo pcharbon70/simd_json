@@ -68,6 +68,48 @@ defmodule SimdJson.Native.BuildGuardTest do
     end
   end
 
+  # covers: simd_json.native_build_and_abi.dependency_upgrade_gate
+  @tag :tmp_dir
+  test "rejects stale qualification after an isolated ABI pin change", %{tmp_dir: tmp_dir} do
+    File.write!(Path.join(tmp_dir, "tool.pin"), "zig=0.16.0\n")
+
+    manifest =
+      @manifest
+      |> Keyword.put(:qualification_inputs, ["tool.pin"])
+
+    qualification = [
+      input_sha256: qualification_fingerprint(tmp_dir, ["tool.pin"]),
+      supported_targets: [
+        [
+          triple: @primary_target,
+          expected_simdjson_implementations:
+            @manifest
+            |> Keyword.fetch!(:primary_target)
+            |> Keyword.fetch!(:expected_simdjson_implementations)
+        ]
+      ]
+    ]
+
+    assert :ok =
+             BuildGuard.validate_qualification!(
+               root: tmp_dir,
+               manifest: manifest,
+               qualification: qualification,
+               target: @primary_target
+             )
+
+    File.write!(Path.join(tmp_dir, "tool.pin"), "zig=0.16.1\n")
+
+    assert_raise BuildError, ~r/native qualification evidence is stale/, fn ->
+      BuildGuard.validate_qualification!(
+        root: tmp_dir,
+        manifest: manifest,
+        qualification: qualification,
+        target: @primary_target
+      )
+    end
+  end
+
   defp valid_toolchain do
     %{
       elixir: Keyword.fetch!(@beam, :qualified_elixir),
@@ -98,5 +140,12 @@ defmodule SimdJson.Native.BuildGuardTest do
     contents
     |> then(&:crypto.hash(:sha256, &1))
     |> Base.encode16(case: :lower)
+  end
+
+  defp qualification_fingerprint(root, paths) do
+    paths
+    |> Enum.map(fn path -> {path, File.read!(Path.join(root, path)) |> sha256()} end)
+    |> :erlang.term_to_binary()
+    |> sha256()
   end
 end

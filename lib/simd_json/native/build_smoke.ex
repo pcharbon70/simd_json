@@ -4,6 +4,31 @@ defmodule SimdJson.Native.BuildSmoke do
   require SimdJson.Native.BuildGuard
   SimdJson.Native.BuildGuard.assert_supported!()
 
+  @sanitizer_build System.get_env("SIMD_JSON_SANITIZER") == "1"
+  @cxx_flags [
+               "-std=c++17",
+               "-DSIMDJSON_AVX512_ALLOWED=0",
+               "-DNDEBUG",
+               "-fvisibility=hidden",
+               "-fvisibility-inlines-hidden"
+             ] ++
+               if(@sanitizer_build,
+                 do: [
+                   "-O1",
+                   "-g",
+                   "-fno-omit-frame-pointer",
+                   "-fsanitize=address,undefined"
+                 ],
+                 else: []
+               )
+  @sanitizer_libraries if(@sanitizer_build,
+                         do: [
+                           System.fetch_env!("SIMD_JSON_ASAN_LIBRARY"),
+                           System.fetch_env!("SIMD_JSON_UBSAN_LIBRARY")
+                         ],
+                         else: []
+                       )
+
   use Zig,
     otp_app: :simd_json,
     zig_code_path: "./native/zig/build_smoke.zig",
@@ -47,31 +72,11 @@ defmodule SimdJson.Native.BuildSmoke do
       include_dirs: ["./native/include", "./native/vendor/simdjson"],
       headers: [simd_json_abi: "./native/include/simd_json_nif_internal.h"],
       src: [
-        {"../../../native/src/build_smoke.cpp",
-         [
-           "-std=c++17",
-           "-DSIMDJSON_AVX512_ALLOWED=0",
-           "-DNDEBUG",
-           "-fvisibility=hidden",
-           "-fvisibility-inlines-hidden"
-         ]},
-        {"../../../native/src/simd_json_abi.cpp",
-         [
-           "-std=c++17",
-           "-DSIMDJSON_AVX512_ALLOWED=0",
-           "-DNDEBUG",
-           "-fvisibility=hidden",
-           "-fvisibility-inlines-hidden"
-         ]},
-        {"../../../native/vendor/simdjson/simdjson.cpp",
-         [
-           "-std=c++17",
-           "-DSIMDJSON_AVX512_ALLOWED=0",
-           "-DNDEBUG",
-           "-fvisibility=hidden",
-           "-fvisibility-inlines-hidden"
-         ]}
+        {"../../../native/src/build_smoke.cpp", @cxx_flags},
+        {"../../../native/src/simd_json_abi.cpp", @cxx_flags},
+        {"../../../native/vendor/simdjson/simdjson.cpp", @cxx_flags}
       ],
+      link_lib: @sanitizer_libraries,
       link_libcpp: true
     ]
 

@@ -84,6 +84,37 @@ qualification.
 Changing a version number without regenerating those results is an incomplete
 upgrade and must fail the dependency guard.
 
+### Executable qualification gate
+
+[`qualification/milestone_1.exs`](./qualification/milestone_1.exs) binds the
+supported target and deterministic stress seed to a SHA-256 fingerprint of
+every ABI-, runtime-, harness-, workflow-, and evidence-relevant input listed
+under `qualification_inputs` in the native manifest. Verify it with:
+
+```console
+mix simd_json.verify_qualification
+```
+
+Changing a tool pin, C header, compiler profile, target row, native source,
+runtime bridge, test harness, or qualification command changes that
+fingerprint and makes the command fail. Updating the recorded digest alone is
+not acceptance: CI runs `scripts/ci/qualify_native_release.sh` from that same
+revision and archives its package inventory, tool versions, target, runtime
+dispatch, deterministic seed, ordinary and sanitizer logs, symbol inspection,
+and offline-build results. The isolated pin-change test in
+`test/native/build_guard_test.exs` proves a stale record cannot pass.
+
+The complete release-native gate is:
+
+```console
+SIMD_JSON_QUALIFICATION_DIR=_build/qualification/native \
+  bash scripts/ci/qualify_native_release.sh
+```
+
+The supported matrix contains only Ubuntu 24.04 x86-64. Experimental rows are
+not generic fallbacks: the build guard and qualification guard both reject
+them until equivalent evidence is recorded.
+
 ## Build and cache inputs
 
 `mix compile` runs the target, toolchain, lockfile, vendor-digest, and patch
@@ -137,6 +168,15 @@ C ABI and C++ implementation symbols remain local. Run
 `scripts/native/verify_release_symbols.sh` after compiling the NIF to compare
 both artifacts with their checked-in allowlists and to prove test-only failure
 controls are absent.
+
+`scripts/native/run_nif_sanitizer_tests.sh` performs an isolated NIF build in
+which the C++ shim and simdjson translation units are instrumented with
+AddressSanitizer and UndefinedBehaviorSanitizer. It runs the threaded operation
+and public API corpora with fail-fast runtimes preloaded. LeakSanitizer is
+disabled only for the long-lived BEAM host process, whose allocator ownership
+is outside the NIF; standalone C and Zig sanitizer harnesses keep leak
+detection enabled, and BEAM tests require every bounded native gauge to return
+to its recorded baseline.
 
 ## Zig document resource boundary
 

@@ -8,6 +8,7 @@ defmodule SimdJson.MixProject do
       version: "0.1.0",
       elixir: "~> 1.18.4",
       start_permanent: Mix.env() == :prod,
+      description: "An ownership-safe Elixir NIF wrapper for simdjson",
       package: package(),
       deps: deps()
     ]
@@ -35,6 +36,9 @@ defmodule SimdJson.MixProject do
     # The native directory deliberately includes the upstream source, its
     # provenance manifest, and both upstream license files in Hex artifacts.
     [
+      licenses: ["Apache-2.0", "MIT"],
+      links: %{"GitHub" => "https://github.com/pcharbon70/simd_json"},
+      exclude_patterns: [~r/\.Elixir\..*\.zig$/],
       files: [
         "lib",
         "native",

@@ -20,8 +20,13 @@ unqualified on OTP 27.3. Phase 5 adds a bounded Zig resource type/owner check,
 the Elixir document wrapper, and two hidden NIF-internal conformance functions
 that revalidate owned input without changing ABI version 1 or its exported
 symbol allowlist. Release checks prove native injection controls remain absent.
-Final supported-target qualification remains incomplete, so the Milestone 1
-bootstrap exception and `planned` status remain in force.
+Phase 6 Section 6.1 adds the release package inspection, deterministic
+randomized C ABI stress, isolated threaded/public NIF sanitizer run, and a
+checked-in qualification fingerprint. Every ABI-, runtime-, harness-, target-,
+workflow-, and evidence-relevant change now makes the recorded proof stale,
+and an isolated pin-change test proves the gate fails closed. The final
+scheduler and lifecycle qualification still precede activation, so the
+Milestone 1 bootstrap exception and `planned` status remain in force.
 
 ```spec-meta
 id: simd_json.native_build_and_abi
@@ -369,6 +374,64 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
   covers:
     - simd_json.native_build_and_abi.symbol_visibility
     - simd_json.native_build_and_abi.release_symbol_surface
+
+- kind: source_file
+  target: native/qualification/milestone_1.exs
+  covers:
+    - simd_json.native_build_and_abi.pinned_toolchain
+    - simd_json.native_build_and_abi.target_qualification
+    - simd_json.native_build_and_abi.dependency_upgrade_gate
+
+- kind: source_file
+  target: lib/simd_json/native/build_guard.ex
+  covers:
+    - simd_json.native_build_and_abi.dependency_upgrade_gate
+
+- kind: command
+  target: mix simd_json.verify_qualification
+  covers:
+    - simd_json.native_build_and_abi.pinned_toolchain
+    - simd_json.native_build_and_abi.target_qualification
+    - simd_json.native_build_and_abi.dependency_upgrade_gate
+
+- kind: test_file
+  target: test/qualification/native_release_qualification_test.exs
+  covers:
+    - simd_json.native_build_and_abi.clean_supported_build
+    - simd_json.native_build_and_abi.target_qualification
+    - simd_json.native_build_and_abi.unsupported_target_rejection
+    - simd_json.native_build_and_abi.dependency_upgrade_gate
+
+- kind: test_file
+  target: test/native/build_guard_test.exs
+  covers:
+    - simd_json.native_build_and_abi.dependency_upgrade_gate
+
+- kind: command
+  target: bash scripts/native/run_nif_sanitizer_tests.sh
+  covers:
+    - simd_json.native_build_and_abi.layered_boundary
+    - simd_json.native_build_and_abi.exception_containment
+    - simd_json.native_build_and_abi.partial_failure_cleanup
+
+- kind: command
+  target: bash scripts/ci/qualify_native_release.sh
+  covers:
+    - simd_json.native_build_and_abi.official_vendored_source
+    - simd_json.native_build_and_abi.pinned_toolchain
+    - simd_json.native_build_and_abi.clean_checkout_build
+    - simd_json.native_build_and_abi.layered_boundary
+    - simd_json.native_build_and_abi.opaque_c_contract
+    - simd_json.native_build_and_abi.exception_containment
+    - simd_json.native_build_and_abi.partial_failure_cleanup
+    - simd_json.native_build_and_abi.symbol_visibility
+    - simd_json.native_build_and_abi.target_qualification
+    - simd_json.native_build_and_abi.clean_supported_build
+    - simd_json.native_build_and_abi.cpp_exception_translation
+    - simd_json.native_build_and_abi.c_abi_conformance
+    - simd_json.native_build_and_abi.release_symbol_surface
+    - simd_json.native_build_and_abi.unsupported_target_rejection
+    - simd_json.native_build_and_abi.dependency_upgrade_gate
 ```
 
 ## Exceptions
@@ -391,5 +454,5 @@ Before this subject changes from `planned` to `active`, replace the bootstrap ex
     - simd_json.native_build_and_abi.release_symbol_surface
     - simd_json.native_build_and_abi.unsupported_target_rejection
     - simd_json.native_build_and_abi.dependency_upgrade_gate
-  reason: Phases 1 through 5 provide reproducible build, provenance, C ABI, Zig ownership, threaded execution, public API, lifetime, sanitizer, and unchanged release-symbol evidence; retain the exception until Phase 6 completes the supported-target matrix and full Milestone 1 closure qualification.
+  reason: Phase 6 Section 6.1 qualifies the supported release package, deterministic ABI stress, standalone and NIF sanitizer corpora, symbol surface, offline build, target rejection, and executable dependency-upgrade fingerprint; retain the exception until Sections 6.2 through 6.4 complete runtime qualification and activate all four subjects together.
 ```

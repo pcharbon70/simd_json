@@ -20,44 +20,44 @@ Back to plan: [README](./README.md)
 
 ## 6.1 Section — Release Native and Platform Qualification
 
-- [ ] 6.1 Section - Prove the packaged native artifact is reproducible, portable within its declared matrix, and sanitizer-clean.
+- [x] 6.1 Section - Prove the packaged native artifact is reproducible, portable within its declared matrix, and sanitizer-clean.
 
   This section qualifies actual release outputs rather than developer build
   intermediates. Every supported target receives the same provenance, ABI,
   symbol, parser-conformance, and safety treatment; targets without equivalent
   evidence remain explicitly unsupported or experimental.
 
-  - [ ] 6.1.1 Task - Run the supported-target clean-build matrix.
+  - [x] 6.1.1 Task - Run the supported-target clean-build matrix.
 
     The task re-executes `clean_supported_build` and
     `unsupported_target_rejection` for the complete package in isolated CI
     environments.
 
-    - [ ] 6.1.1.1 Subtask - Build from clean source on every supported operating-system and architecture target with no system simdjson and no build-time network access after normal dependency fetch.
-    - [ ] 6.1.1.2 Subtask - Verify the compiler, Zig, Zigler, simdjson source digest, flags, runtime ABI, and CPU-dispatch implementation against the checked-in qualification matrix.
-    - [ ] 6.1.1.3 Subtask - Build the distributable package, inspect its contents, and prove all required native sources, headers, provenance, licenses, notices, and build inputs are present.
-    - [ ] 6.1.1.4 Subtask - Exercise unsupported-target guards and prove no system library, generic unqualified artifact, or alternate scheduler mode is selected.
+    - [x] 6.1.1.1 Subtask - Build from clean source on every supported operating-system and architecture target with no system simdjson and no build-time network access after normal dependency fetch.
+    - [x] 6.1.1.2 Subtask - Verify the compiler, Zig, Zigler, simdjson source digest, flags, runtime ABI, and CPU-dispatch implementation against the checked-in qualification matrix.
+    - [x] 6.1.1.3 Subtask - Build the distributable package, inspect its contents, and prove all required native sources, headers, provenance, licenses, notices, and build inputs are present.
+    - [x] 6.1.1.4 Subtask - Exercise unsupported-target guards and prove no system library, generic unqualified artifact, or alternate scheduler mode is selected.
 
-  - [ ] 6.1.2 Task - Run final C ABI and native safety qualification.
+  - [x] 6.1.2 Task - Run final C ABI and native safety qualification.
 
     The task re-executes `c_abi_conformance`, `cpp_exception_translation`, and
     `release_symbol_surface` against the same sources and profiles used by the
     package.
 
-    - [ ] 6.1.2.1 Subtask - Run the independent C harness for all valid roots, malformed inputs, invalid pointer-length combinations, injected exceptions, allocation failures, and destruction paths.
-    - [ ] 6.1.2.2 Subtask - Run native, Zig resource, threaded operation, and public API corpora under AddressSanitizer and UndefinedBehaviorSanitizer on every target that supports those tools.
-    - [ ] 6.1.2.3 Subtask - Add bounded randomized malformed-input and lifecycle-sequence stress without treating a fuzzer crash-free run as a substitute for required deterministic cases.
-    - [ ] 6.1.2.4 Subtask - Inspect release symbols and strings to prove C++ implementation details, test hooks, allocation counters, failure injection, native addresses, and exception text are absent.
-    - [ ] 6.1.2.5 Subtask - Archive target, command, seed, tool version, source digest, and sanitizer output as reviewable qualification evidence.
+    - [x] 6.1.2.1 Subtask - Run the independent C harness for all valid roots, malformed inputs, invalid pointer-length combinations, injected exceptions, allocation failures, and destruction paths.
+    - [x] 6.1.2.2 Subtask - Run native, Zig resource, threaded operation, and public API corpora under AddressSanitizer and UndefinedBehaviorSanitizer on every target that supports those tools.
+    - [x] 6.1.2.3 Subtask - Add bounded randomized malformed-input and lifecycle-sequence stress without treating a fuzzer crash-free run as a substitute for required deterministic cases.
+    - [x] 6.1.2.4 Subtask - Inspect release symbols and strings to prove C++ implementation details, test hooks, allocation counters, failure injection, native addresses, and exception text are absent.
+    - [x] 6.1.2.5 Subtask - Archive target, command, seed, tool version, source digest, and sanitizer output as reviewable qualification evidence.
 
-  - [ ] 6.1.3 Task - Verify the dependency-upgrade gate.
+  - [x] 6.1.3 Task - Verify the dependency-upgrade gate.
 
     The task proves `dependency_upgrade_gate` is an executable maintenance rule,
     not prose that can be skipped during a later simdjson or toolchain update.
 
-    - [ ] 6.1.3.1 Subtask - Add CI change detection for vendored simdjson, patch manifests, Zig, Zigler, compiler profiles, C header layouts, and target matrix inputs.
-    - [ ] 6.1.3.2 Subtask - Require changed inputs to invalidate clean-build, C ABI, sanitizer, CPU-dispatch, scheduler, and package evidence.
-    - [ ] 6.1.3.3 Subtask - Test the gate with an isolated pin change and assert stale qualification artifacts cannot satisfy it.
+    - [x] 6.1.3.1 Subtask - Add CI change detection for vendored simdjson, patch manifests, Zig, Zigler, compiler profiles, C header layouts, and target matrix inputs.
+    - [x] 6.1.3.2 Subtask - Require changed inputs to invalidate clean-build, C ABI, sanitizer, CPU-dispatch, scheduler, and package evidence.
+    - [x] 6.1.3.3 Subtask - Test the gate with an isolated pin change and assert stale qualification artifacts cannot satisfy it.
 
 ## 6.2 Section — Scheduler, Lifecycle, and Memory Qualification
 

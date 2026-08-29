@@ -43,12 +43,67 @@ defmodule SimdJson.Native.BuildGuard do
 
     manifest
     |> Keyword.fetch!(:cache_inputs)
-    |> Enum.map(fn relative_path ->
-      path = Path.join(root, relative_path)
-      {relative_path, sha256!(path)}
-    end)
-    |> :erlang.term_to_binary()
-    |> sha256()
+    |> fingerprint_inputs(root)
+  end
+
+  @doc false
+  # covers: simd_json.native_build_and_abi.dependency_upgrade_gate
+  def qualification_fingerprint(root \\ @project_root) do
+    root
+    |> read_manifest!()
+    |> Keyword.fetch!(:qualification_inputs)
+    |> fingerprint_inputs(root)
+  end
+
+  @doc false
+  # covers: simd_json.native_build_and_abi.dependency_upgrade_gate simd_json.native_build_and_abi.target_qualification
+  def validate_qualification!(options \\ []) do
+    root = Keyword.get(options, :root, @project_root)
+    manifest = Keyword.get_lazy(options, :manifest, fn -> read_manifest!(root) end)
+
+    qualification =
+      Keyword.get_lazy(options, :qualification, fn -> read_qualification!(root) end)
+
+    target = Keyword.get_lazy(options, :target, &detected_target/0)
+    primary_target = Keyword.fetch!(manifest, :primary_target)
+    expected_target = Keyword.fetch!(primary_target, :triple)
+    supported_targets = Keyword.fetch!(qualification, :supported_targets)
+
+    unless target == expected_target do
+      fail!("qualification evidence is unavailable for target #{target}")
+    end
+
+    qualified_target =
+      Enum.find(supported_targets, fn entry ->
+        Keyword.fetch!(entry, :triple) == expected_target
+      end)
+
+    unless qualified_target do
+      fail!("qualification matrix does not contain supported target #{expected_target}")
+    end
+
+    ensure_equal!(
+      "qualified runtime dispatch",
+      Keyword.fetch!(primary_target, :expected_simdjson_implementations),
+      Keyword.fetch!(qualified_target, :expected_simdjson_implementations)
+    )
+
+    expected_fingerprint = Keyword.fetch!(qualification, :input_sha256)
+
+    actual_fingerprint =
+      manifest
+      |> Keyword.fetch!(:qualification_inputs)
+      |> fingerprint_inputs(root)
+
+    unless expected_fingerprint == actual_fingerprint do
+      fail!(
+        "native qualification evidence is stale: " <>
+          "expected=#{expected_fingerprint} actual=#{actual_fingerprint}; " <>
+          "rerun the complete Phase 6 qualification matrix"
+      )
+    end
+
+    :ok
   end
 
   defp read_manifest!(root) do
@@ -60,6 +115,27 @@ defmodule SimdJson.Native.BuildGuard do
     else
       fail!("native manifest must evaluate to a keyword list: #{path}")
     end
+  end
+
+  defp read_qualification!(root) do
+    path = Path.join(root, "native/qualification/milestone_1.exs")
+    {qualification, _bindings} = Code.eval_file(path)
+
+    if Keyword.keyword?(qualification) do
+      qualification
+    else
+      fail!("native qualification record must evaluate to a keyword list: #{path}")
+    end
+  end
+
+  defp fingerprint_inputs(relative_paths, root) do
+    relative_paths
+    |> Enum.map(fn relative_path ->
+      path = Path.join(root, relative_path)
+      {relative_path, sha256!(path)}
+    end)
+    |> :erlang.term_to_binary()
+    |> sha256()
   end
 
   defp validate_target!(manifest, target) do

@@ -67,14 +67,16 @@ jobs:
           test/native/threaded_teardown_test.exs
           test/native/native_execution_integration_test.exs
 
-      - name: Run sanitizer C ABI conformance
-        run: scripts/native/run_c_abi_conformance.sh sanitizer
+      - name: Qualify the release-native artifact
+        env:
+          SIMD_JSON_QUALIFICATION_DIR: _build/qualification/native
+        run: bash scripts/ci/qualify_native_release.sh
 
-      - name: Run sanitizer Zig resource conformance
-        run: scripts/native/run_zig_resource_tests.sh sanitizer
-
-      - name: Verify release symbol surfaces
-        run: scripts/native/verify_release_symbols.sh
-
-      - name: Repeat clean builds with network disabled
-        run: bash scripts/ci/verify_offline_native_build.sh
+      - name: Archive release-native qualification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: milestone-1-native-${{ github.sha }}
+          path: _build/qualification/native
+          if-no-files-found: error
+          retention-days: 30
