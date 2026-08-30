@@ -141,6 +141,7 @@
     ".spec/planning/milestone_02_projection_api/README.md",
     ".spec/planning/milestone_02_projection_api/phase-03-single-pass-traversal-and-typed-results.md",
     ".spec/planning/milestone_02_projection_api/phase-04-threaded-projection-and-document-consumption.md",
+    ".spec/planning/milestone_02_projection_api/phase-05-public-select-api-and-stable-errors.md",
     ".spec/research/zigler_0_16_threaded_qualification.md",
     ".spec/specs/document_api.spec.md",
     ".spec/specs/document_resource.spec.md",
@@ -234,6 +235,7 @@
     "test/simd_json/phase_5_integration_test.exs",
     "test/simd_json/projection_validation_test.exs",
     "test/simd_json/public_surface_test.exs",
+    "test/simd_json/select_test.exs",
     "test/simd_json_test.exs",
     "test/test_helper.exs",
     ".spec/research/phase_6_scheduler_qualification.md"

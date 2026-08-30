@@ -127,6 +127,24 @@ allocation failures, and compare every live projection/document gauge with its
 baseline. This checkpoint remains an undocumented internal seam; Phase 5 owns
 the public `SimdJson.select/2` contract and error translation.
 
+### Phase 5 public admission checkpoint
+
+The public wrapper preserves the Phase 1 order by completing projection
+preflight before source parsing or document reservation. A bounded document
+resource/owner/lifecycle check rejects forged resources, non-owners, and closed
+documents without creating a projection request. A fresh owner document and a
+binary then enter the same Phase 4 correlated operation with no public options
+or synchronous fallback. Submission rejection remains retryable, while any
+attempt that crosses cursor access remains consumed and owner close remains
+idempotent.
+
+Public tests cover invalid and forged sources with zero projection admission,
+invalid projections with an unchanged fresh document, binary temporary-graph
+cleanup, exact copied result lifetime, owner-first fresh/consumed/closed
+behavior, submission rollback, and all gauges at baseline. The threaded layer
+remains explicitly pre-production; no public cancellation control, diagnostic,
+worker-pool, backpressure, rewind, reparse, or reusable-plan behavior is added.
+
 ### Close, cancellation, and shutdown
 
 Close or shutdown prevents new projection admission. If selection is active,

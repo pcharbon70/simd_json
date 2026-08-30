@@ -14,6 +14,7 @@ env MIX_ENV=test mix test \
   test/simd_json/error_test.exs \
   test/simd_json/public_surface_test.exs \
   test/simd_json/phase_5_integration_test.exs \
+  test/simd_json/select_test.exs \
   test/qualification/lifecycle_memory_qualification_test.exs --seed 0 2>&1 \
   | tee "${evidence_root}/public-api.log"
 

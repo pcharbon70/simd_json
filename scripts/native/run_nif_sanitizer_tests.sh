@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# covers: simd_json.native_build_and_abi.c_abi_conformance simd_json.native_build_and_abi.cpp_exception_translation simd_json.document_resource.input_lifetime simd_json.document_resource.repeated_close simd_json.document_resource.gc_cleanup simd_json.native_execution.threaded_parse simd_json.native_execution.threaded_cleanup simd_json.document_api.open_and_close simd_json.document_api.invalid_input_errors simd_json.projection_engine.transactional_conversion simd_json.projection_engine.exception_and_failure_cleanup simd_json.projection_engine.single_beam_boundary simd_json.projection_execution.threaded_projection simd_json.projection_execution.binary_temporary_document simd_json.projection_execution.close_interlock simd_json.projection_execution.cancellation_boundaries simd_json.projection_execution.native_memory_baseline
+# covers: simd_json.native_build_and_abi.c_abi_conformance simd_json.native_build_and_abi.cpp_exception_translation simd_json.document_resource.input_lifetime simd_json.document_resource.repeated_close simd_json.document_resource.gc_cleanup simd_json.native_execution.threaded_parse simd_json.native_execution.threaded_cleanup simd_json.document_api.open_and_close simd_json.document_api.invalid_input_errors simd_json.projection_api.select_contract simd_json.projection_api.scalar_results simd_json.projection_api.atomic_result simd_json.projection_api.projection_error_reasons simd_json.projection_engine.transactional_conversion simd_json.projection_engine.exception_and_failure_cleanup simd_json.projection_engine.single_beam_boundary simd_json.projection_execution.threaded_projection simd_json.projection_execution.binary_temporary_document simd_json.projection_execution.close_interlock simd_json.projection_execution.cancellation_boundaries simd_json.projection_execution.native_memory_baseline
 
 repository_root="$(git rev-parse --show-toplevel)"
 scratch_root="$(mktemp -d "${TMPDIR:-/tmp}/simd-json-nif-sanitizer.XXXXXX")"
@@ -72,6 +72,7 @@ env \
     test/native/threaded_projection_integration_test.exs \
     test/simd_json/document_api_test.exs \
     test/simd_json/error_test.exs \
-    test/simd_json/phase_5_integration_test.exs
+    test/simd_json/phase_5_integration_test.exs \
+    test/simd_json/select_test.exs
 
 printf 'threaded and public NIF sanitizer corpus passed\n'

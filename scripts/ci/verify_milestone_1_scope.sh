@@ -34,5 +34,5 @@ nm -D --defined-only "${nif_path}" | LC_ALL=C sort \
 cp native/symbols/nif.allowlist "${evidence_root}/nif-symbol-allowlist.txt"
 cp native/symbols/c_abi.allowlist "${evidence_root}/c-abi-symbol-allowlist.txt"
 
-printf 'Milestone 1 release surface matches its allowlists\n' \
+printf 'Current release surface preserves Milestone 1 and matches its milestone allowlists\n' \
   | tee "${evidence_root}/summary.txt"

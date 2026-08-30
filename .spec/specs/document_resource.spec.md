@@ -47,9 +47,12 @@ an admitted-operation interlock beside the unchanged lifecycle. Owner-first
 reservation, pre-worker rollback, committed consumption, close cancellation,
 generation validation, and retained-document conversion are exercised through
 private integration seams. Binary projection reuses the same owned padded
-constructor in an unpublished worker-local document graph. No projection
-resource or operation is added to the public document representation before
-Milestone 2 Phase 5.
+constructor in an unpublished worker-local document graph. Milestone 2 Phase 5
+now routes public `select/2` document values through a bounded genuine-resource
+and owner/lifecycle check before that reservation. The opaque public document
+representation remains unchanged, exposes no projection resource or state, and
+preserves owner-first rejection, one-shot consumption, close interlock, and
+exactly-once cleanup through the real public boundary.
 
 ```spec-meta
 id: simd_json.document_resource

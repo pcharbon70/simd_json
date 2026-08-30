@@ -1,18 +1,29 @@
 defmodule SimdJson do
-  # covers: simd_json.package.mix_library simd_json.native_build_and_abi.layered_boundary simd_json.document_api.open_contract simd_json.document_api.binary_only simd_json.document_api.close_contract simd_json.document_api.document_argument_validation
+  # covers: simd_json.package.mix_library simd_json.native_build_and_abi.layered_boundary simd_json.document_api.open_contract simd_json.document_api.binary_only simd_json.document_api.close_contract simd_json.document_api.document_argument_validation simd_json.projection_api.select_contract simd_json.projection_api.source_argument_validation simd_json.projection_api.output_key_identity simd_json.projection_api.scalar_results simd_json.projection_api.atomic_result
   @moduledoc """
-  Opens and closes opaque JSON documents using SIMD-accelerated parsing.
+  Opens opaque JSON documents and selects scalar values using SIMD-accelerated
+  parsing.
 
-  The Milestone 1 public contract consists only of `open/1`, `close/1`,
-  `SimdJson.Document`, and `SimdJson.Error`. It accepts binaries only and
-  intentionally exposes no decoded tree, projection, stream, cursor,
-  ownership-transfer, or native-handle API.
+  `select/2` extracts several named scalar paths from either a JSON binary or
+  a caller-owned document. Results use the exact atom or binary keys supplied
+  by the caller. Object and array leaves are deliberately not materialized.
 
   A document belongs to the process that opened it. Owner `close/1` is
   idempotent and waits for native cleanup; another process receives a stable
-  `:not_owner` error even when the document has already been closed. Other
-  owner operations introduced by later milestones will return `:closed` after
-  close.
+  `:not_owner` error even when the document has already been closed. Projection
+  is one-shot: after native cursor access begins, success or failure consumes
+  the document. Use another document, or call `select/2` with the binary again,
+  for another projection.
+
+  Projection grammar errors are tagged `:invalid_projection`. Values that are
+  not binaries or genuine document resources raise `ArgumentError`. Other
+  parsing, path, ownership, lifecycle, allocation, and cancellation failures
+  return `{:error, %SimdJson.Error{}}` without a partial result. Selected
+  strings are fresh binaries independent of their source.
+
+  The API intentionally has no bang variant, eager decode, JSONPath, wildcard,
+  default-field policy, container materialization, public compiled plan,
+  stream, cursor, ownership-transfer, or native-handle operation.
 
   Threaded execution in this milestone is a qualification runtime. Production
   admission control and its bounded worker pool arrive in Milestone 4.
@@ -26,6 +37,46 @@ defmodule SimdJson do
       :ok
       iex> SimdJson.close(document)
       :ok
+
+      iex> json = ~s({"customer":{"id":7,"name":"Acme"},"orders":[{"sku":"A-1"}]})
+      iex> projection = [{:id, ["customer", "id"]}, {"sku", ["orders", 0, "sku"]}]
+      iex> SimdJson.select(json, projection)
+      {:ok, %{"sku" => "A-1", id: 7}}
+
+      iex> {:ok, document} = SimdJson.open(~s({"value":42}))
+      iex> SimdJson.select(document, value: ["value"])
+      {:ok, %{value: 42}}
+      iex> {:error, consumed} = SimdJson.select(document, value: ["value"])
+      iex> consumed.reason
+      :cursor_consumed
+      iex> SimdJson.close(document)
+      :ok
+
+      iex> {:error, missing} = SimdJson.select(~s({"ready":true}), value: ["value"])
+      iex> {missing.reason, missing.path}
+      {:no_such_field, ["value"]}
+      iex> inspect(missing) =~ "value"
+      false
+
+      iex> {:error, type_error} = SimdJson.select(~s({"items":[]}), items: ["items"])
+      iex> type_error.reason
+      :incorrect_type
+
+      iex> {:error, invalid} = SimdJson.select("not inspected", [])
+      iex> {invalid.reason, invalid.byte_offset, invalid.path}
+      {:invalid_projection, nil, nil}
+
+      iex> source = ~s({"selected":"small","ignored":"#{String.duplicate("x", 256)}"})
+      iex> {:ok, %{selected: selected}} = SimdJson.select(source, selected: ["selected"])
+      iex> source = nil
+      iex> :erlang.garbage_collect(self())
+      iex> {source, selected}
+      {nil, "small"}
+
+      iex> function_exported?(SimdJson, :select!, 2)
+      false
+      iex> Code.ensure_loaded?(SimdJson.CompiledProjection)
+      false
 
       iex> {:error, error} = SimdJson.open("[1,")
       iex> {error.reason, error.message}
@@ -48,7 +99,35 @@ defmodule SimdJson do
   alias SimdJson.Document
   alias SimdJson.Error
   alias SimdJson.Native.BuildSmoke
+  alias SimdJson.Native.ProjectionOperation
   alias SimdJson.Native.ThreadedOperation
+
+  @typedoc "An exact caller-supplied result key. No atom is created from a binary key."
+  @type output_key :: atom() | binary()
+
+  @typedoc "A UTF-8 JSON object-key segment."
+  @type object_segment :: binary()
+
+  @typedoc "A JSON array index in the unsigned 64-bit domain."
+  @type array_index :: 0..18_446_744_073_709_551_615
+
+  @typedoc "One object-key or array-index segment in a projection path."
+  @type path_segment :: object_segment() | array_index()
+
+  @typedoc "A non-empty path to one scalar JSON value."
+  @type path :: nonempty_list(path_segment())
+
+  @typedoc "One output key paired with its scalar path."
+  @type projection_entry :: {output_key(), path()}
+
+  @typedoc "A non-empty proper list of projection entries with unique output keys."
+  @type projection :: nonempty_list(projection_entry())
+
+  @typedoc "A selected scalar converted to an independent BEAM term."
+  @type scalar_result :: binary() | integer() | float() | boolean() | nil
+
+  @typedoc "The transactional map returned after every selected path succeeds."
+  @type projection_result :: %{optional(output_key()) => scalar_result()}
 
   @doc """
   Opens one JSON binary as an opaque document owned by the calling process.
@@ -76,6 +155,28 @@ defmodule SimdJson do
   def open(_input) do
     raise ArgumentError, "expected JSON input to be a binary"
   end
+
+  @doc """
+  Selects several scalar paths from a JSON binary or caller-owned document.
+
+  The projection is completely validated before parsing or document
+  reservation. It must be a non-empty proper list of `{output_key, path}`
+  pairs. Output keys are existing atoms or binaries; paths are non-empty proper
+  lists of UTF-8 binary object keys and unsigned 64-bit array indexes.
+
+  Success returns one map under the exact supplied keys. Strings are copied
+  into fresh binaries. A document is a forward-only, single-owner, one-shot
+  source: once cursor access starts, either success or operational failure
+  consumes it. Invalid projection, invalid source, non-owner, closed, and
+  proven pre-worker submission rejection do not consume a fresh document.
+
+  Source misuse raises `ArgumentError`. Projection, parse, path, lifecycle,
+  allocation, and cancellation failures return a structured tagged error; no
+  partial map escapes.
+  """
+  @spec select(binary() | Document.t(), projection()) ::
+          {:ok, projection_result()} | {:error, Error.t()}
+  def select(source, projection), do: ProjectionOperation.select(source, projection)
 
   @doc """
   Closes an opaque document owned by the calling process.

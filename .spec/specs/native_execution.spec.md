@@ -69,6 +69,13 @@ the threaded context while independent heartbeats progress, and every retained
 operation, environment, source, plan, slot, document, and callback-retry gauge
 returns to baseline. Formal projection scheduler utilization and percentile
 qualification remains Milestone 2 Phase 6 work.
+Milestone 2 Phase 5 now routes public `SimdJson.select/2` through that same
+coordinator with no public options or fallback path. Complete projection
+preflight and invalid/genuine-resource checks happen before correlated
+admission; accepted binary and fresh owner-document calls create one request
+and one terminal result. Public submission-rejection, one-shot, result-lifetime,
+redaction, and surface tests preserve the qualification-runtime label and keep
+the Milestone 4 worker pool, backpressure, and telemetry deferred.
 
 ```spec-meta
 id: simd_json.native_execution

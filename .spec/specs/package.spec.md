@@ -2,16 +2,12 @@
 
 Current package and documentation contract for the `SimdJson` library.
 
-The package currently distributes the pinned native build inputs, private C
-ABI, C++ shim, Zig ownership/resource sources, symbol policy, native
-conformance harnesses, and Phase 4's internal correlated threaded operation
-runtime, stable coordinator, and cleanup-only dispatcher. Phase 5 adds the
-narrow binary `open/1` and owner-safe `close/1` root API
-with an opaque document and a closed, redacted structured-error vocabulary.
-README, module, milestone, export, typespec, and protocol checks establish that
-no decode, projection, streaming, cursor, transfer, or raw native-handle
-surface is exposed. Public corpora, ownership, lifetime, concurrency, and
-native-baseline tests now exercise the packaged vertical slice.
+The package distributes the pinned native build inputs, private C ABI, C++
+shim, Zig ownership/resource sources, symbol policy, native conformance
+harnesses, correlated threaded operation runtime, stable coordinator, and
+cleanup-only dispatcher. Its active Milestone 1 surface provides binary
+`open/1`, owner-safe `close/1`, an opaque document, and a closed redacted error
+vocabulary.
 Phase 6 Section 6.1 also makes the Hex archive buildable with explicit package
 metadata, excludes generated Zigler intermediates, and inspects the unpacked
 artifact for every required native source, header, provenance, and license.
@@ -27,17 +23,21 @@ corpus, and Zig typed-slot/cancellation cases alongside the still-private
 execution engine. Phase 4 packages the private projection operation adapter,
 correlated threaded worker, one-shot document reservation, worker-local binary
 document graph, join-time map copy, bounded diagnostics/accounting, and focused
-threading/lifetime/teardown integration matrices. These remain internal build
-inputs: the root module still
-exports only the Milestone 1 `open/1` and `close/1` operations, the NIF still
-exports only `nif_init`, and no `select/2` or public compiled-plan surface is
-present yet.
+threading/lifetime/teardown integration matrices. Phase 5 publishes the narrow
+typed `SimdJson.select/2` boundary for binary and genuine document sources,
+stable exact-key scalar maps and path errors, one-shot lifecycle documentation,
+doctests, and locked export/type/protocol allowlists. The NIF still exports only
+`nif_init`, all native projection modules and plans remain undocumented and
+operation-scoped, and eager decode, streaming, cursors, transfer, raw handles,
+compiled plans, JSONPath, defaults, and container materialization remain
+absent. The Milestone 2 subjects remain planned until Phase 6 records the final
+supported-target safety, scheduler, lifecycle, and Jason benchmark evidence.
 
 ```spec-meta
 id: simd_json.package
 kind: package
 status: active
-summary: Active Milestone 1 library and native tooling with a fully specified, phased Milestone 2 projection plan.
+summary: Active Milestone 1 library and native tooling with the public Milestone 2 projection slice awaiting final qualification.
 surface:
   - .tool-versions
   - README.md
@@ -137,6 +137,11 @@ surface:
 
 - kind: source_file
   target: docs/milestones/README.md
+  covers:
+    - simd_json.package.documentation_layout
+
+- kind: source_file
+  target: docs/milestones/02-projection-api.md
   covers:
     - simd_json.package.documentation_layout
 

@@ -7,9 +7,17 @@ defmodule SimdJson.Document do
   public API. Inspection is lifecycle-neutral and reveals neither input nor
   native identity.
 
-      iex> {:ok, document} = SimdJson.open("null")
+  A document is a one-shot source for `SimdJson.select/2`. Once native cursor
+  access begins, success or failure consumes it. Use another document or the
+  binary form of `SimdJson.select/2` for another projection; documents are not
+  rewound or reparsed transparently.
+
+      iex> {:ok, document} = SimdJson.open(~s({"value":1}))
       iex> inspect(document)
       "#SimdJson.Document<opaque>"
+      iex> {:error, error} = SimdJson.select(document, value: ["missing"])
+      iex> {error.reason, error.path}
+      {:no_such_field, ["missing"]}
       iex> SimdJson.close(document)
       :ok
   """

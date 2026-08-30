@@ -53,7 +53,11 @@ This milestone includes:
 - deterministic explicit and garbage-collection-driven cleanup;
 - scheduler-safety tests for opening large documents.
 
-This milestone does not include projection, array streaming, the final bounded worker pool, telemetry, or full JSON-to-BEAM decoding. Those belong to later milestones.
+The Milestone 1 contract itself does not include projection, array streaming,
+the final bounded worker pool, telemetry, or full JSON-to-BEAM decoding. The
+package may add those operations only under their separately accepted
+milestone contracts; the Milestone 2 `select/2` addition does not weaken this
+foundation's ownership, cleanup, error, or scheduler guarantees.
 
 ## Component boundary
 
@@ -103,11 +107,12 @@ The expected types are:
 
 `SimdJson.Document` must not expose a native address or cursor state. It can be an Elixir struct containing only the NIF resource reference, with a redacted `Inspect` implementation if necessary.
 
-The only documented runtime modules in this milestone are `SimdJson`,
-`SimdJson.Document`, and `SimdJson.Error`; the only root operations are
-`open/1` and `close/1`. Native diagnostics, resource helpers, accounting, and
-failure injection stay hidden or test-only. Decode, projection, streaming,
-cursors, ownership transfer, and raw handles remain absent.
+The Milestone 1 baseline consists of `SimdJson.open/1`, `SimdJson.close/1`,
+`SimdJson.Document`, and `SimdJson.Error`. The current package also exposes the
+separately governed Milestone 2 `SimdJson.select/2` operation. Native
+diagnostics, resource helpers, accounting, and failure injection stay hidden
+or test-only, while eager decode, streaming cursors, ownership transfer, and
+raw handles remain absent.
 
 ## Native resource model
 
