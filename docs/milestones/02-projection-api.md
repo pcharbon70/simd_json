@@ -2,7 +2,7 @@
 
 <!-- covers: simd_json.package.documentation_layout -->
 
-[Back to the architecture overview](../../.spec/research/simdjson_beam_nif_architecture.md#proposed-implementation-milestones)
+[Back to the architecture overview](https://github.com/pcharbon70/simd_json/blob/main/.spec/research/simdjson_beam_nif_architecture.md#proposed-implementation-milestones)
 
 ## Outcome
 
@@ -157,7 +157,8 @@ Skipping avoids materialization; it does not allow malformed JSON to pass.
 When a requested object key is repeated, its first occurrence in document order
 supplies the result and later occurrences are consumed only for validation.
 
-This design also gives a natural foundation for a later public `SimdJson.compile/1`, where the validated projection tree can be reused across many documents.
+This design also gives a natural foundation for a later public compile-once API,
+where the validated projection tree can be reused across many documents.
 
 No compiled projection is public in Milestone 2. Another projection requires a
 new document or another binary `select/2` call; the library does not rewind,
