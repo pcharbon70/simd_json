@@ -49,6 +49,12 @@ cursor access and the operation cancellation probe without adding an exported
 symbol. The guided engine conformance translation unit is packaged and pinned
 as an ordinary and sanitizer qualification input; ABI v1 behavior and the
 seven-symbol private shared-ABI allowlist remain unchanged.
+Milestone 2 Phase 4 integrates that engine into the already-qualified threaded
+NIF, and Phase 5 exposes it only through the Elixir `select/2` wrapper. Neither
+phase changes ABI v2 layout, the seven-symbol private shared-ABI allowlist, or
+the release NIF's sole `nif_init` export. The production wrapper, public tests,
+documentation, Phase 5 plan, and updated qualification scripts are pinned
+inputs so this additive surface cannot inherit stale Milestone 1 evidence.
 
 ```spec-meta
 id: simd_json.native_build_and_abi

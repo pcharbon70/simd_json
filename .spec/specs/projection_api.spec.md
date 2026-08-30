@@ -10,28 +10,31 @@ paths while allocating only the requested BEAM values. It fixes the public term
 grammar and error behavior before implementation so native details, cursor
 position, and arbitrary JSON keys cannot leak into the caller contract.
 
-Phase 1 now implements the grammar as an undocumented BEAM preflight module.
+Phase 1 implements the grammar as an undocumented BEAM preflight module.
 It assigns declaration-order output slots, preserves exact caller keys and
 paths, deterministically interns identical paths, validates proper-list shape,
 UTF-8 object segments, and the complete unsigned 64-bit index domain, and
 returns one controlled `invalid_projection` error before any native admission.
-`SimdJson.Error` now carries the reserved Milestone 2 reason union and optional
-redacted caller path. The public `select/2` operation and every native result
-behavior remain unimplemented, so this subject stays planned under its complete
-bootstrap exception.
+`SimdJson.Error` carries the reserved Milestone 2 reason union and optional
+redacted caller path.
 Phase 2 consumes representative copies of that normalized shape only in native
 conformance: its Zig serializer deliberately omits output keys and raw BEAM
 terms, and its C++ plan remains an opaque operation detail. It adds no Elixir
 function, protocol, struct, resource, error translation, or compiled-plan API;
 the existing preflight and public-surface boundaries therefore remain intact.
-Phase 3 implements the guided scalar engine only below the BEAM. Phase 4 now
+Phase 3 implements the guided scalar engine only below the BEAM. Phase 4
 uses an undocumented test-only adapter to exercise both accepted source forms,
 exact caller keys and scalar values, fresh copied strings, atomic maps, stable
 reasons, and validated caller paths through the real threaded runtime. Invalid
-projection still stops before source classification or native admission. The
-root module deliberately still has no `select/2`, and no projection
-documentation, typespec, resource, protocol, or diagnostic has become public;
-Phase 5 owns that surface and its final argument/error boundary.
+projection stops before source classification or native admission. Phase 5 now
+publishes `SimdJson.select/2` with its closed public types, binary and genuine
+document dispatch, one stable translator, exact scalar maps, copied strings,
+validated caller-path errors, doctests, atom-safety corpus, and export/type/
+protocol allowlists. No normalized representation, native plan, cursor state,
+timing, diagnostic, or deferred operation crosses that boundary. This subject
+remains planned only until Phase 6 supplies the complete supported-target
+sanitizer, scheduler, lifecycle, package, and Jason benchmark evidence required
+for activation.
 
 ```spec-meta
 id: simd_json.projection_api
@@ -204,10 +207,58 @@ decisions:
 
 ## Required Closure Evidence
 
-Before activation, replace the bootstrap exception with executed API, grammar,
-typespec, doctest, scalar corpus, atom-safety, output-lifetime, error-path,
-redaction, argument-boundary, and public-surface verification. Both binary and
-document sources must run through the real native projection path.
+Phase 5 supplies executed API, grammar, typespec, doctest, scalar corpus,
+atom-safety, output-lifetime, error-path, redaction, argument-boundary, and
+public-surface evidence through the real native projection path for both source
+forms. Phase 6 must add the complete supported-target qualification and then
+replace the bootstrap exception when activating the subject.
+
+## Evidence Inventory
+
+```yaml
+- kind: test_file
+  target: test/simd_json/select_test.exs
+  covers:
+    - simd_json.projection_api.select_contract
+    - simd_json.projection_api.source_argument_validation
+    - simd_json.projection_api.complete_preflight_validation
+    - simd_json.projection_api.output_key_identity
+    - simd_json.projection_api.scalar_results
+    - simd_json.projection_api.fresh_string_results
+    - simd_json.projection_api.atomic_result
+    - simd_json.projection_api.projection_error_reasons
+    - simd_json.projection_api.error_path
+    - simd_json.projection_api.binary_multi_select
+    - simd_json.projection_api.document_select
+    - simd_json.projection_api.invalid_source_argument
+    - simd_json.projection_api.invalid_projection
+    - simd_json.projection_api.all_scalar_types
+    - simd_json.projection_api.path_failures
+    - simd_json.projection_api.atom_and_surface_safety
+
+- kind: test_file
+  target: test/simd_json/projection_validation_test.exs
+  covers:
+    - simd_json.projection_api.projection_grammar
+    - simd_json.projection_api.complete_preflight_validation
+    - simd_json.projection_api.output_key_identity
+    - simd_json.projection_api.invalid_projection
+
+- kind: test_file
+  target: test/simd_json/public_surface_test.exs
+  covers:
+    - simd_json.projection_api.select_contract
+    - simd_json.projection_api.error_path
+    - simd_json.projection_api.milestone_scope
+    - simd_json.projection_api.atom_and_surface_safety
+
+- kind: test_file
+  target: test/simd_json_test.exs
+  covers:
+    - simd_json.projection_api.select_contract
+    - simd_json.projection_api.projection_error_reasons
+    - simd_json.projection_api.error_path
+```
 
 ## Exceptions
 
@@ -232,5 +283,5 @@ document sources must run through the real native projection path.
     - simd_json.projection_api.all_scalar_types
     - simd_json.projection_api.path_failures
     - simd_json.projection_api.atom_and_surface_safety
-  reason: Milestone 2 Phases 1 through 4 implement grammar plus a test-only internal binary/document result and error seam, but SimdJson.select/2 is intentionally absent; keep this complete-subject exception until Phase 5 supplies executed public API, typespec, doctest, argument, redaction, atom-safety, and surface evidence.
+  reason: Milestone 2 Phases 1 through 5 implement and exercise the public API, types, doctests, exact results, errors, argument boundary, redaction, atom safety, and surface; keep this complete-subject exception until Phase 6 supplies the final supported-target sanitizer, scheduler, lifecycle, package, and Jason benchmark evidence and activates the subject.
 ```

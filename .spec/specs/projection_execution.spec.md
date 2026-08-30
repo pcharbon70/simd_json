@@ -38,8 +38,14 @@ out-of-order completion, every binary/document cancellation boundary,
 conversion allocation failure, close and application shutdown, GC handoff
 retry, copied-result independence, a preliminary 4 MiB heartbeat profile, and
 all live gauges back to baseline. The subject stays planned only because the
-public Phase 5 boundary and the formal sanitizer/scheduler/Jason qualification
-in Phase 6 have not activated the complete Milestone 2 contract.
+formal sanitizer/scheduler/Jason qualification in Phase 6 has not activated the
+complete Milestone 2 contract. Phase 5 now routes the public `select/2` binary
+and genuine-document forms through that same correlated operation, performs
+complete projection preflight and bounded genuine-resource/owner/lifecycle
+checks before reservation, and preserves retry after invalid input or proven
+submission rejection. Public one-shot, copied-result, ownership, close,
+redaction, and baseline tests exercise the boundary without adding options,
+plans, diagnostics, or a second execution path.
 
 ```spec-meta
 id: simd_json.projection_execution
@@ -242,6 +248,37 @@ decisions:
     - The declared BEAM-allocation advantage passes without excluding validation, scheduling, result construction, or cleanup cost
 ```
 
+## Evidence Inventory
+
+```yaml
+- kind: test_file
+  target: test/simd_json/select_test.exs
+  covers:
+    - simd_json.projection_execution.preadmission_nonconsumption
+    - simd_json.projection_execution.binary_operation_lifetime
+    - simd_json.projection_execution.document_one_shot
+    - simd_json.projection_execution.submission_rejection_retry
+
+- kind: test_file
+  target: test/native/threaded_projection_integration_test.exs
+  covers:
+    - simd_json.projection_execution.threaded_projection
+    - simd_json.projection_execution.one_correlated_operation
+    - simd_json.projection_execution.generation_and_resource_retention
+    - simd_json.projection_execution.close_interlock
+    - simd_json.projection_execution.cancellation_boundaries
+    - simd_json.projection_execution.native_memory_baseline
+
+- kind: test_file
+  target: test/native/projection_document_lifecycle_test.exs
+  covers:
+    - simd_json.projection_execution.owner_first_admission
+    - simd_json.projection_execution.exclusive_document_selection
+    - simd_json.projection_execution.committed_consumption
+    - simd_json.projection_execution.preadmission_nonconsumption
+    - simd_json.projection_execution.close_interlock
+```
+
 ## Required Closure Evidence
 
 Before activation, replace the bootstrap exception with executed threaded
@@ -277,5 +314,5 @@ threshold must be committed before the accepted measurement record.
     - simd_json.projection_execution.caller_death_and_cancellation
     - simd_json.projection_execution.large_projection_responsiveness
     - simd_json.projection_execution.jason_sparse_benchmark
-  reason: Milestone 2 Phases 1 through 4 implement and exercise the private threaded projection, admission, consumption, retention, cancellation, cleanup, and preliminary scheduler slice; keep this complete-subject exception until Phase 5 publishes select/2 and Phase 6 supplies the final sanitizer, supported-target scheduler, lifecycle, and Jason benchmark evidence required for activation.
+  reason: Milestone 2 Phases 1 through 5 implement and exercise public threaded projection, admission, consumption, retention, cancellation, cleanup, and the preliminary scheduler slice; keep this complete-subject exception until Phase 6 supplies the final sanitizer, supported-target scheduler, lifecycle, and Jason benchmark evidence required for activation.
 ```

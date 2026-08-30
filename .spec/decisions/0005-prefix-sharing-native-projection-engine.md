@@ -165,6 +165,18 @@ checkpoint, 128-slot cancellation, independent binary/document result
 lifetimes, and exact plan/slot/environment baseline recovery. The public
 `select/2` boundary remains Phase 5 work.
 
+### Phase 5 public engine checkpoint
+
+`SimdJson.select/2` now reaches this exact engine through one private correlated
+operation. The public corpus covers declaration order opposite source order,
+shared and identical paths, first duplicate keys, nested object/array traversal,
+all scalar tags, object and array terminal rejection, malformed unselected and
+trailing input, late path failure, fresh string lifetime, and exact output-key
+identity. The wrapper constructs no alternate plan or traversal path and
+publishes no native slot, topology, timing, cursor, or compiled-plan surface.
+The ABI, operation-scoped plan ownership, complete-source validation, and sole
+join boundary are unchanged by publication.
+
 ## Consequences
 
 The engine's work follows the JSON document rather than the caller's path

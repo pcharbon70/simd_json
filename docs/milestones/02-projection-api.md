@@ -1,6 +1,8 @@
 # Milestone 2 — Projection with `SimdJson.select/2`
 
-[Back to the architecture overview](../../.spec/research/simdjson_beam_nif_architecture.md#proposed-implementation-milestones)
+<!-- covers: simd_json.package.documentation_layout -->
+
+[Back to the architecture overview](https://github.com/pcharbon70/simd_json/blob/main/.spec/research/simdjson_beam_nif_architecture.md#proposed-implementation-milestones)
 
 ## Outcome
 
@@ -31,9 +33,16 @@ decisions remain binding prerequisites throughout this work.
 
 ## Status
 
-Milestone 2 is planned. Its three specifications retain explicit bootstrap
-exceptions until the implementation, native safety, scheduler, lifecycle,
-public API, and end-to-end benchmark evidence defined by the plan are complete.
+Phases 1 through 5 are implemented. `SimdJson.select/2`, its exact projection
+grammar, prefix-sharing traversal, threaded one-shot lifecycle, stable errors,
+and public documentation are available. The three specifications remain
+planned under explicit bootstrap exceptions until Phase 6 records the full
+supported-target sanitizer, scheduler, lifecycle, package, and end-to-end Jason
+benchmark evidence and activates them together.
+
+The current Zigler-threaded execution layer remains a pre-production
+qualification runtime. The bounded worker pool, admission backpressure, and
+public telemetry are deferred to Milestone 4.
 
 ## Prerequisites
 
@@ -47,7 +56,7 @@ Milestone 1 must already provide:
 
 Projection should reuse those contracts rather than introduce a second parsing or ownership model.
 
-## Proposed API
+## Public API
 
 The baseline API accepts either a binary or an open document:
 
@@ -148,7 +157,12 @@ Skipping avoids materialization; it does not allow malformed JSON to pass.
 When a requested object key is repeated, its first occurrence in document order
 supplies the result and later occurrences are consumed only for validation.
 
-This design also gives a natural foundation for a later public `SimdJson.compile/1`, where the validated projection tree can be reused across many documents.
+This design also gives a natural foundation for a later public compile-once API,
+where the validated projection tree can be reused across many documents.
+
+No compiled projection is public in Milestone 2. Another projection requires a
+new document or another binary `select/2` call; the library does not rewind,
+silently reparse, or cache a reusable plan.
 
 ## Result conversion
 
@@ -163,7 +177,9 @@ Only selected values cross into the BEAM.
 | `true` / `false` | boolean | Use existing atoms only. |
 | `null` | `nil` | Use the existing atom. |
 
-Selected strings should normally be copied. Returning a sub-binary backed by a multi-gigabyte source can retain that source long after the document would otherwise be collectible.
+Selected strings are copied into independent result binaries. Returning a
+sub-binary backed by a multi-gigabyte source would retain that source long after
+the document would otherwise be collectible.
 
 BEAM terms should be created after the native traversal has identified and validated all result values, or in bounded steps with a clear cleanup path. A partially built result must never escape after a later field fails.
 
@@ -208,7 +224,8 @@ Projection operates under the document's owner and lifecycle rules:
 
 - only the owner process can consume a stateful document;
 - one projection runs against a document at a time;
-- closing is rejected or deferred while a projection is active;
+- owner close cancels active projection at a safe boundary, waits for terminal
+  reservation release, and then performs exactly-once cleanup;
 - every operation checks the resource generation before dereferencing native state;
 - a failed projection leaves the document in an explicitly defined state.
 

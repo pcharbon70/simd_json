@@ -16,6 +16,12 @@ defmodule SimdJson.Error do
       true
       iex> inspect(error) =~ error.message
       false
+
+      iex> {:error, error} = SimdJson.select(~s({"ready":true}), value: ["value"])
+      iex> {error.reason, error.path}
+      {:no_such_field, ["value"]}
+      iex> inspect(error) =~ "value"
+      false
   """
 
   @type reason ::

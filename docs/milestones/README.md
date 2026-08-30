@@ -151,6 +151,9 @@ Milestone 1 is complete when valid JSON creates a safe opaque resource, invalid 
 
 [Detailed implementation reference](02-projection-api.md)
 
+**Status:** Phases 1 through 5 implemented; final qualification and activation
+remain in Phase 6.
+
 ### Goal
 
 Deliver the library's flagship operation: extract several caller-selected scalar values in one guided native traversal and create only those values as BEAM terms.

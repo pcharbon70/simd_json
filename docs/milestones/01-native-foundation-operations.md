@@ -27,13 +27,14 @@ belong to Milestone 4's fixed native worker pool.
 
 | Path | Responsibility |
 | --- | --- |
-| `lib/simd_json.ex` | Public binary `open/1`, owner `close/1`, and private error translation. |
+| `lib/simd_json.ex` | Public binary `open/1`, owner `close/1`, Milestone 2 `select/2`, and private error translation. |
 | `lib/simd_json/document.ex` | Opaque document wrapper and redacted inspection. |
 | `lib/simd_json/error.ex` | Closed public error vocabulary and redacted inspection. |
 | `lib/simd_json/native/build_guard.ex` | Target, vendor, toolchain, cache, and qualification-fingerprint guards. |
 | `lib/simd_json/native/build_smoke.ex` | Zigler registration, callbacks, NIF declarations, and C++ compilation inputs. |
 | `lib/simd_json/native/operation_coordinator.ex` | Stable request owner, caller monitors, correlation, cancellation, join, and orphan cleanup. |
 | `lib/simd_json/native/threaded_operation.ex` | Private operation admission and Zigler-threaded adapter. |
+| `lib/simd_json/native/projection_operation.ex` | Private binary/document dispatch and the sole projection error translator. |
 | `native/include/simd_json_abi.h` | Canonical C11 header; ABI v1 parser/document contract retained inside current private ABI v2. |
 | `native/include/simd_json_nif_internal.h` | Hidden NIF-only extensions; never part of the shared ABI allowlist. |
 | `native/src/simd_json_abi.cpp` | Parser/document C++ exception boundary and simdjson adapter. |
@@ -239,6 +240,9 @@ The complete public surface is:
 
 @spec SimdJson.close(SimdJson.Document.t()) ::
         :ok | {:error, SimdJson.Error.t()}
+
+@spec SimdJson.select(binary() | SimdJson.Document.t(), SimdJson.projection()) ::
+        {:ok, SimdJson.projection_result()} | {:error, SimdJson.Error.t()}
 ```
 
 Non-binary open arguments and values that are not registered document resources
@@ -254,9 +258,11 @@ inspection, logs, and diagnostics contain no JSON, selected substring, address,
 generation, pointer, or raw C++ exception text.
 
 The only documented runtime modules are `SimdJson`, `SimdJson.Document`, and
-`SimdJson.Error`; the only root functions are `open/1` and `close/1`. Milestone
-1 exports no eager decode, projection, stream, cursor, ownership transfer,
-resource accessor, raw handle, capacity control, backpressure, or telemetry.
+`SimdJson.Error`; the current root functions are `open/1`, `select/2`, and
+`close/1`. `select/2` is governed by Milestone 2 and preserves every Milestone
+1 resource and scheduler boundary. The package exports no eager decode,
+compiled projection, JSONPath, stream, cursor, ownership transfer, resource
+accessor, raw handle, capacity control, backpressure, or telemetry.
 
 ## Qualification commands
 

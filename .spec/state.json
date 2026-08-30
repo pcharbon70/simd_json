@@ -100,7 +100,7 @@
         ],
         "file": ".spec/specs/projection_api.spec.md",
         "id": "simd_json.projection_api.milestone_02_bootstrap",
-        "reason": "Milestone 2 Phases 1 through 4 implement grammar plus a test-only internal binary/document result and error seam, but SimdJson.select/2 is intentionally absent; keep this complete-subject exception until Phase 5 supplies executed public API, typespec, doctest, argument, redaction, atom-safety, and surface evidence.",
+        "reason": "Milestone 2 Phases 1 through 5 implement and exercise the public API, types, doctests, exact results, errors, argument boundary, redaction, atom safety, and surface; keep this complete-subject exception until Phase 6 supplies the final supported-target sanitizer, scheduler, lifecycle, package, and Jason benchmark evidence and activates the subject.",
         "subject_id": "simd_json.projection_api"
       },
       {
@@ -127,7 +127,7 @@
         ],
         "file": ".spec/specs/projection_engine.spec.md",
         "id": "simd_json.projection_engine.milestone_02_bootstrap",
-        "reason": "Milestone 2 Phases 2 through 4 implement and exercise the private plan, guided traversal, transactional threaded conversion, one join boundary, and redacted timing; keep this complete-subject exception until Phase 5 exposes the public call and Phase 6 supplies final NIF sanitizer, supported-target, lifecycle, and benchmark evidence before activation.",
+        "reason": "Milestone 2 Phases 2 through 5 implement and exercise the plan, guided traversal, public transactional conversion, one join boundary, stable errors, and redacted timing; keep this complete-subject exception until Phase 6 supplies final NIF sanitizer, supported-target, lifecycle, and benchmark evidence before activation.",
         "subject_id": "simd_json.projection_engine"
       },
       {
@@ -157,7 +157,7 @@
         ],
         "file": ".spec/specs/projection_execution.spec.md",
         "id": "simd_json.projection_execution.milestone_02_bootstrap",
-        "reason": "Milestone 2 Phases 1 through 4 implement and exercise the private threaded projection, admission, consumption, retention, cancellation, cleanup, and preliminary scheduler slice; keep this complete-subject exception until Phase 5 publishes select/2 and Phase 6 supplies the final sanitizer, supported-target scheduler, lifecycle, and Jason benchmark evidence required for activation.",
+        "reason": "Milestone 2 Phases 1 through 5 implement and exercise public threaded projection, admission, consumption, retention, cancellation, cleanup, and the preliminary scheduler slice; keep this complete-subject exception until Phase 6 supplies the final sanitizer, supported-target scheduler, lifecycle, and Jason benchmark evidence required for activation.",
         "subject_id": "simd_json.projection_execution"
       }
     ],
@@ -215,7 +215,7 @@
         "id": "simd_json.document_api.milestone_scope",
         "priority": "must",
         "stability": "stable",
-        "statement": "Milestone 1 shall expose no eager decode, projection, streaming, ownership transfer, raw cursor, or raw native-handle API.",
+        "statement": "The Milestone 1 baseline shall remain limited to document open, close, opacity, and structured errors; separately governed milestone additions shall not weaken those contracts or introduce eager decode, streaming, ownership transfer, raw cursor, or raw native-handle APIs.",
         "subject_id": "simd_json.document_api"
       },
       {
@@ -974,8 +974,8 @@
         "id": "simd_json.document_api.no_future_surface",
         "subject_id": "simd_json.document_api",
         "then": [
-          "Only the document open, close, type, and structured error surface is present",
-          "Decode, projection, streaming, cursor, transfer, and native-handle operations are absent"
+          "The document open, close, type, and structured error baseline is present together with only separately accepted milestone additions",
+          "Eager decode, ungoverned projection variants, streaming, cursor, transfer, and native-handle operations are absent"
         ],
         "when": [
           "Their exported functions and types are enumerated"
@@ -1928,7 +1928,7 @@
           "id": "simd_json.package",
           "kind": "package",
           "status": "active",
-          "summary": "Active Milestone 1 library and native tooling with a fully specified, phased Milestone 2 projection plan.",
+          "summary": "Active Milestone 1 library and native tooling with the public Milestone 2 projection slice awaiting final qualification.",
           "surface": [
             ".tool-versions",
             "README.md",
@@ -2251,6 +2251,15 @@
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
         "subject_id": "simd_json.package",
+        "target": "docs/milestones/02-projection-api.md"
+      },
+      {
+        "covers": [
+          "simd_json.package.documentation_layout"
+        ],
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "subject_id": "simd_json.package",
         "target": ".spec/planning/milestone_02_projection_api/README.md"
       },
       {
@@ -2347,7 +2356,7 @@
     "requirements": 90,
     "scenarios": 47,
     "subjects": 9,
-    "verifications": 24
+    "verifications": 25
   },
   "verification": {
     "claims": [
@@ -3250,7 +3259,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": ".spec/planning/milestone_02_projection_api/README.md",
+        "target": "docs/milestones/02-projection-api.md",
         "verification_index": 10
       },
       {
@@ -3261,7 +3270,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": ".spec/research/simdjson_beam_nif_architecture.md",
+        "target": ".spec/planning/milestone_02_projection_api/README.md",
         "verification_index": 11
       },
       {
@@ -3272,8 +3281,19 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": ".spec/research/zigler_0_16_threaded_qualification.md",
+        "target": ".spec/research/simdjson_beam_nif_architecture.md",
         "verification_index": 12
+      },
+      {
+        "cover_id": "simd_json.package.documentation_layout",
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.package",
+        "target": ".spec/research/zigler_0_16_threaded_qualification.md",
+        "verification_index": 13
       },
       {
         "cover_id": "simd_json.package.mix_library",
@@ -3284,7 +3304,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.package",
         "target": "mix test",
-        "verification_index": 13
+        "verification_index": 14
       },
       {
         "cover_id": "simd_json.package.native_build_tooling",
@@ -3295,7 +3315,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.package",
         "target": "bash scripts/ci/qualify_native_release.sh",
-        "verification_index": 14
+        "verification_index": 15
       },
       {
         "cover_id": "simd_json.package.native_source_distribution",
@@ -3306,7 +3326,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.package",
         "target": "bash scripts/ci/qualify_native_release.sh",
-        "verification_index": 14
+        "verification_index": 15
       },
       {
         "cover_id": "spec.workspace.readme_present",
@@ -3380,7 +3400,7 @@
     "strength_summary": {
       "claimed": 6,
       "executed": 68,
-      "linked": 19
+      "linked": 20
     },
     "threshold_failures": 0
   },

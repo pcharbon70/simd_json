@@ -44,6 +44,14 @@ path, while `open/1`, `close/1`, their translations, the opaque document, and
 the exported root operation set remain unchanged. No projection timing,
 normalized term, one-shot state, native resource identity, or test accounting
 is exposed through the Milestone 1 API.
+Milestone 2 Phase 5 now adds the separately governed public `select/2` root
+operation and its projection types. The Milestone 1 baseline remains
+`open/1`, `close/1`, the opaque document, and the shared structured error;
+their argument, ownership, lifecycle, offset, redaction, and cleanup behavior
+is unchanged. Current public-surface verification therefore permits only that
+accepted additive operation while continuing to reject eager decode,
+streaming, cursor, transfer, raw-handle, compiled-plan, JSONPath, option, and
+diagnostic surfaces.
 
 ```spec-meta
 id: simd_json.document_api
@@ -117,7 +125,7 @@ decisions:
   stability: stable
 
 - id: simd_json.document_api.milestone_scope
-  statement: Milestone 1 shall expose no eager decode, projection, streaming, ownership transfer, raw cursor, or raw native-handle API.
+  statement: The Milestone 1 baseline shall remain limited to document open, close, opacity, and structured errors; separately governed milestone additions shall not weaken those contracts or introduce eager decode, streaming, ownership transfer, raw cursor, or raw native-handle APIs.
   priority: must
   stability: stable
 ```
@@ -220,8 +228,8 @@ decisions:
   when:
     - Their exported functions and types are enumerated
   then:
-    - Only the document open, close, type, and structured error surface is present
-    - Decode, projection, streaming, cursor, transfer, and native-handle operations are absent
+    - The document open, close, type, and structured error baseline is present together with only separately accepted milestone additions
+    - Eager decode, ungoverned projection variants, streaming, cursor, transfer, and native-handle operations are absent
 ```
 
 ## Evidence Inventory

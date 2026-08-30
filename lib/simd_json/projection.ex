@@ -49,6 +49,20 @@ defmodule SimdJson.Projection do
     end
   end
 
+  @doc false
+  @spec path_for_output_slot(t(), term()) :: path() | nil
+  def path_for_output_slot({@tag, entries, paths}, output_slot)
+      when is_integer(output_slot) and output_slot >= 0 do
+    with {:ok, path_slot} <- find_path_slot(entries, output_slot),
+         {:ok, path} <- find_path(paths, path_slot) do
+      Enum.map(path, & &1)
+    else
+      :error -> nil
+    end
+  end
+
+  def path_for_output_slot(_normalized, _output_slot), do: nil
+
   if @test_hooks do
     @doc false
     @spec preflight_for_test(term(), term()) :: {:ok, t()} | {:error, Error.t()}
@@ -150,6 +164,16 @@ defmodule SimdJson.Projection do
          [{next_path_slot, path} | paths]}
     end
   end
+
+  defp find_path_slot([{output_slot, _output_key, path_slot} | _rest], output_slot),
+    do: {:ok, path_slot}
+
+  defp find_path_slot([_entry | rest], output_slot), do: find_path_slot(rest, output_slot)
+  defp find_path_slot([], _output_slot), do: :error
+
+  defp find_path([{path_slot, path} | _rest], path_slot), do: {:ok, path}
+  defp find_path([_path | rest], path_slot), do: find_path(rest, path_slot)
+  defp find_path([], _path_slot), do: :error
 
   defp invalid_projection do
     %Error{reason: :invalid_projection, message: @invalid_projection_message}

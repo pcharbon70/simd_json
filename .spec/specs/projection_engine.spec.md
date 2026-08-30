@@ -40,8 +40,13 @@ bounded chunks, and one join adapter copies the complete map into the caller
 environment. Binary projection creates an unpublished temporary document and
 document projection retains its existing resource. Failure injection and
 binary/document lifetime tests prove transactional discard and gauge recovery.
-The subject intentionally stays planned under its bootstrap exception until
-the public Phase 5 boundary and complete Milestone 2 qualification.
+Phase 5 exposes that same engine only through `SimdJson.select/2`, maps complete
+typed slots to exact caller keys, resolves failing slots against the validated
+projection once, and locks every native plan, slot, timing, and cursor detail
+behind undocumented modules. Public shared-prefix, declaration-order,
+duplicate-key, scalar, container, malformed-unselected, late-failure, and
+result-lifetime corpora now pass. The subject intentionally stays planned under
+its bootstrap exception until complete Milestone 2 qualification in Phase 6.
 
 ```spec-meta
 id: simd_json.projection_engine
@@ -220,6 +225,33 @@ decisions:
     - No diagnostic or timing function appears in the release public API
 ```
 
+## Evidence Inventory
+
+```yaml
+- kind: test_file
+  target: test/simd_json/select_test.exs
+  covers:
+    - simd_json.projection_engine.declaration_order_independence
+    - simd_json.projection_engine.complete_source_validation
+    - simd_json.projection_engine.duplicate_json_key_policy
+    - simd_json.projection_engine.scalar_only_materialization
+    - simd_json.projection_engine.transactional_conversion
+
+- kind: test_file
+  target: test/native/projection_binary_lifetime_test.exs
+  covers:
+    - simd_json.projection_engine.typed_result_slots
+    - simd_json.projection_engine.transactional_conversion
+    - simd_json.projection_engine.exception_and_failure_cleanup
+    - simd_json.projection_engine.internal_phase_timing
+
+- kind: test_file
+  target: test/native/threaded_projection_operation_test.exs
+  covers:
+    - simd_json.projection_engine.single_beam_boundary
+    - simd_json.projection_engine.internal_phase_timing
+```
+
 ## Required Closure Evidence
 
 Before activation, replace the bootstrap exception with executed C and Zig
@@ -252,5 +284,5 @@ tests.
     - simd_json.projection_engine.transactional_slot_failure
     - simd_json.projection_engine.abi_v2_conformance
     - simd_json.projection_engine.one_boundary_with_timing
-  reason: Milestone 2 Phases 2 through 4 implement and exercise the private plan, guided traversal, transactional threaded conversion, one join boundary, and redacted timing; keep this complete-subject exception until Phase 5 exposes the public call and Phase 6 supplies final NIF sanitizer, supported-target, lifecycle, and benchmark evidence before activation.
+  reason: Milestone 2 Phases 2 through 5 implement and exercise the plan, guided traversal, public transactional conversion, one join boundary, stable errors, and redacted timing; keep this complete-subject exception until Phase 6 supplies final NIF sanitizer, supported-target, lifecycle, and benchmark evidence before activation.
 ```

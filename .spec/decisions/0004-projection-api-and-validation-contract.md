@@ -160,6 +160,25 @@ is compiled only in tests and does not add `SimdJson.select/2`, documentation,
 typespecs, protocols, or another public struct/resource. Phase 5 still owns the
 public argument order, root-module function, doctests, and surface activation.
 
+### Phase 5 public API checkpoint
+
+The root module now exposes the decided `SimdJson.select/2` operation and
+public types for its exact closed grammar and transactional scalar map. It runs
+complete projection validation first, accepts binaries directly, and accepts a
+document-shaped value only after a bounded registered-resource check. Invalid
+source values raise `ArgumentError` before projection admission; non-owner and
+closed genuine documents retain their structured operational errors.
+
+The Phase 4 adapter is now the production-private operation used by the root
+function, while its pause, failure, diagnostic, and synthetic-translation seams
+remain test-build-only. One translator maps every projection status, bounds
+numeric metadata, attaches a path only for path-specific reasons after resolving
+the native output slot against the validated projection, and maps unknown
+statuses to `native_failure` without a path. Public scalar, lifetime, redaction,
+atom-safety, doctest, export, typespec, protocol, and deferred-surface corpora
+exercise that boundary. No normalized projection, plan, cursor, timing, source,
+or native identity is returned.
+
 ### Deferred surface
 
 Milestone 2 exposes no public compiled-projection resource, JSONPath parser,
