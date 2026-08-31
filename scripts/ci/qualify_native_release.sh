@@ -62,6 +62,11 @@ required_package_files=(
   docs/milestones/01-native-foundation.md
   docs/milestones/01-native-foundation-operations.md
   docs/milestones/01-native-foundation-acceptance.md
+  docs/milestones/02-projection-api.md
+  lib/simd_json.ex
+  lib/simd_json/projection.ex
+  lib/simd_json/native/projection_operation.ex
+  lib/simd_json/native/threaded_operation.ex
   mix.exs
   mix.lock
   native/README.md
@@ -117,6 +122,8 @@ run_step zig_resource_ordinary bash scripts/native/run_zig_resource_tests.sh ord
 run_step zig_resource_sanitizer bash scripts/native/run_zig_resource_tests.sh sanitizer
 run_step nif_sanitizer bash scripts/native/run_nif_sanitizer_tests.sh
 run_step release_symbols bash scripts/native/verify_release_symbols.sh
-run_step offline_build bash scripts/ci/verify_offline_native_build.sh
+run_step offline_package_build \
+  env SIMD_JSON_SOURCE_DIRECTORY="${package_root}" \
+  bash scripts/ci/verify_offline_native_build.sh
 
 printf 'Milestone 1 release-native qualification passed\n' | tee "${evidence_root}/summary.txt"

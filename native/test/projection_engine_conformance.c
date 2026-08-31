@@ -23,6 +23,8 @@
     }                                                                          \
   } while (0)
 
+#define RANDOMIZED_PROJECTION_CASES 256U
+
 #define KEY_SEGMENT(literal)                                                   \
   {                                                                            \
     SIMD_JSON_PROJECTION_SEGMENT_OBJECT_KEY,                                   \
@@ -1118,7 +1120,127 @@ static int guard_page_and_borrowed_string_matrix(void) {
   return 0;
 }
 
+static uint64_t projection_randomized_seed(void) {
+  const char *configured = getenv("SIMD_JSON_QUALIFICATION_SEED");
+  char *end = NULL;
+  uint64_t seed;
+
+  if (configured == NULL || *configured == '\0') {
+    return UINT64_C(260829001);
+  }
+
+  seed = strtoull(configured, &end, 10);
+  if (end == configured || *end != '\0' || seed == 0) {
+    fprintf(stderr, "invalid SIMD_JSON_QUALIFICATION_SEED: %s\n", configured);
+    exit(EXIT_FAILURE);
+  }
+
+  return seed;
+}
+
+static uint64_t next_projection_random(uint64_t *state) {
+  uint64_t value = *state;
+
+  value ^= value << 13U;
+  value ^= value >> 7U;
+  value ^= value << 17U;
+  *state = value;
+  return value;
+}
+
+static int randomized_plan_and_traversal_matrix(uint64_t seed) {
+  static const uint8_t source[] =
+      "{\"root\":{\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,"
+      "\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,"
+      "\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,"
+      "\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15},"
+      "\"array\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],"
+      "\"tail\":{\"ignored\":[true,false,null]}}";
+  static const char *const keys[] = {
+      "k0",  "k1",  "k2",  "k3",  "k4",  "k5",  "k6",  "k7",
+      "k8",  "k9",  "k10", "k11", "k12", "k13", "k14", "k15",
+  };
+  uint64_t state = seed;
+  uint32_t case_index;
+
+  for (case_index = 0; case_index < RANDOMIZED_PROJECTION_CASES;
+       ++case_index) {
+    path_segment segment_storage[8][2];
+    path_definition paths[8];
+    int64_t expected[8] = {0};
+    simd_json_result_slot slots[8];
+    simd_json_projection_plan *plan = NULL;
+    document_fixture document;
+    const size_t path_count =
+        (size_t)(next_projection_random(&state) % UINT64_C(8)) + 1U;
+    const int missing_case = case_index % 7U == 0U;
+    simd_json_projection_status status;
+    size_t path_index;
+
+    for (path_index = 0; path_index < path_count; ++path_index) {
+      const uint32_t output_slot =
+          (uint32_t)(path_count - path_index - 1U);
+      const uint64_t selector = next_projection_random(&state);
+      const size_t value_index =
+          (size_t)(next_projection_random(&state) % UINT64_C(16));
+
+      if (missing_case && output_slot == 0U) {
+        segment_storage[path_index][0] =
+            (path_segment)KEY_SEGMENT("root");
+        segment_storage[path_index][1] =
+            (path_segment)KEY_SEGMENT("missing");
+      } else if ((selector & UINT64_C(1)) == 0U) {
+        segment_storage[path_index][0] =
+            (path_segment)KEY_SEGMENT("root");
+        segment_storage[path_index][1] = (path_segment){
+            SIMD_JSON_PROJECTION_SEGMENT_OBJECT_KEY,
+            (const uint8_t *)keys[value_index], strlen(keys[value_index]),
+            UINT64_C(0)};
+        expected[output_slot] = (int64_t)value_index;
+      } else {
+        segment_storage[path_index][0] =
+            (path_segment)KEY_SEGMENT("array");
+        segment_storage[path_index][1] = (path_segment)INDEX_SEGMENT(
+            (uint64_t)value_index);
+        expected[output_slot] = (int64_t)value_index;
+      }
+
+      paths[path_index] = (path_definition){
+          output_slot, segment_storage[path_index], 2U};
+    }
+
+    status = build_plan(paths, path_count, &plan);
+    CHECK(status.code == SIMD_JSON_STATUS_OK && plan != NULL);
+    CHECK(open_document(source, sizeof(source) - 1U, 1, &document).code ==
+          SIMD_JSON_STATUS_OK);
+    dirty_slots(slots, path_count);
+    status = simd_json_projection_execute(document.document, plan, slots,
+                                          (uint64_t)path_count);
+
+    if (missing_case) {
+      CHECK(status.code == SIMD_JSON_STATUS_MISSING_FIELD);
+      CHECK(status.output_slot == 0U);
+      CHECK(slots_are_empty(slots, path_count));
+    } else {
+      CHECK(status.code == SIMD_JSON_STATUS_OK);
+      for (path_index = 0; path_index < path_count; ++path_index) {
+        CHECK(slots[path_index].tag == SIMD_JSON_RESULT_SIGNED_INTEGER);
+        CHECK(slots[path_index].reserved == 0U);
+        CHECK(slots[path_index].value.signed_integer == expected[path_index]);
+      }
+    }
+
+    close_document(&document);
+    simd_json_projection_plan_destroy(plan);
+    CHECK(native_state_is_quiescent());
+  }
+
+  return 0;
+}
+
 int main(void) {
+  const uint64_t seed = projection_randomized_seed();
+
   simd_json_test_clear_failure();
   simd_json_test_projection_clear_failure();
   CHECK(native_state_is_quiescent());
@@ -1136,8 +1258,10 @@ int main(void) {
   CHECK(unicode_nested_array_matrix() == 0);
   CHECK(large_unselected_validation_matrix() == 0);
   CHECK(guard_page_and_borrowed_string_matrix() == 0);
+  CHECK(randomized_plan_and_traversal_matrix(seed) == 0);
   CHECK(native_state_is_quiescent());
-  printf("projection engine conformance passed abi=%" PRIu32 "\n",
-         SIMD_JSON_ABI_VERSION);
+  printf("projection engine conformance passed abi=%" PRIu32
+         " seed=%" PRIu64 " randomized_cases=%u\n",
+         SIMD_JSON_ABI_VERSION, seed, RANDOMIZED_PROJECTION_CASES);
   return 0;
 }

@@ -34,6 +34,7 @@ defmodule SimdJson.MixProject do
   defp deps do
     [
       {:zigler, "== 0.16.0", runtime: false},
+      {:jason, "== 1.4.5", only: [:dev, :test], runtime: false},
       {:spec_led_ex,
        github: "specleddev/specled_ex",
        ref: "f0d20dba6786a8f1dff0d7365a113b23db696fc1",
