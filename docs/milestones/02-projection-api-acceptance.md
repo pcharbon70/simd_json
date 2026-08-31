@@ -120,7 +120,7 @@ make that deliberately scoped estimate reviewable.
 
 The formal projection profile uses a 4 MiB sparse source, public binary and
 document success, malformed, missing, wrong-type, and caller-cancelled cases,
-twenty rounds per caller, a two-millisecond heartbeat, and exact admission and
+forty rounds per caller, a two-millisecond heartbeat, and exact admission and
 native worker counts. It requires at least 40 samples, p95 no greater than
 50 ms, p99 no greater than 250 ms, maximum no greater than 500 ms, and dirty
 CPU/I/O utilization below 25 percent.

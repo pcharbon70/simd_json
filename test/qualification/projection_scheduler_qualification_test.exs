@@ -7,7 +7,7 @@ defmodule SimdJson.Qualification.ProjectionSchedulerQualificationTest do
   alias SimdJson.Native.ThreadedOperation
 
   @fixture_bytes 4 * 1_024 * 1_024
-  @rounds 20
+  @rounds 40
   @heartbeat_period_ms 2
   @minimum_samples 40
   @p95_budget_us 50_000
