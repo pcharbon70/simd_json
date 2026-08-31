@@ -43,9 +43,7 @@ defmodule SimdJson.Benchmarks.GenerateSparseFixtures do
     )
 
     Enum.each(fixtures, fn fixture ->
-      IO.puts(
-        "#{fixture["name"]}: bytes=#{fixture["bytes"]} sha256=#{fixture["sha256"]}"
-      )
+      IO.puts("#{fixture["name"]}: bytes=#{fixture["bytes"]} sha256=#{fixture["sha256"]}")
     end)
   end
 
@@ -57,7 +55,7 @@ defmodule SimdJson.Benchmarks.GenerateSparseFixtures do
       IO.iodata_to_binary([
         ~s({"meta":{"fixture":"#{name_string}","seed":#{@seed},"active":true,"nothing":null},),
         ~s("customer":{"id":#{expected["id"]},"name":"#{expected["name"]}",),
-        ~s("unselected_profile":{"history":[1,2,3,4],"internal":"ignore"}}},),
+        ~s("unselected_profile":{"history":[1,2,3,4],"internal":"ignore"}},),
         ~s("orders":[{"sku":"#{expected["sku"]}","quantity":7,"unselected":{"discounts":[1,2,3]}}],),
         ~s("unselected":{"records":[)
       ])
@@ -120,7 +118,7 @@ defmodule SimdJson.Benchmarks.GenerateSparseFixtures do
       "name" => "Fixture #{String.capitalize(to_string(name))}",
       "sku" => "SKU-#{100 + offset}",
       "active" => true,
-      "nothing" => nil
+      "nothing" => :null
     }
   end
 
