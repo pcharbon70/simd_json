@@ -84,8 +84,9 @@ fi
 offline_build() {
   local build_root="$1"
   local diagnostic_path="$2"
+  local zigler_staging_root="${build_root}/zigler-staging"
 
-  mkdir -p "${build_root}"
+  mkdir -p "${build_root}" "${zigler_staging_root}"
 
   "${namespace_command[@]}" env \
     "HOME=${HOME}" \
@@ -94,6 +95,7 @@ offline_build() {
     "MIX_BUILD_PATH=${build_root}" \
     "MIX_DEPS_PATH=${repository_root}/deps" \
     "ZIG_EXECUTABLE_PATH=${zig_executable}" \
+    "ZIGLER_STAGING_ROOT=${zigler_staging_root}" \
     "ZIGLER_RELEASE_MODE=safe" \
     "HEX_OFFLINE=1" \
     "SIMD_JSON_DIAGNOSTIC_PATH=${diagnostic_path}" \
