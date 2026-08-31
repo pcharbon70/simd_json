@@ -18,7 +18,7 @@ Milestone 2 is governed by these accepted architecture decisions:
 - [Prefix-Sharing Native Projection Engine](https://github.com/pcharbon70/simd_json/blob/main/.spec/decisions/0005-prefix-sharing-native-projection-engine.md)
 - [Projection Admission, Consumption, and Lifetime](https://github.com/pcharbon70/simd_json/blob/main/.spec/decisions/0006-projection-admission-consumption-and-lifetime.md)
 
-Its implementation and closure evidence are defined by these planned
+Its implementation and closure evidence are defined by these active
 current-truth specifications:
 
 - [Projection API](https://github.com/pcharbon70/simd_json/blob/main/.spec/specs/projection_api.spec.md)
@@ -33,12 +33,18 @@ decisions remain binding prerequisites throughout this work.
 
 ## Status
 
-Phases 1 through 5 are implemented. `SimdJson.select/2`, its exact projection
+All six phases are implemented. `SimdJson.select/2`, its exact projection
 grammar, prefix-sharing traversal, threaded one-shot lifecycle, stable errors,
-and public documentation are available. The three specifications remain
-planned under explicit bootstrap exceptions until Phase 6 records the full
-supported-target sanitizer, scheduler, lifecycle, package, and end-to-end Jason
-benchmark evidence and activates them together.
+and public documentation are active on the qualified Ubuntu 24.04 x86-64
+target. Phase 6 records the package, ABI v2, sanitizer, scheduler, lifecycle,
+and frozen end-to-end Jason evidence and removes every bootstrap exception.
+
+Maintainers should use the
+[Milestone 2 Projection API Operations](./02-projection-api-operations.md)
+guide and the
+[Milestone 2 Projection API Acceptance Record](./02-projection-api-acceptance.md)
+when changing the projection grammar, native engine, lifecycle, dependency, or
+qualification boundary.
 
 The current Zigler-threaded execution layer remains a pre-production
 qualification runtime. The bounded worker pool, admission backpressure, and

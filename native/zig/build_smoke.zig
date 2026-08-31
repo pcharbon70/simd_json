@@ -64,7 +64,7 @@ pub const OperationOutcome = enum(u8) {
     discarded,
 };
 
-pub const OperationBoundary = enum(u8) {
+const OperationBoundary = enum(u8) {
     none,
     before_copy,
     before_parse,
@@ -103,17 +103,17 @@ const ExecutionAccounting = struct {
     var dispatcher_completed_cleanup = std.atomic.Value(usize).init(0);
     var retained_failed_cleanup = std.atomic.Value(usize).init(0);
     var cleanup_submission_failures = std.atomic.Value(usize).init(0);
-    var live_projection_operations = std.atomic.Value(usize).init(0);
+    var projection_operation_count = std.atomic.Value(usize).init(0);
     var retained_projection_binaries = std.atomic.Value(usize).init(0);
     var retained_projection_documents = std.atomic.Value(usize).init(0);
-    var live_projection_environments = std.atomic.Value(usize).init(0);
-    var live_projection_plans = std.atomic.Value(usize).init(0);
-    var live_projection_slots = std.atomic.Value(usize).init(0);
-    var live_projection_temporary_document_graphs = std.atomic.Value(usize).init(0);
+    var projection_environment_count = std.atomic.Value(usize).init(0);
+    var projection_plan_count = std.atomic.Value(usize).init(0);
+    var projection_slot_count = std.atomic.Value(usize).init(0);
+    var temporary_document_graph_count = std.atomic.Value(usize).init(0);
     var completed_projection_deliveries = std.atomic.Value(usize).init(0);
     var discarded_projection_deliveries = std.atomic.Value(usize).init(0);
-    var projection_worker_entries = std.atomic.Value(usize).init(0);
-    var projection_boundary_entries = std.atomic.Value(usize).init(0);
+    var projection_worker_count = std.atomic.Value(usize).init(0);
+    var projection_boundary_count = std.atomic.Value(usize).init(0);
 };
 
 const Runtime = struct {
@@ -350,7 +350,7 @@ const OperationRecord = struct {
         _ = ExecutionAccounting.running_operations.fetchAdd(1, .acq_rel);
         _ = ExecutionAccounting.worker_entries.fetchAdd(1, .acq_rel);
         if (self.kind == .projection)
-            _ = ExecutionAccounting.projection_worker_entries.fetchAdd(1, .acq_rel);
+            _ = ExecutionAccounting.projection_worker_count.fetchAdd(1, .acq_rel);
         return true;
     }
 
@@ -705,9 +705,9 @@ const OperationResourceCallbacks = struct {
         beam.free_env(operation.private_env);
 
         if (operation.kind == .projection) {
-            const environments = ExecutionAccounting.live_projection_environments.fetchSub(1, .acq_rel);
+            const environments = ExecutionAccounting.projection_environment_count.fetchSub(1, .acq_rel);
             std.debug.assert(environments > 0);
-            const projections = ExecutionAccounting.live_projection_operations.fetchSub(1, .acq_rel);
+            const projections = ExecutionAccounting.projection_operation_count.fetchSub(1, .acq_rel);
             std.debug.assert(projections > 0);
             switch (operation.projection_source_kind orelse unreachable) {
                 .binary => {
@@ -735,7 +735,7 @@ pub const OperationResource = beam.Resource(
     .{ .Callbacks = OperationResourceCallbacks },
 );
 
-pub const ExecutionSnapshot = struct {
+const ExecutionSnapshot = struct {
     live_operations: usize,
     retained_inputs: usize,
     queued_operations: usize,
@@ -765,7 +765,7 @@ pub const ExecutionSnapshot = struct {
     projection_boundary_entries: usize,
 };
 
-pub const ThreadedSmokeResult = struct {
+const ThreadedSmokeResult = struct {
     context: ExecutionContext,
     owner_matches: bool,
     kind: OperationKind,
@@ -803,7 +803,7 @@ pub const DocumentCleanupResult = struct {
     worker_context: ExecutionContext,
 };
 
-pub const DocumentProbeStatus = enum(u8) {
+const DocumentProbeStatus = enum(u8) {
     ok,
     closed,
     not_owner,
@@ -812,7 +812,7 @@ pub const DocumentProbeStatus = enum(u8) {
     internal_failure,
 };
 
-pub const DocumentProbeResult = struct {
+const DocumentProbeResult = struct {
     status: DocumentProbeStatus,
     kind: OperationKind,
     generation: u64,
@@ -829,7 +829,7 @@ pub const DocumentOwnerState = enum(u8) {
     not_owner,
 };
 
-pub const DocumentProjectionOwnerState = enum(u8) {
+const DocumentProjectionOwnerState = enum(u8) {
     fresh,
     selecting,
     consumed,
@@ -912,7 +912,7 @@ fn operationCancelled(context: ?*anyopaque) bool {
 
 fn projectionBoundary(record: *OperationRecord, boundary: OperationBoundary) void {
     _ = record.projection_boundaries.fetchAdd(1, .acq_rel);
-    _ = ExecutionAccounting.projection_boundary_entries.fetchAdd(1, .acq_rel);
+    _ = ExecutionAccounting.projection_boundary_count.fetchAdd(1, .acq_rel);
     record.pauseAt(boundary);
 }
 
@@ -1164,8 +1164,8 @@ fn createOperation(
     if (kind == .document_cleanup)
         _ = ExecutionAccounting.queued_cleanup.fetchAdd(1, .acq_rel);
     if (kind == .projection) {
-        _ = ExecutionAccounting.live_projection_operations.fetchAdd(1, .acq_rel);
-        _ = ExecutionAccounting.live_projection_environments.fetchAdd(1, .acq_rel);
+        _ = ExecutionAccounting.projection_operation_count.fetchAdd(1, .acq_rel);
+        _ = ExecutionAccounting.projection_environment_count.fetchAdd(1, .acq_rel);
         switch (projection_source_kind orelse unreachable) {
             .binary => _ = ExecutionAccounting.retained_projection_binaries.fetchAdd(1, .acq_rel),
             .document => _ = ExecutionAccounting.retained_projection_documents.fetchAdd(1, .acq_rel),
@@ -1580,10 +1580,10 @@ pub fn threaded_projection_execute(operation: OperationResource) ProjectionResul
         worker_finished = true;
         return finishProjectionResult(record, failed);
     };
-    _ = ExecutionAccounting.live_projection_plans.fetchAdd(1, .acq_rel);
+    _ = ExecutionAccounting.projection_plan_count.fetchAdd(1, .acq_rel);
     defer {
         plan.deinit();
-        const live = ExecutionAccounting.live_projection_plans.fetchSub(1, .acq_rel);
+        const live = ExecutionAccounting.projection_plan_count.fetchSub(1, .acq_rel);
         std.debug.assert(live > 0);
     }
     const compilation_nanoseconds = elapsedNanoseconds(compilation_started);
@@ -1594,7 +1594,7 @@ pub fn threaded_projection_execute(operation: OperationResource) ProjectionResul
     defer if (binary_source) {
         _ = temporary_document.closeAndDestroy();
         if (temporary_graph_accounted) {
-            const live = ExecutionAccounting.live_projection_temporary_document_graphs.fetchSub(1, .acq_rel);
+            const live = ExecutionAccounting.temporary_document_graph_count.fetchSub(1, .acq_rel);
             std.debug.assert(live > 0);
         }
     };
@@ -1629,7 +1629,7 @@ pub fn threaded_projection_execute(operation: OperationResource) ProjectionResul
                 projectionOpenFailureResult(record, open_status, compilation_nanoseconds),
             );
         }
-        _ = ExecutionAccounting.live_projection_temporary_document_graphs.fetchAdd(1, .acq_rel);
+        _ = ExecutionAccounting.temporary_document_graph_count.fetchAdd(1, .acq_rel);
         temporary_graph_accounted = true;
         document = temporary_document.ownedOperationDocument();
     }
@@ -1694,10 +1694,10 @@ pub fn threaded_projection_execute(operation: OperationResource) ProjectionResul
         .success => |owned| {
             var results = owned;
             const slot_count = results.native_slots.len;
-            _ = ExecutionAccounting.live_projection_slots.fetchAdd(slot_count, .acq_rel);
+            _ = ExecutionAccounting.projection_slot_count.fetchAdd(slot_count, .acq_rel);
             defer {
                 results.deinit();
-                const live = ExecutionAccounting.live_projection_slots.fetchSub(slot_count, .acq_rel);
+                const live = ExecutionAccounting.projection_slot_count.fetchSub(slot_count, .acq_rel);
                 std.debug.assert(live >= slot_count);
             }
 
@@ -1781,17 +1781,17 @@ pub fn execution_snapshot() ExecutionSnapshot {
         .dispatcher_completed_cleanup = ExecutionAccounting.dispatcher_completed_cleanup.load(.acquire),
         .retained_failed_cleanup = ExecutionAccounting.retained_failed_cleanup.load(.acquire),
         .cleanup_submission_failures = ExecutionAccounting.cleanup_submission_failures.load(.acquire),
-        .live_projection_operations = ExecutionAccounting.live_projection_operations.load(.acquire),
+        .live_projection_operations = ExecutionAccounting.projection_operation_count.load(.acquire),
         .retained_projection_binaries = ExecutionAccounting.retained_projection_binaries.load(.acquire),
         .retained_projection_documents = ExecutionAccounting.retained_projection_documents.load(.acquire),
-        .live_projection_environments = ExecutionAccounting.live_projection_environments.load(.acquire),
-        .live_projection_plans = ExecutionAccounting.live_projection_plans.load(.acquire),
-        .live_projection_slots = ExecutionAccounting.live_projection_slots.load(.acquire),
-        .live_projection_temporary_document_graphs = ExecutionAccounting.live_projection_temporary_document_graphs.load(.acquire),
+        .live_projection_environments = ExecutionAccounting.projection_environment_count.load(.acquire),
+        .live_projection_plans = ExecutionAccounting.projection_plan_count.load(.acquire),
+        .live_projection_slots = ExecutionAccounting.projection_slot_count.load(.acquire),
+        .live_projection_temporary_document_graphs = ExecutionAccounting.temporary_document_graph_count.load(.acquire),
         .completed_projection_deliveries = ExecutionAccounting.completed_projection_deliveries.load(.acquire),
         .discarded_projection_deliveries = ExecutionAccounting.discarded_projection_deliveries.load(.acquire),
-        .projection_worker_entries = ExecutionAccounting.projection_worker_entries.load(.acquire),
-        .projection_boundary_entries = ExecutionAccounting.projection_boundary_entries.load(.acquire),
+        .projection_worker_entries = ExecutionAccounting.projection_worker_count.load(.acquire),
+        .projection_boundary_entries = ExecutionAccounting.projection_boundary_count.load(.acquire),
     };
 }
 

@@ -298,7 +298,7 @@ defmodule SimdJson.Benchmarks.SparseProjection do
     end
   end
 
-  defp update_gc_trace(trace, event, info, timestamp)
+  defp update_gc_trace(trace, event, _info, timestamp)
        when event in [:gc_minor_start, :gc_major_start] do
     kind = if(event == :gc_minor_start, do: :minor, else: :major)
     %{trace | starts: Map.put(trace.starts, kind, timestamp)}

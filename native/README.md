@@ -8,6 +8,9 @@ machine-readable record. The prose below explains those pins and the process
 for changing them. The complete implemented ownership, runtime, public API, and
 qualification contract is in the
 [Milestone 1 operations guide](../docs/milestones/01-native-foundation-operations.md).
+Projection-specific ABI v2, sanitizer, scheduler, lifecycle, and benchmark
+procedures are in the
+[Milestone 2 operations guide](../docs/milestones/02-projection-api-operations.md).
 
 The build must not discover a system simdjson installation, follow a mutable
 source reference, or download source while compiling. A supported build uses
@@ -49,7 +52,7 @@ a pinned toolchain or upstream release update and renewed CPU qualification.
 
 ## Target and CPU-Dispatch Matrix
 
-| Target | Status for Milestone 1 | Runtime and dispatch policy |
+| Target | Status for Milestones 1 and 2 | Runtime and dispatch policy |
 | --- | --- | --- |
 | `x86_64-linux-gnu`, Ubuntu 24.04, glibc 2.39 | Primary qualification target | OTP 27.3, Elixir 1.18.4, Zig 0.16.0 with bundled Clang 21.1.0/libc++; simdjson runtime dispatch may select `haswell`, `westmere`, or `fallback`; Ice Lake is deliberately disabled by the recorded profile. |
 | `aarch64-linux-gnu` | Experimental | Compilation is not support; it must remain clearly experimental until native conformance, sanitizer, and scheduler evidence is recorded. |
@@ -88,10 +91,12 @@ upgrade and must fail the dependency guard.
 
 ### Executable qualification gate
 
-[`qualification/milestone_1.exs`](./qualification/milestone_1.exs) binds the
-supported target and deterministic stress seed to a SHA-256 fingerprint of
-every ABI-, runtime-, harness-, workflow-, and evidence-relevant input listed
-under `qualification_inputs` in the native manifest. Verify it with:
+The historically named
+[`qualification/milestone_1.exs`](./qualification/milestone_1.exs) now binds
+the cumulative Milestone 1 and 2 native foundation, supported target, and
+deterministic stress seed to a SHA-256 fingerprint of every ABI-, runtime-,
+harness-, workflow-, and evidence-relevant input listed under
+`qualification_inputs` in the native manifest. Verify it with:
 
 ```console
 mix simd_json.verify_qualification
@@ -103,7 +108,8 @@ fingerprint and makes the command fail. Updating the recorded digest alone is
 not acceptance: CI runs `scripts/ci/qualify_native_release.sh` from that same
 revision and archives its package inventory, tool versions, target, runtime
 dispatch, deterministic seed, ordinary and sanitizer logs, symbol inspection,
-and offline-build results. The isolated pin-change test in
+offline-build results, projection runtime profile, and frozen benchmark. The
+isolated pin-change test in
 `test/native/build_guard_test.exs` proves a stale record cannot pass.
 
 The complete release-native gate is:
@@ -111,6 +117,12 @@ The complete release-native gate is:
 ```console
 SIMD_JSON_QUALIFICATION_DIR=_build/qualification/native \
   bash scripts/ci/qualify_native_release.sh
+```
+
+The complete clean-worktree Milestone 2 gate is:
+
+```console
+bash scripts/ci/qualify_milestone_2.sh
 ```
 
 The supported matrix contains only Ubuntu 24.04 x86-64. Experimental rows are

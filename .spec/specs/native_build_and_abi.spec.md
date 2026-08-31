@@ -55,6 +55,13 @@ phase changes ABI v2 layout, the seven-symbol private shared-ABI allowlist, or
 the release NIF's sole `nif_init` export. The production wrapper, public tests,
 documentation, Phase 5 plan, and updated qualification scripts are pinned
 inputs so this additive surface cannot inherit stale Milestone 1 evidence.
+Milestone 2 Phase 6 rebuilds the production-mode NIF with test registrations
+absent, checks projection diagnostic/failure/counter strings, runs seeded
+randomized plan/traversal cases, compiles the unpacked Hex package offline, and
+executes the real public projection corpus under ASan/UBSan. All new fixtures,
+policies, scripts, tests, plans, specifications, operations, and acceptance
+records are fingerprinted inputs, so ABI v2 activation cannot reuse earlier
+evidence.
 
 ```spec-meta
 id: simd_json.native_build_and_abi

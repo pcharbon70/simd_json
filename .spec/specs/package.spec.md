@@ -5,15 +5,15 @@ Current package and documentation contract for the `SimdJson` library.
 The package distributes the pinned native build inputs, private C ABI, C++
 shim, Zig ownership/resource sources, symbol policy, native conformance
 harnesses, correlated threaded operation runtime, stable coordinator, and
-cleanup-only dispatcher. Its active Milestone 1 surface provides binary
-`open/1`, owner-safe `close/1`, an opaque document, and a closed redacted error
-vocabulary.
+cleanup-only dispatcher. Its active Milestone 1 and 2 surface provides binary
+`open/1`, owner-safe `close/1`, binary/document `select/2`, an opaque document,
+and a closed redacted error vocabulary.
 Phase 6 Section 6.1 also makes the Hex archive buildable with explicit package
 metadata, excludes generated Zigler intermediates, and inspects the unpacked
 artifact for every required native source, header, provenance, and license.
-Milestone 2 is defined by three accepted projection ADRs, three planned
-subjects with explicit bootstrap exceptions, and a six-phase implementation
-plan. Phase 1 now packages an undocumented internal projection validator and
+Milestone 2 is defined by three accepted projection ADRs, three active subjects
+without exceptions, and a completed six-phase implementation plan. Phase 1
+packages an undocumented internal projection validator and
 extends the common error representation with reserved projection reasons and
 an optional redacted path. Phase 2 packages ABI v2 descriptors, the opaque
 C++ prefix-sharing plan, its Zig serializer/owner, independent conformance
@@ -30,14 +30,16 @@ doctests, and locked export/type/protocol allowlists. The NIF still exports only
 `nif_init`, all native projection modules and plans remain undocumented and
 operation-scoped, and eager decode, streaming, cursors, transfer, raw handles,
 compiled plans, JSONPath, defaults, and container materialization remain
-absent. The Milestone 2 subjects remain planned until Phase 6 records the final
-supported-target safety, scheduler, lifecycle, and Jason benchmark evidence.
+absent. Phase 6 packages frozen sparse fixtures and policy, a direct exact Jason
+development/test pin, release/runtime/benchmark qualification commands, and
+operations/acceptance records. The active subjects bind their complete claims
+to executed commands on the qualified target.
 
 ```spec-meta
 id: simd_json.package
 kind: package
 status: active
-summary: Active Milestone 1 library and native tooling with the public Milestone 2 projection slice awaiting final qualification.
+summary: Active native foundation and projection library with reproducible ABI v2, package, runtime, and sparse-allocation qualification.
 surface:
   - .tool-versions
   - README.md

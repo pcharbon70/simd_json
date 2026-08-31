@@ -151,8 +151,11 @@ Milestone 1 is complete when valid JSON creates a safe opaque resource, invalid 
 
 [Detailed implementation reference](02-projection-api.md)
 
-**Status:** Phases 1 through 5 implemented; final qualification and activation
-remain in Phase 6.
+[Implementation and qualification operations](02-projection-api-operations.md)
+
+[Acceptance record](02-projection-api-acceptance.md)
+
+**Status:** Active on the qualified Ubuntu 24.04 x86-64 target.
 
 ### Goal
 

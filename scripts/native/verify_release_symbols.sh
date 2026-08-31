@@ -80,10 +80,12 @@ for artifact in "${abi_library}" "${nif_path}"; do
     exit 1
   fi
 
-  if strings "${artifact}" | grep -Eq \
-    'simd_json_test_|simd_json_test_standard_exception|simd_json_projection_standard_exception|after_buffer_allocation|live_padded_buffers|completed_destruction_events|openWithFailure|projection_operation_inject_failure|operation_configure_pause|operation_release_pause|execution_set_cleanup_rejection|execution_snapshot|live_projection_(operations|environments|plans|slots|temporary_document_graphs)|projection_(worker|boundary)_entries'; then
-    printf 'release artifact contains native failure-injection controls: %s\n' \
-      "${artifact}" >&2
+  forbidden_strings="$(strings "${artifact}" | grep -E \
+    'simd_json_test_|simd_json_test_standard_exception|simd_json_projection_standard_exception|after_buffer_allocation|live_padded_buffers|completed_destruction_events|openWithFailure|projection_operation_inject_failure|operation_configure_pause|operation_release_pause|execution_set_cleanup_rejection|execution_snapshot|live_projection_(operations|environments|plans|slots|temporary_document_graphs)|projection_(worker|boundary)_entries' || true)"
+
+  if [[ -n "${forbidden_strings}" ]]; then
+    printf 'release artifact contains native failure-injection controls: %s\n%s\n' \
+      "${artifact}" "${forbidden_strings}" >&2
     exit 1
   fi
 done

@@ -123,26 +123,26 @@ defmodule SimdJson.Native.ThreadedOperation do
     OperationCoordinator.project(source_kind, source, normalized, options)
   end
 
-  @spec smoke(binary()) :: map()
-  def smoke(input) when is_binary(input) do
-    operation = admit(input, :threaded_smoke)
-    true = BuildSmoke.operation_owner_matches(operation.resource)
-
-    {:ok, result} =
-      submit(operation, fn -> BuildSmoke.threaded_context_smoke(operation.resource) end)
-
-    true =
-      correlated?(operation, result) and
-        result.context == :threaded and
-        result.owner_matches and
-        result.ready_for_delivery
-
-    true = BuildSmoke.operation_owner_matches(operation.resource)
-    true = BuildSmoke.operation_finish(operation.resource, :delivered)
-    result
-  end
-
   if @test_hooks do
+    @spec smoke(binary()) :: map()
+    def smoke(input) when is_binary(input) do
+      operation = admit(input, :threaded_smoke)
+      true = BuildSmoke.operation_owner_matches(operation.resource)
+
+      {:ok, result} =
+        submit(operation, fn -> BuildSmoke.threaded_context_smoke(operation.resource) end)
+
+      true =
+        correlated?(operation, result) and
+          result.context == :threaded and
+          result.owner_matches and
+          result.ready_for_delivery
+
+      true = BuildSmoke.operation_owner_matches(operation.resource)
+      true = BuildSmoke.operation_finish(operation.resource, :delivered)
+      result
+    end
+
     @spec probe_document_for_test(reference()) :: map()
     def probe_document_for_test(document) when is_reference(document) do
       operation = admit(<<>>, :threaded_smoke)
@@ -166,15 +166,7 @@ defmodule SimdJson.Native.ThreadedOperation do
   def open(input, options \\ []) when is_binary(input) and is_list(options) do
     generation = BuildSmoke.execution_generation()
     operation = admit(input, :document_open, generation)
-
-    case Keyword.get(options, :pause) do
-      nil ->
-        :ok
-
-      {boundary, observer} when is_atom(boundary) and is_pid(observer) ->
-        true = BuildSmoke.operation_configure_pause(operation.resource, boundary, observer)
-    end
-
+    configure_pause(operation, options)
     OperationCoordinator.open(operation)
   end
 
@@ -218,6 +210,16 @@ defmodule SimdJson.Native.ThreadedOperation do
   if @test_hooks do
     defp record_projection_admission, do: record_admission_for_test(:projection)
 
+    defp configure_pause(operation, options) do
+      case Keyword.get(options, :pause) do
+        nil ->
+          :ok
+
+        {boundary, observer} when is_atom(boundary) and is_pid(observer) ->
+          true = BuildSmoke.operation_configure_pause(operation.resource, boundary, observer)
+      end
+    end
+
     defp record_admission_for_test(kind) do
       counter = :persistent_term.get(@admission_counter_key)
       :counters.add(counter, 1, 1)
@@ -232,6 +234,7 @@ defmodule SimdJson.Native.ThreadedOperation do
     end
   else
     defp record_projection_admission, do: :ok
+    defp configure_pause(_operation, _options), do: :ok
   end
 
   defp rollback_projection(%{kind: :projection, resource: resource}) do

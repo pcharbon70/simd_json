@@ -16,7 +16,9 @@ defmodule SimdJson.MixProject do
           "docs/milestones/01-native-foundation.md",
           "docs/milestones/01-native-foundation-operations.md",
           "docs/milestones/01-native-foundation-acceptance.md",
-          "docs/milestones/02-projection-api.md"
+          "docs/milestones/02-projection-api.md",
+          "docs/milestones/02-projection-api-operations.md",
+          "docs/milestones/02-projection-api-acceptance.md"
         ]
       ],
       package: package(),

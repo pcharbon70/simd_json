@@ -6,6 +6,21 @@ defmodule SimdJson.Native.BuildSmoke do
 
   @sanitizer_build System.get_env("SIMD_JSON_SANITIZER") == "1"
   @test_hooks Mix.env() == :test
+  @test_only_nifs [
+    :document_resource_registration_smoke,
+    :document_resource_fixture,
+    :projection_operation_inject_failure,
+    :operation_configure_pause,
+    :operation_release_pause,
+    :admission_context,
+    :operation_owner_matches,
+    :threaded_context_smoke,
+    :threaded_document_probe,
+    :document_lifecycle,
+    :document_projection_owner_state,
+    :execution_set_cleanup_rejection,
+    :execution_snapshot
+  ]
   @cxx_flags [
                "-std=c++17",
                "-DSIMDJSON_AVX512_ALLOWED=0",
@@ -97,6 +112,7 @@ defmodule SimdJson.Native.BuildSmoke do
       otp_app: :simd_json,
       zig_code_path: "./native/zig/build_smoke.zig",
       optimize: {:env, :safe},
+      ignore: @test_only_nifs,
       extra_modules: [
         document_resource: {"./native/zig/document_resource.zig", []},
         projection_plan: {"./native/zig/projection_plan.zig", []}

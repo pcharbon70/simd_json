@@ -138,7 +138,7 @@ flowchart TD
     Control --> Document[Opaque On-Demand document]
     Control --> Owner[Immutable owner PID]
     Control --> State[Lifecycle + generation + admissions]
-    Cursor[Future Milestone 2 child] -. BEAM-retains parent .-> Resource
+    Projection[Milestone 2 projection operation] -. retains during work .-> Resource
 ```
 
 Every accepted binary is copied once on the threaded worker into a 64-byte
@@ -150,8 +150,8 @@ or raw native pointer in Milestone 1.
 The opener PID is immutable authority. Another process receives `not_owner`
 before lifecycle is read, including after owner close. Possession of the term
 does not transfer ownership. Parent-retention helpers use BEAM resource
-keep/release operations and are ready for a Milestone 2 cursor; no cursor or
-child resource is exposed yet.
+keep/release operations and are used by Milestone 2 projection; no cursor or
+child resource is publicly exposed.
 
 ## Lifecycle and teardown
 

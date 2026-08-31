@@ -68,7 +68,10 @@ fallback. Concurrent 4 MiB valid, malformed, and missing-path cases report only
 the threaded context while independent heartbeats progress, and every retained
 operation, environment, source, plan, slot, document, and callback-retry gauge
 returns to baseline. Formal projection scheduler utilization and percentile
-qualification remains Milestone 2 Phase 6 work.
+qualification is now complete in Milestone 2 Phase 6 across public
+binary/document success and failure plus cancellation, raw percentile and
+scheduler-utilization evidence, exact admission/worker counts, and seeded
+lifecycle recovery without changing this subject's pre-production boundary.
 Milestone 2 Phase 5 now routes public `SimdJson.select/2` through that same
 coordinator with no public options or fallback path. Complete projection
 preflight and invalid/genuine-resource checks happen before correlated

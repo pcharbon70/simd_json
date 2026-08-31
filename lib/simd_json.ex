@@ -28,6 +28,10 @@ defmodule SimdJson do
   Threaded execution in this milestone is a qualification runtime. Production
   admission control and its bounded worker pool arrive in Milestone 4.
 
+  Milestone 2 is active on the qualified Ubuntu 24.04 x86-64 target. Its
+  package, sanitizer, scheduler, lifecycle, and sparse-allocation evidence are
+  indexed in the Milestone 2 acceptance record.
+
   ## Examples
 
       iex> {:ok, document} = SimdJson.open(~s({"ready": true}))

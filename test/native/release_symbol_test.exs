@@ -5,9 +5,7 @@ defmodule SimdJson.Native.ReleaseSymbolTest do
   @tag timeout: 180_000
   test "release ABI and NIF symbols match their checked-in allowlists" do
     {output, status} =
-      System.cmd("bash", ["scripts/native/verify_release_symbols.sh"],
-        stderr_to_stdout: true
-      )
+      System.cmd("bash", ["scripts/native/verify_release_symbols.sh"], stderr_to_stdout: true)
 
     assert status == 0, output
     assert output =~ "release symbol surfaces match their allowlists"
