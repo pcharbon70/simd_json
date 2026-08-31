@@ -1,6 +1,6 @@
 # Projection Engine
 
-Planned current-truth contract for the Milestone 2 prefix-sharing projection
+Active current-truth contract for the Milestone 2 prefix-sharing projection
 plan, exception-safe private ABI, single guided traversal, and transactional
 native result slots.
 
@@ -45,13 +45,16 @@ typed slots to exact caller keys, resolves failing slots against the validated
 projection once, and locks every native plan, slot, timing, and cursor detail
 behind undocumented modules. Public shared-prefix, declaration-order,
 duplicate-key, scalar, container, malformed-unselected, late-failure, and
-result-lifetime corpora now pass. The subject intentionally stays planned under
-its bootstrap exception until complete Milestone 2 qualification in Phase 6.
+result-lifetime corpora now pass. Phase 6 requalifies ABI v2 from the unpacked
+package, adds deterministic seeded plan/traversal cases, inspects the production
+artifact, and executes the real projection path under native sanitizers. The
+subject is now active.
 
 ```spec-meta
 id: simd_json.projection_engine
 kind: subsystem
-status: planned
+status: active
+verification_minimum_strength: executed
 summary: Milestone 2 compiles all requested paths into one native plan and evaluates them transactionally in one complete source-order traversal.
 surface:
   - native/include/**
@@ -254,16 +257,17 @@ decisions:
 
 ## Required Closure Evidence
 
-Before activation, replace the bootstrap exception with executed C and Zig
-plan/traversal tests, ordinary and sanitizer conformance, failure injection,
-full-input malformed corpora, duplicate-key fixtures, shared-prefix counters,
-boundary accounting, release symbol inspection, and result-slot conversion
-tests.
+The executable command below runs C and Zig plan/traversal tests, ordinary and
+sanitizer conformance, failure injection, full-input malformed corpora,
+duplicate-key fixtures, shared-prefix counters, boundary accounting, release
+symbol inspection, package/offline builds, and result-slot conversion tests.
 
-## Exceptions
+## Verification
 
-```spec-exceptions
-- id: simd_json.projection_engine.milestone_02_bootstrap
+```spec-verification
+- kind: command
+  target: bash scripts/ci/qualify_native_release.sh
+  execute: true
   covers:
     - simd_json.projection_engine.prefix_sharing_plan
     - simd_json.projection_engine.declaration_order_independence
@@ -284,5 +288,4 @@ tests.
     - simd_json.projection_engine.transactional_slot_failure
     - simd_json.projection_engine.abi_v2_conformance
     - simd_json.projection_engine.one_boundary_with_timing
-  reason: Milestone 2 Phases 2 through 5 implement and exercise the plan, guided traversal, public transactional conversion, one join boundary, stable errors, and redacted timing; keep this complete-subject exception until Phase 6 supplies final NIF sanitizer, supported-target, lifecycle, and benchmark evidence before activation.
 ```

@@ -5,6 +5,7 @@ set -euo pipefail
 
 repository_root="$(git rev-parse --show-toplevel)"
 source_tree="${SIMD_JSON_SOURCE_TREE:-HEAD}"
+source_directory="${SIMD_JSON_SOURCE_DIRECTORY:-}"
 scratch_root="$(mktemp -d "${TMPDIR:-/tmp}/simd_json-offline.XXXXXX")"
 source_root="${scratch_root}/source"
 first_build_root="${scratch_root}/build-one"
@@ -46,7 +47,21 @@ cleanup() {
 trap cleanup EXIT
 
 mkdir -p "${source_root}"
-git -C "${repository_root}" archive --format=tar "${source_tree}" | tar -xf - -C "${source_root}"
+
+if [[ -n "${source_directory}" ]]; then
+  source_directory="$(realpath "${source_directory}")"
+
+  if [[ ! -f "${source_directory}/mix.exs" ]]; then
+    printf 'offline source directory is not an unpacked Mix package: %s\n' \
+      "${source_directory}" >&2
+    exit 1
+  fi
+
+  cp -a "${source_directory}/." "${source_root}/"
+else
+  git -C "${repository_root}" archive --format=tar "${source_tree}" \
+    | tar -xf - -C "${source_root}"
+fi
 
 zig_cache_root="${XDG_CACHE_HOME:-${HOME}/.cache}"
 zig_executable="${ZIG_EXECUTABLE_PATH:-${zig_cache_root}/zigler/zig-x86_64-linux-0.16.0/zig}"
@@ -69,8 +84,9 @@ fi
 offline_build() {
   local build_root="$1"
   local diagnostic_path="$2"
+  local zigler_staging_root="${build_root}/zigler-staging"
 
-  mkdir -p "${build_root}"
+  mkdir -p "${build_root}" "${zigler_staging_root}"
 
   "${namespace_command[@]}" env \
     "HOME=${HOME}" \
@@ -79,6 +95,7 @@ offline_build() {
     "MIX_BUILD_PATH=${build_root}" \
     "MIX_DEPS_PATH=${repository_root}/deps" \
     "ZIG_EXECUTABLE_PATH=${zig_executable}" \
+    "ZIGLER_STAGING_ROOT=${zigler_staging_root}" \
     "ZIGLER_RELEASE_MODE=safe" \
     "HEX_OFFLINE=1" \
     "SIMD_JSON_DIAGNOSTIC_PATH=${diagnostic_path}" \

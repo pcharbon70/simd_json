@@ -137,9 +137,19 @@ document close, and application stop cancel at the six projection boundaries
 and leave the coordinator responsible for join and discard. Concurrent 4 MiB
 success, malformed-input, and missing-path integration tests observe only the
 threaded worker context, exact projection worker-entry counts, continuing BEAM
-heartbeats, and complete native-gauge recovery. This is preliminary
-non-regression evidence; the formal supported-target projection profile remains
-Milestone 2 Phase 6 work.
+heartbeats, and complete native-gauge recovery.
+
+### Milestone 2 Phase 6 projection-scheduler checkpoint
+
+The formal supported-target profile adds public binary and document success,
+malformed, missing-field, incorrect-type, and caller-cancelled 4 MiB work beside
+an independent 2 ms heartbeat. It records nearest-rank raw samples and normal,
+dirty CPU, and dirty I/O wall time; enforces the inherited p95 50 ms, p99
+250 ms, maximum 500 ms, and dirty-utilization 25 percent budgets; and requires
+one admission and threaded worker entry for every attempted selection.
+Structural tests still reject ordinary and dirty registration or fallback.
+Passing this profile activates projection scheduler safety while leaving the
+bounded production pool, backpressure, and telemetry assigned to Milestone 4.
 
 ## Consequences
 

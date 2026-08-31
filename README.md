@@ -68,9 +68,9 @@ handle, or public diagnostic API. The present threaded execution layer remains
 a pre-production qualification runtime; production admission control and a
 bounded worker pool arrive in Milestone 4.
 
-Milestone 1 is active on its qualified Ubuntu 24.04 x86-64 target. Other
-platforms remain experimental or unsupported until they pass the same package,
-ABI, sanitizer, scheduler, lifecycle, and shutdown gates.
+Milestones 1 and 2 are active on the qualified Ubuntu 24.04 x86-64 target.
+Other platforms remain experimental or unsupported until they pass the same
+package, ABI, sanitizer, scheduler, lifecycle, benchmark, and shutdown gates.
 
 ## Development
 
@@ -89,6 +89,10 @@ guide before changing a native dependency, ownership rule, or threaded
 execution boundary. The
 [`Milestone 1 Acceptance Record`](docs/milestones/01-native-foundation-acceptance.md)
 identifies the qualified target, immutable evidence, and remaining non-goals.
-The projection grammar, traversal, lifecycle, and remaining qualification work
-are documented in
+The projection grammar, traversal, and lifecycle are documented in
 [`docs/milestones/02-projection-api.md`](docs/milestones/02-projection-api.md).
+Maintainers should also read the
+[`Milestone 2 Projection API Operations`](docs/milestones/02-projection-api-operations.md)
+guide and
+[`Milestone 2 Projection API Acceptance Record`](docs/milestones/02-projection-api-acceptance.md)
+before changing the projection or qualification boundary.

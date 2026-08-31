@@ -1,6 +1,6 @@
 # Projection API
 
-Planned current-truth contract for the Milestone 2 `SimdJson.select/2` public
+Active current-truth contract for the Milestone 2 `SimdJson.select/2` public
 API, projection grammar, scalar result map, and stable projection errors.
 
 ## Intent
@@ -32,14 +32,15 @@ document dispatch, one stable translator, exact scalar maps, copied strings,
 validated caller-path errors, doctests, atom-safety corpus, and export/type/
 protocol allowlists. No normalized representation, native plan, cursor state,
 timing, diagnostic, or deferred operation crosses that boundary. This subject
-remains planned only until Phase 6 supplies the complete supported-target
-sanitizer, scheduler, lifecycle, package, and Jason benchmark evidence required
-for activation.
+is now active after Phase 6 qualified the packaged public path, native
+sanitizer corpus, projection scheduler and lifecycle profiles, and frozen Jason
+comparison on the supported target.
 
 ```spec-meta
 id: simd_json.projection_api
 kind: api
-status: planned
+status: active
+verification_minimum_strength: executed
 summary: Milestone 2 exposes validated binary and document projection through one transactional select/2 result.
 surface:
   - lib/simd_json.ex
@@ -210,8 +211,9 @@ decisions:
 Phase 5 supplies executed API, grammar, typespec, doctest, scalar corpus,
 atom-safety, output-lifetime, error-path, redaction, argument-boundary, and
 public-surface evidence through the real native projection path for both source
-forms. Phase 6 must add the complete supported-target qualification and then
-replace the bootstrap exception when activating the subject.
+forms. Phase 6 adds the complete supported-target package, sanitizer,
+scheduler, lifecycle, and frozen Jason comparison evidence through the
+executable command below.
 
 ## Evidence Inventory
 
@@ -260,10 +262,12 @@ replace the bootstrap exception when activating the subject.
     - simd_json.projection_api.error_path
 ```
 
-## Exceptions
+## Verification
 
-```spec-exceptions
-- id: simd_json.projection_api.milestone_02_bootstrap
+```spec-verification
+- kind: command
+  target: bash scripts/ci/qualify_document_api.sh
+  execute: true
   covers:
     - simd_json.projection_api.select_contract
     - simd_json.projection_api.source_argument_validation
@@ -283,5 +287,4 @@ replace the bootstrap exception when activating the subject.
     - simd_json.projection_api.all_scalar_types
     - simd_json.projection_api.path_failures
     - simd_json.projection_api.atom_and_surface_safety
-  reason: Milestone 2 Phases 1 through 5 implement and exercise the public API, types, doctests, exact results, errors, argument boundary, redaction, atom safety, and surface; keep this complete-subject exception until Phase 6 supplies the final supported-target sanitizer, scheduler, lifecycle, package, and Jason benchmark evidence and activates the subject.
 ```

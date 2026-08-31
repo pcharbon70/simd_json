@@ -75,17 +75,17 @@ defmodule SimdJson.Native.OperationCoordinator do
     GenServer.call(__MODULE__, :snapshot)
   end
 
-  @spec release_pause(reference()) :: :ok | {:error, :unknown_request}
-  def release_pause(request_ref) when is_reference(request_ref) do
-    GenServer.call(__MODULE__, {:release_pause, request_ref})
-  end
-
   @spec begin_shutdown() :: :ok
   def begin_shutdown do
     GenServer.call(__MODULE__, :begin_shutdown, :infinity)
   end
 
   if @test_hooks do
+    @spec release_pause(reference()) :: :ok | {:error, :unknown_request}
+    def release_pause(request_ref) when is_reference(request_ref) do
+      GenServer.call(__MODULE__, {:release_pause, request_ref})
+    end
+
     @spec set_submission_rejection_for_test(
             :document_open | :document_cleanup | :projection,
             boolean()
@@ -154,14 +154,16 @@ defmodule SimdJson.Native.OperationCoordinator do
     end
   end
 
-  def handle_call({:release_pause, request_ref}, _from, state) do
-    case Map.fetch(state.requests, request_ref) do
-      {:ok, request} ->
-        true = BuildSmoke.operation_release_pause(request.operation.resource)
-        {:reply, :ok, state}
+  if @test_hooks do
+    def handle_call({:release_pause, request_ref}, _from, state) do
+      case Map.fetch(state.requests, request_ref) do
+        {:ok, request} ->
+          true = BuildSmoke.operation_release_pause(request.operation.resource)
+          {:reply, :ok, state}
 
-      :error ->
-        {:reply, {:error, :unknown_request}, state}
+        :error ->
+          {:reply, {:error, :unknown_request}, state}
+      end
     end
   end
 
@@ -573,29 +575,34 @@ defmodule SimdJson.Native.OperationCoordinator do
     end
   end
 
-  defp configure_pause(operation, options) do
-    case Keyword.get(options, :pause) do
-      nil ->
-        :ok
+  if @test_hooks do
+    defp configure_pause(operation, options) do
+      case Keyword.get(options, :pause) do
+        nil ->
+          :ok
 
-      {boundary, observer} when is_atom(boundary) and is_pid(observer) ->
-        true = BuildSmoke.operation_configure_pause(operation.resource, boundary, observer)
+        {boundary, observer} when is_atom(boundary) and is_pid(observer) ->
+          true = BuildSmoke.operation_configure_pause(operation.resource, boundary, observer)
+      end
     end
-  end
 
-  defp configure_failure_injection(operation, options) do
-    case Keyword.get(options, :failure_after) do
-      nil ->
-        :ok
+    defp configure_failure_injection(operation, options) do
+      case Keyword.get(options, :failure_after) do
+        nil ->
+          :ok
 
-      successful_checkpoints
-      when is_integer(successful_checkpoints) and successful_checkpoints >= 0 ->
-        true =
-          BuildSmoke.projection_operation_inject_failure(
-            operation.resource,
-            successful_checkpoints
-          )
+        successful_checkpoints
+        when is_integer(successful_checkpoints) and successful_checkpoints >= 0 ->
+          true =
+            BuildSmoke.projection_operation_inject_failure(
+              operation.resource,
+              successful_checkpoints
+            )
+      end
     end
+  else
+    defp configure_pause(_operation, _options), do: :ok
+    defp configure_failure_injection(_operation, _options), do: :ok
   end
 
   defp projection_diagnostics(result) do

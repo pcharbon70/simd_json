@@ -53,6 +53,12 @@ and owner/lifecycle check before that reservation. The opaque public document
 representation remains unchanged, exposes no projection resource or state, and
 preserves owner-first rejection, one-shot consumption, close interlock, and
 exactly-once cleanup through the real public boundary.
+Milestone 2 Phase 6 adds seeded binary/document caller death at all six
+projection boundaries, reachable failure checkpoints, retryable admission,
+dropped result/document GC, cleanup-handoff retry, and application-generation
+cycles. Every batch restores the full exposed document and projection graph to
+baseline; standalone sanitizer accounting continues to own parser, node, and
+key-byte detail.
 
 ```spec-meta
 id: simd_json.document_resource

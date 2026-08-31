@@ -177,6 +177,18 @@ publishes no native slot, topology, timing, cursor, or compiled-plan surface.
 The ABI, operation-scoped plan ownership, complete-source validation, and sole
 join boundary are unchanged by publication.
 
+### Phase 6 qualification checkpoint
+
+ABI v2 is now requalified through the unpacked source package, seeded
+plan/traversal matrices, ordinary and ASan/UBSan C and Zig suites, and the
+sanitizer-instrumented public NIF corpus. Production-mode symbol and string
+inspection excludes diagnostic controls and failure injection. Runtime
+lifecycle evidence returns operation, plan, slot, private environment,
+retained-source, and temporary-document gauges to baseline; standalone C
+accounting independently returns native node and copied key-byte gauges to
+zero. These results activate the engine without making its plan reusable or
+public.
+
 ## Consequences
 
 The engine's work follows the JSON document rather than the caller's path

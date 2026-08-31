@@ -186,6 +186,18 @@ and cleanup, and compares against Jason full decode plus equivalent lookups.
 Parser-kernel-only results cannot qualify the milestone. Allocation acceptance
 thresholds and fixtures are declared before final measurements are recorded.
 
+### Phase 6 qualification checkpoint
+
+The final profile executes successful, malformed, missing, wrong-type, and
+cancelled 4 MiB projections beside a 2 ms heartbeat and records raw
+nearest-rank percentiles plus normal, dirty CPU, and dirty I/O scheduler
+utilization. A seeded matrix covers all six cancellation boundaries for binary
+and document sources, every reachable injected allocation checkpoint,
+retryable submission, owner and close behavior, dropped terms, GC handoff
+retry, and application generation changes. Each batch reaches bounded native
+quiescence. Application restart remains the supported generation boundary and
+is not presented as evidence of repeated in-process shared-object unload.
+
 ## Consequences
 
 Document-source behavior is deterministic: a document is a one-shot projection

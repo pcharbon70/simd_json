@@ -179,6 +179,17 @@ atom-safety, doctest, export, typespec, protocol, and deferred-surface corpora
 exercise that boundary. No normalized projection, plan, cursor, timing, source,
 or native identity is returned.
 
+### Phase 6 qualification checkpoint
+
+The public contract is now qualified and active on Ubuntu 24.04 x86-64. The
+release package is compiled offline from its unpacked vendored sources, the
+public binary/document corpus runs through the sanitizer-instrumented NIF, and
+formal scheduler and lifetime profiles preserve exact keys, copied strings,
+atomic failures, redaction, and the closed public surface. Frozen sparse
+fixtures also compare the complete `select/2` workflow with Jason full decode
+plus equivalent lookups. No benchmark, diagnostic, failure-injection, or
+compiled-plan option is added to the caller API.
+
 ### Deferred surface
 
 Milestone 2 exposes no public compiled-projection resource, JSONPath parser,

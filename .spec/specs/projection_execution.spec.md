@@ -1,6 +1,6 @@
 # Projection Execution and Lifecycle
 
-Planned current-truth contract for Milestone 2 threaded projection admission,
+Active current-truth contract for Milestone 2 threaded projection admission,
 one-shot document consumption, temporary binary-source ownership,
 cancellation, cleanup, and end-to-end qualification.
 
@@ -45,12 +45,15 @@ complete projection preflight and bounded genuine-resource/owner/lifecycle
 checks before reservation, and preserves retry after invalid input or proven
 submission rejection. Public one-shot, copied-result, ownership, close,
 redaction, and baseline tests exercise the boundary without adding options,
-plans, diagnostics, or a second execution path.
+plans, diagnostics, or a second execution path. Phase 6 now records the formal
+projection heartbeat, seeded lifetime recovery, frozen Jason comparison, and
+supported-target acceptance evidence, so the subject is active.
 
 ```spec-meta
 id: simd_json.projection_execution
 kind: subsystem
-status: planned
+status: active
+verification_minimum_strength: executed
 summary: Milestone 2 runs one-shot projection off scheduler with owner-first admission, retained resources, deterministic consumption, and qualified cleanup.
 surface:
   - native/**
@@ -281,16 +284,18 @@ decisions:
 
 ## Required Closure Evidence
 
-Before activation, replace the bootstrap exception with executed threaded
-admission, correlation, owner-first, one-shot consumption, submission rollback,
-generation, close, caller-death, cancellation, shutdown, sanitizer, baseline,
-scheduler, and end-to-end Jason comparison evidence. The benchmark fixtures and
-threshold must be committed before the accepted measurement record.
+The executable command below runs threaded admission, correlation, owner-first,
+one-shot consumption, submission rollback, generation, close, caller-death,
+cancellation, shutdown, baseline, scheduler, and end-to-end Jason comparison
+evidence. The benchmark fixtures and threshold were committed before the
+accepted measurement record.
 
-## Exceptions
+## Verification
 
-```spec-exceptions
-- id: simd_json.projection_execution.milestone_02_bootstrap
+```spec-verification
+- kind: command
+  target: bash scripts/ci/qualify_projection_execution.sh
+  execute: true
   covers:
     - simd_json.projection_execution.threaded_projection
     - simd_json.projection_execution.one_correlated_operation
@@ -314,5 +319,4 @@ threshold must be committed before the accepted measurement record.
     - simd_json.projection_execution.caller_death_and_cancellation
     - simd_json.projection_execution.large_projection_responsiveness
     - simd_json.projection_execution.jason_sparse_benchmark
-  reason: Milestone 2 Phases 1 through 5 implement and exercise public threaded projection, admission, consumption, retention, cancellation, cleanup, and the preliminary scheduler slice; keep this complete-subject exception until Phase 6 supplies the final sanitizer, supported-target scheduler, lifecycle, and Jason benchmark evidence required for activation.
 ```

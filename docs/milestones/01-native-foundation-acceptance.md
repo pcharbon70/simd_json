@@ -108,8 +108,10 @@ The `milestone-1-acceptance-<source revision>` CI artifact contains:
 
 ## Remaining non-goals
 
-Acceptance does not add projection, cursor traversal, streaming, eager decode,
-ownership transfer, a raw resource accessor, or a zero-copy input path. It also
+Milestone 1 acceptance itself did not add projection; Milestone 2 now governs
+the separately accepted `select/2` slice. This record still does not add cursor
+traversal, streaming, eager decode, ownership transfer, a raw resource
+accessor, or a zero-copy input path. It also
 does not claim a production capacity bound, fixed worker pool, backpressure,
 overload policy, or production telemetry; those remain Milestone 4 work.
 Repeated in-process shared-object unload is not supported by the qualified OTP

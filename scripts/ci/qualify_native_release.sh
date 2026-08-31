@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# covers: simd_json.native_build_and_abi.clean_supported_build simd_json.native_build_and_abi.cpp_exception_translation simd_json.native_build_and_abi.c_abi_conformance simd_json.native_build_and_abi.release_symbol_surface simd_json.native_build_and_abi.unsupported_target_rejection simd_json.native_build_and_abi.dependency_upgrade_gate
+# covers: simd_json.native_build_and_abi.clean_supported_build simd_json.native_build_and_abi.cpp_exception_translation simd_json.native_build_and_abi.c_abi_conformance simd_json.native_build_and_abi.release_symbol_surface simd_json.native_build_and_abi.unsupported_target_rejection simd_json.native_build_and_abi.dependency_upgrade_gate simd_json.projection_engine.prefix_sharing_plan simd_json.projection_engine.declaration_order_independence simd_json.projection_engine.single_guided_traversal simd_json.projection_engine.complete_source_validation simd_json.projection_engine.duplicate_json_key_policy simd_json.projection_engine.scalar_only_materialization simd_json.projection_engine.typed_result_slots simd_json.projection_engine.transactional_conversion simd_json.projection_engine.private_abi_v2 simd_json.projection_engine.exception_and_failure_cleanup simd_json.projection_engine.single_beam_boundary simd_json.projection_engine.internal_phase_timing simd_json.projection_engine.shared_prefix_and_order simd_json.projection_engine.object_array_walk simd_json.projection_engine.invalid_unselected_content simd_json.projection_engine.duplicate_object_keys simd_json.projection_engine.transactional_slot_failure simd_json.projection_engine.abi_v2_conformance simd_json.projection_engine.one_boundary_with_timing
 
 repository_root="$(git rev-parse --show-toplevel)"
 qualification_record="${repository_root}/native/qualification/milestone_1.exs"
@@ -62,6 +62,13 @@ required_package_files=(
   docs/milestones/01-native-foundation.md
   docs/milestones/01-native-foundation-operations.md
   docs/milestones/01-native-foundation-acceptance.md
+  docs/milestones/02-projection-api.md
+  docs/milestones/02-projection-api-operations.md
+  docs/milestones/02-projection-api-acceptance.md
+  lib/simd_json.ex
+  lib/simd_json/projection.ex
+  lib/simd_json/native/projection_operation.ex
+  lib/simd_json/native/threaded_operation.ex
   mix.exs
   mix.lock
   native/README.md
@@ -117,6 +124,8 @@ run_step zig_resource_ordinary bash scripts/native/run_zig_resource_tests.sh ord
 run_step zig_resource_sanitizer bash scripts/native/run_zig_resource_tests.sh sanitizer
 run_step nif_sanitizer bash scripts/native/run_nif_sanitizer_tests.sh
 run_step release_symbols bash scripts/native/verify_release_symbols.sh
-run_step offline_build bash scripts/ci/verify_offline_native_build.sh
+run_step offline_package_build \
+  env SIMD_JSON_SOURCE_DIRECTORY="${package_root}" \
+  bash scripts/ci/verify_offline_native_build.sh
 
 printf 'Milestone 1 release-native qualification passed\n' | tee "${evidence_root}/summary.txt"

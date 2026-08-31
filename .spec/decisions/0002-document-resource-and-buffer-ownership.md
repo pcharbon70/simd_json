@@ -137,6 +137,25 @@ projection boundary, and restores all live document and projection gauges to
 baseline. The root API still exposes no projection operation until Milestone 2
 Phase 5.
 
+### Milestone 2 Phase 5 and 6 public-lifetime checkpoints
+
+The root API now exposes `select/2` without exposing the document resource,
+cursor, reservation, generation, or native identity. Its bounded genuine
+resource and owner check precedes reservation; invalid projection and proven
+pre-worker rejection leave the document fresh, while cursor access commits the
+decided one-shot state.
+
+The final seeded profile covers binary and document caller death at all six
+projection boundaries, every reachable injected failure checkpoint,
+submission rollback and retry, owner/non-owner calls, repeated close, dropped
+results and documents, forced GC, callback-handoff retry, and application
+generation changes. Each bounded batch returns all exposed document,
+operation, retained-source, plan, slot, private-environment, temporary-graph,
+dispatcher, and failed-handoff gauges to baseline. Standalone sanitizer
+accounting remains the authority for parser handles, plan nodes, and copied key
+bytes. This evidence activates projection without changing single ownership or
+permitting document reuse after cursor access.
+
 ## Consequences
 
 The input remains valid for the complete parser lifetime and zero-copy ambiguity cannot cause an over-read. Explicit close releases large native allocations deterministically, while garbage collection safely handles abandoned documents.

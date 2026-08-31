@@ -52,6 +52,11 @@ is unchanged. Current public-surface verification therefore permits only that
 accepted additive operation while continuing to reject eager decode,
 streaming, cursor, transfer, raw-handle, compiled-plan, JSONPath, option, and
 diagnostic surfaces.
+Milestone 2 Phase 6 re-runs that combined public surface from the unpacked
+package and sanitizer-instrumented NIF, records formal scheduler/lifecycle and
+frozen Jason evidence, and activates the three projection subjects. The
+Milestone 1 open/close/error claims and verification command remain green and
+no additional root operation is introduced.
 
 ```spec-meta
 id: simd_json.document_api

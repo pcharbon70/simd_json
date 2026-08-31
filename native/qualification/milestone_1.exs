@@ -1,12 +1,13 @@
-# This record binds Milestone 1 qualification to every ABI-, runtime-, test-,
-# and evidence-relevant input. It is intentionally outside the fingerprint so
-# the expected digest can be updated after (and only after) the matrix passes.
+# This historically named record binds cumulative Milestone 1 and 2
+# qualification to every ABI-, runtime-, test-, benchmark-, and
+# evidence-relevant input. It is intentionally outside the fingerprint so the
+# expected digest can be updated after (and only after) the matrix passes.
 # covers: simd_json.native_build_and_abi.pinned_toolchain simd_json.native_build_and_abi.target_qualification simd_json.native_build_and_abi.dependency_upgrade_gate
 [
   schema_version: 1,
-  qualified_on: ~D[2026-08-30],
-  input_sha256: "c4dea8ce16c202e0d6194b1e42e82f75cff2541ceb66bd8ab886bf5b4af2e9ae",
-  randomized_seed: 260_829_001,
+  qualified_on: ~D[2026-08-31],
+  input_sha256: "81655db9f30cef5198e01c98854d6546179e5079415936a58a27e30d703b3d80",
+  randomized_seed: 260_831_006,
   supported_targets: [
     [
       triple: "x86_64-linux-gnu",
@@ -32,7 +33,11 @@
     "bash scripts/ci/qualify_document_resource.sh",
     "bash scripts/ci/qualify_runtime.sh",
     "bash scripts/ci/qualify_document_api.sh",
+    "bash scripts/ci/qualify_projection_runtime.sh",
+    "bash scripts/ci/qualify_projection_benchmark.sh",
+    "bash scripts/ci/qualify_projection_execution.sh",
     "mix simd_json.verify_traceability",
-    "bash scripts/ci/qualify_milestone_1.sh"
+    "bash scripts/ci/qualify_milestone_1.sh",
+    "bash scripts/ci/qualify_milestone_2.sh"
   ]
 ]
