@@ -21,6 +21,9 @@ revision, tree, commands, raw measurements, and checksums before merge.
 | Complete command | `bash scripts/ci/qualify_milestone_2.sh` |
 | CI workflow | [CI](https://github.com/pcharbon70/simd_json/actions/workflows/ci.yml) |
 | CI artifact | `milestone-2-acceptance-<source revision>` |
+| First accepted Ubuntu run | [Run 33389459172, attempt 2](https://github.com/pcharbon70/simd_json/actions/runs/33389459172/attempts/2), PR head `6d63cab041f565be1b06ac6bc170855e1df50263`, checked-out merge candidate `89e75453f43e64850d8b39a37869f321e5fbf32d`, source tree `a5168c7cc45661f25cb8ef548e09ac7ce6b81ef6` |
+| Accepted artifact | `milestone-2-acceptance-89e75453f43e64850d8b39a37869f321e5fbf32d`, artifact ID `9758339542`, 93,239 bytes, GitHub archive SHA-256 `0fac7246f96c18129914ba335b866e4585321c6506478e883661a4a5ca965a27` |
+| Accepted Ubuntu result | 127 Milestone 1 and 2 claims executed; sparse projection allocation threshold passed; 42 heartbeat samples with p95 42.998 ms and p99/maximum 54.404 ms |
 
 The CI artifact's `acceptance/environment.txt`, each subject environment file,
 and traceability inventory repeat the full source revision, tree, and
