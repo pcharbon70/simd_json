@@ -76,91 +76,7 @@
   },
   "findings": [],
   "index": {
-    "exceptions": [
-      {
-        "covers": [
-          "simd_json.projection_api.select_contract",
-          "simd_json.projection_api.source_argument_validation",
-          "simd_json.projection_api.projection_grammar",
-          "simd_json.projection_api.complete_preflight_validation",
-          "simd_json.projection_api.output_key_identity",
-          "simd_json.projection_api.scalar_results",
-          "simd_json.projection_api.fresh_string_results",
-          "simd_json.projection_api.atomic_result",
-          "simd_json.projection_api.projection_error_reasons",
-          "simd_json.projection_api.error_path",
-          "simd_json.projection_api.milestone_scope",
-          "simd_json.projection_api.binary_multi_select",
-          "simd_json.projection_api.document_select",
-          "simd_json.projection_api.invalid_source_argument",
-          "simd_json.projection_api.invalid_projection",
-          "simd_json.projection_api.all_scalar_types",
-          "simd_json.projection_api.path_failures",
-          "simd_json.projection_api.atom_and_surface_safety"
-        ],
-        "file": ".spec/specs/projection_api.spec.md",
-        "id": "simd_json.projection_api.milestone_02_bootstrap",
-        "reason": "Milestone 2 Phases 1 through 5 implement and exercise the public API, types, doctests, exact results, errors, argument boundary, redaction, atom safety, and surface; keep this complete-subject exception until Phase 6 supplies the final supported-target sanitizer, scheduler, lifecycle, package, and Jason benchmark evidence and activates the subject.",
-        "subject_id": "simd_json.projection_api"
-      },
-      {
-        "covers": [
-          "simd_json.projection_engine.prefix_sharing_plan",
-          "simd_json.projection_engine.declaration_order_independence",
-          "simd_json.projection_engine.single_guided_traversal",
-          "simd_json.projection_engine.complete_source_validation",
-          "simd_json.projection_engine.duplicate_json_key_policy",
-          "simd_json.projection_engine.scalar_only_materialization",
-          "simd_json.projection_engine.typed_result_slots",
-          "simd_json.projection_engine.transactional_conversion",
-          "simd_json.projection_engine.private_abi_v2",
-          "simd_json.projection_engine.exception_and_failure_cleanup",
-          "simd_json.projection_engine.single_beam_boundary",
-          "simd_json.projection_engine.internal_phase_timing",
-          "simd_json.projection_engine.shared_prefix_and_order",
-          "simd_json.projection_engine.object_array_walk",
-          "simd_json.projection_engine.invalid_unselected_content",
-          "simd_json.projection_engine.duplicate_object_keys",
-          "simd_json.projection_engine.transactional_slot_failure",
-          "simd_json.projection_engine.abi_v2_conformance",
-          "simd_json.projection_engine.one_boundary_with_timing"
-        ],
-        "file": ".spec/specs/projection_engine.spec.md",
-        "id": "simd_json.projection_engine.milestone_02_bootstrap",
-        "reason": "Milestone 2 Phases 2 through 5 implement and exercise the plan, guided traversal, public transactional conversion, one join boundary, stable errors, and redacted timing; keep this complete-subject exception until Phase 6 supplies final NIF sanitizer, supported-target, lifecycle, and benchmark evidence before activation.",
-        "subject_id": "simd_json.projection_engine"
-      },
-      {
-        "covers": [
-          "simd_json.projection_execution.threaded_projection",
-          "simd_json.projection_execution.one_correlated_operation",
-          "simd_json.projection_execution.owner_first_admission",
-          "simd_json.projection_execution.exclusive_document_selection",
-          "simd_json.projection_execution.committed_consumption",
-          "simd_json.projection_execution.preadmission_nonconsumption",
-          "simd_json.projection_execution.generation_and_resource_retention",
-          "simd_json.projection_execution.binary_temporary_document",
-          "simd_json.projection_execution.close_interlock",
-          "simd_json.projection_execution.cancellation_boundaries",
-          "simd_json.projection_execution.native_memory_baseline",
-          "simd_json.projection_execution.scheduler_qualification",
-          "simd_json.projection_execution.end_to_end_benchmark",
-          "simd_json.projection_execution.sparse_allocation_advantage",
-          "simd_json.projection_execution.preproduction_boundary",
-          "simd_json.projection_execution.binary_operation_lifetime",
-          "simd_json.projection_execution.document_one_shot",
-          "simd_json.projection_execution.non_owner_and_close_race",
-          "simd_json.projection_execution.submission_rejection_retry",
-          "simd_json.projection_execution.caller_death_and_cancellation",
-          "simd_json.projection_execution.large_projection_responsiveness",
-          "simd_json.projection_execution.jason_sparse_benchmark"
-        ],
-        "file": ".spec/specs/projection_execution.spec.md",
-        "id": "simd_json.projection_execution.milestone_02_bootstrap",
-        "reason": "Milestone 2 Phases 1 through 5 implement and exercise public threaded projection, admission, consumption, retention, cancellation, cleanup, and the preliminary scheduler slice; keep this complete-subject exception until Phase 6 supplies the final sanitizer, supported-target scheduler, lifecycle, and Jason benchmark evidence required for activation.",
-        "subject_id": "simd_json.projection_execution"
-      }
-    ],
+    "exceptions": [],
     "requirements": [
       {
         "file": ".spec/specs/document_api.spec.md",
@@ -1928,7 +1844,7 @@
           "id": "simd_json.package",
           "kind": "package",
           "status": "active",
-          "summary": "Active Milestone 1 library and native tooling with the public Milestone 2 projection slice awaiting final qualification.",
+          "summary": "Active native foundation and projection library with reproducible ABI v2, package, runtime, and sparse-allocation qualification.",
           "surface": [
             ".tool-versions",
             "README.md",
@@ -1960,7 +1876,7 @@
           ],
           "id": "simd_json.projection_api",
           "kind": "api",
-          "status": "planned",
+          "status": "active",
           "summary": "Milestone 2 exposes validated binary and document projection through one transactional select/2 result.",
           "surface": [
             "lib/simd_json.ex",
@@ -1969,7 +1885,7 @@
             "test/**/*select*",
             "docs/milestones/02-projection-api.md"
           ],
-          "verification_minimum_strength": null
+          "verification_minimum_strength": "executed"
         },
         "title": "Projection API"
       },
@@ -1984,7 +1900,7 @@
           ],
           "id": "simd_json.projection_engine",
           "kind": "subsystem",
-          "status": "planned",
+          "status": "active",
           "summary": "Milestone 2 compiles all requested paths into one native plan and evaluates them transactionally in one complete source-order traversal.",
           "surface": [
             "native/include/**",
@@ -1994,7 +1910,7 @@
             "scripts/native/**/*projection*",
             "docs/milestones/02-projection-api.md"
           ],
-          "verification_minimum_strength": null
+          "verification_minimum_strength": "executed"
         },
         "title": "Projection Engine"
       },
@@ -2009,7 +1925,7 @@
           ],
           "id": "simd_json.projection_execution",
           "kind": "subsystem",
-          "status": "planned",
+          "status": "active",
           "summary": "Milestone 2 runs one-shot projection off scheduler with owner-first admission, retained resources, deterministic consumption, and qualified cleanup.",
           "surface": [
             "native/**",
@@ -2020,7 +1936,7 @@
             "bench/**/*projection*",
             "docs/milestones/02-projection-api.md"
           ],
-          "verification_minimum_strength": null
+          "verification_minimum_strength": "executed"
         },
         "title": "Projection Execution and Lifecycle"
       },
@@ -2301,6 +2217,92 @@
       },
       {
         "covers": [
+          "simd_json.projection_api.select_contract",
+          "simd_json.projection_api.source_argument_validation",
+          "simd_json.projection_api.projection_grammar",
+          "simd_json.projection_api.complete_preflight_validation",
+          "simd_json.projection_api.output_key_identity",
+          "simd_json.projection_api.scalar_results",
+          "simd_json.projection_api.fresh_string_results",
+          "simd_json.projection_api.atomic_result",
+          "simd_json.projection_api.projection_error_reasons",
+          "simd_json.projection_api.error_path",
+          "simd_json.projection_api.milestone_scope",
+          "simd_json.projection_api.binary_multi_select",
+          "simd_json.projection_api.document_select",
+          "simd_json.projection_api.invalid_source_argument",
+          "simd_json.projection_api.invalid_projection",
+          "simd_json.projection_api.all_scalar_types",
+          "simd_json.projection_api.path_failures",
+          "simd_json.projection_api.atom_and_surface_safety"
+        ],
+        "execute": true,
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh"
+      },
+      {
+        "covers": [
+          "simd_json.projection_engine.prefix_sharing_plan",
+          "simd_json.projection_engine.declaration_order_independence",
+          "simd_json.projection_engine.single_guided_traversal",
+          "simd_json.projection_engine.complete_source_validation",
+          "simd_json.projection_engine.duplicate_json_key_policy",
+          "simd_json.projection_engine.scalar_only_materialization",
+          "simd_json.projection_engine.typed_result_slots",
+          "simd_json.projection_engine.transactional_conversion",
+          "simd_json.projection_engine.private_abi_v2",
+          "simd_json.projection_engine.exception_and_failure_cleanup",
+          "simd_json.projection_engine.single_beam_boundary",
+          "simd_json.projection_engine.internal_phase_timing",
+          "simd_json.projection_engine.shared_prefix_and_order",
+          "simd_json.projection_engine.object_array_walk",
+          "simd_json.projection_engine.invalid_unselected_content",
+          "simd_json.projection_engine.duplicate_object_keys",
+          "simd_json.projection_engine.transactional_slot_failure",
+          "simd_json.projection_engine.abi_v2_conformance",
+          "simd_json.projection_engine.one_boundary_with_timing"
+        ],
+        "execute": true,
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh"
+      },
+      {
+        "covers": [
+          "simd_json.projection_execution.threaded_projection",
+          "simd_json.projection_execution.one_correlated_operation",
+          "simd_json.projection_execution.owner_first_admission",
+          "simd_json.projection_execution.exclusive_document_selection",
+          "simd_json.projection_execution.committed_consumption",
+          "simd_json.projection_execution.preadmission_nonconsumption",
+          "simd_json.projection_execution.generation_and_resource_retention",
+          "simd_json.projection_execution.binary_temporary_document",
+          "simd_json.projection_execution.close_interlock",
+          "simd_json.projection_execution.cancellation_boundaries",
+          "simd_json.projection_execution.native_memory_baseline",
+          "simd_json.projection_execution.scheduler_qualification",
+          "simd_json.projection_execution.end_to_end_benchmark",
+          "simd_json.projection_execution.sparse_allocation_advantage",
+          "simd_json.projection_execution.preproduction_boundary",
+          "simd_json.projection_execution.binary_operation_lifetime",
+          "simd_json.projection_execution.document_one_shot",
+          "simd_json.projection_execution.non_owner_and_close_race",
+          "simd_json.projection_execution.submission_rejection_retry",
+          "simd_json.projection_execution.caller_death_and_cancellation",
+          "simd_json.projection_execution.large_projection_responsiveness",
+          "simd_json.projection_execution.jason_sparse_benchmark"
+        ],
+        "execute": true,
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh"
+      },
+      {
+        "covers": [
           "spec.workspace.readme_present"
         ],
         "file": ".spec/specs/spec_system.spec.md",
@@ -2351,12 +2353,12 @@
   "summary": {
     "decision_parse_errors": 0,
     "decisions": 6,
-    "exceptions": 3,
+    "exceptions": 0,
     "findings": 0,
     "requirements": 90,
     "scenarios": 47,
     "subjects": 9,
-    "verifications": 25
+    "verifications": 28
   },
   "verification": {
     "claims": [
@@ -3329,6 +3331,655 @@
         "verification_index": 15
       },
       {
+        "cover_id": "simd_json.projection_api.all_scalar_types",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.atom_and_surface_safety",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.atomic_result",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.binary_multi_select",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.complete_preflight_validation",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.document_select",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.error_path",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.fresh_string_results",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.invalid_projection",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.invalid_source_argument",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.milestone_scope",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.output_key_identity",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.path_failures",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.projection_error_reasons",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.projection_grammar",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.scalar_results",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.select_contract",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_api.source_argument_validation",
+        "file": ".spec/specs/projection_api.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_api",
+        "target": "bash scripts/ci/qualify_document_api.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.abi_v2_conformance",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.complete_source_validation",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.declaration_order_independence",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.duplicate_json_key_policy",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.duplicate_object_keys",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.exception_and_failure_cleanup",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.internal_phase_timing",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.invalid_unselected_content",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.object_array_walk",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.one_boundary_with_timing",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.prefix_sharing_plan",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.private_abi_v2",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.scalar_only_materialization",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.shared_prefix_and_order",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.single_beam_boundary",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.single_guided_traversal",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.transactional_conversion",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.transactional_slot_failure",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_engine.typed_result_slots",
+        "file": ".spec/specs/projection_engine.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_engine",
+        "target": "bash scripts/ci/qualify_native_release.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.binary_operation_lifetime",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.binary_temporary_document",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.caller_death_and_cancellation",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.cancellation_boundaries",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.close_interlock",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.committed_consumption",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.document_one_shot",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.end_to_end_benchmark",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.exclusive_document_selection",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.generation_and_resource_retention",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.jason_sparse_benchmark",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.large_projection_responsiveness",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.native_memory_baseline",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.non_owner_and_close_race",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.one_correlated_operation",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.owner_first_admission",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.preadmission_nonconsumption",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.preproduction_boundary",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.scheduler_qualification",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.sparse_allocation_advantage",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.submission_rejection_retry",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
+        "cover_id": "simd_json.projection_execution.threaded_projection",
+        "file": ".spec/specs/projection_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "executed",
+        "strength": "executed",
+        "subject_id": "simd_json.projection_execution",
+        "target": "bash scripts/ci/qualify_projection_execution.sh",
+        "verification_index": 0
+      },
+      {
         "cover_id": "spec.workspace.readme_present",
         "file": ".spec/specs/spec_system.spec.md",
         "kind": "source_file",
@@ -3399,7 +4050,7 @@
     "default_minimum_strength": "claimed",
     "strength_summary": {
       "claimed": 6,
-      "executed": 68,
+      "executed": 127,
       "linked": 20
     },
     "threshold_failures": 0

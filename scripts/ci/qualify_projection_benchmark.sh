@@ -10,6 +10,13 @@ cd "${repository_root}"
 mkdir -p "${evidence_root}"
 
 printf '%s\n' \
+  'MIX_ENV=test mix test test/benchmark/sparse_fixture_test.exs --seed 0' \
+  >"${evidence_root}/fixture-policy.command"
+
+env MIX_ENV=test mix test test/benchmark/sparse_fixture_test.exs --seed 0 \
+  2>&1 | tee "${evidence_root}/fixture-policy.log"
+
+printf '%s\n' \
   'MIX_ENV=test mix run scripts/benchmarks/run_sparse_projection.exs' \
   >"${evidence_root}/benchmark.command"
 
