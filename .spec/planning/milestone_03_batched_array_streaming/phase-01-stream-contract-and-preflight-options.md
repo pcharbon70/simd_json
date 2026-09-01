@@ -53,7 +53,7 @@ Back to plan: [README](./README.md)
 
 ## 1.2 Section — Complete Preflight and Lazy Boundary
 
-- [ ] 1.2 Section - Validate the source term and complete option list before
+- [x] 1.2 Section - Validate the source term and complete option list before
   any document reservation, request correlation, native submission, or JSON
   inspection.
 
@@ -62,34 +62,34 @@ Back to plan: [README](./README.md)
   projection size in yielding Elixir code; no ordinary NIF walks unbounded
   caller structures.
 
-  - [ ] 1.2.1 Task - Validate source and option collection shape.
+  - [x] 1.2.1 Task - Validate source and option collection shape.
 
     The task accepts only the two source forms and four closed option keys while
     retaining enough information to reject every duplicate deterministically.
 
-    - [ ] 1.2.1.1 Subtask - Accept a binary directly and accept a document only after a bounded genuine registered-resource check; raise `ArgumentError` for forged and every other source term.
-    - [ ] 1.2.1.2 Subtask - Reject non-list, improper, non-keyword, empty, duplicate-key, unknown-key, and missing-required-key options with controlled `ArgumentError` messages.
-    - [ ] 1.2.1.3 Subtask - Parse the proper option list once, without using a map conversion that would erase duplicates or enumerate source JSON data.
-    - [ ] 1.2.1.4 Subtask - Prove source and option failures create no request reference, operation admission, allocation, generation change, or document reservation.
+    - [x] 1.2.1.1 Subtask - Accept a binary directly and accept a document only after a bounded genuine registered-resource check; raise `ArgumentError` for forged and every other source term.
+    - [x] 1.2.1.2 Subtask - Reject non-list, improper, non-keyword, empty, duplicate-key, unknown-key, and missing-required-key options with controlled `ArgumentError` messages.
+    - [x] 1.2.1.3 Subtask - Parse the proper option list once, without using a map conversion that would erase duplicates or enumerate source JSON data.
+    - [x] 1.2.1.4 Subtask - Prove source and option failures create no request reference, operation admission, allocation, generation change, or document reservation.
 
-  - [ ] 1.2.2 Task - Validate target, fields, and numeric limits completely.
+  - [x] 1.2.2 Task - Validate target, fields, and numeric limits completely.
 
     The task checks every nested term before returning one normalized success
     value so malformed tails cannot reach native descriptor serialization.
 
-    - [ ] 1.2.2.1 Subtask - Accept an empty target path and proper paths containing only valid UTF-8 binaries or integers in `0..18_446_744_073_709_551_615`; reject every other segment and improper tail.
-    - [ ] 1.2.2.2 Subtask - Run `:fields` through the existing complete projection validator and preserve its exact key, segment, duplicate, scalar, UTF-8, and atom-safety rules.
-    - [ ] 1.2.2.3 Subtask - Accept `batch_size` only in `1..10_000` and `max_batch_bytes` only in `1..67_108_864`, applying their decided defaults only when absent.
-    - [ ] 1.2.2.4 Subtask - Walk late-invalid target, field, and option fixtures completely enough that no unchecked caller term reaches a later phase.
+    - [x] 1.2.2.1 Subtask - Accept an empty target path and proper paths containing only valid UTF-8 binaries or integers in `0..18_446_744_073_709_551_615`; reject every other segment and improper tail.
+    - [x] 1.2.2.2 Subtask - Run `:fields` through the existing complete projection validator and preserve its exact key, segment, duplicate, scalar, UTF-8, and atom-safety rules.
+    - [x] 1.2.2.3 Subtask - Accept `batch_size` only in `1..10_000` and `max_batch_bytes` only in `1..67_108_864`, applying their decided defaults only when absent.
+    - [x] 1.2.2.4 Subtask - Walk late-invalid target, field, and option fixtures completely enough that no unchecked caller term reaches a later phase.
 
-  - [ ] 1.2.3 Task - Make construction laziness observable.
+  - [x] 1.2.3 Task - Make construction laziness observable.
 
     The task provides a private shell that later becomes public without
     accidentally starting a parse while merely building or inspecting it.
 
-    - [ ] 1.2.3.1 Subtask - Return only a private normalized stream value or raise `ArgumentError`; do not call `SimdJson.open/1`, reserve a document, compile a plan, or create a cursor.
-    - [ ] 1.2.3.2 Subtask - Add test-only admission and native-gauge snapshots proving valid and invalid construction produce zero setup, batch, parser, document, plan, and cursor deltas.
-    - [ ] 1.2.3.3 Subtask - Exercise a genuine fresh document through the private seam and prove owner, lifecycle, generation, and one-shot cursor state remain unchanged until a later reduction start.
+    - [x] 1.2.3.1 Subtask - Return only a private normalized stream value or raise `ArgumentError`; do not call `SimdJson.open/1`, reserve a document, compile a plan, or create a cursor.
+    - [x] 1.2.3.2 Subtask - Add test-only admission and native-gauge snapshots proving valid and invalid construction produce zero setup, batch, parser, document, plan, and cursor deltas.
+    - [x] 1.2.3.3 Subtask - Exercise a genuine fresh document through the private seam and prove owner, lifecycle, generation, and one-shot cursor state remain unchanged until a later reduction start.
 
 ## 1.3 Section — Stream Error Metadata and Redaction
 
