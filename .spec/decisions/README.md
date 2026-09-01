@@ -35,3 +35,9 @@ Use this folder for durable cross-cutting decisions that shape the current Spec 
 - [Projection API and Validation Contract](./0004-projection-api-and-validation-contract.md)
 - [Prefix-Sharing Native Projection Engine](./0005-prefix-sharing-native-projection-engine.md)
 - [Projection Admission, Consumption, and Lifetime](./0006-projection-admission-consumption-and-lifetime.md)
+
+### Milestone 3 — Batched Array Streaming
+
+- [Lazy Stream API and Bounded Options](./0007-lazy-stream-api-and-bounded-options.md)
+- [Forward-Only Batched Array Cursor](./0008-forward-only-batched-array-cursor.md)
+- [Stream Ownership, Backpressure, and Lifetime](./0009-stream-ownership-backpressure-and-lifetime.md)

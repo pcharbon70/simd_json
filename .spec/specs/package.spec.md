@@ -34,12 +34,17 @@ absent. Phase 6 packages frozen sparse fixtures and policy, a direct exact Jason
 development/test pin, release/runtime/benchmark qualification commands, and
 operations/acceptance records. The active subjects bind their complete claims
 to executed commands on the qualified target.
+Milestone 3 is defined by three accepted streaming ADRs, three planned subjects
+with complete bootstrap exceptions, and a six-phase batched-array-streaming
+implementation plan. Those documents specify future `stream/2`, private cursor,
+bounded-batch, and lifecycle behavior but do not change the currently packaged
+or exported Milestone 2 runtime surface.
 
 ```spec-meta
 id: simd_json.package
 kind: package
 status: active
-summary: Active native foundation and projection library with reproducible ABI v2, package, runtime, and sparse-allocation qualification.
+summary: Active native foundation and projection library with reproducible ABI v2 qualification and a fully specified Milestone 3 streaming plan.
 surface:
   - .tool-versions
   - README.md
@@ -149,6 +154,11 @@ surface:
 
 - kind: source_file
   target: .spec/planning/milestone_02_projection_api/README.md
+  covers:
+    - simd_json.package.documentation_layout
+
+- kind: source_file
+  target: .spec/planning/milestone_03_batched_array_streaming/README.md
   covers:
     - simd_json.package.documentation_layout
 
