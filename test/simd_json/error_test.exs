@@ -36,6 +36,7 @@ defmodule SimdJson.ErrorTest do
       index_out_of_bounds: "requested array index is out of bounds",
       incorrect_type: "selected value has an incorrect type",
       number_out_of_range: "selected number is out of range",
+      batch_too_large: "projected row exceeds max_batch_bytes",
       cursor_consumed: "document cursor has already been consumed",
       cancelled: "JSON operation was cancelled",
       native_failure: "native JSON operation failed"
@@ -48,6 +49,7 @@ defmodule SimdJson.ErrorTest do
       assert error.byte_offset == nil
       assert error.native_code == nil
       assert error.path == nil
+      assert error.array_index == nil
     end
   end
 
@@ -180,6 +182,28 @@ defmodule SimdJson.ErrorTest do
     refute inspect(error) =~ secret
   end
 
+  # covers: simd_json.streaming_api.indexed_errors simd_json.streaming_api.runtime_exceptions
+  test "stream row indexes use a controlled message and bounded redacted inspection" do
+    secret = "indexed-path-secret-9382"
+
+    error = %Error{
+      reason: :batch_too_large,
+      path: [secret],
+      array_index: 18_446_744_073_709_551_615,
+      message: "projected row exceeds max_batch_bytes"
+    }
+
+    assert error.array_index == 18_446_744_073_709_551_615
+    assert error.path == [secret]
+    assert error.message == "projected row exceeds max_batch_bytes"
+
+    assert inspect(error) ==
+             "#SimdJson.Error<reason: :batch_too_large, byte_offset: nil, native_code: nil, " <>
+               "array_index: 18446744073709551615, path: <caller-supplied>>"
+
+    refute inspect(error) =~ secret
+  end
+
   # covers: simd_json.document_api.error_redaction simd_json.projection_api.error_path
   test "inspection stays bounded and redacted for forged fields" do
     secret = "forged-path-and-exception-secret-7741"
@@ -189,6 +213,7 @@ defmodule SimdJson.ErrorTest do
       byte_offset: secret,
       native_code: self(),
       path: List.duplicate(secret, 100_000),
+      array_index: {self(), secret, 18_446_744_073_709_551_616},
       message: "C++ exception at 0x7ffee123: #{secret}"
     }
 

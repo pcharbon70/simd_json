@@ -93,30 +93,30 @@ Back to plan: [README](./README.md)
 
 ## 1.3 Section — Stream Error Metadata and Redaction
 
-- [ ] 1.3 Section - Extend the common error contract for row-index and batch
+- [x] 1.3 Section - Extend the common error contract for row-index and batch
   failures while preserving every Milestone 1 and 2 error behavior.
 
   This section gives later native statuses one translator target. It reserves
   types and safe metadata but does not synthesize runtime stream failures before
   the engine exists.
 
-  - [ ] 1.3.1 Task - Add stream reasons and row index metadata.
+  - [x] 1.3.1 Task - Add stream reasons and row index metadata.
 
     The task expands `SimdJson.Error` without changing existing reason, path,
     offset, native-code, message, or exception semantics.
 
-    - [ ] 1.3.1.1 Subtask - Add `:batch_too_large` to the closed reason type while reusing existing parse, path, type, range, ownership, lifecycle, cancellation, allocation, and native reasons.
-    - [ ] 1.3.1.2 Subtask - Add optional `array_index` metadata typed as a non-negative integer and default it to `nil` for every existing open, close, and select error.
-    - [ ] 1.3.1.3 Subtask - Define controlled messages for oversized batches and indexed row failures while keeping reason, path, and array index as the only machine-readable fields.
+    - [x] 1.3.1.1 Subtask - Add `:batch_too_large` to the closed reason type while reusing existing parse, path, type, range, ownership, lifecycle, cancellation, allocation, and native reasons.
+    - [x] 1.3.1.2 Subtask - Add optional `array_index` metadata typed as a non-negative integer and default it to `nil` for every existing open, close, and select error.
+    - [x] 1.3.1.3 Subtask - Define controlled messages for oversized batches and indexed row failures while keeping reason, path, and array index as the only machine-readable fields.
 
-  - [ ] 1.3.2 Task - Preserve error, option, and stream-shell redaction.
+  - [x] 1.3.2 Task - Preserve error, option, and stream-shell redaction.
 
     The task ensures new context cannot expose source-derived content or
     unbounded caller data through default inspection.
 
-    - [ ] 1.3.2.1 Subtask - Permit array index only from checked native status and path only from validated target or field options; never copy discovered JSON keys, values, or raw invalid terms.
-    - [ ] 1.3.2.2 Subtask - Bound defensive inspection for forged reasons and numeric metadata and omit source, paths, output keys, owner PID, message text, native addresses, and C++ exceptions.
-    - [ ] 1.3.2.3 Subtask - Re-run all active error, projection, and redaction doctests so existing errors retain `array_index: nil` and unchanged machine-readable meaning.
+    - [x] 1.3.2.1 Subtask - Permit array index only from checked native status and path only from validated target or field options; never copy discovered JSON keys, values, or raw invalid terms.
+    - [x] 1.3.2.2 Subtask - Bound defensive inspection for forged reasons and numeric metadata and omit source, paths, output keys, owner PID, message text, native addresses, and C++ exceptions.
+    - [x] 1.3.2.3 Subtask - Re-run all active error, projection, and redaction doctests so existing errors retain `array_index: nil` and unchanged machine-readable meaning.
 
 ## 1.4 Section — Phase 1 Integration Tests
 
