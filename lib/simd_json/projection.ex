@@ -50,6 +50,19 @@ defmodule SimdJson.Projection do
   end
 
   @doc false
+  @spec validate_target_path(term()) :: {:ok, [segment()]} | :error
+  def validate_target_path([]), do: {:ok, []}
+
+  def validate_target_path([_segment | _rest] = path) do
+    case validate_path(path) do
+      :ok -> {:ok, path}
+      :error -> :error
+    end
+  end
+
+  def validate_target_path(_path), do: :error
+
+  @doc false
   @spec path_for_output_slot(t(), term()) :: path() | nil
   def path_for_output_slot({@tag, entries, paths}, output_slot)
       when is_integer(output_slot) and output_slot >= 0 do

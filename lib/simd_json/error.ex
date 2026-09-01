@@ -5,9 +5,10 @@ defmodule SimdJson.Error do
   Callers should branch on `reason`; `message` is explanatory and may evolve.
   `byte_offset`, when present, is relative to the logical input rather than its
   native padded allocation. `native_code` is diagnostic only. `path`, when
-  present, is copied from a validated caller projection. Inspection omits the
-  message and path contents so accidentally forged or enriched text is not
-  logged by default.
+  present, is copied from a validated caller projection. `array_index`, when
+  present, is a checked zero-based source-array index. Inspection omits the
+  message and path contents and bounds numeric metadata so accidentally forged
+  or enriched text is not logged by default.
 
       iex> {:error, error} = SimdJson.open("?")
       iex> error.reason
@@ -36,12 +37,13 @@ defmodule SimdJson.Error do
           | :index_out_of_bounds
           | :incorrect_type
           | :number_out_of_range
+          | :batch_too_large
           | :cursor_consumed
           | :cancelled
           | :native_failure
 
   @enforce_keys [:reason, :message]
-  defstruct [:reason, :byte_offset, :native_code, :path, :message]
+  defstruct [:reason, :byte_offset, :native_code, :path, :array_index, :message]
 
   @type t :: %__MODULE__{
           reason: reason(),
@@ -50,6 +52,7 @@ defmodule SimdJson.Error do
           path:
             nonempty_list(binary() | 0..18_446_744_073_709_551_615)
             | nil,
+          array_index: non_neg_integer() | nil,
           message: String.t()
         }
 end
@@ -67,6 +70,7 @@ defimpl Inspect, for: SimdJson.Error do
     :index_out_of_bounds,
     :incorrect_type,
     :number_out_of_range,
+    :batch_too_large,
     :cursor_consumed,
     :cancelled,
     :native_failure
@@ -79,9 +83,11 @@ defimpl Inspect, for: SimdJson.Error do
     reason = render(safe_reason(error.reason), options)
     offset = render(safe_offset(error.byte_offset), options)
     code = render(safe_native_code(error.native_code), options)
+    array_index = safe_array_index(error.array_index)
+    array_index = if is_nil(array_index), do: "", else: ", array_index: #{array_index}"
     path = if is_nil(error.path), do: "", else: ", path: <caller-supplied>"
 
-    "#SimdJson.Error<reason: #{reason}, byte_offset: #{offset}, native_code: #{code}#{path}>"
+    "#SimdJson.Error<reason: #{reason}, byte_offset: #{offset}, native_code: #{code}#{array_index}#{path}>"
   end
 
   defp safe_reason(reason) when reason in @reasons, do: reason
@@ -101,6 +107,13 @@ defimpl Inspect, for: SimdJson.Error do
        do: code
 
   defp safe_native_code(_code), do: nil
+
+  defp safe_array_index(nil), do: nil
+
+  defp safe_array_index(index) when is_integer(index) and index >= 0 and index <= @max_offset,
+    do: index
+
+  defp safe_array_index(_index), do: nil
 
   defp render(value, options) do
     value

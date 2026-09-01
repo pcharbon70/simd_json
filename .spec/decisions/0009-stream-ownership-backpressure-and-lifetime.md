@@ -85,6 +85,12 @@ reservation. Success, target or row failure, cancellation, early halt, consumer
 exception, caller death, close, shutdown, or internal failure after that point
 all leave the document consumed. No path rewinds or reparses it.
 
+Phase 1 performs only a bounded registered-resource authenticity check during
+private construction. A genuine non-owner, closing, or closed document remains
+a valid source-shaped term at that point; its operational error is deferred to
+owner-first reduction. Tests prove this check makes no reservation, admission,
+generation, lifecycle, or one-shot-state change.
+
 The stream cursor retains the parent resource after commitment. Document close
 prevents new stream work, requests cancellation of an active cursor, waits off
 scheduler for its admitted batch and cursor cleanup to become safe, and then

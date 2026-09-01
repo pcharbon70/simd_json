@@ -48,6 +48,11 @@ redaction, and baseline tests exercise the boundary without adding options,
 plans, diagnostics, or a second execution path. Phase 6 now records the formal
 projection heartbeat, seeded lifetime recovery, frozen Jason comparison, and
 supported-target acceptance evidence, so the subject is active.
+Milestone 3 Phase 1 invokes only the active BEAM projection validator while
+normalizing future per-row fields. Valid and invalid stream construction create
+no projection admission, reservation, operation, plan, worker entry, slot, or
+temporary document graph, so active `select/2` execution and qualification
+remain unchanged.
 
 ```spec-meta
 id: simd_json.projection_execution

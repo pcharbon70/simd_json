@@ -94,6 +94,13 @@ These defaults are part of the initial public contract. Changing a default or
 upper bound requires a reviewed contract update and renewed memory, scheduler,
 and ETL qualification rather than tuning it from one benchmark result.
 
+Phase 1 implements this grammar in one undocumented BEAM preflight module. It
+parses the option list once while retaining duplicate detection, delegates
+`:fields` and target segments to the Milestone 2 validator, captures the owner,
+and retains the source in an opaque term whose ordinary inspection cannot show
+source bytes, keys, paths, or PID. The public `stream/2` constructor remains
+absent until the native cursor and Enumerable lifecycle are qualified.
+
 ### Lazy reduction and row contract
 
 Reduction starts native work. The start step validates source ownership and
@@ -141,6 +148,10 @@ row from that in-flight batch is yielded, even if rows 0 through 24 converted
 successfully. Rows from earlier completed batches have already been observed
 and cannot be rolled back. Cleanup completes before the exception reaches the
 consumer.
+
+Phase 1 reserves that field and `:batch_too_large` in the common error type.
+Existing operations produce `array_index: nil`; inspection renders only a
+checked unsigned index and continues to omit message and caller-path contents.
 
 ### Scope boundary
 

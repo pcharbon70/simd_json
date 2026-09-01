@@ -11,6 +11,16 @@ array without constructing its complete BEAM list. It fixes construction
 laziness, source and option validation, scalar row shape, ownership, exception
 behavior, and public scope before a native cursor is implemented.
 
+Phase 1 now implements this contract only behind an undocumented internal
+preflight seam. It validates genuine source shape, the closed proper option
+list, root or nested target paths, complete reused fields projections, exact
+defaults and upper bounds, captures the constructing owner, and returns a
+bounded redacted opaque term without JSON or native work. `SimdJson.Error` now
+reserves `:batch_too_large` and optional checked `array_index`. `stream/2`,
+`SimdJson.Stream`, Enumerable behavior, row delivery, and runtime stream errors
+remain unimplemented, so this subject stays planned under its complete
+bootstrap exception.
+
 ```spec-meta
 id: simd_json.streaming_api
 kind: api
@@ -18,7 +28,7 @@ status: planned
 summary: Milestone 3 exposes one owner-bound lazy Enumerable that yields projected rows from bounded native batches.
 surface:
   - lib/simd_json.ex
-  - lib/simd_json/stream.ex
+  - lib/simd_json/stream_options.ex
   - lib/simd_json/error.ex
   - test/**/*stream*
   - test/**/*enumerable*

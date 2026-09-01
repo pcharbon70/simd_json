@@ -13,8 +13,13 @@ defmodule SimdJson.Native.ThreadedOperation do
     @doc false
     def initialize_admission_counter_for_test do
       case :persistent_term.get(@admission_counter_key, nil) do
-        nil -> :persistent_term.put(@admission_counter_key, :counters.new(5, [:atomics]))
-        _counter -> :ok
+        nil ->
+          :persistent_term.put(@admission_counter_key, :counters.new(7, [:atomics]))
+
+        counter ->
+          if :counters.info(counter).size < 7 do
+            :persistent_term.put(@admission_counter_key, :counters.new(7, [:atomics]))
+          end
       end
 
       :ok
@@ -26,7 +31,9 @@ defmodule SimdJson.Native.ThreadedOperation do
             document_open: non_neg_integer(),
             document_cleanup: non_neg_integer(),
             threaded_smoke: non_neg_integer(),
-            projection: non_neg_integer()
+            projection: non_neg_integer(),
+            stream_setup: non_neg_integer(),
+            stream_batch: non_neg_integer()
           }
     def admission_snapshot_for_test do
       counter = :persistent_term.get(@admission_counter_key)
@@ -36,7 +43,9 @@ defmodule SimdJson.Native.ThreadedOperation do
         document_open: :counters.get(counter, 2),
         document_cleanup: :counters.get(counter, 3),
         threaded_smoke: :counters.get(counter, 4),
-        projection: :counters.get(counter, 5)
+        projection: :counters.get(counter, 5),
+        stream_setup: :counters.get(counter, 6),
+        stream_batch: :counters.get(counter, 7)
       }
     end
   end
@@ -229,6 +238,8 @@ defmodule SimdJson.Native.ThreadedOperation do
         :document_cleanup -> :counters.add(counter, 3, 1)
         :threaded_smoke -> :counters.add(counter, 4, 1)
         :projection -> :counters.add(counter, 5, 1)
+        :stream_setup -> :counters.add(counter, 6, 1)
+        :stream_batch -> :counters.add(counter, 7, 1)
         _other -> :ok
       end
     end

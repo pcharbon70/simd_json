@@ -11,6 +11,13 @@ boundaries without exposing that state publicly. It ensures target lookup and
 row traversal never rewind, every row reuses the accepted Milestone 2 engine,
 and both row count and encoded bytes bound each native result.
 
+Phase 1 implements only the native-free input to this future subsystem: one
+opaque private term carries a validator-produced fields projection, exact root
+or nested target, and checked row and encoded-byte limits. It creates no ABI v3
+descriptor, cursor, plan owner, result storage, traversal, native entrypoint, or
+diagnostic counter, so this subject remains planned under its complete
+bootstrap exception.
+
 ```spec-meta
 id: simd_json.stream_cursor
 kind: subsystem

@@ -79,6 +79,12 @@ admission; accepted binary and fresh owner-document calls create one request
 and one terminal result. Public submission-rejection, one-shot, result-lifetime,
 redaction, and surface tests preserve the qualification-runtime label and keep
 the Milestone 4 worker pool, backpressure, and telemetry deferred.
+Milestone 3 Phase 1 extends compile-time-gated admission snapshots with future
+stream-setup and stream-batch counters. Private option construction leaves both
+at zero and leaves correlated requests, coordinator state, generation, worker
+entries, native documents, projection plans, slots, and retained graphs
+unchanged for valid and invalid inputs. No stream operation kind, setup worker,
+batch worker, cursor, parser work, or scheduler claim exists in this phase.
 
 ```spec-meta
 id: simd_json.native_execution
