@@ -8,6 +8,33 @@ This milestone makes very large JSON arrays consumable as a lazy Elixir `Enumera
 
 The result is an ETL-oriented API that combines native parsing throughput with BEAM backpressure and bounded allocation.
 
+## Normative decisions, specifications, and plan
+
+Milestone 3 is governed by these accepted architecture decisions:
+
+- [Lazy Stream API and Bounded Options](https://github.com/pcharbon70/simd_json/blob/main/.spec/decisions/0007-lazy-stream-api-and-bounded-options.md)
+- [Forward-Only Batched Array Cursor](https://github.com/pcharbon70/simd_json/blob/main/.spec/decisions/0008-forward-only-batched-array-cursor.md)
+- [Stream Ownership, Backpressure, and Lifetime](https://github.com/pcharbon70/simd_json/blob/main/.spec/decisions/0009-stream-ownership-backpressure-and-lifetime.md)
+
+Its implementation and closure evidence are defined by these planned
+current-truth specifications:
+
+- [Streaming API](https://github.com/pcharbon70/simd_json/blob/main/.spec/specs/streaming_api.spec.md)
+- [Stream Cursor and Batch Engine](https://github.com/pcharbon70/simd_json/blob/main/.spec/specs/stream_cursor.spec.md)
+- [Stream Execution and Lifecycle](https://github.com/pcharbon70/simd_json/blob/main/.spec/specs/stream_execution.spec.md)
+
+Implementation is sequenced by the
+[Milestone 3 Batched Array Streaming Implementation Plan](https://github.com/pcharbon70/simd_json/blob/main/.spec/planning/milestone_03_batched_array_streaming/README.md).
+
+All Milestone 1 and 2 ABI, input ownership, document lifecycle, projection,
+atom-safety, error, off-scheduler, and qualification decisions remain binding.
+
+## Status
+
+Milestone 3 is planned. Its three specifications retain complete bootstrap
+exceptions until public Enumerable, native safety, demand, scheduler,
+lifecycle, bounded-memory, and end-to-end ETL evidence is executed.
+
 ## Prerequisites
 
 Milestones 1 and 2 must already provide:
@@ -21,7 +48,7 @@ Milestones 1 and 2 must already provide:
 
 Streaming reuses the projection engine once per array element. It must not implement a separate field-extraction path.
 
-## Proposed API
+## Public API contract
 
 The primary API is lazy:
 
@@ -33,7 +60,8 @@ stream =
       id: ["id"],
       email: ["contact", "email"]
     ],
-    batch_size: 1_000
+    batch_size: 1_000,
+    max_batch_bytes: 8_388_608
   )
 
 stream
@@ -41,7 +69,10 @@ stream
 |> Enum.reduce(0, &accumulate/2)
 ```
 
-No native parse should begin merely because `stream/2` returned. Work starts when the enumerable is reduced.
+The source is either a JSON binary or a genuine `SimdJson.Document`. No native
+parse, reservation, target lookup, plan construction, or cursor creation begins
+merely because `stream/2` returned. Work starts when the owner reduces the
+Enumerable.
 
 The baseline options are:
 
@@ -49,17 +80,17 @@ The baseline options are:
 | --- | --- |
 | `:path` | Path from the document root to the target array. |
 | `:fields` | Projection applied relative to each array element. |
-| `:batch_size` | Maximum number of projected rows returned per native request. |
+| `:batch_size` | Maximum projected rows per native request; defaults to `1_000` and is limited to `10_000`. |
+| `:max_batch_bytes` | Maximum ABI-defined encoded result bytes per native batch; defaults to `8_388_608` and is limited to `67_108_864`. |
 
-The path and fields use the validated grammar from Milestone 2. The batch size must have a conservative default and a configured upper bound to prevent one caller from requesting an unbounded reply.
+The target path reuses Milestone 2's UTF-8 object-segment and unsigned-index
+grammar but permits `[]` to select a top-level array. Fields use the complete
+non-empty Milestone 2 projection grammar. Options form a closed proper keyword
+list: missing required keys, duplicates, unknown keys, malformed paths or
+fields, and out-of-range limits raise `ArgumentError` synchronously.
 
-An explicit batch API may also be useful for callers that want batch boundaries:
-
-```elixir
-SimdJson.stream_batches(json, options)
-```
-
-`stream/2` can flatten those batches for ergonomic row-by-row enumeration without causing row-by-row NIF calls.
+Milestone 3 exposes no `stream_batches/2` or raw cursor API. `stream/2` flattens
+private native batches into row maps without causing row-by-row NIF calls.
 
 ## Execution model
 
@@ -108,19 +139,20 @@ The cursor stores:
 - the cursor generation;
 - current state: `ready`, `running`, `done`, `cancelled`, or `closed`;
 - cancellation and close flags;
-- the configured batch limit.
+- the configured row and encoded-byte limits.
 
 The stream is single-owner. Passing the enumerable term to another process does not transfer the native cursor automatically. A future explicit ownership-transfer API can be considered, but silent shared consumption is invalid.
 
 ## Lazy lifecycle
 
-The Elixir implementation should use a lifecycle equivalent to `Stream.resource/3`:
+The Elixir implementation uses a lifecycle equivalent to `Stream.resource/3`:
 
-1. The start function validates options, opens or retains the document, locates the array, and creates the cursor.
-2. The next function requests one native batch.
-3. Rows are emitted from the in-memory batch before another native request is made.
-4. End-of-array returns `{:halt, state}`.
-5. The after function cancels in-flight work if needed and closes the cursor.
+1. `stream/2` validates source shape and all options without native work.
+2. The reduction start function verifies ownership, opens or reserves the document, locates the array, compiles one projection, and creates the cursor.
+3. The next function requests one native batch.
+4. Rows are emitted from the in-memory batch before another native request is made.
+5. End-of-array returns terminal metadata with the final useful batch.
+6. The after function cancels in-flight work if needed and closes the cursor.
 
 Early termination must be normal:
 
@@ -143,7 +175,11 @@ For each batch, native code should:
 6. Stop at the batch limit, end of array, cancellation, or error.
 7. Marshal the completed batch into BEAM terms once.
 
-The implementation must define whether a single row may exceed a configured byte limit. `batch_size` bounds row count but not memory when selected strings are enormous. A second `max_batch_bytes` or `max_value_bytes` guard may therefore be necessary.
+`max_batch_bytes` bounds row descriptors, typed slots, copied selected strings,
+and other variable batch-result storage defined by private ABI v3. A later row
+that does not fit begins the next batch. A single row that cannot fit an empty
+batch raises `SimdJson.Error` with reason `:batch_too_large` and its source
+array index; the implementation never exceeds the bound merely to progress.
 
 The batch container can be a list initially. Alternative representations should be justified by measured conversion and consumption costs, not by native convenience.
 
@@ -173,13 +209,13 @@ Defaults should be selected using end-to-end ETL benchmarks rather than parser t
 
 Errors can occur before enumeration, between batches, or while projecting a row. A lazy enumerable cannot always return a top-level `{:error, reason}` after it has yielded earlier rows.
 
-The recommended contract is:
+The contract is:
 
 - option-validation errors are raised immediately as `ArgumentError` because they are caller mistakes;
 - JSON, path, type, cancellation, and native failures during enumeration raise `SimdJson.Error`;
 - the exception includes the source array index and projection path when known;
 - cursor cleanup runs before the exception reaches the consumer;
-- no partial row is yielded;
+- no row from the failing in-flight batch is yielded;
 - rows from previously completed batches remain already observed and are not rolled back.
 
 If a tagged, non-raising streaming API is desired, expose it separately so every yielded item has an unambiguous type. Do not sometimes yield maps and sometimes an error tuple from the same API without documenting that contract.

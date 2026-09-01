@@ -71,12 +71,155 @@
         "id": "simd_json.projection_admission_consumption_and_lifetime",
         "status": "accepted",
         "title": "Projection Admission, Consumption, and Lifetime"
+      },
+      {
+        "affects": [
+          "simd_json.streaming_api",
+          "simd_json.stream_cursor",
+          "simd_json.stream_execution"
+        ],
+        "date": "2026-08-31",
+        "file": ".spec/decisions/0007-lazy-stream-api-and-bounded-options.md",
+        "id": "simd_json.lazy_stream_api_and_bounded_options",
+        "status": "accepted",
+        "title": "Lazy Stream API and Bounded Options"
+      },
+      {
+        "affects": [
+          "simd_json.stream_cursor",
+          "simd_json.streaming_api",
+          "simd_json.native_build_and_abi",
+          "simd_json.projection_engine"
+        ],
+        "date": "2026-08-31",
+        "file": ".spec/decisions/0008-forward-only-batched-array-cursor.md",
+        "id": "simd_json.forward_only_batched_array_cursor",
+        "status": "accepted",
+        "title": "Forward-Only Batched Array Cursor"
+      },
+      {
+        "affects": [
+          "simd_json.stream_execution",
+          "simd_json.stream_cursor",
+          "simd_json.streaming_api",
+          "simd_json.document_resource",
+          "simd_json.native_execution"
+        ],
+        "date": "2026-08-31",
+        "file": ".spec/decisions/0009-stream-ownership-backpressure-and-lifetime.md",
+        "id": "simd_json.stream_ownership_backpressure_and_lifetime",
+        "status": "accepted",
+        "title": "Stream Ownership, Backpressure, and Lifetime"
       }
     ]
   },
-  "findings": [],
+  "findings": [
+    {
+      "code": "surface_target_missing",
+      "entity_id": "simd_json.streaming_api",
+      "file": ".spec/specs/streaming_api.spec.md",
+      "level": "warning",
+      "message": "Surface entry does not exist: lib/simd_json/stream.ex"
+    }
+  ],
   "index": {
-    "exceptions": [],
+    "exceptions": [
+      {
+        "covers": [
+          "simd_json.stream_cursor.private_abi_v3",
+          "simd_json.stream_cursor.opaque_cursor",
+          "simd_json.stream_cursor.parent_retention",
+          "simd_json.stream_cursor.single_target_lookup",
+          "simd_json.stream_cursor.forward_only_rows",
+          "simd_json.stream_cursor.projection_plan_reuse",
+          "simd_json.stream_cursor.row_count_bound",
+          "simd_json.stream_cursor.encoded_byte_bound",
+          "simd_json.stream_cursor.transactional_batch",
+          "simd_json.stream_cursor.copied_row_values",
+          "simd_json.stream_cursor.exact_done_detection",
+          "simd_json.stream_cursor.complete_consumption_validation",
+          "simd_json.stream_cursor.indexed_status",
+          "simd_json.stream_cursor.exception_and_failure_cleanup",
+          "simd_json.stream_cursor.batch_boundary",
+          "simd_json.stream_cursor.internal_diagnostics",
+          "simd_json.stream_cursor.abi_v3_conformance",
+          "simd_json.stream_cursor.target_lookup_and_retention",
+          "simd_json.stream_cursor.reused_row_projection",
+          "simd_json.stream_cursor.row_and_byte_boundaries",
+          "simd_json.stream_cursor.exact_end_and_trailing_validation",
+          "simd_json.stream_cursor.indexed_row_failure",
+          "simd_json.stream_cursor.cancellation_and_cleanup_matrix"
+        ],
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.milestone_03_bootstrap",
+        "reason": "Milestone 3 native streaming cursor does not exist; remove this exception and replace it with executed ABI, traversal, plan-reuse, bounds, validation, status, lifetime, boundary, failure-cleanup, and sanitizer evidence before activation.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "covers": [
+          "simd_json.stream_execution.lazy_setup",
+          "simd_json.stream_execution.threaded_stream_work",
+          "simd_json.stream_execution.correlated_batch_operations",
+          "simd_json.stream_execution.owner_first_admission",
+          "simd_json.stream_execution.exclusive_document_cursor",
+          "simd_json.stream_execution.document_consumption",
+          "simd_json.stream_execution.binary_cursor_graph",
+          "simd_json.stream_execution.cursor_state_machine",
+          "simd_json.stream_execution.single_in_flight_batch",
+          "simd_json.stream_execution.no_prefetch",
+          "simd_json.stream_execution.generation_and_retention",
+          "simd_json.stream_execution.early_halt_cleanup",
+          "simd_json.stream_execution.cancellation_boundaries",
+          "simd_json.stream_execution.close_shutdown_interlock",
+          "simd_json.stream_execution.native_memory_baseline",
+          "simd_json.stream_execution.scheduler_qualification",
+          "simd_json.stream_execution.etl_benchmark",
+          "simd_json.stream_execution.bounded_memory_acceptance",
+          "simd_json.stream_execution.preproduction_boundary",
+          "simd_json.stream_execution.binary_lifecycle",
+          "simd_json.stream_execution.document_one_shot_and_close",
+          "simd_json.stream_execution.slow_consumer_backpressure",
+          "simd_json.stream_execution.early_halt_and_consumer_death",
+          "simd_json.stream_execution.midstream_failure_recovery",
+          "simd_json.stream_execution.concurrent_responsiveness",
+          "simd_json.stream_execution.jason_array_etl"
+        ],
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.milestone_03_bootstrap",
+        "reason": "Milestone 3 stream execution and qualification do not exist; remove this exception and replace it with executed lazy setup, correlation, ownership, demand, cancellation, cleanup, scheduler, memory, sanitizer, and ETL benchmark evidence before activation.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "covers": [
+          "simd_json.streaming_api.stream_contract",
+          "simd_json.streaming_api.lazy_construction",
+          "simd_json.streaming_api.source_argument_validation",
+          "simd_json.streaming_api.option_grammar",
+          "simd_json.streaming_api.target_path",
+          "simd_json.streaming_api.fields_projection",
+          "simd_json.streaming_api.public_limits",
+          "simd_json.streaming_api.row_results",
+          "simd_json.streaming_api.owner_bound_reduction",
+          "simd_json.streaming_api.runtime_exceptions",
+          "simd_json.streaming_api.indexed_errors",
+          "simd_json.streaming_api.transactional_batch_visibility",
+          "simd_json.streaming_api.opaque_stream",
+          "simd_json.streaming_api.milestone_scope",
+          "simd_json.streaming_api.lazy_binary_stream",
+          "simd_json.streaming_api.root_and_nested_arrays",
+          "simd_json.streaming_api.invalid_construction",
+          "simd_json.streaming_api.batch_boundaries",
+          "simd_json.streaming_api.midstream_failure",
+          "simd_json.streaming_api.owner_and_reduction_semantics",
+          "simd_json.streaming_api.early_halt_and_consumer_exception",
+          "simd_json.streaming_api.surface_and_redaction"
+        ],
+        "file": ".spec/specs/streaming_api.spec.md",
+        "id": "simd_json.streaming_api.milestone_03_bootstrap",
+        "reason": "Milestone 3 public streaming is not implemented; remove this exception and replace it with executed lazy construction, option, Enumerable, row, ownership, error, cleanup, redaction, and surface evidence before activation.",
+        "subject_id": "simd_json.streaming_api"
+      }
+    ],
     "requirements": [
       {
         "file": ".spec/specs/document_api.spec.md",
@@ -757,6 +900,398 @@
         "stability": "evolving",
         "statement": "Projection compilation, input-dependent traversal, result conversion, and potentially large cleanup shall execute through the correlated Zigler-threaded path rather than an ordinary or dirty CPU NIF.",
         "subject_id": "simd_json.projection_execution"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.batch_boundary",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Each native batch shall cross the BEAM request boundary once and shall not invoke a NIF per row, output field, path segment, scalar slot, or yielded map.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.complete_consumption_validation",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Full stream completion shall structurally validate the complete logical JSON value, including unselected row content and content after the target array, while an explicitly halted stream shall close without validating the unconsumed remainder.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.copied_row_values",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Zig batch conversion shall preserve exact scalar types and output keys while copying every selected string before its source view can expire, leaving completed row maps independent of cursor and document lifetime.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.encoded_byte_bound",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "One batch shall not exceed max_batch_bytes across ABI-defined row descriptors, typed slots, copied selected strings, and variable result storage; a row that cannot fit an empty batch shall fail with batch_too_large at its array index.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.exact_done_detection",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Empty, partial-final, and full-final batches shall return an explicit done state from the same request that discovers array end, including arrays whose size is an exact batch multiple, without a separate empty probe.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.exception_and_failure_cleanup",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Every ABI v3 function shall contain all C++ exceptions and release cursor frames, plan nodes, copied keys, row descriptors, slots, copied strings, arenas, and partial batch state exactly once after construction, execution, conversion, cancellation, or allocation failure.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.forward_only_rows",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Successful batch execution shall advance target elements monotonically in source order so every row is visited at most once and no request reparses an earlier element.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.indexed_status",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Row-specific native failure shall carry a checked zero-based array index and optional failing output slot, while target or document failure shall use unavailable sentinels and every logical offset shall exclude padding.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.internal_diagnostics",
+        "priority": "should",
+        "stability": "evolving",
+        "statement": "Test and diagnostic builds shall record bounded redacted cursor, plan, row, batch, encoded-byte, phase-timing, and boundary counts without exposing source data, caller paths, native addresses, failure controls, or telemetry in release APIs.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.opaque_cursor",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Native array position, enclosing traversal frames, iterator types, plan identity, source pointers, allocator state, and cursor handles shall remain opaque behind the C ABI and shall never cross the public Elixir boundary.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.parent_retention",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "A live stream cursor shall retain its genuine parent document resource, which retains parser and padded input, and shall never depend on an unretained raw parent pointer.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.private_abi_v3",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "Private ABI version 3 shall preserve all ABI v1 and v2 layouts and behavior while adding only fixed-width target descriptors, an opaque array cursor with matching destructor, one next-batch entry, bounded batch storage, stable status, row index, failing slot, count, byte, and done metadata.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.projection_plan_reuse",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "The complete fields projection shall compile once per cursor and the same immutable prefix-sharing plan shall execute relative to every row with fresh transactional slots rather than recompiling or using a second path engine.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.row_count_bound",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "One next-batch execution shall produce no more than the configured batch_size rows and shall use checked arithmetic before allocating descriptors or result slots.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.single_target_lookup",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Cursor construction shall locate the root or nested target array once in document order with the accepted path grammar, duplicate-key policy, depth bound, stable errors, and no rewind, reparse, or target materialization.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor.transactional_batch",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "A batch shall become convertible only after every included row has a complete valid scalar slot set, and any parse, path, type, range, size, allocation, internal, or cancellation failure shall discard the complete in-flight batch.",
+        "subject_id": "simd_json.stream_cursor"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.binary_cursor_graph",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "A binary reduction shall create one unpublished padded input, parser, document, plan, and cursor graph at lazy setup, retain it across batches, and destroy it in dependency-safe order on every terminal path without chaining public open and close per batch.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.bounded_memory_acceptance",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "Before accepted measurements run, the repository shall declare and enforce reproducible thresholds showing working memory remains bounded across thousands of batches and materially below Jason full materialization for the qualified large-array ETL workload.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.cancellation_boundaries",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "Streaming shall check cancellation before setup, target lookup, batch admission, each array element, bounded projection and conversion units, delivery, final validation, and done delivery while retaining resources across uninterruptible native work.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.close_shutdown_interlock",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Document close, stream cleanup, garbage collection, application shutdown, and NIF unload shall prevent new work, cancel active batches, suppress stale delivery, drain admitted state, and release cursor and parent resources exactly once without unbounded normal-scheduler work.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.correlated_batch_operations",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Cursor setup and each next-batch request shall use distinct unforgeable kind, reference, cursor-generation, and batch-sequence correlation and shall produce exactly one terminal result whose late, stale, duplicate, mismatched, cancelled, or orphaned form is safely discarded.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.cursor_state_machine",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "A cursor shall move monotonically among ready, running, done, cancelled, and closed states with one running winner, idempotent terminal cleanup, and no parser access from invalid repeated transitions.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.document_consumption",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Invalid construction and proven pre-worker rejection shall leave a document fresh, while every stream outcome after first target cursor access including success, error, cancellation, early halt, consumer failure, close, or shutdown shall leave it consumed without rewind or transparent reparse.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.early_halt_cleanup",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "Enum.take, Enum.find, reducer halt, consumer exception, and consumer death shall cancel in-flight work if needed, deterministically close the cursor, and release its native graph without parsing the unconsumed target-array or enclosing-document remainder.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.etl_benchmark",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "Streaming qualification shall compare complete SimdJson.stream/2 reduction with pinned Jason full decode, target lookup, equivalent row projection, and reduction using predeclared fixtures and shall report time to first row and batch, throughput, batch crossings, BEAM and native peak memory, retained input, garbage collection, scheduler latency, and early-halt cost.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.exclusive_document_cursor",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "A fresh document shall atomically admit at most one selecting or streaming operation, and selection and streaming shall be mutually exclusive uses of the same forward-only cursor.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.generation_and_retention",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Setup and batch operations shall retain cursor, parent document, input, parser, plan, batch, private term environment, cancellation state, and coordinator metadata and validate generation before native dereference and delivery until terminal cleanup completes.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.lazy_setup",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Native source opening, document reservation, target lookup, plan compilation, and cursor construction shall begin only when the owner reduces the stream, and an unreduced stream shall create no native progress or cleanup obligation.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.native_memory_baseline",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "Test builds shall prove input, parser, document, cursor, traversal-frame, plan, key-byte, row, slot, copied-string, batch, environment, operation, retained-resource, dispatcher, and failed-handoff gauges return to baseline after done, error, early halt, exception, caller death, close, garbage collection, and supported generation changes.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.no_prefetch",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Milestone 3 shall perform no multi-batch prefetch, and a paused or slow consumer shall cause no cursor advancement, new stream-specific native allocation, or stream-specific mailbox growth beyond the current batch.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.owner_first_admission",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Stream setup, batch advancement, and cleanup shall validate the constructing PID and any genuine document owner before revealing lifecycle, cursor, reservation, generation, or consumed state.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.preproduction_boundary",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Milestone 3 shall identify per-stream demand as local backpressure while continuing to label the Zigler-threaded runtime pre-production and shall not claim the bounded global queue, worker pool, cancellation registry, or public telemetry assigned to Milestone 4.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.scheduler_qualification",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "Large concurrent successful, failing, slow, halted, and cancelled streams shall preserve the accepted normal-scheduler heartbeat budgets with exact threaded setup and batch accounting and shall not use dirty schedulers as the stream queue.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.single_in_flight_batch",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "One stream shall have at most one admitted native batch and one returned batch being consumed, and another batch shall not begin until every row in the current batch is consumed or reduction terminates.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.threaded_stream_work",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "Input-dependent setup, target traversal, row projection, batch conversion, final validation, and potentially large cleanup shall execute through the correlated Zigler-threaded path rather than an ordinary or dirty CPU NIF.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/streaming_api.spec.md",
+        "id": "simd_json.streaming_api.fields_projection",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "The fields option shall use the complete non-empty Milestone 2 projection grammar, exact caller output-key identity, shared-path normalization, scalar-only leaves, first duplicate-key policy, and fresh copied strings relative to each array element.",
+        "subject_id": "simd_json.streaming_api"
+      },
+      {
+        "file": ".spec/specs/streaming_api.spec.md",
+        "id": "simd_json.streaming_api.indexed_errors",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "SimdJson.Error shall support an optional non-negative array_index and shall report the zero-based source row index plus a validated caller field path for row-specific failures when known, without source text or unbounded native metadata.",
+        "subject_id": "simd_json.streaming_api"
+      },
+      {
+        "file": ".spec/specs/streaming_api.spec.md",
+        "id": "simd_json.streaming_api.lazy_construction",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Returning from SimdJson.stream/2 shall perform no JSON parse, document reservation, target lookup, native plan construction, cursor creation, threaded submission, or native allocation; those operations begin only when the owner reduces the Enumerable.",
+        "subject_id": "simd_json.streaming_api"
+      },
+      {
+        "file": ".spec/specs/streaming_api.spec.md",
+        "id": "simd_json.streaming_api.milestone_scope",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Milestone 3 shall expose no public stream_batches operation, raw cursor, manual next, rewind, checkpoint, resume, transfer, prefetch, parallel array traversal, native callback, optional field, container result, compiled plan, JSONPath, eager decode, worker-pool control, diagnostic, or telemetry API.",
+        "subject_id": "simd_json.streaming_api"
+      },
+      {
+        "file": ".spec/specs/streaming_api.spec.md",
+        "id": "simd_json.streaming_api.opaque_stream",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "SimdJson.Stream shall expose an opaque type and bounded redacted inspection that reveals no source bytes, output keys, paths, owner PID, document identity, cursor state, generation, native pointer, or request reference.",
+        "subject_id": "simd_json.streaming_api"
+      },
+      {
+        "file": ".spec/specs/streaming_api.spec.md",
+        "id": "simd_json.streaming_api.option_grammar",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Stream options shall be a proper keyword list containing required unique path and fields keys plus optional unique batch_size and max_batch_bytes keys, and every missing, duplicate, unknown, improper, or invalid option shall raise ArgumentError synchronously.",
+        "subject_id": "simd_json.streaming_api"
+      },
+      {
+        "file": ".spec/specs/streaming_api.spec.md",
+        "id": "simd_json.streaming_api.owner_bound_reduction",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Only the PID that constructs a stream shall reduce it, possession shall not transfer ownership, binary streams may create a new independent cursor on a later owner reduction, and document streams shall remain one-shot after committed cursor access.",
+        "subject_id": "simd_json.streaming_api"
+      },
+      {
+        "file": ".spec/specs/streaming_api.spec.md",
+        "id": "simd_json.streaming_api.public_limits",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "batch_size shall default to 1000 and accept 1 through 10000, while max_batch_bytes shall default to 8388608 and accept 1 through 67108864; changing these values shall require renewed contract and qualification evidence.",
+        "subject_id": "simd_json.streaming_api"
+      },
+      {
+        "file": ".spec/specs/streaming_api.spec.md",
+        "id": "simd_json.streaming_api.row_results",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "Reduction shall yield source-ordered maps using exact caller atom or binary keys and exact signed integer, unsigned integer, finite float, boolean, nil, or fresh binary values without retaining source, document, cursor, or native views.",
+        "subject_id": "simd_json.streaming_api"
+      },
+      {
+        "file": ".spec/specs/streaming_api.spec.md",
+        "id": "simd_json.streaming_api.runtime_exceptions",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "JSON, target, row projection, ownership, lifecycle, batch limit, allocation, cancellation, and native failures discovered during reduction shall raise SimdJson.Error only after current native cleanup completes, rather than yielding error tuples among row maps.",
+        "subject_id": "simd_json.streaming_api"
+      },
+      {
+        "file": ".spec/specs/streaming_api.spec.md",
+        "id": "simd_json.streaming_api.source_argument_validation",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "SimdJson.stream/2 shall raise ArgumentError synchronously when source is neither a binary nor a genuine SimdJson.Document resource, before any native admission or document state change.",
+        "subject_id": "simd_json.streaming_api"
+      },
+      {
+        "file": ".spec/specs/streaming_api.spec.md",
+        "id": "simd_json.streaming_api.stream_contract",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "SimdJson.stream/2 shall accept a JSON binary or genuine SimdJson.Document plus validated stream options and return an opaque owner-bound SimdJson.Stream implementing Enumerable.",
+        "subject_id": "simd_json.streaming_api"
+      },
+      {
+        "file": ".spec/specs/streaming_api.spec.md",
+        "id": "simd_json.streaming_api.target_path",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "The target path shall be a proper list of valid UTF-8 binary object segments and unsigned 64-bit array indexes, with an empty list selecting a top-level array and no JSONPath, wildcard, filter, recursive descent, or atom creation.",
+        "subject_id": "simd_json.streaming_api"
+      },
+      {
+        "file": ".spec/specs/streaming_api.spec.md",
+        "id": "simd_json.streaming_api.transactional_batch_visibility",
+        "priority": "must",
+        "stability": "stable",
+        "statement": "A failing in-flight native batch shall yield none of its rows, while rows from earlier completed batches remain observed and are not rolled back.",
+        "subject_id": "simd_json.streaming_api"
       },
       {
         "file": ".spec/specs/spec_system.spec.md",
@@ -1740,6 +2275,473 @@
         "when": [
           "Submission fails and the seam is then disabled"
         ]
+      },
+      {
+        "covers": [
+          "simd_json.stream_cursor.private_abi_v3",
+          "simd_json.stream_cursor.opaque_cursor",
+          "simd_json.stream_cursor.exception_and_failure_cleanup"
+        ],
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "given": [
+          "Independent C11 and Zig harnesses using only the canonical ABI v3 header"
+        ],
+        "id": "simd_json.stream_cursor.abi_v3_conformance",
+        "subject_id": "simd_json.stream_cursor",
+        "then": [
+          "Only documented fixed-layout data and stable statuses cross the ABI",
+          "ABI v1 and v2 conformance remains unchanged",
+          "No exception, internal pointer, leak, or double destruction escapes"
+        ],
+        "when": [
+          "They construct, advance, cancel, finish, and destroy null, partial, failed, done, and complete cursors with invalid descriptors and injected failures"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.stream_cursor.parent_retention",
+          "simd_json.stream_cursor.exception_and_failure_cleanup",
+          "simd_json.stream_cursor.transactional_batch"
+        ],
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "given": [
+          "Cancellation and allocation failure injected at target lookup, between rows, during projection, before and during conversion, and before delivery"
+        ],
+        "id": "simd_json.stream_cursor.cancellation_and_cleanup_matrix",
+        "subject_id": "simd_json.stream_cursor",
+        "then": [
+          "Work stops at the next safe boundary with no partial batch",
+          "Uninterruptible state remains retained until safe",
+          "Every cursor, plan, descriptor, slot, string, arena, and parent-retention count returns to baseline"
+        ],
+        "when": [
+          "Each boundary is triggered under ordinary and sanitizer harnesses"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.stream_cursor.exact_done_detection",
+          "simd_json.stream_cursor.complete_consumption_validation"
+        ],
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "given": [
+          "Empty, partial-batch, exact-multiple, and multi-batch target arrays",
+          "Valid and malformed enclosing content after the target array"
+        ],
+        "id": "simd_json.stream_cursor.exact_end_and_trailing_validation",
+        "subject_id": "simd_json.stream_cursor",
+        "then": [
+          "Done is returned with the final useful request and no empty probe",
+          "Valid documents yield every row once",
+          "Malformed trailing content fails the final in-flight batch without false completion"
+        ],
+        "when": [
+          "Each cursor is fully consumed"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.stream_cursor.transactional_batch",
+          "simd_json.stream_cursor.indexed_status"
+        ],
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "given": [
+          "A later row with missing field, bad index, wrong type, numeric range failure, malformed content, or conversion allocation failure"
+        ],
+        "id": "simd_json.stream_cursor.indexed_row_failure",
+        "subject_id": "simd_json.stream_cursor",
+        "then": [
+          "Status identifies the deterministic source index and field slot when known",
+          "No row or copied string from the failing batch is published",
+          "Earlier cursor position is never replayed"
+        ],
+        "when": [
+          "Its containing batch executes after earlier batches succeeded"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.stream_cursor.projection_plan_reuse",
+          "simd_json.stream_cursor.copied_row_values",
+          "simd_json.stream_cursor.batch_boundary",
+          "simd_json.stream_cursor.internal_diagnostics"
+        ],
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "given": [
+          "Many object rows and a fields projection with shared and identical paths and every scalar type"
+        ],
+        "id": "simd_json.stream_cursor.reused_row_projection",
+        "subject_id": "simd_json.stream_cursor",
+        "then": [
+          "One plan construction serves every projected row",
+          "One boundary occurs per batch and none per row or field",
+          "Every map preserves exact keys and copied values without source retention"
+        ],
+        "when": [
+          "Multiple native batches execute"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.stream_cursor.row_count_bound",
+          "simd_json.stream_cursor.encoded_byte_bound",
+          "simd_json.stream_cursor.transactional_batch"
+        ],
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "given": [
+          "Arrays and selected string sizes immediately below, at, and above row and encoded-byte limits"
+        ],
+        "id": "simd_json.stream_cursor.row_and_byte_boundaries",
+        "subject_id": "simd_json.stream_cursor",
+        "then": [
+          "No success exceeds either configured limit",
+          "A non-fitting later row begins the next batch without duplication or omission",
+          "A row too large for an empty batch fails atomically at its source index"
+        ],
+        "when": [
+          "Batches are constructed"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.stream_cursor.parent_retention",
+          "simd_json.stream_cursor.single_target_lookup",
+          "simd_json.stream_cursor.forward_only_rows"
+        ],
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "given": [
+          "Root and deeply nested target arrays behind object and array segments",
+          "A parent document whose other BEAM references are dropped after cursor creation"
+        ],
+        "id": "simd_json.stream_cursor.target_lookup_and_retention",
+        "subject_id": "simd_json.stream_cursor",
+        "then": [
+          "Target lookup occurs once with first duplicate-key behavior",
+          "Parent parser and input remain valid through the final cursor operation",
+          "No earlier source position is revisited"
+        ],
+        "when": [
+          "Several batches advance the cursor"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.stream_execution.lazy_setup",
+          "simd_json.stream_execution.threaded_stream_work",
+          "simd_json.stream_execution.binary_cursor_graph",
+          "simd_json.stream_execution.generation_and_retention"
+        ],
+        "file": ".spec/specs/stream_execution.spec.md",
+        "given": [
+          "Valid, malformed, projection-failing, and allocation-failing large binary sources"
+        ],
+        "id": "simd_json.stream_execution.binary_lifecycle",
+        "subject_id": "simd_json.stream_execution",
+        "then": [
+          "Unreduced streams create no native graph",
+          "One retained graph serves every batch of a reduction",
+          "Every terminal path releases that graph exactly once and copied rows remain independent"
+        ],
+        "when": [
+          "Streams remain unreduced, fully reduce, fail after several batches, and are halted early"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.stream_execution.threaded_stream_work",
+          "simd_json.stream_execution.scheduler_qualification",
+          "simd_json.stream_execution.preproduction_boundary"
+        ],
+        "file": ".spec/specs/stream_execution.spec.md",
+        "given": [
+          "Independent BEAM heartbeats and concurrent large successful, malformed, slow, early-halted, and cancelled streams"
+        ],
+        "id": "simd_json.stream_execution.concurrent_responsiveness",
+        "subject_id": "simd_json.stream_execution",
+        "then": [
+          "Heartbeat latency remains inside the accepted budgets",
+          "Input-dependent work is observed only on the threaded path",
+          "Results prove local demand bounds without claiming a production global queue"
+        ],
+        "when": [
+          "Qualification records normal and dirty scheduler utilization, worker entries, batch sequences, and memory peaks"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.stream_execution.owner_first_admission",
+          "simd_json.stream_execution.exclusive_document_cursor",
+          "simd_json.stream_execution.document_consumption",
+          "simd_json.stream_execution.close_shutdown_interlock"
+        ],
+        "file": ".spec/specs/stream_execution.spec.md",
+        "given": [
+          "Fresh documents, selecting and streaming races, invalid options, rejected setup submission, active batches, and owner close"
+        ],
+        "id": "simd_json.stream_execution.document_one_shot_and_close",
+        "subject_id": "simd_json.stream_execution",
+        "then": [
+          "Owner checks precede state disclosure",
+          "Invalid and proven unstarted work leave the document fresh",
+          "One selection or stream commits the cursor and every post-access outcome leaves it consumed",
+          "Close waits for safe cursor cleanup and remains idempotent"
+        ],
+        "when": [
+          "Owner and non-owner operations compete before and after cursor access"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.stream_execution.early_halt_cleanup",
+          "simd_json.stream_execution.cancellation_boundaries",
+          "simd_json.stream_execution.generation_and_retention",
+          "simd_json.stream_execution.native_memory_baseline"
+        ],
+        "file": ".spec/specs/stream_execution.spec.md",
+        "given": [
+          "Binary and document streams paused at every setup, row, projection, conversion, and delivery boundary"
+        ],
+        "id": "simd_json.stream_execution.early_halt_and_consumer_death",
+        "subject_id": "simd_json.stream_execution",
+        "then": [
+          "Work stops at the next safe boundary without an orphan batch",
+          "The remaining array is not scanned",
+          "Every retained native and private-term count returns to baseline exactly once"
+        ],
+        "when": [
+          "A reducer halts, its callback raises, or its process exits"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.stream_execution.etl_benchmark",
+          "simd_json.stream_execution.bounded_memory_acceptance"
+        ],
+        "file": ".spec/specs/stream_execution.spec.md",
+        "given": [
+          "Predeclared small, medium, and million-row sparse array fixtures, equivalent row projections and reductions, a batch-size matrix, slow and early-halt consumers, environment, samples, and memory thresholds"
+        ],
+        "id": "simd_json.stream_execution.jason_array_etl",
+        "subject_id": "simd_json.stream_execution",
+        "then": [
+          "The report contains every required latency, throughput, crossing, scheduler, garbage-collection, retained-input, and memory dimension",
+          "Memory remains bounded across thousands of batches and the declared large-fixture advantage passes without excluding setup, reduction, or cleanup costs"
+        ],
+        "when": [
+          "SimdJson.stream/2 is compared end to end with Jason decode, lookup, projection, and Enum reduction"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.stream_execution.correlated_batch_operations",
+          "simd_json.stream_execution.cursor_state_machine",
+          "simd_json.stream_execution.close_shutdown_interlock",
+          "simd_json.stream_execution.native_memory_baseline"
+        ],
+        "file": ".spec/specs/stream_execution.spec.md",
+        "given": [
+          "Several delivered batches followed by malformed input, path/type/range failure, oversized row, allocation failure, cancellation, and stale delivery cases"
+        ],
+        "id": "simd_json.stream_execution.midstream_failure_recovery",
+        "subject_id": "simd_json.stream_execution",
+        "then": [
+          "The failing batch is terminal and cannot advance again",
+          "Late or forged results complete no other request",
+          "Cursor, parent, batch, environment, and operation graphs return to baseline"
+        ],
+        "when": [
+          "Each failure reaches its containing batch"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.stream_execution.correlated_batch_operations",
+          "simd_json.stream_execution.cursor_state_machine",
+          "simd_json.stream_execution.single_in_flight_batch",
+          "simd_json.stream_execution.no_prefetch"
+        ],
+        "file": ".spec/specs/stream_execution.spec.md",
+        "given": [
+          "A multi-batch array and a consumer paused after selected rows in each returned batch"
+        ],
+        "id": "simd_json.stream_execution.slow_consumer_backpressure",
+        "subject_id": "simd_json.stream_execution",
+        "then": [
+          "At most one native batch and one returned batch exist",
+          "No next request or parser progress occurs during the pause",
+          "Each resumed request has the next exact sequence and one terminal result"
+        ],
+        "when": [
+          "Native entries, cursor position, allocations, messages, and batch sequence are observed"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.streaming_api.public_limits",
+          "simd_json.streaming_api.row_results"
+        ],
+        "file": ".spec/specs/streaming_api.spec.md",
+        "given": [
+          "Empty arrays and arrays smaller than, equal to, and larger than one configured batch",
+          "A byte limit that causes a batch to stop before its row-count limit"
+        ],
+        "id": "simd_json.streaming_api.batch_boundaries",
+        "subject_id": "simd_json.streaming_api",
+        "then": [
+          "Every source row appears exactly once and in order",
+          "Empty arrays yield no rows",
+          "Exact-boundary completion causes no duplicate, omission, or public empty sentinel"
+        ],
+        "when": [
+          "Each stream is fully enumerated"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.streaming_api.runtime_exceptions",
+          "simd_json.streaming_api.row_results"
+        ],
+        "file": ".spec/specs/streaming_api.spec.md",
+        "given": [
+          "A target array much larger than one batch"
+        ],
+        "id": "simd_json.streaming_api.early_halt_and_consumer_exception",
+        "subject_id": "simd_json.streaming_api",
+        "then": [
+          "Only demanded rows are observed",
+          "Remaining source rows are not parsed for stream completion",
+          "Native cleanup completes and successful copied rows remain independent"
+        ],
+        "when": [
+          "Enum.take, Enum.find, reducer halt, and a consumer callback exception stop reduction early"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.streaming_api.source_argument_validation",
+          "simd_json.streaming_api.option_grammar",
+          "simd_json.streaming_api.target_path",
+          "simd_json.streaming_api.fields_projection",
+          "simd_json.streaming_api.public_limits"
+        ],
+        "file": ".spec/specs/streaming_api.spec.md",
+        "given": [
+          "Forged or invalid sources and every missing, duplicate, unknown, improper, malformed, or out-of-range option family"
+        ],
+        "id": "simd_json.streaming_api.invalid_construction",
+        "subject_id": "simd_json.streaming_api",
+        "then": [
+          "ArgumentError is raised synchronously",
+          "No source byte is inspected and no document or native state changes"
+        ],
+        "when": [
+          "SimdJson.stream/2 is called"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.streaming_api.stream_contract",
+          "simd_json.streaming_api.lazy_construction",
+          "simd_json.streaming_api.row_results"
+        ],
+        "file": ".spec/specs/streaming_api.spec.md",
+        "given": [
+          "A valid large JSON binary containing a target array",
+          "Valid target, fields, and batch options"
+        ],
+        "id": "simd_json.streaming_api.lazy_binary_stream",
+        "subject_id": "simd_json.streaming_api",
+        "then": [
+          "Construction creates no request, parser, document, plan, cursor, or batch",
+          "Reduction yields projected row maps in source order",
+          "Completed rows remain valid after all native state is released"
+        ],
+        "when": [
+          "The stream is constructed, observed without reduction, and then fully reduced by its owner"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.streaming_api.runtime_exceptions",
+          "simd_json.streaming_api.indexed_errors",
+          "simd_json.streaming_api.transactional_batch_visibility"
+        ],
+        "file": ".spec/specs/streaming_api.spec.md",
+        "given": [
+          "Several successful batches followed by a missing field, wrong type, oversized row, numeric range failure, or malformed source"
+        ],
+        "id": "simd_json.streaming_api.midstream_failure",
+        "subject_id": "simd_json.streaming_api",
+        "then": [
+          "SimdJson.Error is raised with stable reason, zero-based array index, and validated field path when available",
+          "No row from the failing batch is yielded",
+          "Earlier completed rows remain already observed and cursor cleanup finishes before the exception escapes"
+        ],
+        "when": [
+          "Reduction reaches the failing row"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.streaming_api.owner_bound_reduction",
+          "simd_json.streaming_api.runtime_exceptions"
+        ],
+        "file": ".spec/specs/streaming_api.spec.md",
+        "given": [
+          "Binary-backed and document-backed streams constructed by process A and sent to process B"
+        ],
+        "id": "simd_json.streaming_api.owner_and_reduction_semantics",
+        "subject_id": "simd_json.streaming_api",
+        "then": [
+          "Process B receives not_owner without cursor or document mutation",
+          "Process A may re-reduce a binary stream through a new independent cursor",
+          "A committed document stream is consumed and cannot be transparently replayed"
+        ],
+        "when": [
+          "Process B reduces them and process A later performs valid and repeated reductions"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.streaming_api.target_path",
+          "simd_json.streaming_api.fields_projection",
+          "simd_json.streaming_api.row_results"
+        ],
+        "file": ".spec/specs/streaming_api.spec.md",
+        "given": [
+          "Top-level and nested arrays containing objects with shared, identical, object, and array field paths"
+        ],
+        "id": "simd_json.streaming_api.root_and_nested_arrays",
+        "subject_id": "simd_json.streaming_api",
+        "then": [
+          "Each target is located once and rows preserve array order",
+          "Exact caller keys and every supported scalar type are returned",
+          "Unselected containers never become BEAM terms"
+        ],
+        "when": [
+          "Streams use an empty root path and mixed valid nested paths"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.streaming_api.opaque_stream",
+          "simd_json.streaming_api.milestone_scope",
+          "simd_json.streaming_api.indexed_errors"
+        ],
+        "file": ".spec/specs/streaming_api.spec.md",
+        "given": [
+          "Stream terms, runtime errors, public modules, documentation, exports, typespecs, and protocols"
+        ],
+        "id": "simd_json.streaming_api.surface_and_redaction",
+        "subject_id": "simd_json.streaming_api",
+        "then": [
+          "Source, paths, keys, owner and native identity remain redacted",
+          "Only stream/2 and the opaque Enumerable type are added for Milestone 3",
+          "Every deferred streaming, cursor, decode, concurrency, and diagnostic surface remains absent"
+        ],
+        "when": [
+          "They are inspected and enumerated"
+        ]
       }
     ],
     "subjects": [
@@ -1844,7 +2846,7 @@
           "id": "simd_json.package",
           "kind": "package",
           "status": "active",
-          "summary": "Active native foundation and projection library with reproducible ABI v2, package, runtime, and sparse-allocation qualification.",
+          "summary": "Active native foundation and projection library with reproducible ABI v2 qualification and a fully specified Milestone 3 streaming plan.",
           "surface": [
             ".tool-versions",
             "README.md",
@@ -1960,6 +2962,92 @@
           "verification_minimum_strength": null
         },
         "title": "Spec System"
+      },
+      {
+        "file": ".spec/specs/stream_cursor.spec.md",
+        "id": "simd_json.stream_cursor",
+        "meta": {
+          "decisions": [
+            "simd_json.native_stack_and_c_abi",
+            "simd_json.document_resource_and_buffer_ownership",
+            "simd_json.projection_api_and_validation",
+            "simd_json.prefix_sharing_projection_engine",
+            "simd_json.forward_only_batched_array_cursor",
+            "simd_json.stream_ownership_backpressure_and_lifetime"
+          ],
+          "id": "simd_json.stream_cursor",
+          "kind": "subsystem",
+          "status": "planned",
+          "summary": "Milestone 3 advances one retained array cursor through transactional row-and-byte-bounded projection batches using private ABI v3.",
+          "surface": [
+            "native/include/**",
+            "native/src/**",
+            "native/zig/**",
+            "test/**/*stream*",
+            "test/**/*cursor*",
+            "test/**/*batch*",
+            "scripts/native/**/*stream*",
+            "docs/milestones/03-batched-array-streaming.md"
+          ],
+          "verification_minimum_strength": null
+        },
+        "title": "Stream Cursor and Batch Engine"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution",
+        "meta": {
+          "decisions": [
+            "simd_json.document_resource_and_buffer_ownership",
+            "simd_json.off_scheduler_native_execution",
+            "simd_json.projection_admission_consumption_and_lifetime",
+            "simd_json.stream_ownership_backpressure_and_lifetime",
+            "simd_json.forward_only_batched_array_cursor",
+            "simd_json.lazy_stream_api_and_bounded_options"
+          ],
+          "id": "simd_json.stream_execution",
+          "kind": "subsystem",
+          "status": "planned",
+          "summary": "Milestone 3 runs lazy array setup and demand-driven batches off scheduler with one-owner state, no prefetch, prompt halt, and qualified bounded memory.",
+          "surface": [
+            "native/**",
+            "lib/simd_json/**/*.ex",
+            "test/**/*stream*",
+            "test/**/*scheduler*",
+            "test/qualification/**",
+            "bench/**/*stream*",
+            "docs/milestones/03-batched-array-streaming.md"
+          ],
+          "verification_minimum_strength": null
+        },
+        "title": "Stream Execution and Lifecycle"
+      },
+      {
+        "file": ".spec/specs/streaming_api.spec.md",
+        "id": "simd_json.streaming_api",
+        "meta": {
+          "decisions": [
+            "simd_json.lazy_stream_api_and_bounded_options",
+            "simd_json.forward_only_batched_array_cursor",
+            "simd_json.stream_ownership_backpressure_and_lifetime",
+            "simd_json.projection_api_and_validation",
+            "simd_json.document_resource_and_buffer_ownership"
+          ],
+          "id": "simd_json.streaming_api",
+          "kind": "api",
+          "status": "planned",
+          "summary": "Milestone 3 exposes one owner-bound lazy Enumerable that yields projected rows from bounded native batches.",
+          "surface": [
+            "lib/simd_json.ex",
+            "lib/simd_json/stream.ex",
+            "lib/simd_json/error.ex",
+            "test/**/*stream*",
+            "test/**/*enumerable*",
+            "docs/milestones/03-batched-array-streaming.md"
+          ],
+          "verification_minimum_strength": null
+        },
+        "title": "Streaming API"
       }
     ],
     "verifications": [
@@ -2185,6 +3273,15 @@
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
         "subject_id": "simd_json.package",
+        "target": ".spec/planning/milestone_03_batched_array_streaming/README.md"
+      },
+      {
+        "covers": [
+          "simd_json.package.documentation_layout"
+        ],
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "subject_id": "simd_json.package",
         "target": ".spec/research/simdjson_beam_nif_architecture.md"
       },
       {
@@ -2352,13 +3449,13 @@
   "specification_version": "1.0",
   "summary": {
     "decision_parse_errors": 0,
-    "decisions": 6,
-    "exceptions": 0,
-    "findings": 0,
-    "requirements": 90,
-    "scenarios": 47,
-    "subjects": 9,
-    "verifications": 28
+    "decisions": 9,
+    "exceptions": 3,
+    "findings": 1,
+    "requirements": 139,
+    "scenarios": 69,
+    "subjects": 12,
+    "verifications": 29
   },
   "verification": {
     "claims": [
@@ -2367,8 +3464,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2378,8 +3475,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2389,8 +3486,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2400,8 +3497,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2411,8 +3508,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2422,8 +3519,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2433,8 +3530,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2444,8 +3541,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2455,8 +3552,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2466,8 +3563,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2477,8 +3574,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2488,8 +3585,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2499,8 +3596,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2510,8 +3607,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2521,8 +3618,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2532,8 +3629,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2543,8 +3640,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2554,8 +3651,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2565,8 +3662,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -2576,8 +3673,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2587,8 +3684,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2598,8 +3695,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2609,8 +3706,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2620,8 +3717,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2631,8 +3728,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2642,8 +3739,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2653,8 +3750,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2664,8 +3761,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2675,8 +3772,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2686,8 +3783,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2697,8 +3794,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2708,8 +3805,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2719,8 +3816,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2730,8 +3827,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2741,8 +3838,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2752,8 +3849,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -2763,8 +3860,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -2774,8 +3871,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -2785,8 +3882,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -2796,8 +3893,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -2807,8 +3904,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -2818,8 +3915,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -2829,8 +3926,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -2840,8 +3937,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -2851,8 +3948,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -2862,8 +3959,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -2873,8 +3970,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -2884,8 +3981,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -2895,8 +3992,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -2906,8 +4003,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -2917,8 +4014,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -2928,8 +4025,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -2939,8 +4036,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -2950,8 +4047,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -2961,8 +4058,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -2972,8 +4069,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -2983,8 +4080,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -2994,8 +4091,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -3005,8 +4102,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -3016,8 +4113,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -3027,8 +4124,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -3038,8 +4135,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -3049,8 +4146,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -3060,8 +4157,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -3071,8 +4168,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -3082,8 +4179,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -3093,8 +4190,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -3104,8 +4201,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -3283,7 +4380,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": ".spec/research/simdjson_beam_nif_architecture.md",
+        "target": ".spec/planning/milestone_03_batched_array_streaming/README.md",
         "verification_index": 12
       },
       {
@@ -3294,8 +4391,19 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": ".spec/research/zigler_0_16_threaded_qualification.md",
+        "target": ".spec/research/simdjson_beam_nif_architecture.md",
         "verification_index": 13
+      },
+      {
+        "cover_id": "simd_json.package.documentation_layout",
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.package",
+        "target": ".spec/research/zigler_0_16_threaded_qualification.md",
+        "verification_index": 14
       },
       {
         "cover_id": "simd_json.package.mix_library",
@@ -3306,7 +4414,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.package",
         "target": "mix test",
-        "verification_index": 14
+        "verification_index": 15
       },
       {
         "cover_id": "simd_json.package.native_build_tooling",
@@ -3317,7 +4425,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.package",
         "target": "bash scripts/ci/qualify_native_release.sh",
-        "verification_index": 15
+        "verification_index": 16
       },
       {
         "cover_id": "simd_json.package.native_source_distribution",
@@ -3328,15 +4436,15 @@
         "strength": "claimed",
         "subject_id": "simd_json.package",
         "target": "bash scripts/ci/qualify_native_release.sh",
-        "verification_index": 15
+        "verification_index": 16
       },
       {
         "cover_id": "simd_json.projection_api.all_scalar_types",
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3346,8 +4454,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3357,8 +4465,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3368,8 +4476,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3379,8 +4487,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3390,8 +4498,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3401,8 +4509,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3412,8 +4520,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3423,8 +4531,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3434,8 +4542,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3445,8 +4553,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3456,8 +4564,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3467,8 +4575,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3478,8 +4586,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3489,8 +4597,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3500,8 +4608,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3511,8 +4619,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3522,8 +4630,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -3533,8 +4641,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3544,8 +4652,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3555,8 +4663,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3566,8 +4674,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3577,8 +4685,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3588,8 +4696,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3599,8 +4707,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3610,8 +4718,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3621,8 +4729,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3632,8 +4740,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3643,8 +4751,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3654,8 +4762,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3665,8 +4773,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3676,8 +4784,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3687,8 +4795,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3698,8 +4806,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3709,8 +4817,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3720,8 +4828,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3731,8 +4839,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -3742,8 +4850,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3753,8 +4861,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3764,8 +4872,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3775,8 +4883,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3786,8 +4894,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3797,8 +4905,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3808,8 +4916,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3819,8 +4927,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3830,8 +4938,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3841,8 +4949,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3852,8 +4960,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3863,8 +4971,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3874,8 +4982,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3885,8 +4993,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3896,8 +5004,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3907,8 +5015,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3918,8 +5026,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3929,8 +5037,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3940,8 +5048,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3951,8 +5059,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3962,8 +5070,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -3973,8 +5081,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -4046,17 +5154,17 @@
         "verification_index": 4
       }
     ],
-    "cli_minimum_strength": null,
+    "cli_minimum_strength": "claimed",
     "default_minimum_strength": "claimed",
     "strength_summary": {
-      "claimed": 6,
-      "executed": 127,
-      "linked": 20
+      "claimed": 133,
+      "executed": 0,
+      "linked": 21
     },
     "threshold_failures": 0
   },
   "workspace": {
-    "decision_count": 6,
-    "spec_count": 9
+    "decision_count": 9,
+    "spec_count": 12
   }
 }
