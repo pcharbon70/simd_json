@@ -52,6 +52,7 @@ fi
   -shared \
   "${repository_root}/native/src/simd_json_abi.cpp" \
   "${repository_root}/native/src/simd_json_projection.cpp" \
+  "${repository_root}/native/src/simd_json_stream_cursor.cpp" \
   "${repository_root}/native/vendor/simdjson/simdjson.cpp" \
   -Wl,--version-script="${repository_root}/native/symbols/c_abi.version" \
   -o "${abi_library}"

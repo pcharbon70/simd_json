@@ -65,6 +65,7 @@ required_package_files=(
   docs/milestones/02-projection-api.md
   docs/milestones/02-projection-api-operations.md
   docs/milestones/02-projection-api-acceptance.md
+  docs/milestones/03-batched-array-streaming.md
   lib/simd_json.ex
   lib/simd_json/projection.ex
   lib/simd_json/native/projection_operation.ex
@@ -79,6 +80,7 @@ required_package_files=(
   native/src/simd_json_abi.cpp
   native/src/simd_json_native_internal.hpp
   native/src/simd_json_projection.cpp
+  native/src/simd_json_stream_cursor.cpp
   native/symbols/c_abi.allowlist
   native/symbols/c_abi.version
   native/symbols/nif.allowlist
@@ -95,6 +97,7 @@ required_package_files=(
   native/zig/build_smoke.zig
   native/zig/document_resource.zig
   native/zig/projection_plan.zig
+  native/zig/stream_cursor.zig
 )
 
 for relative_path in "${required_package_files[@]}"; do

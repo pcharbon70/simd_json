@@ -11,6 +11,9 @@ qualification contract is in the
 Projection-specific ABI v2, sanitizer, scheduler, lifecycle, and benchmark
 procedures are in the
 [Milestone 2 operations guide](../docs/milestones/02-projection-api-operations.md).
+Milestone 3 Phase 2 additionally freezes the private ABI v3 stream cursor
+layouts and ownership boundary. It deliberately does not yet traverse an array,
+run threaded batches, or expose the public stream API.
 
 The build must not discover a system simdjson installation, follow a mutable
 source reference, or download source while compiling. A supported build uses
@@ -170,7 +173,11 @@ logical byte offset. ABI version 2 adds a distinct 24-byte projection status
 with stable missing-field, bounds, type, numeric-range, consumed-cursor, and
 cancellation categories plus an optional failing output slot. Dedicated
 sentinels represent unavailable diagnostics; upstream error text is never
-returned through this boundary.
+returned through this boundary. ABI version 3 preserves both earlier layouts
+and adds fixed target, cursor-config, cancellation-probe, row, batch-storage,
+32-byte array-indexed status, and done-state layouts. Its bounded batch function
+always receives caller-owned row and slot storage; no container crosses the C
+boundary.
 
 [`src/simd_json_abi.cpp`](./src/simd_json_abi.cpp) validates every object,
 array, and scalar through the official On-Demand API and rewinds a successful
@@ -188,12 +195,22 @@ operation cancellation probe without expanding the C ABI. Each C++ boundary
 catches simdjson, allocation, standard, and unknown exceptions. Local
 ownership keeps partial allocations private until publication.
 
+[`src/simd_json_stream_cursor.cpp`](./src/simd_json_stream_cursor.cpp) owns the
+private ABI v3 cursor boundary. Construction copies normalized target segments
+and key bytes, borrows a document whose Zig resource retains its parent, and
+transfers exactly one immutable projection plan into the cursor. Destruction
+releases the plan and copied target in reverse order. The cursor state is
+monotonic and its reserved batch call validates bounded storage, cancellation,
+and terminal-state behavior, but array traversal and row production remain a
+later phase.
+
 The release C ABI shared-artifact and Zigler NIF symbol surfaces are frozen in
 [`symbols`](./symbols). The standalone ABI retains the four ABI v1
 parser/document functions and adds only the ABI v2 plan constructor,
-destructor, and single execution entry. The current statically linked Zigler
-NIF needs only `nif_init`; its C ABI and C++ implementation symbols remain
-local. Run
+destructor, and single execution entry, followed by the three ABI v3 cursor
+constructor, destructor, and reserved batch entries. The current statically
+linked Zigler NIF needs only `nif_init`; its C ABI and C++ implementation
+symbols remain local. Run
 `scripts/native/verify_release_symbols.sh` after compiling the NIF to compare
 both artifacts with their checked-in allowlists and to prove test-only failure
 controls are absent.
@@ -225,6 +242,12 @@ keys before Zig releases those buffers, and the owned Zig plan wrapper provides
 one idempotent destruction path. Caller output keys and raw BEAM terms are not
 represented at this boundary.
 
+[`zig/stream_cursor.zig`](./zig/stream_cursor.zig) freezes every ABI v3 layout,
+tag, status, sentinel, and offset at compile time. It serializes only validated
+numeric target descriptors and one temporary key-byte arena; C++ copies that
+arena before construction returns. Its owned wrapper transfers a projection
+plan once and provides one idempotent cursor destruction path.
+
 Zigler registers `DocumentResource` during both NIF load and upgrade. Its
 payload contains the destructible native state plus the opening process PID;
 the state reserves fields for the aligned padded allocation, logical length,
@@ -250,6 +273,12 @@ exist solely to prove resource registration and opacity. They create only the
 fixed-size empty state and are not part of `SimdJson`'s public API. Future child
 resources must use the private `retainParent` and `releaseParent` helpers, which
 delegate to Zigler's BEAM resource keep/release operations.
+
+The private `StreamCursorResource` follows that rule: its constructor keeps the
+document resource before publishing any cursor that may borrow the native
+document, and every rollback or destructor destroys the cursor and transferred
+plan before releasing the parent. The registered test fixtures expose only
+bounded lifetime accounting; they do not expose a public stream operation.
 
 ### Owned padded input
 

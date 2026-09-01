@@ -86,12 +86,17 @@ common_cxx_flags=(
   -o "${scratch_root}/simd_json_projection.o"
 
 "${zig_executable}" c++ "${common_cxx_flags[@]}" "${profile_flags[@]}" \
+  -c "${repository_root}/native/src/simd_json_stream_cursor.cpp" \
+  -o "${scratch_root}/simd_json_stream_cursor.o"
+
+"${zig_executable}" c++ "${common_cxx_flags[@]}" "${profile_flags[@]}" \
   -c "${repository_root}/native/vendor/simdjson/simdjson.cpp" \
   -o "${scratch_root}/simdjson.o"
 
 "${zig_executable}" ar rcs "${scratch_root}/libsimd_json_abi_test.a" \
   "${scratch_root}/simd_json_abi.o" \
   "${scratch_root}/simd_json_projection.o" \
+  "${scratch_root}/simd_json_stream_cursor.o" \
   "${scratch_root}/simdjson.o"
 
 "${zig_executable}" c++ "${profile_flags[@]}" \
