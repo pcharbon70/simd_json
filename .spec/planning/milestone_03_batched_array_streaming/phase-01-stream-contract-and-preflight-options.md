@@ -24,32 +24,32 @@ Back to plan: [README](./README.md)
 
 ## 1.1 Section — Stream Terms and Normalized Options
 
-- [ ] 1.1 Section - Define one private typed representation for source class,
+- [x] 1.1 Section - Define one private typed representation for source class,
   owner, target segments, row projection, and bounded batch limits.
 
   This section gives native phases a closed input model while preserving caller
   paths and keys for later row maps and errors. It publishes no Enumerable,
   cursor, native descriptor, or compiled plan.
 
-  - [ ] 1.1.1 Task - Define stream option and target types.
+  - [x] 1.1.1 Task - Define stream option and target types.
 
     The task models the closed keyword grammar and distinguishes root-array
     targeting from the non-empty per-row projection paths.
 
-    - [ ] 1.1.1.1 Subtask - Add a private `SimdJson.StreamOptions` module, or equivalent, with types for source class, owner PID, target segment, target path, normalized fields projection, batch size, and encoded-byte limit.
-    - [ ] 1.1.1.2 Subtask - Represent `path: []` as the root-array target while preserving every non-empty valid target path exactly for error translation.
-    - [ ] 1.1.1.3 Subtask - Embed or reference only a validator-produced Milestone 2 normalized projection; do not copy raw caller field terms into a second grammar implementation.
-    - [ ] 1.1.1.4 Subtask - Keep constructors private and expose no public stream, cursor, options struct, serialization, protocol, or native handle in this phase.
+    - [x] 1.1.1.1 Subtask - Add a private `SimdJson.StreamOptions` module, or equivalent, with types for source class, owner PID, target segment, target path, normalized fields projection, batch size, and encoded-byte limit.
+    - [x] 1.1.1.2 Subtask - Represent `path: []` as the root-array target while preserving every non-empty valid target path exactly for error translation.
+    - [x] 1.1.1.3 Subtask - Embed or reference only a validator-produced Milestone 2 normalized projection; do not copy raw caller field terms into a second grammar implementation.
+    - [x] 1.1.1.4 Subtask - Keep constructors private and expose no public stream, cursor, options struct, serialization, protocol, or native handle in this phase.
 
-  - [ ] 1.1.2 Task - Normalize limits and option identity deterministically.
+  - [x] 1.1.2 Task - Normalize limits and option identity deterministically.
 
     The task produces stable data Phase 2 can serialize without depending on
     keyword lookup behavior after duplicate information is lost.
 
-    - [ ] 1.1.2.1 Subtask - Record whether every accepted option was explicitly supplied before applying the exact defaults of 1000 rows and 8388608 encoded bytes.
-    - [ ] 1.1.2.2 Subtask - Normalize accepted limits only after validating positive integer and upper-bound domains, without truncating to a narrower native type.
-    - [ ] 1.1.2.3 Subtask - Preserve option order independence while rejecting duplicate keys and produce identical normalized output for equivalent valid keyword orderings.
-    - [ ] 1.1.2.4 Subtask - Capture `self()` as immutable owner metadata without exposing it through default inspection or diagnostic snapshots.
+    - [x] 1.1.2.1 Subtask - Record whether every accepted option was explicitly supplied before applying the exact defaults of 1000 rows and 8388608 encoded bytes.
+    - [x] 1.1.2.2 Subtask - Normalize accepted limits only after validating positive integer and upper-bound domains, without truncating to a narrower native type.
+    - [x] 1.1.2.3 Subtask - Preserve option order independence while rejecting duplicate keys and produce identical normalized output for equivalent valid keyword orderings.
+    - [x] 1.1.2.4 Subtask - Capture `self()` as immutable owner metadata without exposing it through default inspection or diagnostic snapshots.
 
 ## 1.2 Section — Complete Preflight and Lazy Boundary
 
