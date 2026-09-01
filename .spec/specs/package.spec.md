@@ -40,8 +40,10 @@ implementation plan. Phase 1 now packages an undocumented opaque stream-option
 normalizer, reuses the projection validator for target and field paths, and
 extends the shared error representation with a reserved batch reason and
 optional redacted array index. The root module still exports only the active
-Milestone 1 and 2 operations; no `stream/2`, Enumerable, cursor, batch, native
-ABI v3, or stream resource surface exists yet.
+Milestone 1 and 2 operations. Phase 2 now packages private ABI v3 target,
+cursor, row, batch, status, C++ owner, Zig owner/resource, symbol policy, and
+independent ordinary/sanitizer harnesses. The NIF still exports only `nif_init`;
+no `stream/2`, Enumerable, cursor, batch, or stream resource is public yet.
 
 ```spec-meta
 id: simd_json.package

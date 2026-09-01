@@ -88,6 +88,8 @@ required_package_files=(
   native/test/projection_engine_conformance.c
   native/test/projection_plan_conformance.c
   native/test/projection_plan_test.zig
+  native/test/stream_cursor_conformance.c
+  native/test/stream_cursor_test.zig
   native/vendor/simdjson/simdjson.cpp
   native/vendor/simdjson/simdjson.h
   native/vendor/simdjson/README.md

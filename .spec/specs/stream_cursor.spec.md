@@ -18,6 +18,15 @@ descriptor, cursor, plan owner, result storage, traversal, native entrypoint, or
 diagnostic counter, so this subject remains planned under its complete
 bootstrap exception.
 
+Phase 2 now freezes private ABI v3 while preserving every ABI v1/v2 layout and
+symbol. C++ and Zig construct one opaque cursor that copies normalized target
+descriptors, borrows a document only beneath a retained genuine parent
+resource, and transfers exactly one compiled projection plan. Independent C
+and Zig ordinary/sanitizer matrices prove layout, state, limits, plan and parent
+ownership, exception containment, allocation rollback, package inventory, and
+release visibility. Target lookup, row traversal, populated batches, threaded
+execution, and the public stream remain deliberately unimplemented.
+
 ```spec-meta
 id: simd_json.stream_cursor
 kind: subsystem
@@ -230,10 +239,10 @@ decisions:
 
 ## Required Closure Evidence
 
-Before activation, replace the bootstrap exception with executed C and Zig ABI
-v3 layout, target traversal, parent retention, plan reuse, row/byte boundary,
+Before activation, replace the bootstrap exception with executed target
+traversal and row/byte boundary,
 exact-end, complete-validation, indexed-status, cancellation, failure injection,
-borrowed-string, release-symbol, ordinary, sanitizer, and boundary-accounting
+borrowed-string, threaded, public, and boundary-accounting
 evidence.
 
 ## Exceptions

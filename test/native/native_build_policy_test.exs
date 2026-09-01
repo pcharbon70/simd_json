@@ -102,6 +102,8 @@ defmodule SimdJson.Native.BuildPolicyTest do
           "native/test/projection_engine_conformance.c",
           "native/test/projection_plan_conformance.c",
           "native/test/projection_plan_test.zig",
+          "native/test/stream_cursor_conformance.c",
+          "native/test/stream_cursor_test.zig",
           "native/test/include/simd_json_test_hooks.h",
           "native/vendor/simdjson/simdjson.cpp",
           "native/vendor/simdjson/simdjson.h",

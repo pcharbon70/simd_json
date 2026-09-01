@@ -416,7 +416,8 @@ string inspection proves they are absent from the NIF and standalone ABI.
 
 The standalone harnesses in [`test/c_abi_conformance.c`](./test/c_abi_conformance.c),
 [`test/projection_plan_conformance.c`](./test/projection_plan_conformance.c),
-and [`test/projection_engine_conformance.c`](./test/projection_engine_conformance.c)
+[`test/projection_engine_conformance.c`](./test/projection_engine_conformance.c),
+and [`test/stream_cursor_conformance.c`](./test/stream_cursor_conformance.c)
 are compiled by `zig cc` as strict C11 against only the production, hidden-NIF,
 and test C header directories. They then link a private archive containing both
 C++ shims and the vendored parser. This prevents the harnesses from relying on
@@ -440,6 +441,15 @@ bound, Unicode and escaped paths, large skipped containers, exact-padding guard
 pages, borrowed strings, serializer/allocation failures, every exception class,
 and repeated null/idempotent caller cleanup.
 
+ABI v3 cursor matrices add root, nested, empty-key, Unicode, maximum-index, and
+limit-boundary descriptors; one-time plan transfer; copied target ownership;
+ready/running/done/cancelled/closed behavior; bounded caller storage; every
+constructor checkpoint and exception class; null/partial teardown; and parent
+retention. The companion Zig cursor suite proves normalized serialization,
+idempotent owned cleanup, allocation-failure recovery, and reverse cursor-before-
+parent release. Phase 2 intentionally expects the reserved batch call to
+produce no rows.
+
 Run the ordinary and sanitizer matrices with:
 
 ```text
@@ -456,4 +466,5 @@ The Zig ownership-state and resource-registration checks run with:
 scripts/native/run_zig_resource_tests.sh ordinary
 scripts/native/run_zig_resource_tests.sh sanitizer
 mix test test/native/document_resource_registration_test.exs
+mix test test/native/stream_cursor_resource_test.exs
 ```

@@ -63,6 +63,9 @@ errors retain their reason, message, offset, code, and path behavior and now
 default to `array_index: nil`; inspection renders only a bounded valid index.
 The root module still exports only `open/1`, `close/1`, and `select/2`, and no
 stream, Enumerable, cursor, batch, or stream type is public in this phase.
+Milestone 3 Phase 2 changes only the private ABI/resource graph. The root
+exports and all open/close/select error translations remain unchanged; no
+cursor handle, target descriptor, batch layout, or stream state reaches Elixir.
 
 ```spec-meta
 id: simd_json.document_api

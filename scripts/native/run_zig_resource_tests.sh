@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# covers: simd_json.document_resource.opaque_handle simd_json.document_resource.complete_ownership simd_json.document_resource.padded_owned_copy simd_json.document_resource.zero_copy_disabled simd_json.document_resource.lifecycle simd_json.document_resource.reverse_destruction simd_json.document_resource.parent_retention simd_json.document_resource.test_accounting simd_json.document_resource.input_lifetime simd_json.document_resource.partial_open_failure simd_json.projection_engine.private_abi_v2 simd_json.projection_engine.exception_and_failure_cleanup simd_json.projection_engine.abi_v2_conformance
+# covers: simd_json.document_resource.opaque_handle simd_json.document_resource.complete_ownership simd_json.document_resource.padded_owned_copy simd_json.document_resource.zero_copy_disabled simd_json.document_resource.lifecycle simd_json.document_resource.reverse_destruction simd_json.document_resource.parent_retention simd_json.document_resource.test_accounting simd_json.document_resource.input_lifetime simd_json.document_resource.partial_open_failure simd_json.projection_engine.private_abi_v2 simd_json.projection_engine.exception_and_failure_cleanup simd_json.projection_engine.abi_v2_conformance simd_json.stream_cursor.parent_retention simd_json.stream_cursor.abi_v3_conformance simd_json.stream_cursor.exception_and_failure_cleanup
 
 repository_root="$(git rev-parse --show-toplevel)"
 profile="${1:-ordinary}"
@@ -141,3 +141,34 @@ if [[ "${profile}" == "sanitizer" ]]; then
 fi
 
 env "${runtime_environment[@]}" "${projection_test_command[@]}"
+
+stream_test_command=("${zig_executable}" test \
+  -I "${repository_root}/native/include" \
+  -I "${repository_root}/native/test/include" \
+  --dep projection_plan \
+  --dep stream_cursor \
+  --dep document_resource \
+  -Mroot="${repository_root}/native/test/stream_cursor_test.zig" \
+  -Mprojection_plan="${repository_root}/native/zig/projection_plan.zig" \
+  -Mstream_cursor="${repository_root}/native/zig/stream_cursor.zig" \
+  -Mdocument_resource="${repository_root}/native/zig/document_resource.zig" \
+  -L "${scratch_root}" \
+  -lsimd_json_abi_test \
+  -lc++ \
+  -lc \
+  -O Debug)
+
+if [[ "${profile}" == "sanitizer" ]]; then
+  stream_test_command+=(
+    "${asan_preinit}"
+    -L "${sanitizer_runtime_dir}"
+    -lasan
+    -lubsan
+    -lpthread
+    -ldl
+    -lrt
+    -lm
+  )
+fi
+
+env "${runtime_environment[@]}" "${stream_test_command[@]}"

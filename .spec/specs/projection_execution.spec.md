@@ -53,6 +53,10 @@ normalizing future per-row fields. Valid and invalid stream construction create
 no projection admission, reservation, operation, plan, worker entry, slot, or
 temporary document graph, so active `select/2` execution and qualification
 remain unchanged.
+Milestone 3 Phase 2 gives the private cursor one operation-owned projection
+plan but performs no row execution and admits no threaded stream request. The
+active `select/2` reservation, worker, cancellation, conversion, and cleanup
+paths are regression-tested unchanged under ABI v3.
 
 ```spec-meta
 id: simd_json.projection_execution

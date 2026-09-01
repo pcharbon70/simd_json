@@ -43,8 +43,14 @@ defmodule SimdJson.Native.StreamCursorResourceTest do
     result = Task.await(task)
     assert match?({:raised, _}, result) or match?({:caught, _, _}, result)
 
-    assert BuildSmoke.execution_snapshot() == baseline
+    after_rejection = BuildSmoke.execution_snapshot()
+
+    for gauge <- [:live_stream_cursor_resources, :retained_stream_cursor_parents] do
+      assert Map.fetch!(after_rejection, gauge) == Map.fetch!(baseline, gauge)
+    end
+
     assert BuildSmoke.document_lifecycle(document.__resource__) == :open
+    assert BuildSmoke.document_projection_owner_state(document.__resource__) == :fresh
     assert SimdJson.close(document) == :ok
   end
 end

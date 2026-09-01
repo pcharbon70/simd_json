@@ -50,6 +50,12 @@ package, adds deterministic seeded plan/traversal cases, inspects the production
 artifact, and executes the real projection path under native sanitizers. The
 subject is now active.
 
+Milestone 3 Phase 2 reuses the unchanged ABI v2 plan layout under the additive
+ABI v3 header. Cursor construction transfers one compiled immutable plan into
+the opaque stream owner and destroys it exactly once on rollback or cursor
+teardown. It does not yet execute that plan relative to rows; the established
+Milestone 2 execution behavior and public `select/2` path remain unchanged.
+
 ```spec-meta
 id: simd_json.projection_engine
 kind: subsystem

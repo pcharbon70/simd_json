@@ -99,6 +99,12 @@ checked before every native dereference and before each batch delivery.
 
 ### Demand-driven batch operations
 
+Milestone 3 Phase 2 implementation checkpoint: the private cursor resource now
+retains its genuine parent and releases cursor/plan ownership before the parent,
+and the ABI enforces one monotonic running winner plus terminal-state rejection.
+No threaded setup/batch operation, public Enumerable, or demand loop is created
+in this phase.
+
 Cursor setup is one uniquely correlated threaded operation. Each call for the
 next batch is another uniquely correlated operation with exactly one terminal
 bounded batch or error. There is never a NIF call per row, field, segment, or

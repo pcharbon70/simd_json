@@ -1,4 +1,5 @@
-# This historically named record binds cumulative Milestone 1 and 2
+# This historically named record binds cumulative Milestone 1, Milestone 2,
+# and the implemented Milestone 3 phases
 # qualification to every ABI-, runtime-, test-, benchmark-, and
 # evidence-relevant input. It is intentionally outside the fingerprint so the
 # expected digest can be updated after (and only after) the matrix passes.
@@ -6,7 +7,7 @@
 [
   schema_version: 1,
   qualified_on: ~D[2026-09-01],
-  input_sha256: "1e4e2c4a3d83edf5363e2f44793f6d3091c239dd4bffc8354d54b3db0a92f672",
+  input_sha256: "7f6da228153410f5e9b9a4175ad7791dcf9567e457732de7ebb97ddcde46e35c",
   randomized_seed: 260_831_006,
   supported_targets: [
     [
