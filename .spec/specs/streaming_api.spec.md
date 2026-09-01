@@ -29,7 +29,6 @@ summary: Milestone 3 exposes one owner-bound lazy Enumerable that yields project
 surface:
   - lib/simd_json.ex
   - lib/simd_json/stream_options.ex
-  - lib/simd_json/stream.ex
   - lib/simd_json/error.ex
   - test/**/*stream*
   - test/**/*enumerable*

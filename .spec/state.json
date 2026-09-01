@@ -113,15 +113,7 @@
       }
     ]
   },
-  "findings": [
-    {
-      "code": "surface_target_missing",
-      "entity_id": "simd_json.streaming_api",
-      "file": ".spec/specs/streaming_api.spec.md",
-      "level": "warning",
-      "message": "Surface entry does not exist: lib/simd_json/stream.ex"
-    }
-  ],
+  "findings": [],
   "index": {
     "exceptions": [
       {
@@ -3040,7 +3032,6 @@
           "surface": [
             "lib/simd_json.ex",
             "lib/simd_json/stream_options.ex",
-            "lib/simd_json/stream.ex",
             "lib/simd_json/error.ex",
             "test/**/*stream*",
             "test/**/*enumerable*",
@@ -3452,7 +3443,7 @@
     "decision_parse_errors": 0,
     "decisions": 9,
     "exceptions": 3,
-    "findings": 1,
+    "findings": 0,
     "requirements": 139,
     "scenarios": 69,
     "subjects": 12,
