@@ -54,6 +54,27 @@ typedef struct simd_json_test_projection_execution_summary {
   uint64_t cancellation_checks;
 } simd_json_test_projection_execution_summary;
 
+typedef struct simd_json_test_stream_accounting {
+  uint64_t live_cursors;
+  uint64_t live_frames;
+  uint64_t live_key_bytes;
+  uint64_t live_owned_plans;
+} simd_json_test_stream_accounting;
+
+typedef struct simd_json_test_stream_summary {
+  uint64_t target_segments;
+  uint64_t object_segments;
+  uint64_t array_segments;
+  uint64_t key_bytes;
+  uint64_t row_limit;
+  uint64_t encoded_byte_limit;
+  uint64_t parent_generation;
+  uint64_t current_row_index;
+  uint64_t batch_sequence;
+  uint32_t state;
+  uint32_t owns_projection_plan;
+} simd_json_test_stream_summary;
+
 void simd_json_test_inject_failure(int32_t point,
                                    int32_t kind) SIMD_JSON_TEST_NOEXCEPT;
 void simd_json_test_clear_failure(void) SIMD_JSON_TEST_NOEXCEPT;
@@ -85,6 +106,18 @@ uint32_t simd_json_test_projection_execution_summary_read(
     const simd_json_projection_plan *plan,
     simd_json_test_projection_execution_summary *out_summary)
     SIMD_JSON_TEST_NOEXCEPT;
+void simd_json_test_stream_inject_failure(
+    uint64_t successful_checkpoints,
+    int32_t kind) SIMD_JSON_TEST_NOEXCEPT;
+void simd_json_test_stream_clear_failure(void) SIMD_JSON_TEST_NOEXCEPT;
+simd_json_test_stream_accounting simd_json_test_stream_accounting_snapshot(
+    void) SIMD_JSON_TEST_NOEXCEPT;
+uint32_t simd_json_test_stream_summary_read(
+    const simd_json_stream_cursor *cursor,
+    simd_json_test_stream_summary *out_summary) SIMD_JSON_TEST_NOEXCEPT;
+uint32_t simd_json_test_stream_state_set(
+    simd_json_stream_cursor *cursor,
+    simd_json_stream_cursor_state state) SIMD_JSON_TEST_NOEXCEPT;
 
 #undef SIMD_JSON_TEST_NOEXCEPT
 

@@ -4,6 +4,7 @@ const e = @import("erl_nif");
 const c = @import("simd_json_abi");
 const document_resource = @import("document_resource").Implementation(c);
 const projection_plan = @import("projection_plan").Implementation(c);
+const stream_cursor = @import("stream_cursor").Implementation(c, projection_plan);
 const root = @import("root");
 
 extern fn simd_json_build_smoke_version() callconv(.c) u32;
@@ -36,6 +37,32 @@ pub const DocumentResource = beam.Resource(
     DocumentResourcePayload,
     root,
     .{ .Callbacks = DocumentResourceCallbacks },
+);
+
+const StreamCursorControl = struct {
+    allocator: std.mem.Allocator,
+    native: stream_cursor.OwnedCursor,
+    parent: ?DocumentResource,
+    owner: beam.pid,
+    parent_generation: u64,
+};
+
+const StreamCursorResourcePayload = struct {
+    control: ?*StreamCursorControl,
+};
+
+const StreamCursorResourceCallbacks = struct {
+    pub fn dtor(payload: *StreamCursorResourcePayload) void {
+        const control = payload.control orelse return;
+        payload.control = null;
+        destroyStreamCursorControl(control);
+    }
+};
+
+pub const StreamCursorResource = beam.Resource(
+    StreamCursorResourcePayload,
+    root,
+    .{ .Callbacks = StreamCursorResourceCallbacks },
 );
 
 pub const OperationKind = enum(u8) {
@@ -114,6 +141,8 @@ const ExecutionAccounting = struct {
     var discarded_projection_deliveries = std.atomic.Value(usize).init(0);
     var projection_worker_count = std.atomic.Value(usize).init(0);
     var projection_boundary_count = std.atomic.Value(usize).init(0);
+    var live_stream_cursor_resources = std.atomic.Value(usize).init(0);
+    var retained_stream_cursor_parents = std.atomic.Value(usize).init(0);
 };
 
 const Runtime = struct {
@@ -763,6 +792,8 @@ const ExecutionSnapshot = struct {
     discarded_projection_deliveries: usize,
     projection_worker_entries: usize,
     projection_boundary_entries: usize,
+    live_stream_cursor_resources: usize,
+    retained_stream_cursor_parents: usize,
 };
 
 const ThreadedSmokeResult = struct {
@@ -1792,6 +1823,8 @@ pub fn execution_snapshot() ExecutionSnapshot {
         .discarded_projection_deliveries = ExecutionAccounting.discarded_projection_deliveries.load(.acquire),
         .projection_worker_entries = ExecutionAccounting.projection_worker_count.load(.acquire),
         .projection_boundary_entries = ExecutionAccounting.projection_boundary_count.load(.acquire),
+        .live_stream_cursor_resources = ExecutionAccounting.live_stream_cursor_resources.load(.acquire),
+        .retained_stream_cursor_parents = ExecutionAccounting.retained_stream_cursor_parents.load(.acquire),
     };
 }
 
@@ -2119,6 +2152,65 @@ pub fn document_resource_fixture() !DocumentResource {
         destroyDocumentControl(control);
         return err;
     };
+}
+
+/// Registers the private Phase 2 child-resource shape and retains one genuine
+/// owner document before any future cursor handle can dereference it. Native
+/// target and batch execution remain unavailable through this fixture.
+pub fn stream_cursor_resource_fixture(
+    document: DocumentResource,
+) !StreamCursorResource {
+    const parent_control = document.__payload.control orelse
+        return error.closed_document;
+    const owner = try beam.self(.{});
+
+    // Owner validation deliberately precedes lifecycle and generation detail.
+    if (!pidsEqual(owner, parent_control.owner)) return error.not_owner;
+    if (parent_control.native.lifecycleState() != .open)
+        return error.closed_document;
+    if (parent_control.module_generation != module_generation.load(.acquire))
+        return error.stale_generation;
+    const parent_generation = parent_control.native.generation.load(.acquire);
+    if (parent_generation == 0) return error.stale_generation;
+
+    const control = try beam.allocator.create(StreamCursorControl);
+    retainParent(document);
+    _ = ExecutionAccounting.retained_stream_cursor_parents.fetchAdd(1, .acq_rel);
+    control.* = .{
+        .allocator = beam.allocator,
+        .native = stream_cursor.OwnedCursor.empty(),
+        .parent = document,
+        .owner = owner,
+        .parent_generation = parent_generation,
+    };
+    _ = ExecutionAccounting.live_stream_cursor_resources.fetchAdd(1, .acq_rel);
+
+    return StreamCursorResource.create(.{ .control = control }, .{}) catch |err| {
+        destroyStreamCursorControl(control);
+        return err;
+    };
+}
+
+/// Test-only deterministic release for the otherwise GC-owned fixture.
+pub fn stream_cursor_resource_close(cursor: StreamCursorResource) bool {
+    const control = cursor.__payload.control orelse return true;
+    cursor.__payload.control = null;
+    destroyStreamCursorControl(control);
+    return true;
+}
+
+fn destroyStreamCursorControl(control: *StreamCursorControl) void {
+    control.native.deinit();
+    if (control.parent) |parent| {
+        control.parent = null;
+        releaseParent(parent);
+        const retained = ExecutionAccounting.retained_stream_cursor_parents.fetchSub(1, .acq_rel);
+        std.debug.assert(retained > 0);
+    }
+    const live = ExecutionAccounting.live_stream_cursor_resources.fetchSub(1, .acq_rel);
+    std.debug.assert(live > 0);
+    const allocator = control.allocator;
+    allocator.destroy(control);
 }
 
 fn retainParent(parent: DocumentResource) void {
