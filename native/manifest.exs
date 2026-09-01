@@ -181,6 +181,7 @@
     "lib/simd_json/document.ex",
     "lib/simd_json/error.ex",
     "lib/simd_json/projection.ex",
+    "lib/simd_json/stream_options.ex",
     "lib/simd_json/native/build_guard.ex",
     "lib/simd_json/native/build_smoke.ex",
     "lib/simd_json/native/diagnostics.ex",
@@ -261,6 +262,7 @@
     "test/simd_json/public_surface_test.exs",
     "test/simd_json/select_test.exs",
     "test/simd_json_test.exs",
+    "test/simd_json/stream_options_test.exs",
     "test/test_helper.exs",
     ".spec/research/phase_6_scheduler_qualification.md"
   ]

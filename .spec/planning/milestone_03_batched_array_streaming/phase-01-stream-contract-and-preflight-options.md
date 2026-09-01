@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 1 Phase - Implement the exact stream option grammar, normalized target
+- [x] 1 Phase - Implement the exact stream option grammar, normalized target
   and field representation, owner capture, and native-lazy preflight boundary.
 
   This phase turns ADR 0007 into executable caller-term validation. It reuses
@@ -120,28 +120,28 @@ Back to plan: [README](./README.md)
 
 ## 1.4 Section — Phase 1 Integration Tests
 
-- [ ] 1.4 Section - Prove option grammar, deterministic normalization,
+- [x] 1.4 Section - Prove option grammar, deterministic normalization,
   construction laziness, atom safety, error extension, and unchanged public
   surface before ABI v3 work starts.
 
   This section freezes the only caller-term representation Phase 2 may consume
   and the negative fixtures every later public phase must preserve.
 
-  - [ ] 1.4.1 Task - Run the complete option and normalization matrix.
+  - [x] 1.4.1 Task - Run the complete option and normalization matrix.
 
     The task executes positive, negative, late-invalid, and generated cases
     through the real preflight implementation.
 
-    - [ ] 1.4.1.1 Subtask - Accept root and mixed target paths, atom/binary field keys, shared/identical row paths, every scalar projection shape, defaults, and both numeric upper bounds.
-    - [ ] 1.4.1.2 Subtask - Reject every invalid source, option collection, missing/unknown/duplicate key, target, field projection, improper list, UTF-8 value, index, and numeric-bound case.
-    - [ ] 1.4.1.3 Subtask - Assert normalized output is deterministic across keyword ordering and preserves exact paths, fields, keys, limits, source class, and owner authority.
+    - [x] 1.4.1.1 Subtask - Accept root and mixed target paths, atom/binary field keys, shared/identical row paths, every scalar projection shape, defaults, and both numeric upper bounds.
+    - [x] 1.4.1.2 Subtask - Reject every invalid source, option collection, missing/unknown/duplicate key, target, field projection, improper list, UTF-8 value, index, and numeric-bound case.
+    - [x] 1.4.1.3 Subtask - Assert normalized output is deterministic across keyword ordering and preserves exact paths, fields, keys, limits, source class, and owner authority.
 
-  - [ ] 1.4.2 Task - Run laziness, safety, and regression gates.
+  - [x] 1.4.2 Task - Run laziness, safety, and regression gates.
 
     The task proves preflight adds no hidden native work, atom growth, document
     consumption, error regression, or premature public feature.
 
-    - [ ] 1.4.2.1 Subtask - Measure atom count across a large unique-binary target/field corpus and prove option validation creates no atoms from caller or JSON-like bytes.
-    - [ ] 1.4.2.2 Subtask - Compare all admission, request, native allocation, lifecycle, generation, selection, and future stream gauges before and after valid and invalid private construction.
-    - [ ] 1.4.2.3 Subtask - Enumerate public exports, typespecs, protocols, and docs and confirm `stream/2`, `SimdJson.Stream`, raw cursor, and batch APIs remain absent in this phase.
-    - [ ] 1.4.2.4 Subtask - Run focused option/error tests, every Milestone 1 and 2 regression suite, `mix format --check-formatted`, `mix spec.next`, and the reported `mix spec.check --base ...` command before marking Phase 1 complete.
+    - [x] 1.4.2.1 Subtask - Measure atom count across a large unique-binary target/field corpus and prove option validation creates no atoms from caller or JSON-like bytes.
+    - [x] 1.4.2.2 Subtask - Compare all admission, request, native allocation, lifecycle, generation, selection, and future stream gauges before and after valid and invalid private construction.
+    - [x] 1.4.2.3 Subtask - Enumerate public exports, typespecs, protocols, and docs and confirm `stream/2`, `SimdJson.Stream`, raw cursor, and batch APIs remain absent in this phase.
+    - [x] 1.4.2.4 Subtask - Run focused option/error tests, every Milestone 1 and 2 regression suite, `mix format --check-formatted`, `mix spec.next`, and the reported `mix spec.check --base ...` command before marking Phase 1 complete.

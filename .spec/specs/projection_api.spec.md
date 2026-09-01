@@ -35,6 +35,11 @@ timing, diagnostic, or deferred operation crosses that boundary. This subject
 is now active after Phase 6 qualified the packaged public path, native
 sanitizer corpus, projection scheduler and lifecycle profiles, and frozen Jason
 comparison on the supported target.
+Milestone 3 Phase 1 reuses this exact validator for each `fields` projection and
+adds one internal target-path entry that permits only the streaming root path
+to be empty. The active `select/2` grammar remains non-empty and unchanged;
+shared-path interning, exact caller keys, UTF-8 and unsigned-index validation,
+invalid-projection behavior, and atom safety continue through the same code.
 
 ```spec-meta
 id: simd_json.projection_api

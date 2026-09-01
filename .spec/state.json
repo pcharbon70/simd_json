@@ -2846,7 +2846,7 @@
           "id": "simd_json.package",
           "kind": "package",
           "status": "active",
-          "summary": "Active native foundation and projection library with reproducible ABI v2 qualification and a fully specified Milestone 3 streaming plan.",
+          "summary": "Active native foundation and projection library with a private Milestone 3 stream preflight and no public streaming surface.",
           "surface": [
             ".tool-versions",
             "README.md",
@@ -3039,6 +3039,7 @@
           "summary": "Milestone 3 exposes one owner-bound lazy Enumerable that yields projected rows from bounded native batches.",
           "surface": [
             "lib/simd_json.ex",
+            "lib/simd_json/stream_options.ex",
             "lib/simd_json/stream.ex",
             "lib/simd_json/error.ex",
             "test/**/*stream*",

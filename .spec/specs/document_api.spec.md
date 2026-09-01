@@ -57,6 +57,12 @@ package and sanitizer-instrumented NIF, records formal scheduler/lifecycle and
 frozen Jason evidence, and activates the three projection subjects. The
 Milestone 1 open/close/error claims and verification command remain green and
 no additional root operation is introduced.
+Milestone 3 Phase 1 additively reserves `:batch_too_large` and optional checked
+`array_index` metadata in `SimdJson.Error`. Existing open, close, and select
+errors retain their reason, message, offset, code, and path behavior and now
+default to `array_index: nil`; inspection renders only a bounded valid index.
+The root module still exports only `open/1`, `close/1`, and `select/2`, and no
+stream, Enumerable, cursor, batch, or stream type is public in this phase.
 
 ```spec-meta
 id: simd_json.document_api

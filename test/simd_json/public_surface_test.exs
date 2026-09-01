@@ -4,6 +4,7 @@ defmodule SimdJson.PublicSurfaceTest do
   alias SimdJson.Document
   alias SimdJson.Error
   alias SimdJson.Projection
+  alias SimdJson.StreamOptions
 
   @root_functions [close: 1, open: 1, select: 2]
   @struct_functions [__struct__: 0, __struct__: 1]
@@ -52,6 +53,7 @@ defmodule SimdJson.PublicSurfaceTest do
     projection_functions = Projection.__info__(:functions)
 
     assert {:validate, 1} in projection_functions
+    assert {:validate_target_path, 1} in projection_functions
     assert {:path_for_output_slot, 2} in projection_functions
     assert {:preflight_for_test, 2} in projection_functions
     assert {:snapshot_for_test, 1} in projection_functions
@@ -70,6 +72,30 @@ defmodule SimdJson.PublicSurfaceTest do
 
     refute documented?(Projection)
     refute Code.ensure_loaded?(SimdJson.CompiledProjection)
+  end
+
+  # covers: simd_json.streaming_api.milestone_scope simd_json.streaming_api.lazy_construction simd_json.streaming_api.opaque_stream
+  test "keeps stream preflight internal without publishing a stream surface" do
+    stream_option_functions = StreamOptions.__info__(:functions)
+
+    assert stream_option_functions == [new: 2, snapshot_for_test: 1]
+    refute documented?(StreamOptions)
+    refute {:stream, 2} in SimdJson.__info__(:functions)
+    refute Code.ensure_loaded?(SimdJson.Stream)
+    refute Code.ensure_loaded?(SimdJson.Cursor)
+
+    for function <- [
+          :__struct__,
+          :cursor,
+          :deserialize,
+          :next,
+          :resource,
+          :serialize,
+          :stream,
+          :stream_batches
+        ] do
+      refute Enum.any?(stream_option_functions, fn {name, _arity} -> name == function end)
+    end
   end
 
   # covers: simd_json.document_api.milestone_scope simd_json.document_api.no_future_surface simd_json.native_execution.preproduction_boundary simd_json.projection_api.milestone_scope

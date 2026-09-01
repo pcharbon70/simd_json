@@ -12,6 +12,14 @@ cursor, at most one batch is active and one is being consumed, early halt does
 not scan the remainder, and every terminal path releases the retained source
 graph without claiming Milestone 4's production worker pool.
 
+Phase 1 implements the pre-admission side of lazy setup. An undocumented opaque
+term captures the constructing PID and retains a binary or genuine document
+plus completely normalized options without parsing JSON, reserving a document,
+creating a request, or changing native state. Test-only setup and batch
+admission counters remain zero, and document owner/lifecycle failures are
+deferred to future reduction. No execution or cleanup graph exists yet, so the
+complete bootstrap exception remains in force.
+
 ```spec-meta
 id: simd_json.stream_execution
 kind: subsystem

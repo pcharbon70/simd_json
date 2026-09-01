@@ -59,6 +59,12 @@ dropped result/document GC, cleanup-handoff retry, and application-generation
 cycles. Every batch restores the full exposed document and projection graph to
 baseline; standalone sanitizer accounting continues to own parser, node, and
 key-byte detail.
+Milestone 3 Phase 1 uses the existing bounded registered-resource check only to
+classify a genuine document for private stream preflight. It deliberately
+defers owner, closed, and one-shot failures until future reduction, retains the
+opaque document term without reserving it, and proves fresh document lifecycle,
+projection state, generation, admissions, coordinator state, and native gauges
+do not change. No stream cursor or parent-retention graph exists yet.
 
 ```spec-meta
 id: simd_json.document_resource

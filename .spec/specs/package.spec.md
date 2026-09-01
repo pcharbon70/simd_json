@@ -36,15 +36,18 @@ operations/acceptance records. The active subjects bind their complete claims
 to executed commands on the qualified target.
 Milestone 3 is defined by three accepted streaming ADRs, three planned subjects
 with complete bootstrap exceptions, and a six-phase batched-array-streaming
-implementation plan. Those documents specify future `stream/2`, private cursor,
-bounded-batch, and lifecycle behavior but do not change the currently packaged
-or exported Milestone 2 runtime surface.
+implementation plan. Phase 1 now packages an undocumented opaque stream-option
+normalizer, reuses the projection validator for target and field paths, and
+extends the shared error representation with a reserved batch reason and
+optional redacted array index. The root module still exports only the active
+Milestone 1 and 2 operations; no `stream/2`, Enumerable, cursor, batch, native
+ABI v3, or stream resource surface exists yet.
 
 ```spec-meta
 id: simd_json.package
 kind: package
 status: active
-summary: Active native foundation and projection library with reproducible ABI v2 qualification and a fully specified Milestone 3 streaming plan.
+summary: Active native foundation and projection library with a private Milestone 3 stream preflight and no public streaming surface.
 surface:
   - .tool-versions
   - README.md

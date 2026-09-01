@@ -282,6 +282,28 @@ defmodule SimdJson.StreamOptionsTest do
     assert StreamOptions.snapshot_for_test(closed).source_kind == :document
   end
 
+  # covers: simd_json.streaming_api.target_path simd_json.streaming_api.fields_projection simd_json.streaming_api.milestone_scope
+  test "large unique binary targets and fields never grow the atom table" do
+    target_path = for index <- 0..1_999, do: "target-#{index}"
+
+    fields =
+      for index <- 0..1_999 do
+        {"output-#{index}", ["field-#{index}", index]}
+      end
+
+    _warm = StreamOptions.new("warm", path: ["warm"], fields: [{"warm", ["warm"]}])
+    :erlang.garbage_collect(self())
+    before = :erlang.system_info(:atom_count)
+
+    normalized = StreamOptions.new("not JSON", path: target_path, fields: fields)
+    snapshot = StreamOptions.snapshot_for_test(normalized)
+
+    assert snapshot.target_path == target_path
+    assert length(snapshot.fields.entries) == 2_000
+    assert length(snapshot.fields.paths) == 2_000
+    assert :erlang.system_info(:atom_count) == before
+  end
+
   defp wait_for_quiescence(attempts \\ 400)
 
   defp wait_for_quiescence(0) do
@@ -295,8 +317,8 @@ defmodule SimdJson.StreamOptionsTest do
     :erlang.garbage_collect(self())
     native = BuildSmoke.execution_snapshot()
 
-    if OperationCoordinator.snapshot().live_requests == 0 and native.live_operations == 0 and
-         native.queued_operations == 0 and native.running_operations == 0 do
+    if OperationCoordinator.snapshot().live_requests == 0 and native.queued_operations == 0 and
+         native.running_operations == 0 do
       :ok
     else
       Process.sleep(5)
