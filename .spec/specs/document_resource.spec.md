@@ -65,6 +65,12 @@ defers owner, closed, and one-shot failures until future reduction, retains the
 opaque document term without reserving it, and proves fresh document lifecycle,
 projection state, generation, admissions, coordinator state, and native gauges
 do not change. No stream cursor or parent-retention graph exists yet.
+Milestone 3 Phase 2 registers a private stream cursor resource that keeps the
+genuine document resource before any future native dereference. Its rollback
+and destructor destroy cursor-owned plan and target state before releasing the
+parent. Genuine BEAM-resource tests and standalone Zig accounting prove
+retain/release symmetry; no public stream operation or target traversal exists
+yet.
 
 ```spec-meta
 id: simd_json.document_resource

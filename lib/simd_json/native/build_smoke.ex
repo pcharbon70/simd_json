@@ -9,6 +9,8 @@ defmodule SimdJson.Native.BuildSmoke do
   @test_only_nifs [
     :document_resource_registration_smoke,
     :document_resource_fixture,
+    :stream_cursor_resource_fixture,
+    :stream_cursor_resource_close,
     :projection_operation_inject_failure,
     :operation_configure_pause,
     :operation_release_pause,
@@ -52,9 +54,15 @@ defmodule SimdJson.Native.BuildSmoke do
       optimize: {:env, :safe},
       extra_modules: [
         document_resource: {"./native/zig/document_resource.zig", []},
-        projection_plan: {"./native/zig/projection_plan.zig", []}
+        projection_plan: {"./native/zig/projection_plan.zig", []},
+        stream_cursor: {"./native/zig/stream_cursor.zig", []}
       ],
-      resources: [:DocumentResource, :OperationResource, :JoinCopiedTerm],
+      resources: [
+        :DocumentResource,
+        :StreamCursorResource,
+        :OperationResource,
+        :JoinCopiedTerm
+      ],
       callbacks: [
         on_load: :resource_on_load,
         on_upgrade: :resource_on_upgrade,
@@ -83,6 +91,8 @@ defmodule SimdJson.Native.BuildSmoke do
         execution_resume: [],
         document_resource_registration_smoke: [],
         document_resource_fixture: [],
+        stream_cursor_resource_fixture: [],
+        stream_cursor_resource_close: [],
         projection_operation_inject_failure: [],
         operation_configure_pause: [],
         operation_release_pause: [],
@@ -102,6 +112,7 @@ defmodule SimdJson.Native.BuildSmoke do
           {"../../../native/src/build_smoke.cpp", @cxx_flags},
           {"../../../native/src/simd_json_abi.cpp", @cxx_flags},
           {"../../../native/src/simd_json_projection.cpp", @cxx_flags},
+          {"../../../native/src/simd_json_stream_cursor.cpp", @cxx_flags},
           {"../../../native/vendor/simdjson/simdjson.cpp", @cxx_flags}
         ],
         link_lib: @sanitizer_libraries,
@@ -115,9 +126,15 @@ defmodule SimdJson.Native.BuildSmoke do
       ignore: @test_only_nifs,
       extra_modules: [
         document_resource: {"./native/zig/document_resource.zig", []},
-        projection_plan: {"./native/zig/projection_plan.zig", []}
+        projection_plan: {"./native/zig/projection_plan.zig", []},
+        stream_cursor: {"./native/zig/stream_cursor.zig", []}
       ],
-      resources: [:DocumentResource, :OperationResource, :JoinCopiedTerm],
+      resources: [
+        :DocumentResource,
+        :StreamCursorResource,
+        :OperationResource,
+        :JoinCopiedTerm
+      ],
       callbacks: [
         on_load: :resource_on_load,
         on_upgrade: :resource_on_upgrade,
@@ -152,6 +169,7 @@ defmodule SimdJson.Native.BuildSmoke do
           {"../../../native/src/build_smoke.cpp", @cxx_flags},
           {"../../../native/src/simd_json_abi.cpp", @cxx_flags},
           {"../../../native/src/simd_json_projection.cpp", @cxx_flags},
+          {"../../../native/src/simd_json_stream_cursor.cpp", @cxx_flags},
           {"../../../native/vendor/simdjson/simdjson.cpp", @cxx_flags}
         ],
         link_lib: @sanitizer_libraries,

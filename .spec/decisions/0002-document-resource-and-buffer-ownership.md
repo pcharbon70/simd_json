@@ -158,6 +158,12 @@ permitting document reuse after cursor access.
 
 ## Consequences
 
+Milestone 3 Phase 2 implementation checkpoint: the private stream cursor
+resource keeps a genuine parent document before any borrowed native document
+can be used, and destroys cursor/plan state before releasing that parent.
+Rollback, non-owner rejection, genuine resource retention, and ordinary/
+sanitizer lifetime accounting are covered by executable tests.
+
 The input remains valid for the complete parser lifetime and zero-copy ambiguity cannot cause an over-read. Explicit close releases large native allocations deterministically, while garbage collection safely handles abandoned documents.
 
 The initial implementation always pays one input copy and cannot share a document across processes. That cost is accepted because it is bounded by input size and still avoids full BEAM-tree materialization in later milestones.

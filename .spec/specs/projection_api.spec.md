@@ -40,6 +40,10 @@ adds one internal target-path entry that permits only the streaming root path
 to be empty. The active `select/2` grammar remains non-empty and unchanged;
 shared-path interning, exact caller keys, UTF-8 and unsigned-index validation,
 invalid-projection behavior, and atom safety continue through the same code.
+Milestone 3 Phase 2 transfers a separately compiled copy of that normalized
+projection into a private cursor during native conformance only. The active
+`select/2` grammar, keys, values, errors, exports, and execution remain
+unchanged, and no compiled-plan or cursor API is exposed.
 
 ```spec-meta
 id: simd_json.projection_api

@@ -20,12 +20,15 @@ extern "C" {
  * SIMD_JSON_REQUIRED_PADDING initialized bytes must follow the logical input.
  */
 
-#define SIMD_JSON_ABI_VERSION UINT32_C(2)
+#define SIMD_JSON_ABI_VERSION UINT32_C(3)
 #define SIMD_JSON_REQUIRED_PADDING UINT64_C(64)
 #define SIMD_JSON_MAX_DEPTH UINT64_C(1024)
 #define SIMD_JSON_BYTE_OFFSET_UNAVAILABLE UINT64_MAX
 #define SIMD_JSON_NATIVE_CODE_UNAVAILABLE INT32_MIN
 #define SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE UINT32_MAX
+#define SIMD_JSON_ARRAY_INDEX_UNAVAILABLE UINT64_MAX
+#define SIMD_JSON_STREAM_MAX_BATCH_SIZE UINT64_C(10000)
+#define SIMD_JSON_STREAM_MAX_BATCH_BYTES UINT64_C(67108864)
 
 typedef int32_t simd_json_status_code;
 
@@ -42,10 +45,13 @@ typedef int32_t simd_json_status_code;
 #define SIMD_JSON_STATUS_NUMBER_OUT_OF_RANGE INT32_C(10)
 #define SIMD_JSON_STATUS_CURSOR_CONSUMED INT32_C(11)
 #define SIMD_JSON_STATUS_CANCELLED INT32_C(12)
+#define SIMD_JSON_STATUS_BATCH_TOO_LARGE INT32_C(13)
+#define SIMD_JSON_STATUS_CURSOR_STATE INT32_C(14)
 
 typedef struct simd_json_parser simd_json_parser;
 typedef struct simd_json_document simd_json_document;
 typedef struct simd_json_projection_plan simd_json_projection_plan;
+typedef struct simd_json_stream_cursor simd_json_stream_cursor;
 
 typedef struct simd_json_status {
   simd_json_status_code code;
@@ -130,6 +136,93 @@ typedef struct simd_json_result_slot {
   simd_json_result_value value;
 } simd_json_result_slot;
 
+/*
+ * A stream target reuses the projection segment tags and byte-arena ranges.
+ * Root arrays use a NULL/zero segment pair and a NULL/zero key-byte pair.
+ * Non-root descriptors and every referenced byte range remain caller-owned
+ * only for the duration of cursor construction.
+ */
+typedef struct simd_json_stream_target {
+  const simd_json_projection_segment *segments;
+  uint64_t segment_count;
+  const uint8_t *key_bytes;
+  uint64_t key_bytes_length;
+} simd_json_stream_target;
+
+/*
+ * Cursor construction consumes `projection_plan` only when ownership has
+ * transferred to a cursor or to constructor rollback. The field is cleared at
+ * that transfer point. `parent_generation` must be non-zero and `reserved`
+ * must be zero. Public option maxima are frozen at this ABI boundary.
+ */
+typedef struct simd_json_stream_cursor_config {
+  simd_json_projection_plan *projection_plan;
+  uint64_t row_limit;
+  uint64_t encoded_byte_limit;
+  uint64_t parent_generation;
+  uint64_t reserved;
+} simd_json_stream_cursor_config;
+
+typedef uint32_t (*simd_json_cancellation_check)(void *context);
+
+typedef struct simd_json_cancellation_probe {
+  void *context;
+  simd_json_cancellation_check check;
+} simd_json_cancellation_probe;
+
+typedef struct simd_json_stream_row {
+  uint64_t array_index;
+  uint64_t slot_offset;
+  uint64_t slot_count;
+  uint64_t encoded_bytes;
+} simd_json_stream_row;
+
+/*
+ * Batch storage is caller-owned. Phase 3 will populate rows, typed slots, and
+ * copied bytes transactionally. Counts, encoded bytes, and done are cleared on
+ * entry; `reserved` must always be zero.
+ */
+typedef struct simd_json_stream_batch_storage {
+  simd_json_stream_row *rows;
+  uint64_t row_capacity;
+  simd_json_result_slot *slots;
+  uint64_t slot_capacity;
+  uint8_t *copied_bytes;
+  uint64_t copied_byte_capacity;
+  uint64_t produced_rows;
+  uint64_t produced_slots;
+  uint64_t encoded_bytes;
+  uint32_t done;
+  uint32_t reserved;
+} simd_json_stream_batch_storage;
+
+/*
+ * Stream status preserves the projection status prefix and adds one checked
+ * source-array index. The unavailable sentinel is used for target, document,
+ * cursor-state, and other failures that are not row-specific.
+ */
+typedef struct simd_json_stream_status {
+  simd_json_status_code code;
+  int32_t native_code;
+  uint64_t byte_offset;
+  uint32_t output_slot;
+  uint32_t reserved;
+  uint64_t array_index;
+} simd_json_stream_status;
+
+typedef uint32_t simd_json_stream_done;
+
+#define SIMD_JSON_STREAM_NOT_DONE UINT32_C(0)
+#define SIMD_JSON_STREAM_DONE UINT32_C(1)
+
+typedef uint32_t simd_json_stream_cursor_state;
+
+#define SIMD_JSON_STREAM_CURSOR_READY UINT32_C(0)
+#define SIMD_JSON_STREAM_CURSOR_RUNNING UINT32_C(1)
+#define SIMD_JSON_STREAM_CURSOR_DONE UINT32_C(2)
+#define SIMD_JSON_STREAM_CURSOR_CANCELLED UINT32_C(3)
+#define SIMD_JSON_STREAM_CURSOR_CLOSED UINT32_C(4)
+
 #if defined(_WIN32) && defined(SIMD_JSON_ABI_BUILD_SHARED)
 #define SIMD_JSON_ABI_EXPORT __declspec(dllexport)
 #elif defined(SIMD_JSON_ABI_BUILD_SHARED) && defined(__GNUC__)
@@ -202,6 +295,32 @@ SIMD_JSON_ABI_EXPORT simd_json_projection_status simd_json_projection_execute(
     const simd_json_projection_plan *plan,
     simd_json_result_slot *result_slots,
     uint64_t result_slot_count) SIMD_JSON_ABI_NOEXCEPT;
+
+/*
+ * Constructs an opaque parent-borrowing cursor owner without locating or
+ * advancing the target. On transfer, `config->projection_plan` is cleared and
+ * exactly one cursor or rollback path owns it. `out_cursor` is always cleared
+ * before validation.
+ */
+SIMD_JSON_ABI_EXPORT simd_json_stream_status simd_json_stream_cursor_create(
+    simd_json_document *document,
+    const simd_json_stream_target *target,
+    simd_json_stream_cursor_config *config,
+    simd_json_stream_cursor **out_cursor) SIMD_JSON_ABI_NOEXCEPT;
+
+/* NULL is accepted. The owning layer must prevent destruction while running. */
+SIMD_JSON_ABI_EXPORT void simd_json_stream_cursor_destroy(
+    simd_json_stream_cursor *cursor) SIMD_JSON_ABI_NOEXCEPT;
+
+/*
+ * Reserved ABI v3 batch boundary. Phase 2 validates cursor state,
+ * cancellation, and bounded caller storage but intentionally performs no
+ * target or row traversal. Phase 3 will populate the frozen storage layout.
+ */
+SIMD_JSON_ABI_EXPORT simd_json_stream_status simd_json_stream_next_batch(
+    simd_json_stream_cursor *cursor,
+    const simd_json_cancellation_probe *cancellation,
+    simd_json_stream_batch_storage *batch) SIMD_JSON_ABI_NOEXCEPT;
 
 #undef SIMD_JSON_ABI_EXPORT
 #undef SIMD_JSON_ABI_NOEXCEPT
@@ -284,6 +403,88 @@ SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_result_slot, value) == 8,
                             "result slot value layout changed");
 SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_result_slot) == 24,
                             "result slot layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(SIMD_JSON_ABI_VERSION == UINT32_C(3),
+                            "private ABI version changed");
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(void *) == 8,
+                            "ABI v3 requires 64-bit data pointers");
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_cancellation_check) == 8,
+                            "ABI v3 requires 64-bit function pointers");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_target, segments) == 0,
+                            "stream target segment pointer layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_target, segment_count) == 8,
+                            "stream target segment count layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_target, key_bytes) == 16,
+                            "stream target key pointer layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_target, key_bytes_length) == 24,
+                            "stream target key length layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_stream_target) == 32,
+                            "stream target layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_cursor_config, projection_plan) == 0,
+                            "stream cursor plan layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_cursor_config, row_limit) == 8,
+                            "stream cursor row limit layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_cursor_config, encoded_byte_limit) == 16,
+                            "stream cursor byte limit layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_cursor_config, parent_generation) == 24,
+                            "stream cursor generation layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_cursor_config, reserved) == 32,
+                            "stream cursor reserved layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_stream_cursor_config) == 40,
+                            "stream cursor config layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_cancellation_probe, context) == 0,
+                            "cancellation context layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_cancellation_probe, check) == 8,
+                            "cancellation callback layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_cancellation_probe) == 16,
+                            "cancellation probe layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_row, array_index) == 0,
+                            "stream row index layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_row, slot_offset) == 8,
+                            "stream row slot offset layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_row, slot_count) == 16,
+                            "stream row slot count layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_row, encoded_bytes) == 24,
+                            "stream row byte layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_stream_row) == 32,
+                            "stream row layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_batch_storage, rows) == 0,
+                            "stream batch rows layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_batch_storage, row_capacity) == 8,
+                            "stream batch row capacity layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_batch_storage, slots) == 16,
+                            "stream batch slots layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_batch_storage, slot_capacity) == 24,
+                            "stream batch slot capacity layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_batch_storage, copied_bytes) == 32,
+                            "stream batch byte pointer layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_batch_storage, copied_byte_capacity) == 40,
+                            "stream batch byte capacity layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_batch_storage, produced_rows) == 48,
+                            "stream batch produced rows layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_batch_storage, produced_slots) == 56,
+                            "stream batch produced slots layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_batch_storage, encoded_bytes) == 64,
+                            "stream batch encoded bytes layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_batch_storage, done) == 72,
+                            "stream batch done layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_batch_storage, reserved) == 76,
+                            "stream batch reserved layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_stream_batch_storage) == 80,
+                            "stream batch storage layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_status, code) == 0,
+                            "stream status code layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_status, native_code) == 4,
+                            "stream native code layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_status, byte_offset) == 8,
+                            "stream byte offset layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_status, output_slot) == 16,
+                            "stream output slot layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_status, reserved) == 20,
+                            "stream status reserved layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_status, array_index) == 24,
+                            "stream array index layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_stream_status) == 32,
+                            "stream status layout changed");
 
 #undef SIMD_JSON_ABI_STATIC_ASSERT
 

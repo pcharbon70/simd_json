@@ -20,6 +20,11 @@ admission counters remain zero, and document owner/lifecycle failures are
 deferred to future reduction. No execution or cleanup graph exists yet, so the
 complete bootstrap exception remains in force.
 
+Phase 2 establishes only the cursor/parent ownership primitive needed by later
+setup. It does not admit a stream request, reserve a document, traverse a
+target, start a threaded batch, construct a public Enumerable, or create a
+cleanup coordinator graph.
+
 ```spec-meta
 id: simd_json.stream_execution
 kind: subsystem

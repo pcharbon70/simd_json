@@ -21,6 +21,10 @@ reserves `:batch_too_large` and optional checked `array_index`. `stream/2`,
 remain unimplemented, so this subject stays planned under its complete
 bootstrap exception.
 
+Phase 2 adds no public surface. It registers a private cursor resource and ABI
+v3 ownership machinery that remain unreachable from `SimdJson`, so `stream/2`,
+Enumerable reduction, row delivery, and runtime errors are still deferred.
+
 ```spec-meta
 id: simd_json.streaming_api
 kind: api

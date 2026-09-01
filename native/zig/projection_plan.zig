@@ -1,6 +1,7 @@
 const std = @import("std");
 
-/// Operation-owned serialization and lifetime layer for private ABI v2.
+/// Operation-owned serialization and lifetime layer for the preserved
+/// projection portion of private ABI v3.
 /// Caller output keys deliberately do not appear in these types: Phase 1 keeps
 /// those BEAM values above this boundary and supplies only numeric slot ids.
 pub fn Implementation(comptime c: type) type {
@@ -517,8 +518,8 @@ pub fn Implementation(comptime c: type) type {
         } else struct {};
 
         comptime {
-            if (c.SIMD_JSON_ABI_VERSION != 2)
-                @compileError("projection ownership requires private ABI version 2");
+            if (c.SIMD_JSON_ABI_VERSION != 3)
+                @compileError("projection ownership requires private ABI version 3");
             if (c.SIMD_JSON_MAX_DEPTH != 1024)
                 @compileError("projection traversal depth bound changed");
             if (c.SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE != std.math.maxInt(u32) or

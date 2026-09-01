@@ -85,6 +85,10 @@ at zero and leaves correlated requests, coordinator state, generation, worker
 entries, native documents, projection plans, slots, and retained graphs
 unchanged for valid and invalid inputs. No stream operation kind, setup worker,
 batch worker, cursor, parser work, or scheduler claim exists in this phase.
+Milestone 3 Phase 2 registers only the private fixed-size cursor resource and
+its genuine parent-retention graph. Cursor construction/state conformance is
+native and bounded; no stream operation kind, threaded setup/batch worker,
+coordinator request, scheduler claim, or public entrypoint is added.
 
 ```spec-meta
 id: simd_json.native_execution

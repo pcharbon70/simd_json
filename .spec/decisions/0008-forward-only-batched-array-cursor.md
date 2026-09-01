@@ -150,6 +150,12 @@ addresses, or public diagnostic entrypoints.
 
 ## Consequences
 
+Milestone 3 Phase 2 implementation checkpoint: private ABI v3 layouts, cursor
+and plan ownership, genuine parent-resource retention, stable state validation,
+symbol versioning, and ordinary/sanitizer C and Zig conformance are implemented.
+The reserved batch entry performs no array traversal or row production; those
+parts of this decision remain assigned to later phases.
+
 The native plan and array position survive across batches, so boundary overhead
 scales with batches rather than rows or fields. Complete consumption retains
 the existing full-source validation guarantee, while early termination avoids

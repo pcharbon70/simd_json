@@ -62,6 +62,14 @@ executes the real public projection corpus under ASan/UBSan. All new fixtures,
 policies, scripts, tests, plans, specifications, operations, and acceptance
 records are fingerprinted inputs, so ABI v2 activation cannot reuse earlier
 evidence.
+Milestone 3 Phase 2 advances the canonical constant to ABI version 3 while
+preserving the four ABI v1 and three ABI v2 entries, layouts, versions, and
+behavior. Three versioned ABI v3 symbols add cursor construction, null-safe
+destruction, and a reserved bounded batch call. Fixed stream layouts, C++/Zig
+cursor owners, independent C/Zig ordinary and sanitizer harnesses, package
+inventory, and release checks are pinned qualification inputs. The NIF still
+exports only `nif_init`, and neither traversal nor a public streaming surface is
+introduced.
 
 ```spec-meta
 id: simd_json.native_build_and_abi
