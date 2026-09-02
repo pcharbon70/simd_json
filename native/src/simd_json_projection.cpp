@@ -1426,6 +1426,27 @@ simd_json_projection_status projection_execute_value(
   }
 }
 
+simd_json_projection_status projection_validate_value(
+    simd_json_document *document,
+    simdjson::ondemand::value &value,
+    uint64_t depth) noexcept {
+  simdjson::ondemand::document *native_document = document_value(document);
+  const uint8_t *data = document_data(document);
+  if (native_document == nullptr || data == nullptr) {
+    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+  try {
+    std::vector<uint8_t> no_edges;
+    traversal_counters counters;
+    traversal_context context{
+        document, *native_document, data, document_logical_length(document),
+        nullptr, no_edges, make_status(SIMD_JSON_STATUS_OK), counters};
+    return validate_unselected_value(value, context, depth);
+  } catch (...) {
+    return status_from_current_exception();
+  }
+}
+
 }  // namespace simd_json_native
 
 namespace {

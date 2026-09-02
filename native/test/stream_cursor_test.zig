@@ -23,6 +23,14 @@ const NativeDocument = struct {
     }
 
     fn initSource(source: []const u8) !NativeDocument {
+        return initSourceMode(source, false);
+    }
+
+    fn initUnvalidated(source: []const u8) !NativeDocument {
+        return initSourceMode(source, true);
+    }
+
+    fn initSourceMode(source: []const u8, unvalidated: bool) !NativeDocument {
         const capacity = try std.math.add(usize, source.len, @intCast(c.SIMD_JSON_REQUIRED_PADDING));
         const storage = try std.testing.allocator.alloc(u8, capacity);
         errdefer std.testing.allocator.free(storage);
@@ -33,7 +41,11 @@ const NativeDocument = struct {
             return error.ParserCreate;
         errdefer c.simd_json_parser_destroy(parser);
         var handle: ?*c.simd_json_document = null;
-        if (c.simd_json_document_open(parser, storage.ptr, source.len, capacity, &handle).code != c.SIMD_JSON_STATUS_OK)
+        const status = if (unvalidated)
+            c.simd_json_test_document_open_unvalidated(parser, storage.ptr, source.len, capacity, &handle)
+        else
+            c.simd_json_document_open(parser, storage.ptr, source.len, capacity, &handle);
+        if (status.code != c.SIMD_JSON_STATUS_OK)
             return error.DocumentOpen;
         return .{ .storage = storage, .parser = parser, .handle = handle };
     }
@@ -251,4 +263,28 @@ test "an oversized row fails atomically with its source index" {
     try std.testing.expectEqual(@as(usize, 0), batch.produced_rows);
     try std.testing.expectEqual(@as(usize, 0), batch.produced_slots);
     try std.testing.expectEqual(@as(u64, 0), batch.encoded_bytes);
+}
+
+test "natural completion rejects malformed content after a nested target" {
+    var native_document = try NativeDocument.initUnvalidated(
+        "{\"rows\":[{\"value\":1}],\"tail\":[1,]}",
+    );
+    defer native_document.deinit();
+    var plan = try makePlan();
+    defer plan.deinit();
+    var cursor = try stream.OwnedCursor.init(
+        std.testing.allocator,
+        native_document.handle,
+        &plan,
+        .{ .segments = &.{.{ .object_key = "rows" }} },
+        .{ .rows = 2, .encoded_bytes = 1024 },
+        43,
+    );
+    defer cursor.deinit();
+    var batch = try stream.OwnedBatch.init(std.testing.allocator, &cursor);
+    defer batch.deinit();
+    const failure = batch.next(&cursor).?;
+    try std.testing.expectEqual(stream.FailureCode.invalid_json, failure.code);
+    try std.testing.expectEqual(@as(usize, 0), batch.produced_rows);
+    try std.testing.expect(!batch.done);
 }

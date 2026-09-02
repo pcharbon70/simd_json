@@ -29,6 +29,10 @@ simd_json_projection_status projection_execute_value(
     simdjson::ondemand::value &value,
     simd_json_result_slot *result_slots,
     uint64_t result_slot_count) noexcept;
+simd_json_projection_status projection_validate_value(
+    simd_json_document *document,
+    simdjson::ondemand::value &value,
+    uint64_t depth) noexcept;
 
 }  // namespace simd_json_native
 

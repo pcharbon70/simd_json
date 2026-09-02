@@ -13,7 +13,9 @@
 #include <memory>
 #include <new>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #ifdef SIMD_JSON_TESTING
@@ -276,6 +278,21 @@ simd_json_stream_status status_from_simdjson(
 
 }  // namespace
 
+struct stream_object_frame {
+  simdjson::ondemand::object_iterator position;
+  simdjson::ondemand::object_iterator end;
+  uint64_t depth;
+};
+
+struct stream_array_frame {
+  simdjson::ondemand::array_iterator position;
+  simdjson::ondemand::array_iterator end;
+  uint64_t depth;
+};
+
+using stream_parent_frame =
+    std::variant<stream_object_frame, stream_array_frame>;
+
 struct simd_json_stream_cursor {
   simd_json_document *document = nullptr;
   simd_json_projection_plan *projection_plan = nullptr;
@@ -297,6 +314,7 @@ struct simd_json_stream_cursor {
   std::vector<simd_json_result_slot> pending_slots;
   uint64_t pending_row_index = 0;
   bool pending_row = false;
+  std::vector<stream_parent_frame> parent_frames;
 
   simd_json_stream_cursor() { account_cursor_created(); }
 
@@ -325,43 +343,80 @@ struct simd_json_stream_cursor {
 namespace {
 
 simd_json_stream_status object_segment(
+    simd_json_document *document,
     simdjson::ondemand::object &object,
     const simd_json_projection_segment &segment,
     const std::vector<uint8_t> &key_bytes,
-    simdjson::ondemand::value &out) {
+    simdjson::ondemand::value &out,
+    std::vector<stream_parent_frame> &frames) {
   const std::string_view wanted{
       reinterpret_cast<const char *>(key_bytes.data() + segment.key_offset),
       static_cast<size_t>(segment.key_length)};
-  for (auto field_result : object) {
+  simdjson::ondemand::object_iterator position;
+  simdjson::ondemand::object_iterator end;
+  simdjson::error_code error = object.begin().get(position);
+  if (error != simdjson::SUCCESS) return status_from_simdjson(error);
+  error = object.end().get(end);
+  if (error != simdjson::SUCCESS) return status_from_simdjson(error);
+  while (position != end) {
+    auto field_result = *position;
     simdjson::ondemand::field field;
-    simdjson::error_code error = std::move(field_result).get(field);
+    error = std::move(field_result).get(field);
     if (error != simdjson::SUCCESS) return status_from_simdjson(error);
     std::string_view key;
     error = field.unescaped_key().get(key);
     if (error != simdjson::SUCCESS) return status_from_simdjson(error);
     if (key == wanted) {
       out = field.value();
+      frames.emplace_back(stream_object_frame{
+          position, end, static_cast<uint64_t>(frames.size()) + 1});
       return make_status(SIMD_JSON_STATUS_OK);
     }
+    simdjson::ondemand::value skipped = field.value();
+    const simd_json_projection_status validated =
+        simd_json_native::projection_validate_value(document, skipped, 1);
+    if (validated.code != SIMD_JSON_STATUS_OK) {
+      return make_status(validated.code, validated.native_code,
+                         validated.byte_offset, validated.output_slot);
+    }
+    ++position;
   }
   return make_status(SIMD_JSON_STATUS_MISSING_FIELD);
 }
 
 simd_json_stream_status array_segment(
+    simd_json_document *document,
     simdjson::ondemand::array &array,
     const simd_json_projection_segment &segment,
-    simdjson::ondemand::value &out) {
+    simdjson::ondemand::value &out,
+    std::vector<stream_parent_frame> &frames) {
   uint64_t index = 0;
-  for (auto child_result : array) {
+  simdjson::ondemand::array_iterator position;
+  simdjson::ondemand::array_iterator end;
+  simdjson::error_code error = array.begin().get(position);
+  if (error != simdjson::SUCCESS) return status_from_simdjson(error);
+  error = array.end().get(end);
+  if (error != simdjson::SUCCESS) return status_from_simdjson(error);
+  while (position != end) {
+    auto child_result = *position;
     simdjson::ondemand::value child;
-    simdjson::error_code error = child_result.get(child);
+    error = child_result.get(child);
     if (error != simdjson::SUCCESS) return status_from_simdjson(error);
     if (index == segment.array_index) {
       out = child;
+      frames.emplace_back(stream_array_frame{
+          position, end, static_cast<uint64_t>(frames.size()) + 1});
       return make_status(SIMD_JSON_STATUS_OK);
+    }
+    const simd_json_projection_status validated =
+        simd_json_native::projection_validate_value(document, child, 1);
+    if (validated.code != SIMD_JSON_STATUS_OK) {
+      return make_status(validated.code, validated.native_code,
+                         validated.byte_offset, validated.output_slot);
     }
     if (index == UINT64_MAX) return make_status(SIMD_JSON_STATUS_INTERNAL_FAILURE);
     ++index;
+    ++position;
   }
   return make_status(SIMD_JSON_STATUS_INDEX_OUT_OF_BOUNDS);
 }
@@ -383,13 +438,17 @@ simd_json_stream_status locate_target(simd_json_stream_cursor &cursor) {
       error = document->get_object().get(object);
       if (error != simdjson::SUCCESS) return status_from_simdjson(error);
       simd_json_stream_status status =
-          object_segment(object, first, cursor.target_key_bytes, value);
+          object_segment(cursor.document, object, first,
+                         cursor.target_key_bytes, value,
+                         cursor.parent_frames);
       if (status.code != SIMD_JSON_STATUS_OK) return status;
     } else {
       simdjson::ondemand::array array;
       error = document->get_array().get(array);
       if (error != simdjson::SUCCESS) return status_from_simdjson(error);
-      simd_json_stream_status status = array_segment(array, first, value);
+      simd_json_stream_status status =
+          array_segment(cursor.document, array, first, value,
+                        cursor.parent_frames);
       if (status.code != SIMD_JSON_STATUS_OK) return status;
     }
 
@@ -401,12 +460,15 @@ simd_json_stream_status locate_target(simd_json_stream_cursor &cursor) {
         simdjson::ondemand::object object;
         error = value.get_object().get(object);
         if (error != simdjson::SUCCESS) return status_from_simdjson(error);
-        status = object_segment(object, segment, cursor.target_key_bytes, next);
+        status = object_segment(cursor.document, object, segment,
+                                cursor.target_key_bytes, next,
+                                cursor.parent_frames);
       } else {
         simdjson::ondemand::array array;
         error = value.get_array().get(array);
         if (error != simdjson::SUCCESS) return status_from_simdjson(error);
-        status = array_segment(array, segment, next);
+        status = array_segment(cursor.document, array, segment, next,
+                               cursor.parent_frames);
       }
       if (status.code != SIMD_JSON_STATUS_OK) return status;
       value = next;
@@ -543,6 +605,53 @@ simd_json_stream_status append_pending_row(
   batch.produced_slots += static_cast<uint64_t>(cursor.pending_slots.size());
   batch.encoded_bytes = next_encoded;
   return make_status(SIMD_JSON_STATUS_OK);
+}
+
+simd_json_stream_status validate_source_completion(
+    simd_json_stream_cursor &cursor) {
+  while (!cursor.parent_frames.empty()) {
+    stream_parent_frame &parent = cursor.parent_frames.back();
+    simd_json_stream_status status = std::visit(
+        [&](auto &frame) -> simd_json_stream_status {
+          ++frame.position;
+          while (frame.position != frame.end) {
+            simdjson::ondemand::value value;
+            if constexpr (std::is_same_v<std::decay_t<decltype(frame)>,
+                                         stream_object_frame>) {
+              simdjson::ondemand::field field;
+              simdjson::error_code error =
+                  std::move(*frame.position).get(field);
+              if (error != simdjson::SUCCESS) return status_from_simdjson(error);
+              std::string_view key;
+              error = field.unescaped_key().get(key);
+              if (error != simdjson::SUCCESS) return status_from_simdjson(error);
+              (void)key;
+              value = field.value();
+            } else {
+              simdjson::error_code error = (*frame.position).get(value);
+              if (error != simdjson::SUCCESS) return status_from_simdjson(error);
+            }
+            const simd_json_projection_status validated =
+                simd_json_native::projection_validate_value(
+                    cursor.document, value, frame.depth + 1);
+            if (validated.code != SIMD_JSON_STATUS_OK) {
+              return make_status(validated.code, validated.native_code,
+                                 validated.byte_offset,
+                                 validated.output_slot);
+            }
+            ++frame.position;
+          }
+          return make_status(SIMD_JSON_STATUS_OK);
+        },
+        parent);
+    if (status.code != SIMD_JSON_STATUS_OK) return status;
+    cursor.parent_frames.pop_back();
+  }
+  simdjson::ondemand::document *document =
+      simd_json_native::document_value(cursor.document);
+  if (document == nullptr) return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  return document->at_end() ? make_status(SIMD_JSON_STATUS_OK)
+                            : make_status(SIMD_JSON_STATUS_INVALID_JSON);
 }
 
 }  // namespace
@@ -684,6 +793,14 @@ extern "C" simd_json_stream_status simd_json_stream_next_batch(
         return cancelled_status;
       }
       if (!cursor->pending_row && cursor->target_position == cursor->target_end) {
+        const simd_json_stream_status completion =
+            validate_source_completion(*cursor);
+        if (completion.code != SIMD_JSON_STATUS_OK) {
+          clear_batch(*batch);
+          cursor->state.store(SIMD_JSON_STREAM_CURSOR_CANCELLED,
+                              std::memory_order_release);
+          return completion;
+        }
         batch->done = SIMD_JSON_STREAM_DONE;
         cursor->state.store(SIMD_JSON_STREAM_CURSOR_DONE,
                             std::memory_order_release);
@@ -720,6 +837,14 @@ extern "C" simd_json_stream_status simd_json_stream_next_batch(
       cursor->current_row_index.fetch_add(1, std::memory_order_acq_rel);
     }
     if (!cursor->pending_row && cursor->target_position == cursor->target_end) {
+      const simd_json_stream_status completion =
+          validate_source_completion(*cursor);
+      if (completion.code != SIMD_JSON_STATUS_OK) {
+        clear_batch(*batch);
+        cursor->state.store(SIMD_JSON_STREAM_CURSOR_CANCELLED,
+                            std::memory_order_release);
+        return completion;
+      }
       batch->done = SIMD_JSON_STREAM_DONE;
       cursor->state.store(SIMD_JSON_STREAM_CURSOR_DONE,
                           std::memory_order_release);
