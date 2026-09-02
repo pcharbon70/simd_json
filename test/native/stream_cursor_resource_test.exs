@@ -53,4 +53,43 @@ defmodule SimdJson.Native.StreamCursorResourceTest do
     assert BuildSmoke.document_projection_owner_state(document.__resource__) == :fresh
     assert SimdJson.close(document) == :ok
   end
+
+  # covers: simd_json.stream_execution.cursor_state_machine simd_json.stream_execution.single_in_flight_batch simd_json.stream_execution.no_prefetch
+  test "cursor demand admits one exact sequence and advances only after delivery" do
+    {:ok, document} = SimdJson.open(~s({"rows":[]}))
+    cursor = BuildSmoke.stream_cursor_resource_fixture(document.__resource__)
+
+    assert BuildSmoke.stream_cursor_demand_snapshot(cursor) == {:ready, 0}
+    assert BuildSmoke.stream_cursor_demand_reserve(cursor, 0)
+    assert BuildSmoke.stream_cursor_demand_snapshot(cursor) == {:running, 0}
+    refute BuildSmoke.stream_cursor_demand_reserve(cursor, 0)
+    refute BuildSmoke.stream_cursor_demand_reserve(cursor, 1)
+
+    assert BuildSmoke.stream_cursor_demand_complete(cursor, 0, false)
+    assert BuildSmoke.stream_cursor_demand_snapshot(cursor) == {:ready, 1}
+    refute BuildSmoke.stream_cursor_demand_reserve(cursor, 0)
+    assert BuildSmoke.stream_cursor_demand_reserve(cursor, 1)
+    assert BuildSmoke.stream_cursor_demand_complete(cursor, 1, true)
+    assert BuildSmoke.stream_cursor_demand_snapshot(cursor) == {:done, 2}
+    refute BuildSmoke.stream_cursor_demand_reserve(cursor, 2)
+
+    assert BuildSmoke.stream_cursor_resource_close(cursor)
+    assert SimdJson.close(document) == :ok
+  end
+
+  # covers: simd_json.stream_execution.early_halt_cleanup simd_json.stream_execution.cursor_state_machine
+  test "cancellation is monotonic and repeated halt is idempotent" do
+    {:ok, document} = SimdJson.open(~s({"rows":[]}))
+    cursor = BuildSmoke.stream_cursor_resource_fixture(document.__resource__)
+
+    assert BuildSmoke.stream_cursor_demand_reserve(cursor, 0)
+    assert BuildSmoke.stream_cursor_demand_cancel(cursor)
+    assert BuildSmoke.stream_cursor_demand_cancel(cursor)
+    assert BuildSmoke.stream_cursor_demand_snapshot(cursor) == {:cancelled, 0}
+    refute BuildSmoke.stream_cursor_demand_complete(cursor, 0, false)
+    refute BuildSmoke.stream_cursor_demand_reserve(cursor, 0)
+
+    assert BuildSmoke.stream_cursor_resource_close(cursor)
+    assert SimdJson.close(document) == :ok
+  end
 end

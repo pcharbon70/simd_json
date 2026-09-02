@@ -45,6 +45,47 @@ const StreamCursorControl = struct {
     parent: ?DocumentResource,
     owner: beam.pid,
     parent_generation: u64,
+    demand_state: std.atomic.Value(u8),
+    next_sequence: std.atomic.Value(u64),
+    stream_reservation: ?document_resource.StreamReservation,
+    owned_document: document_resource.DocumentState,
+};
+
+const StreamDemandState = enum(u8) { ready, running, done, cancelled, closed };
+
+const StreamFixtureStatus = enum(u8) {
+    ok,
+    cancelled,
+    not_owner,
+    closed,
+    cursor_consumed,
+    execution_unavailable,
+    out_of_memory,
+    invalid_target,
+    native_failure,
+    cursor_state,
+};
+
+const StreamSetupFixtureResult = struct {
+    status: StreamFixtureStatus,
+    kind: OperationKind,
+    generation: u64,
+    worker_context: ExecutionContext,
+    cursor: ?StreamCursorResource,
+    ready_for_delivery: bool,
+};
+
+const StreamBatchFixtureResult = struct {
+    status: StreamFixtureStatus,
+    kind: OperationKind,
+    generation: u64,
+    worker_context: ExecutionContext,
+    sequence: u64,
+    produced_rows: usize,
+    encoded_bytes: u64,
+    done: bool,
+    rows: ?JoinCopiedTerm,
+    ready_for_delivery: bool,
 };
 
 const StreamCursorResourcePayload = struct {
@@ -70,6 +111,8 @@ pub const OperationKind = enum(u8) {
     document_cleanup,
     threaded_smoke,
     projection,
+    stream_setup,
+    stream_batch,
 };
 
 pub const ProjectionSourceKind = enum(u8) {
@@ -143,6 +186,12 @@ const ExecutionAccounting = struct {
     var projection_boundary_count = std.atomic.Value(usize).init(0);
     var live_stream_cursor_resources = std.atomic.Value(usize).init(0);
     var retained_stream_cursor_parents = std.atomic.Value(usize).init(0);
+    var live_stream_setup_operations = std.atomic.Value(usize).init(0);
+    var live_stream_batch_operations = std.atomic.Value(usize).init(0);
+    var stream_setup_worker_entries = std.atomic.Value(usize).init(0);
+    var stream_batch_worker_entries = std.atomic.Value(usize).init(0);
+    var stream_deliveries = std.atomic.Value(usize).init(0);
+    var stream_discards = std.atomic.Value(usize).init(0);
 };
 
 const Runtime = struct {
@@ -380,6 +429,10 @@ const OperationRecord = struct {
         _ = ExecutionAccounting.worker_entries.fetchAdd(1, .acq_rel);
         if (self.kind == .projection)
             _ = ExecutionAccounting.projection_worker_count.fetchAdd(1, .acq_rel);
+        if (self.kind == .stream_setup)
+            _ = ExecutionAccounting.stream_setup_worker_entries.fetchAdd(1, .acq_rel);
+        if (self.kind == .stream_batch)
+            _ = ExecutionAccounting.stream_batch_worker_entries.fetchAdd(1, .acq_rel);
         return true;
     }
 
@@ -445,6 +498,8 @@ const OperationRecord = struct {
                         _ = ExecutionAccounting.discarded_results.fetchAdd(1, .acq_rel);
                         if (self.kind == .projection)
                             _ = ExecutionAccounting.discarded_projection_deliveries.fetchAdd(1, .acq_rel);
+                        if (self.kind == .stream_setup or self.kind == .stream_batch)
+                            _ = ExecutionAccounting.stream_discards.fetchAdd(1, .acq_rel);
                         return true;
                     }
                 },
@@ -464,10 +519,14 @@ const OperationRecord = struct {
                             _ = ExecutionAccounting.delivered_results.fetchAdd(1, .acq_rel);
                             if (self.kind == .projection)
                                 _ = ExecutionAccounting.completed_projection_deliveries.fetchAdd(1, .acq_rel);
+                            if (self.kind == .stream_setup or self.kind == .stream_batch)
+                                _ = ExecutionAccounting.stream_deliveries.fetchAdd(1, .acq_rel);
                         } else {
                             _ = ExecutionAccounting.discarded_results.fetchAdd(1, .acq_rel);
                             if (self.kind == .projection)
                                 _ = ExecutionAccounting.discarded_projection_deliveries.fetchAdd(1, .acq_rel);
+                            if (self.kind == .stream_setup or self.kind == .stream_batch)
+                                _ = ExecutionAccounting.stream_discards.fetchAdd(1, .acq_rel);
                         }
                         return true;
                     }
@@ -749,6 +808,14 @@ const OperationResourceCallbacks = struct {
                 },
             }
         }
+        if (operation.kind == .stream_setup) {
+            const live = ExecutionAccounting.live_stream_setup_operations.fetchSub(1, .acq_rel);
+            std.debug.assert(live > 0);
+        }
+        if (operation.kind == .stream_batch) {
+            const live = ExecutionAccounting.live_stream_batch_operations.fetchSub(1, .acq_rel);
+            std.debug.assert(live > 0);
+        }
         operation.allocator.destroy(operation);
 
         const retained = ExecutionAccounting.retained_inputs.fetchSub(1, .acq_rel);
@@ -794,6 +861,12 @@ const ExecutionSnapshot = struct {
     projection_boundary_entries: usize,
     live_stream_cursor_resources: usize,
     retained_stream_cursor_parents: usize,
+    live_stream_setup_operations: usize,
+    live_stream_batch_operations: usize,
+    stream_setup_worker_entries: usize,
+    stream_batch_worker_entries: usize,
+    stream_deliveries: usize,
+    stream_discards: usize,
 };
 
 const ThreadedSmokeResult = struct {
@@ -863,6 +936,7 @@ pub const DocumentOwnerState = enum(u8) {
 const DocumentProjectionOwnerState = enum(u8) {
     fresh,
     selecting,
+    streaming,
     consumed,
     closing,
     closed,
@@ -1202,6 +1276,10 @@ fn createOperation(
             .document => _ = ExecutionAccounting.retained_projection_documents.fetchAdd(1, .acq_rel),
         }
     }
+    if (kind == .stream_setup)
+        _ = ExecutionAccounting.live_stream_setup_operations.fetchAdd(1, .acq_rel);
+    if (kind == .stream_batch)
+        _ = ExecutionAccounting.live_stream_batch_operations.fetchAdd(1, .acq_rel);
     return resource;
 }
 
@@ -1374,10 +1452,13 @@ pub fn threaded_context_smoke(operation: OperationResource) !ThreadedSmokeResult
     var worker_finished = false;
     defer if (!worker_finished) record.abortRunning();
 
+    record.pauseAt(.before_copy);
+    if (record.cancelled.load(.acquire)) return error.operation_cancelled;
     try beam.yield();
     const input_length = try record.inputLength();
     try beam.yield();
 
+    record.pauseAt(.before_delivery);
     const result = ThreadedSmokeResult{
         .context = executionContext(),
         .owner_matches = pidsEqual(try beam.self(.{}), record.owner),
@@ -1825,6 +1906,12 @@ pub fn execution_snapshot() ExecutionSnapshot {
         .projection_boundary_entries = ExecutionAccounting.projection_boundary_count.load(.acquire),
         .live_stream_cursor_resources = ExecutionAccounting.live_stream_cursor_resources.load(.acquire),
         .retained_stream_cursor_parents = ExecutionAccounting.retained_stream_cursor_parents.load(.acquire),
+        .live_stream_setup_operations = ExecutionAccounting.live_stream_setup_operations.load(.acquire),
+        .live_stream_batch_operations = ExecutionAccounting.live_stream_batch_operations.load(.acquire),
+        .stream_setup_worker_entries = ExecutionAccounting.stream_setup_worker_entries.load(.acquire),
+        .stream_batch_worker_entries = ExecutionAccounting.stream_batch_worker_entries.load(.acquire),
+        .stream_deliveries = ExecutionAccounting.stream_deliveries.load(.acquire),
+        .stream_discards = ExecutionAccounting.stream_discards.load(.acquire),
     };
 }
 
@@ -2061,6 +2148,7 @@ pub fn document_projection_owner_state(
 
     return switch (control.native.projectionState()) {
         .selecting => .selecting,
+        .streaming => .streaming,
         .consumed => .consumed,
         .fresh => switch (control.native.lifecycleState()) {
             .open => .fresh,
@@ -2068,6 +2156,31 @@ pub fn document_projection_owner_state(
             .closed => .closed,
         },
     };
+}
+
+/// Test-only bounded proof for the shared select/stream one-shot state. A
+/// rejected setup rolls back; cursor access commits permanently.
+pub fn document_stream_reservation_probe(
+    document: DocumentResource,
+    commit: bool,
+) !DocumentProjectionOwnerState {
+    const control = document.__payload.control orelse return .closed;
+    if (!pidsEqual(try beam.self(.{}), control.owner)) return .not_owner;
+    const reservation = switch (control.native.reserveStream()) {
+        .reserved => |value| value,
+        .cursor_consumed => return .consumed,
+        .closed => return .closed,
+    };
+    if (!commit) {
+        _ = control.native.rollbackStream(reservation);
+        return .fresh;
+    }
+    if (!control.native.commitStream(reservation)) {
+        _ = control.native.rollbackStream(reservation);
+        return .closed;
+    }
+    control.native.releaseCommittedStream(reservation);
+    return .consumed;
 }
 
 /// Coordinator-only bounded close reservation. Public ownership has already
@@ -2154,6 +2267,351 @@ pub fn document_resource_fixture() !DocumentResource {
     };
 }
 
+fn streamSetupFixtureResult(
+    status: StreamFixtureStatus,
+    record: *OperationRecord,
+    cursor: ?StreamCursorResource,
+    ready: bool,
+) StreamSetupFixtureResult {
+    return .{
+        .status = status,
+        .kind = record.kind,
+        .generation = record.generation,
+        .worker_context = executionContext(),
+        .cursor = cursor,
+        .ready_for_delivery = ready,
+    };
+}
+
+pub fn threaded_stream_binary_setup_fixture(
+    operation: OperationResource,
+    row_limit: u64,
+    byte_limit: u64,
+) StreamSetupFixtureResult {
+    const record = operation.unpack();
+    if (record.kind != .stream_setup or !record.beginRunning())
+        return streamSetupFixtureResult(.cancelled, record, null, false);
+    var worker_finished = false;
+    defer if (!worker_finished) record.abortRunning();
+
+    const input = record.inputBytes() catch {
+        worker_finished = true;
+        return streamSetupFixtureResult(.invalid_target, record, null, record.markReadyForDelivery());
+    };
+    var owned_document = document_resource.DocumentState.empty();
+    var transferred = false;
+    defer if (!transferred) {
+        _ = owned_document.closeAndDestroy();
+    };
+    const opened = owned_document.openOwnedProjectionCancellable(
+        beam.allocator,
+        input,
+        .{ .context = record, .is_cancelled = operationCancelled, .at_boundary = operationBoundary },
+    );
+    if (opened != .ok) {
+        worker_finished = true;
+        return streamSetupFixtureResult(.native_failure, record, null, record.markReadyForDelivery());
+    }
+
+    const segments = [_]projection_plan.Segment{.{ .object_key = "value" }};
+    const paths = [_]projection_plan.NormalizedPath{.{ .path_slot = 0, .segments = &segments }};
+    const entries = [_]projection_plan.NormalizedEntry{.{ .output_slot = 0, .path_slot = 0 }};
+    var plan = projection_plan.OwnedPlan.init(beam.allocator, .{
+        .entries = &entries,
+        .paths = &paths,
+    }) catch |err| {
+        worker_finished = true;
+        return streamSetupFixtureResult(
+            if (err == error.OutOfMemory) .out_of_memory else .native_failure,
+            record,
+            null,
+            record.markReadyForDelivery(),
+        );
+    };
+    defer plan.deinit();
+    const parent_generation = owned_document.generation.load(.acquire);
+    var cursor = stream_cursor.OwnedCursor.init(
+        beam.allocator,
+        owned_document.ownedOperationDocument(),
+        &plan,
+        .{ .segments = &.{} },
+        .{ .rows = row_limit, .encoded_bytes = byte_limit },
+        parent_generation,
+    ) catch |err| {
+        worker_finished = true;
+        return streamSetupFixtureResult(
+            switch (err) {
+                error.OutOfMemory => .out_of_memory,
+                error.InvalidTarget, error.InvalidPlan => .invalid_target,
+                error.NativeFailure => .native_failure,
+            },
+            record,
+            null,
+            record.markReadyForDelivery(),
+        );
+    };
+    errdefer cursor.deinit();
+    const control = beam.allocator.create(StreamCursorControl) catch {
+        cursor.deinit();
+        worker_finished = true;
+        return streamSetupFixtureResult(.out_of_memory, record, null, record.markReadyForDelivery());
+    };
+    control.* = .{
+        .allocator = beam.allocator,
+        .native = cursor,
+        .parent = null,
+        .owner = record.owner,
+        .parent_generation = parent_generation,
+        .demand_state = .init(@intFromEnum(StreamDemandState.ready)),
+        .next_sequence = .init(0),
+        .stream_reservation = null,
+        .owned_document = owned_document,
+    };
+    _ = ExecutionAccounting.live_stream_cursor_resources.fetchAdd(1, .acq_rel);
+    const resource = StreamCursorResource.create(.{ .control = control }, .{}) catch {
+        destroyStreamCursorControl(control);
+        worker_finished = true;
+        return streamSetupFixtureResult(.out_of_memory, record, null, record.markReadyForDelivery());
+    };
+    transferred = true;
+    worker_finished = true;
+    return streamSetupFixtureResult(.ok, record, resource, record.markReadyForDelivery());
+}
+
+/// Private Phase 4 integration seam. It builds a real root-array cursor with
+/// one `value` field plan and transfers the committed document reservation to
+/// the returned child resource.
+pub fn threaded_stream_setup_fixture(
+    operation: OperationResource,
+    document: DocumentResource,
+    row_limit: u64,
+    byte_limit: u64,
+) StreamSetupFixtureResult {
+    const record = operation.unpack();
+    if (record.kind != .stream_setup or !record.beginRunning())
+        return streamSetupFixtureResult(.cancelled, record, null, false);
+    var worker_finished = false;
+    defer if (!worker_finished) record.abortRunning();
+
+    const parent_control = document.__payload.control orelse {
+        worker_finished = true;
+        return streamSetupFixtureResult(.closed, record, null, record.markReadyForDelivery());
+    };
+    if (!pidsEqual(record.owner, parent_control.owner)) {
+        worker_finished = true;
+        return streamSetupFixtureResult(.not_owner, record, null, record.markReadyForDelivery());
+    }
+    if (record.generation != module_generation.load(.acquire) or
+        parent_control.module_generation != record.generation)
+    {
+        worker_finished = true;
+        return streamSetupFixtureResult(.execution_unavailable, record, null, record.markReadyForDelivery());
+    }
+
+    const reservation = switch (parent_control.native.reserveStream()) {
+        .reserved => |value| value,
+        .cursor_consumed => {
+            worker_finished = true;
+            return streamSetupFixtureResult(.cursor_consumed, record, null, record.markReadyForDelivery());
+        },
+        .closed => {
+            worker_finished = true;
+            return streamSetupFixtureResult(.closed, record, null, record.markReadyForDelivery());
+        },
+    };
+    var committed = false;
+    var transferred = false;
+    defer if (!transferred) {
+        if (committed)
+            parent_control.native.releaseCommittedStream(reservation)
+        else
+            _ = parent_control.native.rollbackStream(reservation);
+    };
+
+    const segments = [_]projection_plan.Segment{.{ .object_key = "value" }};
+    const paths = [_]projection_plan.NormalizedPath{.{ .path_slot = 0, .segments = &segments }};
+    const entries = [_]projection_plan.NormalizedEntry{.{ .output_slot = 0, .path_slot = 0 }};
+    var plan = projection_plan.OwnedPlan.init(beam.allocator, .{
+        .entries = &entries,
+        .paths = &paths,
+    }) catch |err| {
+        worker_finished = true;
+        return streamSetupFixtureResult(
+            if (err == error.OutOfMemory) .out_of_memory else .native_failure,
+            record,
+            null,
+            record.markReadyForDelivery(),
+        );
+    };
+    defer plan.deinit();
+
+    if (!parent_control.native.commitStream(reservation)) {
+        worker_finished = true;
+        return streamSetupFixtureResult(.execution_unavailable, record, null, record.markReadyForDelivery());
+    }
+    committed = true;
+    const native_document = parent_control.native.streamDocument(reservation) orelse {
+        worker_finished = true;
+        return streamSetupFixtureResult(.execution_unavailable, record, null, record.markReadyForDelivery());
+    };
+    var cursor = stream_cursor.OwnedCursor.init(
+        beam.allocator,
+        native_document,
+        &plan,
+        .{ .segments = &.{} },
+        .{ .rows = row_limit, .encoded_bytes = byte_limit },
+        reservation.generation,
+    ) catch |err| {
+        worker_finished = true;
+        return streamSetupFixtureResult(
+            switch (err) {
+                error.OutOfMemory => .out_of_memory,
+                error.InvalidTarget, error.InvalidPlan => .invalid_target,
+                error.NativeFailure => .native_failure,
+            },
+            record,
+            null,
+            record.markReadyForDelivery(),
+        );
+    };
+    errdefer cursor.deinit();
+
+    const control = beam.allocator.create(StreamCursorControl) catch {
+        cursor.deinit();
+        worker_finished = true;
+        return streamSetupFixtureResult(.out_of_memory, record, null, record.markReadyForDelivery());
+    };
+    retainParent(document);
+    _ = ExecutionAccounting.retained_stream_cursor_parents.fetchAdd(1, .acq_rel);
+    control.* = .{
+        .allocator = beam.allocator,
+        .native = cursor,
+        .parent = document,
+        .owner = record.owner,
+        .parent_generation = reservation.generation,
+        .demand_state = .init(@intFromEnum(StreamDemandState.ready)),
+        .next_sequence = .init(0),
+        .stream_reservation = reservation,
+        .owned_document = document_resource.DocumentState.empty(),
+    };
+    _ = ExecutionAccounting.live_stream_cursor_resources.fetchAdd(1, .acq_rel);
+    const resource = StreamCursorResource.create(.{ .control = control }, .{}) catch {
+        destroyStreamCursorControl(control);
+        worker_finished = true;
+        return streamSetupFixtureResult(.out_of_memory, record, null, record.markReadyForDelivery());
+    };
+    transferred = true;
+    worker_finished = true;
+    return streamSetupFixtureResult(.ok, record, resource, record.markReadyForDelivery());
+}
+
+pub fn threaded_stream_batch_fixture(
+    operation: OperationResource,
+    cursor: StreamCursorResource,
+    sequence: u64,
+) StreamBatchFixtureResult {
+    const record = operation.unpack();
+    var result = StreamBatchFixtureResult{
+        .status = .cursor_state,
+        .kind = record.kind,
+        .generation = record.generation,
+        .worker_context = executionContext(),
+        .sequence = sequence,
+        .produced_rows = 0,
+        .encoded_bytes = 0,
+        .done = false,
+        .rows = null,
+        .ready_for_delivery = false,
+    };
+    if (record.kind != .stream_batch or !record.beginRunning()) {
+        result.status = .cancelled;
+        return result;
+    }
+    var worker_finished = false;
+    defer if (!worker_finished) record.abortRunning();
+    const control = cursor.__payload.control orelse {
+        worker_finished = true;
+        result.status = .closed;
+        result.ready_for_delivery = record.markReadyForDelivery();
+        return result;
+    };
+    if (!pidsEqual(record.owner, control.owner)) {
+        worker_finished = true;
+        result.status = .not_owner;
+        result.ready_for_delivery = record.markReadyForDelivery();
+        return result;
+    }
+    if (!stream_cursor_demand_reserve(cursor, sequence)) {
+        worker_finished = true;
+        result.status = .cursor_state;
+        result.ready_for_delivery = record.markReadyForDelivery();
+        return result;
+    }
+    var batch = stream_cursor.OwnedBatch.init(beam.allocator, &control.native) catch |err| {
+        _ = stream_cursor_demand_cancel(cursor);
+        worker_finished = true;
+        result.status = if (err == error.OutOfMemory) .out_of_memory else .native_failure;
+        result.ready_for_delivery = record.markReadyForDelivery();
+        return result;
+    };
+    defer batch.deinit();
+    if (batch.next(&control.native)) |_| {
+        _ = stream_cursor_demand_cancel(cursor);
+        worker_finished = true;
+        result.status = .native_failure;
+        result.ready_for_delivery = record.markReadyForDelivery();
+        return result;
+    }
+    var rows = beam.make_empty_list(.{ .env = record.private_env });
+    var row_index = batch.produced_rows;
+    while (row_index > 0) {
+        row_index -= 1;
+        const row = batch.rows[row_index];
+        const slot_index = std.math.cast(usize, row.slot_offset) orelse {
+            _ = stream_cursor_demand_cancel(cursor);
+            worker_finished = true;
+            result.status = .native_failure;
+            result.ready_for_delivery = record.markReadyForDelivery();
+            return result;
+        };
+        const scalar = projection_plan.OwnedResults.scalarFromSlot(batch.slots[slot_index]) orelse {
+            _ = stream_cursor_demand_cancel(cursor);
+            worker_finished = true;
+            result.status = .native_failure;
+            result.ready_for_delivery = record.markReadyForDelivery();
+            return result;
+        };
+        const value = scalarTerm(record.private_env, scalar) catch {
+            _ = stream_cursor_demand_cancel(cursor);
+            worker_finished = true;
+            result.status = .out_of_memory;
+            result.ready_for_delivery = record.markReadyForDelivery();
+            return result;
+        };
+        const map = beam.term{ .v = e.enif_make_new_map(record.private_env) };
+        const key = beam.make_into_atom("value", .{ .env = record.private_env });
+        var next_map: e.ErlNifTerm = undefined;
+        if (e.enif_make_map_put(record.private_env, map.v, key.v, value.v, &next_map) == 0) {
+            _ = stream_cursor_demand_cancel(cursor);
+            worker_finished = true;
+            result.status = .out_of_memory;
+            result.ready_for_delivery = record.markReadyForDelivery();
+            return result;
+        }
+        rows = .{ .v = e.enif_make_list_cell(record.private_env, next_map, rows.v) };
+    }
+    record.projection_result_payload.term = rows;
+    _ = stream_cursor_demand_complete(cursor, sequence, batch.done);
+    result.status = .ok;
+    result.produced_rows = batch.produced_rows;
+    result.encoded_bytes = batch.encoded_bytes;
+    result.done = batch.done;
+    result.rows = .{ .__payload = &record.projection_result_payload };
+    result.ready_for_delivery = record.markReadyForDelivery();
+    worker_finished = true;
+    return result;
+}
+
 /// Registers the private Phase 2 child-resource shape and retains one genuine
 /// owner document before any future cursor handle can dereference it. Native
 /// target and batch execution remain unavailable through this fixture.
@@ -2182,6 +2640,10 @@ pub fn stream_cursor_resource_fixture(
         .parent = document,
         .owner = owner,
         .parent_generation = parent_generation,
+        .demand_state = .init(@intFromEnum(StreamDemandState.ready)),
+        .next_sequence = .init(0),
+        .stream_reservation = null,
+        .owned_document = document_resource.DocumentState.empty(),
     };
     _ = ExecutionAccounting.live_stream_cursor_resources.fetchAdd(1, .acq_rel);
 
@@ -2199,9 +2661,70 @@ pub fn stream_cursor_resource_close(cursor: StreamCursorResource) bool {
     return true;
 }
 
+pub fn stream_cursor_demand_reserve(cursor: StreamCursorResource, sequence: u64) bool {
+    const control = cursor.__payload.control orelse return false;
+    if (control.next_sequence.load(.acquire) != sequence) return false;
+    return control.demand_state.cmpxchgStrong(
+        @intFromEnum(StreamDemandState.ready),
+        @intFromEnum(StreamDemandState.running),
+        .acq_rel,
+        .acquire,
+    ) == null;
+}
+
+pub fn stream_cursor_demand_complete(
+    cursor: StreamCursorResource,
+    sequence: u64,
+    done: bool,
+) bool {
+    const control = cursor.__payload.control orelse return false;
+    if (control.next_sequence.load(.acquire) != sequence) return false;
+    const next: StreamDemandState = if (done) .done else .ready;
+    if (control.demand_state.cmpxchgStrong(
+        @intFromEnum(StreamDemandState.running),
+        @intFromEnum(next),
+        .acq_rel,
+        .acquire,
+    ) != null) return false;
+    _ = control.next_sequence.fetchAdd(1, .acq_rel);
+    return true;
+}
+
+pub fn stream_cursor_demand_cancel(cursor: StreamCursorResource) bool {
+    const control = cursor.__payload.control orelse return true;
+    while (true) {
+        const current: StreamDemandState = @enumFromInt(control.demand_state.load(.acquire));
+        switch (current) {
+            .done, .cancelled, .closed => return true,
+            .ready, .running => if (control.demand_state.cmpxchgWeak(
+                @intFromEnum(current),
+                @intFromEnum(StreamDemandState.cancelled),
+                .acq_rel,
+                .acquire,
+            ) == null) return true,
+        }
+    }
+}
+
+pub fn stream_cursor_demand_snapshot(cursor: StreamCursorResource) beam.term {
+    const control = cursor.__payload.control orelse
+        return beam.make(.{ StreamDemandState.closed, @as(u64, 0) }, .{});
+    return beam.make(.{
+        @as(StreamDemandState, @enumFromInt(control.demand_state.load(.acquire))),
+        control.next_sequence.load(.acquire),
+    }, .{});
+}
+
 fn destroyStreamCursorControl(control: *StreamCursorControl) void {
+    control.demand_state.store(@intFromEnum(StreamDemandState.closed), .release);
     control.native.deinit();
+    _ = control.owned_document.closeAndDestroy();
     if (control.parent) |parent| {
+        if (control.stream_reservation) |reservation| {
+            if (parent.__payload.control) |parent_control|
+                parent_control.native.releaseCommittedStream(reservation);
+            control.stream_reservation = null;
+        }
         control.parent = null;
         releaseParent(parent);
         const retained = ExecutionAccounting.retained_stream_cursor_parents.fetchSub(1, .acq_rel);

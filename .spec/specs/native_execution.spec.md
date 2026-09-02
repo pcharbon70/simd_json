@@ -89,6 +89,14 @@ Milestone 3 Phase 2 registers only the private fixed-size cursor resource and
 its genuine parent-retention graph. Cursor construction/state conformance is
 native and bounded; no stream operation kind, threaded setup/batch worker,
 coordinator request, scheduler claim, or public entrypoint is added.
+Milestone 3 Phase 4 adds private stream-setup and stream-batch kinds to the
+same coordinator and generated Zigler-threaded boundary. Each demand has one
+worker entry and exact request/generation/sequence correlation; rejected,
+orphaned, legacy-shaped, duplicate, and stale completions cannot select another
+waiter. Real ABI v3 binary/document fixtures return copied row maps while
+stream-specific live-operation and delivery/discard gauges prove quiescence.
+This is per-stream demand control only and does not claim Milestone 4's global
+queue, fixed worker pool, cancellation registry, or telemetry.
 
 ```spec-meta
 id: simd_json.native_execution

@@ -70,6 +70,37 @@ defmodule SimdJson.Native.OperationCoordinator do
     )
   end
 
+  if @test_hooks do
+    @doc false
+    def stream_probe(operation) do
+      GenServer.call(__MODULE__, {:stream_probe, operation}, :infinity)
+    end
+
+    def stream_setup_fixture(operation, document, row_limit, byte_limit) do
+      GenServer.call(
+        __MODULE__,
+        {:stream_fixture, operation, {:setup, document, row_limit, byte_limit}},
+        :infinity
+      )
+    end
+
+    def stream_binary_setup_fixture(operation, row_limit, byte_limit) do
+      GenServer.call(
+        __MODULE__,
+        {:stream_fixture, operation, {:binary_setup, row_limit, byte_limit}},
+        :infinity
+      )
+    end
+
+    def stream_batch_fixture(operation, cursor, sequence) do
+      GenServer.call(
+        __MODULE__,
+        {:stream_fixture, operation, {:batch, cursor, sequence}},
+        :infinity
+      )
+    end
+  end
+
   @spec snapshot() :: %{accepting?: boolean(), live_requests: non_neg_integer()}
   def snapshot do
     GenServer.call(__MODULE__, :snapshot)
@@ -87,11 +118,18 @@ defmodule SimdJson.Native.OperationCoordinator do
     end
 
     @spec set_submission_rejection_for_test(
-            :document_open | :document_cleanup | :projection,
+            :document_open | :document_cleanup | :projection | :stream_setup | :stream_batch,
             boolean()
           ) :: :ok
     def set_submission_rejection_for_test(kind, reject?)
-        when kind in [:document_open, :document_cleanup, :projection] and is_boolean(reject?) do
+        when kind in [
+               :document_open,
+               :document_cleanup,
+               :projection,
+               :stream_setup,
+               :stream_batch
+             ] and
+               is_boolean(reject?) do
       GenServer.call(__MODULE__, {:set_submission_rejection_for_test, kind, reject?})
     end
 
@@ -213,6 +251,60 @@ defmodule SimdJson.Native.OperationCoordinator do
     _kind, _reason -> {:reply, native_error(:admission_rejected), state}
   end
 
+  if @test_hooks do
+    def handle_call({:stream_probe, operation}, from, state) do
+      caller = elem(from, 0)
+      kind = operation.kind
+
+      with true <- state.accepting?,
+           true <- kind in [:stream_setup, :stream_batch],
+           true <- BuildSmoke.operation_owner_is(operation.resource, caller),
+           true <- operation.generation == BuildSmoke.execution_generation(),
+           false <- Map.has_key?(state.requests, operation.request_ref) do
+        {:noreply,
+         start_request(
+           state,
+           kind,
+           operation,
+           nil,
+           from,
+           caller,
+           submission_rejected?(state, kind)
+         )}
+      else
+        _ ->
+          _ = BuildSmoke.operation_finish(operation.resource, :discarded)
+          {:reply, native_error(:admission_rejected), state}
+      end
+    end
+
+    def handle_call({:stream_fixture, operation, payload}, from, state) do
+      caller = elem(from, 0)
+      kind = operation.kind
+
+      with true <- state.accepting?,
+           true <- kind in [:stream_setup, :stream_batch],
+           true <- BuildSmoke.operation_owner_is(operation.resource, caller),
+           true <- operation.generation == BuildSmoke.execution_generation(),
+           false <- Map.has_key?(state.requests, operation.request_ref) do
+        {:noreply,
+         start_request(
+           state,
+           kind,
+           operation,
+           payload,
+           from,
+           caller,
+           submission_rejected?(state, kind)
+         )}
+      else
+        _ ->
+          _ = BuildSmoke.operation_finish(operation.resource, :discarded)
+          {:reply, native_error(:admission_rejected), state}
+      end
+    end
+  end
+
   def handle_call({:submit, :document_cleanup, operation, document}, from, state) do
     caller = elem(from, 0)
 
@@ -303,14 +395,19 @@ defmodule SimdJson.Native.OperationCoordinator do
 
   @impl true
   def handle_info(
-        {@completion_tag, kind, request_ref, generation, worker, result},
+        {@completion_tag, kind, request_ref, generation, cursor_generation, batch_sequence,
+         worker, result},
         state
       ) do
     case Map.fetch(state.requests, request_ref) do
       {:ok,
        %{
          kind: ^kind,
-         operation: %{generation: ^generation},
+         operation: %{
+           generation: ^generation,
+           cursor_generation: ^cursor_generation,
+           batch_sequence: ^batch_sequence
+         },
          worker: ^worker
        } = request} ->
         state = remove_worker_monitor(state, request)
@@ -324,12 +421,18 @@ defmodule SimdJson.Native.OperationCoordinator do
     end
   end
 
+  # Legacy-shaped, forged, or otherwise incomplete completions carry no
+  # cursor generation and batch sequence, so they cannot select any request.
+  def handle_info({@completion_tag, _kind, _request_ref, _generation, _worker, _result}, state) do
+    {:noreply, state}
+  end
+
   def handle_info({:DOWN, monitor, :process, _pid, _reason}, state) do
     cond do
       request_ref = state.caller_monitors[monitor] ->
         request = Map.fetch!(state.requests, request_ref)
 
-        if request.kind in [:document_open, :projection] do
+        if request.kind in [:document_open, :projection, :stream_setup, :stream_batch] do
           _ = BuildSmoke.operation_cancel(request.operation.resource)
         end
 
@@ -382,7 +485,8 @@ defmodule SimdJson.Native.OperationCoordinator do
 
         send(
           coordinator,
-          {@completion_tag, kind, operation.request_ref, operation.generation, self(), result}
+          {@completion_tag, kind, operation.request_ref, operation.generation,
+           operation.cursor_generation, operation.batch_sequence, self(), result}
         )
       end)
 
@@ -449,11 +553,31 @@ defmodule SimdJson.Native.OperationCoordinator do
     BuildSmoke.threaded_projection_execute(operation.resource)
   end
 
+  if @test_hooks do
+    defp execute_operation(kind, operation, nil, nil)
+         when kind in [:stream_setup, :stream_batch] do
+      BuildSmoke.threaded_context_smoke(operation.resource)
+    end
+
+    defp execute_operation(:stream_setup, operation, {:setup, document, rows, bytes}, nil) do
+      BuildSmoke.threaded_stream_setup_fixture(operation.resource, document, rows, bytes)
+    end
+
+    defp execute_operation(:stream_setup, operation, {:binary_setup, rows, bytes}, nil) do
+      BuildSmoke.threaded_stream_binary_setup_fixture(operation.resource, rows, bytes)
+    end
+
+    defp execute_operation(:stream_batch, operation, {:batch, cursor, sequence}, nil) do
+      BuildSmoke.threaded_stream_batch_fixture(operation.resource, cursor, sequence)
+    end
+  end
+
   defp complete_request(state, request_ref, request, {:ok, native_result}) do
     correlated? =
       native_result.kind == request.kind and
         native_result.generation == request.operation.generation and
-        native_result.worker_context == :threaded
+        Map.get(native_result, :context, Map.get(native_result, :worker_context)) == :threaded and
+        ThreadedOperation.correlated?(request.operation, native_result)
 
     cond do
       not correlated? ->
@@ -528,6 +652,23 @@ defmodule SimdJson.Native.OperationCoordinator do
 
     {:error, error}
   end
+
+  defp normalize_result(%{kind: kind, context: :threaded} = result, _diagnostics?)
+       when kind in [:stream_setup, :stream_batch] do
+    {:ok,
+     Map.merge(result, %{
+       cursor_generation: 0,
+       batch_sequence: 0
+     })}
+  end
+
+  defp normalize_result(%{kind: kind, status: :ok, worker_context: :threaded} = result, _)
+       when kind in [:stream_setup, :stream_batch],
+       do: {:ok, result}
+
+  defp normalize_result(%{kind: kind, status: status} = result, _)
+       when kind in [:stream_setup, :stream_batch],
+       do: {:error, %{reason: status, sequence: Map.get(result, :sequence)}}
 
   defp maybe_cleanup_orphan(state, %{kind: :document_open, document: document})
        when is_reference(document) do

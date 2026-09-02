@@ -131,9 +131,6 @@ defmodule SimdJson.StreamOptionsTest do
     native_before = BuildSmoke.execution_snapshot()
     generation = BuildSmoke.execution_generation()
 
-    assert admissions_before.stream_setup == 0
-    assert admissions_before.stream_batch == 0
-
     for source <- invalid_sources do
       assert_raise ArgumentError,
                    "expected JSON input to be a binary or SimdJson.Document",
@@ -220,9 +217,6 @@ defmodule SimdJson.StreamOptionsTest do
     native_before = BuildSmoke.execution_snapshot()
     coordinator_before = OperationCoordinator.snapshot()
     generation = BuildSmoke.execution_generation()
-
-    assert admissions_before.stream_setup == 0
-    assert admissions_before.stream_batch == 0
 
     assert BuildSmoke.document_owner_state(resource) == :open
     assert BuildSmoke.document_projection_owner_state(resource) == :fresh

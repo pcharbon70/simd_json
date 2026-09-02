@@ -596,6 +596,10 @@ defmodule SimdJson.Benchmarks.SparseProjection do
   defp wait_for_quiescence!(0), do: raise("projection benchmark did not reach native baseline")
 
   defp wait_for_quiescence!(attempts) do
+    if coordinator = Process.whereis(OperationCoordinator) do
+      :erlang.garbage_collect(coordinator)
+    end
+
     snapshot = BuildSmoke.execution_snapshot()
 
     idle? =

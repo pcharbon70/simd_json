@@ -57,6 +57,10 @@ Milestone 3 Phase 2 gives the private cursor one operation-owned projection
 plan but performs no row execution and admits no threaded stream request. The
 active `select/2` reservation, worker, cancellation, conversion, and cleanup
 paths are regression-tested unchanged under ABI v3.
+Milestone 3 Phase 4 reuses the projection plan and scalar conversion inside a
+private threaded cursor fixture. The shared document use state now excludes a
+stream reservation from selection, while the active public `select/2` worker,
+result shape, error translation, and qualification boundary remain unchanged.
 
 ```spec-meta
 id: simd_json.projection_execution

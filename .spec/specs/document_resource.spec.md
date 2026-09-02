@@ -71,6 +71,12 @@ and destructor destroy cursor-owned plan and target state before releasing the
 parent. Genuine BEAM-resource tests and standalone Zig accounting prove
 retain/release symmetry; no public stream operation or target traversal exists
 yet.
+Milestone 3 Phase 4 generalizes the one-shot state to permit exactly one
+selecting or streaming reservation. Owner-first rejection reveals no state,
+pre-worker rejection can roll streaming back to fresh, cursor access commits
+consumed, and the private cursor retains the committed admission plus parent
+until cursor-first teardown releases both. Binary fixtures retain the same
+owned native graph without publishing a document resource.
 
 ```spec-meta
 id: simd_json.document_resource

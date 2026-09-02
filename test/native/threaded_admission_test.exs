@@ -4,6 +4,70 @@ defmodule SimdJson.Native.ThreadedAdmissionTest do
   alias SimdJson.Native.BuildSmoke
   alias SimdJson.Native.ThreadedOperation
 
+  # covers: simd_json.stream_execution.correlated_batch_operations simd_json.stream_execution.threaded_stream_work
+  test "stream setup and batch operations retain distinct threaded correlation identities" do
+    generation = SimdJson.Native.BuildSmoke.execution_generation()
+    setup = ThreadedOperation.admit("setup", :stream_setup, generation)
+    batch = ThreadedOperation.admit("batch", :stream_batch, generation)
+
+    assert setup.kind == :stream_setup
+    assert batch.kind == :stream_batch
+    assert setup.request_ref != batch.request_ref
+
+    refute ThreadedOperation.correlated?(setup, %{
+             kind: :stream_batch,
+             generation: generation,
+             request_ref: setup.request_ref,
+             cursor_generation: 0,
+             batch_sequence: 0
+           })
+
+    for operation <- [setup, batch] do
+      assert {:ok, result} =
+               ThreadedOperation.submit(operation, fn ->
+                 SimdJson.Native.BuildSmoke.threaded_context_smoke(operation.resource)
+               end)
+
+      assert result.context == :threaded
+      assert ThreadedOperation.correlated?(operation, result)
+      assert SimdJson.Native.BuildSmoke.operation_finish(operation.resource, :delivered)
+    end
+  end
+
+  # covers: simd_json.stream_execution.lazy_setup simd_json.stream_execution.correlated_batch_operations simd_json.stream_execution.owner_first_admission
+  test "coordinator admits one correlated threaded job for each demanded stream operation" do
+    before = ThreadedOperation.admission_snapshot_for_test()
+
+    assert {:ok, setup} = ThreadedOperation.stream_probe(:stream_setup, "source", 41, 0)
+    assert setup.kind == :stream_setup
+    assert setup.context == :threaded
+
+    assert {:ok, batch} = ThreadedOperation.stream_probe(:stream_batch, "cursor", 41, 1)
+    assert batch.kind == :stream_batch
+    assert batch.context == :threaded
+
+    after_snapshot = ThreadedOperation.admission_snapshot_for_test()
+    assert after_snapshot.stream_setup == before.stream_setup + 1
+    assert after_snapshot.stream_batch == before.stream_batch + 1
+    assert after_snapshot.total == before.total + 2
+  end
+
+  test "rejected stream submission is discarded without entering threaded work" do
+    alias SimdJson.Native.BuildSmoke
+    alias SimdJson.Native.OperationCoordinator
+
+    baseline = BuildSmoke.execution_snapshot()
+    :ok = OperationCoordinator.set_submission_rejection_for_test(:stream_batch, true)
+
+    assert {:error, %{reason: :native_failure, stage: :threaded_submission}} =
+             ThreadedOperation.stream_probe(:stream_batch, "cursor", 7, 3)
+
+    :ok = OperationCoordinator.set_submission_rejection_for_test(:stream_batch, false)
+    Process.sleep(10)
+    after_snapshot = BuildSmoke.execution_snapshot()
+    assert after_snapshot.worker_entries == baseline.worker_entries
+  end
+
   # covers: simd_json.native_execution.threaded_parse simd_json.native_execution.bounded_nif_entry simd_json.native_execution.request_correlation simd_json.native_execution.retained_resources
   test "pinned admission is synchronous and retained work executes as threaded" do
     assert BuildSmoke.admission_context() == :synchronous

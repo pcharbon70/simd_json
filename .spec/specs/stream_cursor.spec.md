@@ -40,6 +40,13 @@ subject remains planned because threaded ownership and the public Enumerable
 arrive in Phases 4 and 5, and its bootstrap exception closes only during Phase
 6 activation.
 
+Phase 4 now drives that same ABI v3 cursor through private correlated
+Zigler-threaded setup and batch workers. Binary and document fixtures retain
+their complete graph across idle time, convert only committed slots into copied
+row maps, serialize exact batch sequences through ready/running/done/cancelled
+state, and release cursor-before-parent ownership at terminal cleanup. No
+cursor handle or batch entry becomes public.
+
 ```spec-meta
 id: simd_json.stream_cursor
 kind: subsystem
