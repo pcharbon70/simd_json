@@ -70,6 +70,22 @@ defmodule SimdJson.Native.OperationCoordinator do
     )
   end
 
+  def stream_setup(operation, source_kind, source, projection, target, rows, bytes) do
+    GenServer.call(
+      __MODULE__,
+      {:stream_public, operation, {source_kind, source, projection, target, rows, bytes}},
+      :infinity
+    )
+  end
+
+  def stream_batch(operation, cursor, projection, sequence) do
+    GenServer.call(
+      __MODULE__,
+      {:stream_public, operation, {:batch, cursor, projection, sequence}},
+      :infinity
+    )
+  end
+
   if @test_hooks do
     @doc false
     def stream_probe(operation) do
@@ -146,6 +162,10 @@ defmodule SimdJson.Native.OperationCoordinator do
   end
 
   @impl true
+  def handle_call({:stream_public, operation, payload}, from, state) do
+    {:noreply, start_request(state, operation.kind, operation, payload, from, elem(from, 0))}
+  end
+
   def handle_call(:snapshot, _from, state) do
     {:reply, %{accepting?: state.accepting?, live_requests: map_size(state.requests)}, state}
   end
@@ -553,6 +573,40 @@ defmodule SimdJson.Native.OperationCoordinator do
     BuildSmoke.threaded_projection_execute(operation.resource)
   end
 
+  defp execute_operation(
+         :stream_setup,
+         operation,
+         {:binary, _source, projection, target, rows, bytes},
+         nil
+       ),
+       do:
+         BuildSmoke.threaded_stream_binary_setup_fixture(
+           operation.resource,
+           projection,
+           target,
+           rows,
+           bytes
+         )
+
+  defp execute_operation(
+         :stream_setup,
+         operation,
+         {:document, document, projection, target, rows, bytes},
+         nil
+       ),
+       do:
+         BuildSmoke.threaded_stream_setup_fixture(
+           operation.resource,
+           document,
+           projection,
+           target,
+           rows,
+           bytes
+         )
+
+  defp execute_operation(:stream_batch, operation, {:batch, cursor, projection, sequence}, nil),
+    do: BuildSmoke.threaded_stream_batch_fixture(operation.resource, cursor, projection, sequence)
+
   if @test_hooks do
     defp execute_operation(kind, operation, nil, nil)
          when kind in [:stream_setup, :stream_batch] do
@@ -560,17 +614,38 @@ defmodule SimdJson.Native.OperationCoordinator do
     end
 
     defp execute_operation(:stream_setup, operation, {:setup, document, rows, bytes}, nil) do
-      BuildSmoke.threaded_stream_setup_fixture(operation.resource, document, rows, bytes)
+      BuildSmoke.threaded_stream_setup_fixture(
+        operation.resource,
+        document,
+        default_stream_projection(),
+        [],
+        rows,
+        bytes
+      )
     end
 
     defp execute_operation(:stream_setup, operation, {:binary_setup, rows, bytes}, nil) do
-      BuildSmoke.threaded_stream_binary_setup_fixture(operation.resource, rows, bytes)
+      BuildSmoke.threaded_stream_binary_setup_fixture(
+        operation.resource,
+        default_stream_projection(),
+        [],
+        rows,
+        bytes
+      )
     end
 
     defp execute_operation(:stream_batch, operation, {:batch, cursor, sequence}, nil) do
-      BuildSmoke.threaded_stream_batch_fixture(operation.resource, cursor, sequence)
+      BuildSmoke.threaded_stream_batch_fixture(
+        operation.resource,
+        cursor,
+        default_stream_projection(),
+        sequence
+      )
     end
   end
+
+  defp default_stream_projection,
+    do: {:simd_json_projection_v1, [{0, :value, 0}], [{0, ["value"]}]}
 
   defp complete_request(state, request_ref, request, {:ok, native_result}) do
     correlated? =
@@ -668,7 +743,16 @@ defmodule SimdJson.Native.OperationCoordinator do
 
   defp normalize_result(%{kind: kind, status: status} = result, _)
        when kind in [:stream_setup, :stream_batch],
-       do: {:error, %{reason: status, sequence: Map.get(result, :sequence)}}
+       do:
+         {:error,
+          %{
+            reason: status,
+            sequence: Map.get(result, :sequence),
+            native_code: Map.get(result, :native_code),
+            byte_offset: Map.get(result, :byte_offset),
+            output_slot: Map.get(result, :output_slot),
+            array_index: Map.get(result, :array_index)
+          }}
 
   defp maybe_cleanup_orphan(state, %{kind: :document_open, document: document})
        when is_reference(document) do

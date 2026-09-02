@@ -66,7 +66,9 @@ stream, Enumerable, cursor, batch, or stream type is public in this phase.
 Milestone 3 Phase 2 changes only the private ABI/resource graph. The root
 exports and all open/close/select error translations remain unchanged; no
 cursor handle, target descriptor, batch layout, or stream state reaches Elixir.
-Milestone 3 Phase 4 exercises select/stream exclusion and parent retention only
+Milestone 3 Phase 5 exposes the separately governed owner-bound `stream/2`
+Enumerable while preserving document opacity, one-shot select/stream exclusion,
+and idempotent close. No raw cursor, batch, transfer, or eager decode is public.
 through compile-time-gated private seams. The public document representation,
 root exports, errors, ownership rules, and absence of cursor/batch handles are
 unchanged until Phase 5.
@@ -143,7 +145,7 @@ decisions:
   stability: stable
 
 - id: simd_json.document_api.milestone_scope
-  statement: The Milestone 1 baseline shall remain limited to document open, close, opacity, and structured errors; separately governed milestone additions shall not weaken those contracts or introduce eager decode, streaming, ownership transfer, raw cursor, or raw native-handle APIs.
+  statement: The Milestone 1 baseline shall remain limited to document open, close, opacity, and structured errors; separately governed milestone additions shall not weaken those contracts or introduce eager decode, ownership transfer, raw cursor, raw batch, or raw native-handle APIs.
   priority: must
   stability: stable
 ```

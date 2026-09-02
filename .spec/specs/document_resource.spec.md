@@ -78,6 +78,8 @@ consumed, and the private cursor retains the committed admission plus parent
 until cursor-first teardown releases both. Binary fixtures retain the same
 owned native graph without publishing a document resource.
 
+Milestone 3 Phase 5 routes public document streams through the same owner-first stream reservation, retained cursor parent, consumed terminal state, and idempotent owner close proven by the private Phase 4 lifecycle.
+
 ```spec-meta
 id: simd_json.document_resource
 kind: subsystem

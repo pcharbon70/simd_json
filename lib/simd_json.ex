@@ -1,8 +1,8 @@
 defmodule SimdJson do
   # covers: simd_json.package.mix_library simd_json.native_build_and_abi.layered_boundary simd_json.document_api.open_contract simd_json.document_api.binary_only simd_json.document_api.close_contract simd_json.document_api.document_argument_validation simd_json.projection_api.select_contract simd_json.projection_api.source_argument_validation simd_json.projection_api.output_key_identity simd_json.projection_api.scalar_results simd_json.projection_api.atomic_result
   @moduledoc """
-  Opens opaque JSON documents and selects scalar values using SIMD-accelerated
-  parsing.
+  Opens opaque JSON documents, selects scalar values, and lazily streams
+  projected array rows using SIMD-accelerated parsing.
 
   `select/2` extracts several named scalar paths from either a JSON binary or
   a caller-owned document. Results use the exact atom or binary keys supplied
@@ -22,8 +22,8 @@ defmodule SimdJson do
   strings are fresh binaries independent of their source.
 
   The API intentionally has no bang variant, eager decode, JSONPath, wildcard,
-  default-field policy, container materialization, public compiled plan,
-  stream, cursor, ownership-transfer, or native-handle operation.
+  default-field policy, container materialization, public compiled plan, raw
+  cursor/batch operation, ownership transfer, or native-handle operation.
 
   Threaded execution in this milestone is a qualification runtime. Production
   admission control and its bounded worker pool arrive in Milestone 4.
@@ -105,6 +105,8 @@ defmodule SimdJson do
   alias SimdJson.Native.BuildSmoke
   alias SimdJson.Native.ProjectionOperation
   alias SimdJson.Native.ThreadedOperation
+  alias SimdJson.Stream
+  alias SimdJson.StreamOptions
 
   @typedoc "An exact caller-supplied result key. No atom is created from a binary key."
   @type output_key :: atom() | binary()
@@ -132,6 +134,45 @@ defmodule SimdJson do
 
   @typedoc "The transactional map returned after every selected path succeeds."
   @type projection_result :: %{optional(output_key()) => scalar_result()}
+
+  @typedoc "A target segment locating the array to stream."
+  @type stream_target_segment :: path_segment()
+
+  @typedoc "A path locating the array to stream; the empty path selects a root array."
+  @type stream_target_path :: [stream_target_segment()]
+
+  @typedoc "The exact-key projection applied independently to every array row."
+  @type stream_fields :: projection()
+
+  @typedoc "Options for bounded array streaming."
+  @type stream_option ::
+          {:path, stream_target_path()}
+          | {:fields, stream_fields()}
+          | {:batch_size, 1..10_000}
+          | {:max_batch_bytes, 1..67_108_864}
+
+  @typedoc "One scalar-only projected row."
+  @type stream_row :: %{optional(output_key()) => scalar_result()}
+
+  @doc """
+  Constructs a lazy, owner-bound Enumerable over projected JSON array rows.
+
+  `:path` and `:fields` are required. Options are fully validated immediately,
+  but parsing, document admission, and native allocation wait until reduction.
+  Binary streams may be constructed again; a document stream is one-shot.
+  Batches default to 1,000 rows and 8 MiB, with maxima of 10,000 rows and
+  64 MiB. Returned string values are copied and each row contains scalars only.
+
+  Invalid sources or options raise `ArgumentError`. Runtime failures raise a
+  redacted `SimdJson.Error` during enumeration. A stream captures its creating
+  process and applies demand one batch at a time without prefetch.
+  """
+  @spec stream(binary() | Document.t(), [stream_option()]) :: Stream.t()
+  def stream(source, options) do
+    source
+    |> StreamOptions.new(options)
+    |> Stream.new()
+  end
 
   @doc """
   Opens one JSON binary as an opaque document owned by the calling process.

@@ -74,6 +74,27 @@ defmodule SimdJson.StreamOptions do
     )
   end
 
+  @doc false
+  @spec inspect_metadata(t()) :: %{
+          source_kind: source_kind(),
+          batch_size: batch_size(),
+          max_batch_bytes: max_batch_bytes()
+        }
+  def inspect_metadata({@tag, source_kind, batch_size, max_batch_bytes, _explicit, _payload}) do
+    %{source_kind: source_kind, batch_size: batch_size, max_batch_bytes: max_batch_bytes}
+  end
+
+  @doc false
+  @spec runtime(t()) :: map()
+  def runtime({@tag, source_kind, batch_size, max_batch_bytes, _explicit, payload_fun}) do
+    payload_fun.()
+    |> Map.merge(%{
+      source_kind: source_kind,
+      batch_size: batch_size,
+      max_batch_bytes: max_batch_bytes
+    })
+  end
+
   if @test_hooks do
     @doc false
     @spec snapshot_for_test(t()) :: %{

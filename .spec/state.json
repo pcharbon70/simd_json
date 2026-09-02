@@ -266,7 +266,7 @@
         "id": "simd_json.document_api.milestone_scope",
         "priority": "must",
         "stability": "stable",
-        "statement": "The Milestone 1 baseline shall remain limited to document open, close, opacity, and structured errors; separately governed milestone additions shall not weaken those contracts or introduce eager decode, streaming, ownership transfer, raw cursor, or raw native-handle APIs.",
+        "statement": "The Milestone 1 baseline shall remain limited to document open, close, opacity, and structured errors; separately governed milestone additions shall not weaken those contracts or introduce eager decode, ownership transfer, raw cursor, raw batch, or raw native-handle APIs.",
         "subject_id": "simd_json.document_api"
       },
       {
@@ -626,7 +626,7 @@
         "id": "simd_json.projection_api.milestone_scope",
         "priority": "must",
         "stability": "stable",
-        "statement": "Milestone 2 shall expose no public compiled projection, JSONPath, wildcard, recursive descent, filter, optional or default field policy, container materialization, stream, raw cursor, ownership transfer, or eager decode API.",
+        "statement": "Milestone 2 shall expose no public compiled projection, JSONPath, wildcard, recursive descent, filter, optional or default field policy, container materialization, raw cursor or batch, ownership transfer, or eager decode API; separately governed streaming may reuse its projection grammar.",
         "subject_id": "simd_json.projection_api"
       },
       {
@@ -2838,7 +2838,7 @@
           "id": "simd_json.package",
           "kind": "package",
           "status": "active",
-          "summary": "Active native foundation and projection library with a private Milestone 3 stream preflight and no public streaming surface.",
+          "summary": "Active native foundation and projection library with a public pre-production Milestone 3 lazy streaming surface pending Phase 6 qualification.",
           "surface": [
             ".tool-versions",
             "README.md",

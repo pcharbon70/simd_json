@@ -10,14 +10,10 @@ defmodule SimdJson.Native.BuildSmoke do
     :document_resource_registration_smoke,
     :document_resource_fixture,
     :stream_cursor_resource_fixture,
-    :stream_cursor_resource_close,
     :stream_cursor_demand_reserve,
     :stream_cursor_demand_complete,
     :stream_cursor_demand_cancel,
     :stream_cursor_demand_snapshot,
-    :threaded_stream_setup_fixture,
-    :threaded_stream_binary_setup_fixture,
-    :threaded_stream_batch_fixture,
     :projection_operation_inject_failure,
     :operation_configure_pause,
     :operation_release_pause,
@@ -176,7 +172,11 @@ defmodule SimdJson.Native.BuildSmoke do
         document_prepare_cleanup: [],
         execution_generation: [],
         execution_begin_shutdown: [],
-        execution_resume: []
+        execution_resume: [],
+        stream_cursor_resource_close: [],
+        threaded_stream_setup_fixture: [concurrency: :threaded],
+        threaded_stream_binary_setup_fixture: [concurrency: :threaded],
+        threaded_stream_batch_fixture: [concurrency: :threaded]
       ],
       c: [
         include_dirs: ["./native/include", "./native/vendor/simdjson"],

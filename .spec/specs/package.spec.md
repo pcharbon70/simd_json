@@ -43,7 +43,9 @@ optional redacted array index. The root module still exports only the active
 Milestone 1 and 2 operations. Phase 2 now packages private ABI v3 target,
 cursor, row, batch, status, C++ owner, Zig owner/resource, symbol policy, and
 independent ordinary/sanitizer harnesses. The NIF still exports only `nif_init`;
-no `stream/2`, Enumerable, cursor, batch, or stream resource is public yet.
+Phase 5 adds only `stream/2`, the opaque `SimdJson.Stream` type, its Enumerable
+and redacted Inspect implementations, and the Milestone 3 guide. Native cursor,
+batch, diagnostic, and failure-control surfaces remain private.
 Phase 3 packages the forward-only native batch engine and its expanded C/Zig
 qualification corpus. The shell-backed ExUnit gates retain explicit bounded
 timeouts sized for clean CI compilation of that larger private native surface.
@@ -57,7 +59,7 @@ cursor, batch, diagnostic, or production-pool API is public.
 id: simd_json.package
 kind: package
 status: active
-summary: Active native foundation and projection library with a private Milestone 3 stream preflight and no public streaming surface.
+summary: Active native foundation and projection library with a public pre-production Milestone 3 lazy streaming surface pending Phase 6 qualification.
 surface:
   - .tool-versions
   - README.md

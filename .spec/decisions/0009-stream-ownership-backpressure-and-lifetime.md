@@ -12,6 +12,12 @@ affects:
 
 # Stream Ownership, Backpressure, and Lifetime
 
+Phase 5 exposes the accepted owner-bound shell as `SimdJson.stream/2` returning
+opaque `SimdJson.Stream.t()`. Enumerable reduction performs one lazy threaded
+setup and serial correlated batches, holds only the current returned list, and
+closes on every terminal reducer path. General normalized targets and fields
+enter the private native bridge without exposing a raw cursor or batch API.
+
 ## Context
 
 A lazy stream divides one forward-only parse across many reductions and native

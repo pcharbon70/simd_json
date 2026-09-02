@@ -44,7 +44,8 @@ Milestone 3 Phase 2 transfers a separately compiled copy of that normalized
 projection into a private cursor during native conformance only. The active
 `select/2` grammar, keys, values, errors, exports, and execution remain
 unchanged, and no compiled-plan or cursor API is exposed.
-Milestone 3 Phase 4 copies ABI-committed row scalars into exact-key maps only
+Milestone 3 Phase 5 copies ABI-committed row scalars into exact-key maps through
+the separately governed lazy `stream/2` Enumerable. It exposes no public
 through private integration seams. It adds no public projection grammar,
 compiled plan, cursor, batch, or streaming export, and regression tests retain
 the active `select/2` behavior.
@@ -121,7 +122,7 @@ decisions:
   stability: stable
 
 - id: simd_json.projection_api.milestone_scope
-  statement: Milestone 2 shall expose no public compiled projection, JSONPath, wildcard, recursive descent, filter, optional or default field policy, container materialization, stream, raw cursor, ownership transfer, or eager decode API.
+  statement: Milestone 2 shall expose no public compiled projection, JSONPath, wildcard, recursive descent, filter, optional or default field policy, container materialization, raw cursor or batch, ownership transfer, or eager decode API; separately governed streaming may reuse its projection grammar.
   priority: must
   stability: stable
 ```
