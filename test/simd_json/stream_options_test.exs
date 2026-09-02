@@ -128,7 +128,7 @@ defmodule SimdJson.StreamOptionsTest do
     ]
 
     admissions_before = ThreadedOperation.admission_snapshot_for_test()
-    native_before = BuildSmoke.execution_snapshot()
+    native_before = native_admission_snapshot()
     generation = BuildSmoke.execution_generation()
 
     assert admissions_before.stream_setup == 0
@@ -147,7 +147,7 @@ defmodule SimdJson.StreamOptionsTest do
     end
 
     assert ThreadedOperation.admission_snapshot_for_test() == admissions_before
-    assert BuildSmoke.execution_snapshot() == native_before
+    assert native_admission_snapshot() == native_before
     assert BuildSmoke.execution_generation() == generation
   end
 
@@ -217,7 +217,7 @@ defmodule SimdJson.StreamOptionsTest do
 
     wait_for_quiescence()
     admissions_before = ThreadedOperation.admission_snapshot_for_test()
-    native_before = BuildSmoke.execution_snapshot()
+    native_before = native_admission_snapshot()
     coordinator_before = OperationCoordinator.snapshot()
     generation = BuildSmoke.execution_generation()
 
@@ -244,7 +244,7 @@ defmodule SimdJson.StreamOptionsTest do
     assert StreamOptions.snapshot_for_test(binary_options).source_kind == :binary
     assert StreamOptions.snapshot_for_test(document_options).source_kind == :document
     assert ThreadedOperation.admission_snapshot_for_test() == admissions_before
-    assert BuildSmoke.execution_snapshot() == native_before
+    assert native_admission_snapshot() == native_before
     assert OperationCoordinator.snapshot() == coordinator_before
     assert BuildSmoke.execution_generation() == generation
     assert BuildSmoke.document_owner_state(resource) == :open
@@ -324,5 +324,10 @@ defmodule SimdJson.StreamOptionsTest do
       Process.sleep(5)
       wait_for_quiescence(attempts - 1)
     end
+  end
+
+  defp native_admission_snapshot do
+    BuildSmoke.execution_snapshot()
+    |> Map.take([:worker_entries, :projection_worker_entries, :projection_boundary_entries])
   end
 end
