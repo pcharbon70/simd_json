@@ -154,6 +154,12 @@ v3, retaining all ABI v1/v2 layouts and symbols and adding only three versioned
 cursor entries. Canonical C11/C++17/Zig layout assertions, release inspection,
 and ordinary/sanitizer cursor conformance are executable qualification inputs.
 
+Milestone 3 Phase 3 expands those same executable native gates with row
+production, final validation, cancellation, and sanitizer cases. Their
+shell-backed ExUnit wrappers use bounded timeouts that include clean CI
+compilation time; this changes qualification scheduling only, not ABI or
+runtime semantics.
+
 The Zig and Elixir layers depend on a small stable C contract rather than C++ implementation details. Native dependency resolution is reproducible and reviewable, and clean-checkout builds do not vary with the host's package manager.
 
 The package carries vendored third-party source and must maintain license, provenance, upgrade, and vulnerability review. The extra C++ shim adds code and tests, but it confines the highest-risk language boundary to a small surface.

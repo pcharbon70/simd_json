@@ -44,6 +44,9 @@ Milestone 1 and 2 operations. Phase 2 now packages private ABI v3 target,
 cursor, row, batch, status, C++ owner, Zig owner/resource, symbol policy, and
 independent ordinary/sanitizer harnesses. The NIF still exports only `nif_init`;
 no `stream/2`, Enumerable, cursor, batch, or stream resource is public yet.
+Phase 3 packages the forward-only native batch engine and its expanded C/Zig
+qualification corpus. The shell-backed ExUnit gates retain explicit bounded
+timeouts sized for clean CI compilation of that larger private native surface.
 
 ```spec-meta
 id: simd_json.package
