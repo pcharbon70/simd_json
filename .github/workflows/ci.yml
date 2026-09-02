@@ -60,14 +60,14 @@ jobs:
           mix simd_json.verify_vendor
           mix compile --force
 
-      - name: Qualify the complete Milestone 2 release candidate
-        run: bash scripts/ci/qualify_milestone_2.sh
+      - name: Qualify the complete Milestone 3 release candidate
+        run: bash scripts/ci/qualify_milestone_3.sh
 
-      - name: Archive Milestone 2 acceptance evidence
+      - name: Archive Milestone 3 acceptance evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: milestone-2-acceptance-${{ github.sha }}
+          name: milestone-3-acceptance-${{ github.sha }}
           path: _build/qualification
           if-no-files-found: error
           retention-days: 30

@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 6 Phase - Qualify the complete Milestone 3 slice on the supported target,
+- [x] 6 Phase - Qualify the complete Milestone 3 slice on the supported target,
   demonstrate bounded-memory array ETL, and replace planned exceptions with
   executed current truth.
 
@@ -136,29 +136,29 @@ Back to plan: [README](./README.md)
 
 ## 6.4 Section — Phase 6 Integration Tests
 
-- [ ] 6.4 Section - Execute one master acceptance gate over release packaging,
+- [x] 6.4 Section - Execute one master acceptance gate over release packaging,
   native safety, public behavior, demand, lifecycle, scheduler responsiveness,
   bounded memory, ETL benchmarks, documentation, and SpecLed activation.
 
   This section produces the immutable evidence bundle and is the only gate that
   can declare Milestone 3 complete.
 
-  - [ ] 6.4.1 Task - Run the complete supported-target qualification matrix.
+  - [x] 6.4.1 Task - Run the complete supported-target qualification matrix.
 
     The task starts from a clean checkout and executes every focused command
     used by active specs against one source revision.
 
-    - [ ] 6.4.1.1 Subtask - Verify vendor and qualification fingerprint, build/inspect the Hex package offline, compile ABI v3, and run cumulative C/Zig ordinary and sanitizer suites.
-    - [ ] 6.4.1.2 Subtask - Run option, cursor, batch, Enumerable, error, ownership, select/stream exclusion, demand, halt, cleanup, malformed corpus, atom-safety, retained-memory, and public-surface tests plus every Milestone 1/2 regression.
-    - [ ] 6.4.1.3 Subtask - Run scheduler, slow-consumer, lifecycle, and frozen Jason ETL qualification, enforce every committed threshold, and archive raw revision/environment-bound evidence.
-    - [ ] 6.4.1.4 Subtask - Run `mix format --check-formatted`, documentation generation with warnings as errors, repository static analysis, and the complete `mix test` suite.
+    - [x] 6.4.1.1 Subtask - Verify vendor and qualification fingerprint, build/inspect the Hex package offline, compile ABI v3, and run cumulative C/Zig ordinary and sanitizer suites.
+    - [x] 6.4.1.2 Subtask - Run option, cursor, batch, Enumerable, error, ownership, select/stream exclusion, demand, halt, cleanup, malformed corpus, atom-safety, retained-memory, and public-surface tests plus every Milestone 1/2 regression.
+    - [x] 6.4.1.3 Subtask - Run scheduler, slow-consumer, lifecycle, and frozen Jason ETL qualification, enforce every committed threshold, and archive raw revision/environment-bound evidence.
+    - [x] 6.4.1.4 Subtask - Run `mix format --check-formatted`, documentation generation with warnings as errors, repository static analysis, and the complete `mix test` suite.
 
-  - [ ] 6.4.2 Task - Close traceability and publish acceptance.
+  - [x] 6.4.2 Task - Close traceability and publish acceptance.
 
     The task proves implementation, documentation, decisions, plans, specs, and
     generated state agree with no remaining exception or unverified claim.
 
-    - [ ] 6.4.2.1 Subtask - Run `mix spec.index`, structural `mix spec.validate --debug --min-strength claimed`, structural `mix spec.status --no-run-commands --min-strength claimed`, `mix spec.next`, and the exact reported `mix spec.check --base ...` with zero errors/warnings; keep `spec.check` last for canonical executed state.
-    - [ ] 6.4.2.2 Subtask - Run the repository traceability verifier and require all Milestone 3 subjects active, executed, linked to accepted decisions, and free of exceptions or uncovered requirements.
-    - [ ] 6.4.2.3 Subtask - Verify every Phase 1–6 checkbox has corresponding committed implementation and executed evidence before marking it complete.
-    - [ ] 6.4.2.4 Subtask - Publish the final CI evidence bundle and record workflow run, artifact digests, supported target, ETL/memory threshold results, known limitations, and source revision in the acceptance document.
+    - [x] 6.4.2.1 Subtask - Run `mix spec.index`, structural `mix spec.validate --debug --min-strength claimed`, structural `mix spec.status --no-run-commands --min-strength claimed`, `mix spec.next`, and the exact reported `mix spec.check --base ...` with zero errors/warnings; keep `spec.check` last for canonical executed state.
+    - [x] 6.4.2.2 Subtask - Run the repository traceability verifier and require all Milestone 3 subjects active, executed, linked to accepted decisions, and free of exceptions or uncovered requirements.
+    - [x] 6.4.2.3 Subtask - Verify every Phase 1–6 checkbox has corresponding committed implementation and executed evidence before marking it complete.
+    - [x] 6.4.2.4 Subtask - Publish the final CI evidence bundle and record workflow run, artifact digests, supported target, ETL/memory threshold results, known limitations, and source revision in the acceptance document.

@@ -257,6 +257,7 @@
     "scripts/ci/qualify_stream_benchmark.sh",
     "scripts/ci/qualify_stream_execution.sh",
     "scripts/ci/qualify_milestone_2.sh",
+    "scripts/ci/qualify_milestone_3.sh",
     "scripts/ci/verify_milestone_1_scope.sh",
     "scripts/ci/verify_offline_native_build.sh",
     "scripts/native/run_c_abi_conformance.sh",

@@ -1,5 +1,10 @@
 # SimdJson Package
 
+Milestone 3 Phase 6 adds the active streaming modules, ABI v3 cursor sources,
+operations and acceptance guides, qualification scripts, frozen compressed ETL
+fixtures, and their generator/policy to the source package and qualification
+fingerprint. Generated native artifacts remain excluded.
+
 Current package and documentation contract for the `SimdJson` library.
 
 The package distributes the pinned native build inputs, private C ABI, C++
