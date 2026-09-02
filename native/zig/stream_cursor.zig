@@ -150,6 +150,8 @@ pub fn Implementation(comptime c: type, comptime projection: type) type {
         pub const OwnedCursor = struct {
             handle: ?*c.simd_json_stream_cursor = null,
             parent_generation: u64 = 0,
+            output_slots: usize = 0,
+            limits: Limits = .{ .rows = 0, .encoded_bytes = 0 },
 
             pub fn empty() OwnedCursor {
                 return .{};
@@ -183,6 +185,7 @@ pub fn Implementation(comptime c: type, comptime projection: type) type {
                     .reserved = 0,
                 };
                 var handle: ?*c.simd_json_stream_cursor = null;
+                const output_slots = plan.output_slots;
                 const status = c.simd_json_stream_cursor_create(
                     document,
                     &target_descriptor,
@@ -213,6 +216,8 @@ pub fn Implementation(comptime c: type, comptime projection: type) type {
                 return .{
                     .handle = handle,
                     .parent_generation = parent_generation,
+                    .output_slots = output_slots,
+                    .limits = limits,
                 };
             }
 
@@ -220,11 +225,119 @@ pub fn Implementation(comptime c: type, comptime projection: type) type {
                 const handle = self.handle orelse return;
                 self.handle = null;
                 self.parent_generation = 0;
+                self.output_slots = 0;
+                self.limits = .{ .rows = 0, .encoded_bytes = 0 };
                 c.simd_json_stream_cursor_destroy(handle);
             }
 
             pub fn isAlive(self: *const OwnedCursor) bool {
                 return self.handle != null;
+            }
+        };
+
+        pub const OwnedBatch = struct {
+            allocator: std.mem.Allocator,
+            rows: []c.simd_json_stream_row,
+            slots: []c.simd_json_result_slot,
+            copied_bytes: []u8,
+            produced_rows: usize = 0,
+            produced_slots: usize = 0,
+            encoded_bytes: u64 = 0,
+            done: bool = false,
+
+            pub fn init(
+                allocator: std.mem.Allocator,
+                cursor: *const OwnedCursor,
+            ) BuildError!OwnedBatch {
+                if (!cursor.isAlive() or cursor.output_slots == 0)
+                    return error.InvalidTarget;
+                const row_count = std.math.cast(usize, cursor.limits.rows) orelse
+                    return error.InvalidTarget;
+                const slot_count = std.math.mul(
+                    usize,
+                    row_count,
+                    cursor.output_slots,
+                ) catch return error.InvalidTarget;
+                const byte_count = std.math.cast(
+                    usize,
+                    cursor.limits.encoded_bytes,
+                ) orelse return error.InvalidTarget;
+
+                const rows = allocator.alloc(c.simd_json_stream_row, row_count) catch
+                    return error.OutOfMemory;
+                errdefer allocator.free(rows);
+                const slots = allocator.alloc(c.simd_json_result_slot, slot_count) catch
+                    return error.OutOfMemory;
+                errdefer allocator.free(slots);
+                const copied_bytes = allocator.alloc(u8, byte_count) catch
+                    return error.OutOfMemory;
+                errdefer allocator.free(copied_bytes);
+                @memset(rows, std.mem.zeroes(c.simd_json_stream_row));
+                @memset(slots, std.mem.zeroes(c.simd_json_result_slot));
+                return .{
+                    .allocator = allocator,
+                    .rows = rows,
+                    .slots = slots,
+                    .copied_bytes = copied_bytes,
+                };
+            }
+
+            pub fn deinit(self: *OwnedBatch) void {
+                self.allocator.free(self.copied_bytes);
+                self.allocator.free(self.slots);
+                self.allocator.free(self.rows);
+                self.* = undefined;
+            }
+
+            fn descriptor(self: *OwnedBatch) c.simd_json_stream_batch_storage {
+                return .{
+                    .rows = self.rows.ptr,
+                    .row_capacity = @intCast(self.rows.len),
+                    .slots = self.slots.ptr,
+                    .slot_capacity = @intCast(self.slots.len),
+                    .copied_bytes = self.copied_bytes.ptr,
+                    .copied_byte_capacity = @intCast(self.copied_bytes.len),
+                    .produced_rows = 0,
+                    .produced_slots = 0,
+                    .encoded_bytes = 0,
+                    .done = c.SIMD_JSON_STREAM_NOT_DONE,
+                    .reserved = 0,
+                };
+            }
+
+            pub fn next(
+                self: *OwnedBatch,
+                cursor: *OwnedCursor,
+            ) ?Failure {
+                const handle = cursor.handle orelse return .{
+                    .code = .cursor_state,
+                    .native_code = null,
+                    .byte_offset = null,
+                    .output_slot = null,
+                    .array_index = null,
+                };
+                var native = self.descriptor();
+                const status = c.simd_json_stream_next_batch(handle, null, &native);
+                self.produced_rows = @intCast(native.produced_rows);
+                self.produced_slots = @intCast(native.produced_slots);
+                self.encoded_bytes = native.encoded_bytes;
+                self.done = native.done == c.SIMD_JSON_STREAM_DONE;
+                if (status.code != c.SIMD_JSON_STATUS_OK) {
+                    self.produced_rows = 0;
+                    self.produced_slots = 0;
+                    self.encoded_bytes = 0;
+                    self.done = false;
+                    return adaptFailure(status);
+                }
+                return null;
+            }
+
+            pub fn rowSlice(self: *const OwnedBatch) []const c.simd_json_stream_row {
+                return self.rows[0..self.produced_rows];
+            }
+
+            pub fn slotSlice(self: *const OwnedBatch) []const c.simd_json_result_slot {
+                return self.slots[0..self.produced_slots];
             }
         };
 

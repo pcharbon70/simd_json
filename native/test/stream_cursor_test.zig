@@ -19,7 +19,10 @@ const NativeDocument = struct {
     handle: ?*c.simd_json_document,
 
     fn init() !NativeDocument {
-        const source = "{\"rows\":[{\"value\":1}]}";
+        return initSource("{\"rows\":[{\"value\":1}]}");
+    }
+
+    fn initSource(source: []const u8) !NativeDocument {
         const capacity = try std.math.add(usize, source.len, @intCast(c.SIMD_JSON_REQUIRED_PADDING));
         const storage = try std.testing.allocator.alloc(u8, capacity);
         errdefer std.testing.allocator.free(storage);
@@ -184,4 +187,68 @@ test "every Zig target allocation failure releases earlier ownership" {
         .{},
     );
     try expectQuiescent();
+}
+
+test "owned batches preserve row order bounds and copied strings" {
+    var native_document = try NativeDocument.initSource(
+        "{\"rows\":[{\"value\":\"alpha\"},{\"value\":\"beta\"},{\"value\":\"gamma\"}]}",
+    );
+    defer native_document.deinit();
+    var plan = try makePlan();
+    defer plan.deinit();
+    var cursor = try stream.OwnedCursor.init(
+        std.testing.allocator,
+        native_document.handle,
+        &plan,
+        .{ .segments = &.{.{ .object_key = "rows" }} },
+        .{ .rows = 2, .encoded_bytes = 1024 },
+        31,
+    );
+    defer cursor.deinit();
+    var batch = try stream.OwnedBatch.init(std.testing.allocator, &cursor);
+    defer batch.deinit();
+
+    try std.testing.expect(batch.next(&cursor) == null);
+    try std.testing.expectEqual(@as(usize, 2), batch.produced_rows);
+    try std.testing.expectEqual(@as(usize, 2), batch.produced_slots);
+    try std.testing.expect(!batch.done);
+    try std.testing.expectEqual(@as(u64, 0), batch.rowSlice()[0].array_index);
+    try std.testing.expectEqual(@as(u64, 1), batch.rowSlice()[1].array_index);
+    const first = batch.slotSlice()[0].value.string;
+    const second = batch.slotSlice()[1].value.string;
+    try std.testing.expectEqualStrings("alpha", first.data[0..first.length]);
+    try std.testing.expectEqualStrings("beta", second.data[0..second.length]);
+
+    try std.testing.expect(batch.next(&cursor) == null);
+    try std.testing.expectEqual(@as(usize, 1), batch.produced_rows);
+    try std.testing.expect(batch.done);
+    try std.testing.expectEqual(@as(u64, 2), batch.rowSlice()[0].array_index);
+    const third = batch.slotSlice()[0].value.string;
+    try std.testing.expectEqualStrings("gamma", third.data[0..third.length]);
+}
+
+test "an oversized row fails atomically with its source index" {
+    var native_document = try NativeDocument.initSource(
+        "{\"rows\":[{\"value\":\"too-large\"}]}",
+    );
+    defer native_document.deinit();
+    var plan = try makePlan();
+    defer plan.deinit();
+    var cursor = try stream.OwnedCursor.init(
+        std.testing.allocator,
+        native_document.handle,
+        &plan,
+        .{ .segments = &.{.{ .object_key = "rows" }} },
+        .{ .rows = 1, .encoded_bytes = 64 },
+        37,
+    );
+    defer cursor.deinit();
+    var batch = try stream.OwnedBatch.init(std.testing.allocator, &cursor);
+    defer batch.deinit();
+    const failure = batch.next(&cursor).?;
+    try std.testing.expectEqual(stream.FailureCode.batch_too_large, failure.code);
+    try std.testing.expectEqual(@as(?u64, 0), failure.array_index);
+    try std.testing.expectEqual(@as(usize, 0), batch.produced_rows);
+    try std.testing.expectEqual(@as(usize, 0), batch.produced_slots);
+    try std.testing.expectEqual(@as(u64, 0), batch.encoded_bytes);
 }
