@@ -53,7 +53,7 @@ Back to plan: [README](./README.md)
 
 ## 6.2 Section — Scheduler, Demand, Lifecycle, and Memory Qualification
 
-- [ ] 6.2 Section - Record reproducible evidence that concurrent streaming
+- [x] 6.2 Section - Record reproducible evidence that concurrent streaming
   remains off scheduler, obeys local demand, and returns every long-lived native
   graph to baseline.
 
@@ -61,37 +61,37 @@ Back to plan: [README](./README.md)
   setup plus thousands of bounded batches, idle consumers, early exits, and
   mid-stream failures.
 
-  - [ ] 6.2.1 Task - Qualify scheduler responsiveness and boundary accounting.
+  - [x] 6.2.1 Task - Qualify scheduler responsiveness and boundary accounting.
 
     The task records raw samples and structural threaded proof under the
     supported runtime instead of inferring safety from throughput.
 
-    - [ ] 6.2.1.1 Subtask - Predeclare and record runtime, OS, architecture, scheduler counts, fixtures, target/field topology, batch limits, concurrency, warm-up, samples, percentile method, and normal/dirty utilization collection.
-    - [ ] 6.2.1.2 Subtask - Run independent 2 ms heartbeats with concurrent large full, malformed, wrong-type, oversized-row, slow, early-halted, consumer-dead, and cancelled binary/document streams.
-    - [ ] 6.2.1.3 Subtask - Preserve p95 at or below 50 ms, p99 at or below 250 ms, maximum at or below 500 ms, and dirty CPU/I/O utilization below 25 percent unless a superseding accepted decision sets stronger evidence-based budgets.
-    - [ ] 6.2.1.4 Subtask - Require exact setup, plan, row, and batch worker accounting, one boundary per setup/batch, no per-row/field entry, and structural proof of no ordinary/dirty fallback.
-    - [ ] 6.2.1.5 Subtask - Archive raw latency, scheduler wall time, batch sequences/sizes/bytes, command, environment, source revision/tree, fixture digest, and result as immutable CI evidence.
+    - [x] 6.2.1.1 Subtask - Predeclare and record runtime, OS, architecture, scheduler counts, fixtures, target/field topology, batch limits, concurrency, warm-up, samples, percentile method, and normal/dirty utilization collection.
+    - [x] 6.2.1.2 Subtask - Run independent 2 ms heartbeats with concurrent large full, malformed, wrong-type, oversized-row, slow, early-halted, consumer-dead, and cancelled binary/document streams.
+    - [x] 6.2.1.3 Subtask - Preserve p95 at or below 50 ms, p99 at or below 250 ms, maximum at or below 500 ms, and dirty CPU/I/O utilization below 25 percent unless a superseding accepted decision sets stronger evidence-based budgets.
+    - [x] 6.2.1.4 Subtask - Require exact setup, plan, row, and batch worker accounting, one boundary per setup/batch, no per-row/field entry, and structural proof of no ordinary/dirty fallback.
+    - [x] 6.2.1.5 Subtask - Archive raw latency, scheduler wall time, batch sequences/sizes/bytes, command, environment, source revision/tree, fixture digest, and result as immutable CI evidence.
 
-  - [ ] 6.2.2 Task - Qualify local demand and slow-consumer behavior.
+  - [x] 6.2.2 Task - Qualify local demand and slow-consumer behavior.
 
     The task proves that an Enumerable pause is a real native progress boundary
     and not merely delayed delivery after hidden prefetch.
 
-    - [ ] 6.2.2.1 Subtask - Pause consumers before reduction, within returned lists, and between batches while sampling cursor index, setup/batch entries, native allocations, coordinator requests, and process mailbox length.
-    - [ ] 6.2.2.2 Subtask - Require zero native setup for unreduced streams, one active and one returned batch maximum, no next sequence during pause, and no stream-specific message or allocation growth over the current batch.
-    - [ ] 6.2.2.3 Subtask - Resume each paused consumer and require exact row order, no duplicate or missing index, correct sequence, and final cleanup without a catch-up prefetch burst.
-    - [ ] 6.2.2.4 Subtask - Record that these results prove only per-stream demand and do not claim Milestone 4 global admission, queue capacity, fairness, or telemetry.
+    - [x] 6.2.2.1 Subtask - Pause consumers before reduction, within returned lists, and between batches while sampling cursor index, setup/batch entries, native allocations, coordinator requests, and process mailbox length.
+    - [x] 6.2.2.2 Subtask - Require zero native setup for unreduced streams, one active and one returned batch maximum, no next sequence during pause, and no stream-specific message or allocation growth over the current batch.
+    - [x] 6.2.2.3 Subtask - Resume each paused consumer and require exact row order, no duplicate or missing index, correct sequence, and final cleanup without a catch-up prefetch burst.
+    - [x] 6.2.2.4 Subtask - Record that these results prove only per-stream demand and do not claim Milestone 4 global admission, queue capacity, fairness, or telemetry.
 
-  - [ ] 6.2.3 Task - Qualify lifecycle, cancellation, and memory recovery.
+  - [x] 6.2.3 Task - Qualify lifecycle, cancellation, and memory recovery.
 
     The task runs a seeded bounded matrix across every state, source, batch, and
     reducer terminal path and compares the complete native graph with baseline.
 
-    - [ ] 6.2.3.1 Subtask - Randomize halt, exception, and caller death at every setup/target/row/projection/conversion/delivery/finalization boundary plus every reachable allocation and submission failure.
-    - [ ] 6.2.3.2 Subtask - Mix unreduced, ready, running, done, cancelled, and closed streams with fresh/selecting/streaming/consumed/closing/closed documents, binary graphs, select races, repeated cleanup, dropped terms, and forced GC.
-    - [ ] 6.2.3.3 Subtask - Cycle supported application stop/start generations with idle, queued, running, returned, suspended, abandoned, and completed cursors; reject stale delivery and drain before generation advance.
-    - [ ] 6.2.3.4 Subtask - Await bounded quiescence after every batch and require input, parser, document, cursor, frame, plan, node, key-byte, row, slot, string, batch, environment, operation, retained-resource, dispatcher, and failed-handoff gauges at baseline.
-    - [ ] 6.2.3.5 Subtask - Record repeated in-process shared-object unload as unsupported unless a real OS-loader harness exists; do not infer it from application restart.
+    - [x] 6.2.3.1 Subtask - Randomize halt, exception, and caller death at every setup/target/row/projection/conversion/delivery/finalization boundary plus every reachable allocation and submission failure.
+    - [x] 6.2.3.2 Subtask - Mix unreduced, ready, running, done, cancelled, and closed streams with fresh/selecting/streaming/consumed/closing/closed documents, binary graphs, select races, repeated cleanup, dropped terms, and forced GC.
+    - [x] 6.2.3.3 Subtask - Cycle supported application stop/start generations with idle, queued, running, returned, suspended, abandoned, and completed cursors; reject stale delivery and drain before generation advance.
+    - [x] 6.2.3.4 Subtask - Await bounded quiescence after every batch and require input, parser, document, cursor, frame, plan, node, key-byte, row, slot, string, batch, environment, operation, retained-resource, dispatcher, and failed-handoff gauges at baseline.
+    - [x] 6.2.3.5 Subtask - Record repeated in-process shared-object unload as unsupported unless a real OS-loader harness exists; do not infer it from application restart.
 
 ## 6.3 Section — ETL Benchmark, Documentation, and Spec Activation
 

@@ -7,7 +7,7 @@
 [
   schema_version: 1,
   qualified_on: ~D[2026-09-02],
-  input_sha256: "bcbb895edf64271d2c1a9b551b8b374473e78cfec5b1a60e1025a69ad72c10c3",
+  input_sha256: "06f51abac2271213a7f7f7b8d8fe3cf40d859b3ef7fc2a43b2c8ab0c56d85b61",
   randomized_seed: 260_831_006,
   supported_targets: [
     [
@@ -40,6 +40,7 @@
     "mix simd_json.verify_traceability",
     "bash scripts/ci/qualify_milestone_1.sh",
     "bash scripts/ci/qualify_milestone_2.sh",
-    "bash scripts/ci/qualify_native_release.sh"
+    "bash scripts/ci/qualify_native_release.sh",
+    "bash scripts/ci/qualify_stream_runtime.sh"
   ]
 ]
