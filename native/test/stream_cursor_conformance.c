@@ -216,8 +216,13 @@ static uint32_t cancellation(void *context) {
 }
 
 static int state_and_storage_matrix(document_fixture *fixture) {
-  const simd_json_stream_target target = {NULL, 0, NULL, 0};
-  simd_json_stream_cursor_config config = config_for(create_plan(), 2, 16);
+  static const uint8_t target_key[] = "rows";
+  const simd_json_projection_segment target_segment = {
+      SIMD_JSON_PROJECTION_SEGMENT_OBJECT_KEY, 0, 0,
+      sizeof(target_key) - 1, 0};
+  const simd_json_stream_target target = {
+      &target_segment, 1, target_key, sizeof(target_key) - 1};
+  simd_json_stream_cursor_config config = config_for(create_plan(), 2, 1024);
   simd_json_stream_cursor *cursor = NULL;
   simd_json_stream_row rows[2];
   simd_json_result_slot slots[2];
@@ -233,9 +238,15 @@ static int state_and_storage_matrix(document_fixture *fixture) {
                                           &cursor);
   CHECK(status.code == SIMD_JSON_STATUS_OK && cursor != NULL);
   status = simd_json_stream_next_batch(cursor, NULL, &batch);
-  CHECK(status.code == SIMD_JSON_STATUS_INTERNAL_FAILURE);
-  CHECK(batch.produced_rows == 0 && batch.produced_slots == 0 &&
-        batch.encoded_bytes == 0 && batch.done == SIMD_JSON_STREAM_NOT_DONE);
+  CHECK(status.code == SIMD_JSON_STATUS_OK);
+  CHECK(batch.produced_rows == 1 && batch.produced_slots == 1 &&
+        batch.encoded_bytes == sizeof(simd_json_stream_row) +
+                                   sizeof(simd_json_result_slot) &&
+        batch.done == SIMD_JSON_STREAM_DONE);
+  CHECK(rows[0].array_index == 0 && rows[0].slot_offset == 0 &&
+        rows[0].slot_count == 1);
+  CHECK(slots[0].tag == SIMD_JSON_RESULT_SIGNED_INTEGER &&
+        slots[0].value.signed_integer == 1);
   cancelled = 2;
   CHECK(simd_json_stream_next_batch(cursor, &probe, &batch).code ==
         SIMD_JSON_STATUS_INVALID_ARGUMENT);
@@ -243,7 +254,7 @@ static int state_and_storage_matrix(document_fixture *fixture) {
   CHECK(simd_json_stream_next_batch(cursor, &probe, &batch).code ==
         SIMD_JSON_STATUS_CANCELLED);
   CHECK(simd_json_stream_next_batch(cursor, NULL, &batch).code ==
-        SIMD_JSON_STATUS_CANCELLED);
+        SIMD_JSON_STATUS_OK);
   CHECK(simd_json_test_stream_state_set(cursor, SIMD_JSON_STREAM_CURSOR_DONE));
   CHECK(simd_json_stream_next_batch(cursor, NULL, &batch).code ==
         SIMD_JSON_STATUS_OK);

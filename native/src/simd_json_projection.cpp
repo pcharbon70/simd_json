@@ -1362,6 +1362,76 @@ void record_execution(const simd_json_projection_plan &plan,
 
 }  // namespace
 
+namespace simd_json_native {
+
+uint64_t projection_output_slots(
+    const simd_json_projection_plan *plan) noexcept {
+  return plan == nullptr ? 0 : plan->output_slots;
+}
+
+simd_json_projection_status projection_execute_value(
+    simd_json_document *document,
+    const simd_json_projection_plan *plan,
+    simdjson::ondemand::value &value,
+    simd_json_result_slot *result_slots,
+    uint64_t result_slot_count) noexcept {
+  if (document == nullptr || plan == nullptr || result_slots == nullptr ||
+      result_slot_count != plan->output_slots ||
+      exceeds_size_t(result_slot_count)) {
+    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+  clear_result_slots(result_slots, result_slot_count);
+  traversal_counters counters;
+#ifdef SIMD_JSON_TESTING
+  const auto traversal_started = std::chrono::steady_clock::now();
+  plan->execution_entries.fetch_add(1, std::memory_order_acq_rel);
+#endif
+  const auto finish = [&](simd_json_projection_status status) noexcept {
+    if (status.code != SIMD_JSON_STATUS_OK) {
+      clear_result_slots(result_slots, result_slot_count);
+    }
+#ifdef SIMD_JSON_TESTING
+    record_execution(*plan, counters, traversal_started);
+#endif
+    return status;
+  };
+  try {
+    projection_checkpoint();
+    std::vector<uint8_t> satisfied_object_edges(
+        static_cast<size_t>(plan->object_edges), UINT8_C(0));
+    simdjson::ondemand::document *native_document = document_value(document);
+    const uint8_t *data = document_data(document);
+    if (native_document == nullptr || data == nullptr) {
+      return finish(make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT));
+    }
+    traversal_context context{
+        document, *native_document, data, document_logical_length(document),
+        result_slots, satisfied_object_edges, make_status(SIMD_JSON_STATUS_OK),
+        counters};
+    simd_json_projection_status status =
+        traverse_value(value, *plan->root, context, 1);
+    if (status.code != SIMD_JSON_STATUS_OK) return finish(status);
+    if (context.pending_path_failure.code != SIMD_JSON_STATUS_OK) {
+      return finish(context.pending_path_failure);
+    }
+    for (uint64_t index = 0; index < result_slot_count; ++index) {
+      if (result_slots[index].tag == SIMD_JSON_RESULT_EMPTY ||
+          result_slots[index].reserved != UINT32_C(0)) {
+        return finish(make_status(SIMD_JSON_STATUS_INTERNAL_FAILURE));
+      }
+    }
+    return finish(make_status(SIMD_JSON_STATUS_OK));
+  } catch (...) {
+    return finish(status_from_current_exception());
+  }
+}
+
+}  // namespace simd_json_native
+
+namespace {
+
+}  // namespace
+
 extern "C" simd_json_projection_status simd_json_projection_plan_create(
     const simd_json_projection_entry *entries,
     uint64_t entry_count,

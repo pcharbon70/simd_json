@@ -21,6 +21,15 @@ uint64_t document_logical_length(
 bool claim_projection_cursor(simd_json_document *document) noexcept;
 bool projection_cancelled(simd_json_document *document) noexcept;
 
+uint64_t projection_output_slots(
+    const simd_json_projection_plan *plan) noexcept;
+simd_json_projection_status projection_execute_value(
+    simd_json_document *document,
+    const simd_json_projection_plan *plan,
+    simdjson::ondemand::value &value,
+    simd_json_result_slot *result_slots,
+    uint64_t result_slot_count) noexcept;
+
 }  // namespace simd_json_native
 
 #endif
