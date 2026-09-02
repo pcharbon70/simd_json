@@ -21,7 +21,7 @@ Back to plan: [README](./README.md)
 
 ## 6.1 Section — Release ABI, Package, and Sanitizer Qualification
 
-- [ ] 6.1 Section - Rebuild and inspect the supported release artifact with ABI
+- [x] 6.1 Section - Rebuild and inspect the supported release artifact with ABI
   v3 and exercise the complete cursor/batch/Enumerable path under native
   sanitizers.
 
@@ -29,27 +29,27 @@ Back to plan: [README](./README.md)
   and that the qualified C++/Zig/threaded/public code is exception-safe,
   symbol-limited, reproducible, and memory-safe.
 
-  - [ ] 6.1.1 Task - Requalify the native artifact and private ABI.
+  - [x] 6.1.1 Task - Requalify the native artifact and private ABI.
 
     The task extends the cumulative release matrix rather than replacing ABI
     v1/v2 or bypassing earlier package proof.
 
-    - [ ] 6.1.1.1 Subtask - Add every streaming ADR, spec, plan, header, source, harness, script, workflow, fixture, policy, public test, operations guide, and acceptance input to the qualification fingerprint.
-    - [ ] 6.1.1.2 Subtask - Build and inspect the Hex archive and perform a network-disabled clean consumer compile of ABI v3 from vendored source on Ubuntu 24.04 x86-64.
-    - [ ] 6.1.1.3 Subtask - Run deterministic and seeded-random target/cursor/batch cases, layout checks, limit arithmetic, state transitions, exception/allocation injection, and null/partial/repeated destruction tests.
-    - [ ] 6.1.1.4 Subtask - Inspect release symbols and strings for exact cumulative allowlists and absence of C++/simdjson internals, source/options, cursor diagnostics, failure controls, counters, raw paths, keys, values, and owner identity.
-    - [ ] 6.1.1.5 Subtask - Re-run vendor provenance, patch, license, CPU-dispatch, unsupported-target, offline reproducibility, and pin-change fail-closed gates from Milestones 1 and 2.
+    - [x] 6.1.1.1 Subtask - Add every streaming ADR, spec, plan, header, source, harness, script, workflow, fixture, policy, public test, operations guide, and acceptance input to the qualification fingerprint.
+    - [x] 6.1.1.2 Subtask - Build and inspect the Hex archive and perform a network-disabled clean consumer compile of ABI v3 from vendored source on Ubuntu 24.04 x86-64.
+    - [x] 6.1.1.3 Subtask - Run deterministic and seeded-random target/cursor/batch cases, layout checks, limit arithmetic, state transitions, exception/allocation injection, and null/partial/repeated destruction tests.
+    - [x] 6.1.1.4 Subtask - Inspect release symbols and strings for exact cumulative allowlists and absence of C++/simdjson internals, source/options, cursor diagnostics, failure controls, counters, raw paths, keys, values, and owner identity.
+    - [x] 6.1.1.5 Subtask - Re-run vendor provenance, patch, license, CPU-dispatch, unsupported-target, offline reproducibility, and pin-change fail-closed gates from Milestones 1 and 2.
 
-  - [ ] 6.1.2 Task - Run the real stream path under sanitizers.
+  - [x] 6.1.2 Task - Run the real stream path under sanitizers.
 
     The task instruments native translation units and NIF integration while
     executing public Enumerable behavior rather than a disconnected cursor
     micro-kernel.
 
-    - [ ] 6.1.2.1 Subtask - Run C ABI cursor/batch harnesses under AddressSanitizer and UndefinedBehaviorSanitizer with invalid descriptors, guard pages, deep targets, huge strings, exact limits, cancellation, and every injected failure edge.
-    - [ ] 6.1.2.2 Subtask - Run Zig cursor-parent ownership, plan reuse, batch conversion, copied-string, state, and teardown suites under sanitizers for binary and retained document sources.
-    - [ ] 6.1.2.3 Subtask - Run isolated threaded and public `stream/2` corpora under sanitizers across done, parse/path/type/range/size failure, slow consumer, cancellation, halt, exception/death, close, GC, and shutdown.
-    - [ ] 6.1.2.4 Subtask - Require no leak, double free, use-after-free, out-of-bounds access, integer overflow, uninitialized read, undefined behavior, C++ exception escape, stale iterator, parent pointer, borrowed string, or batch view.
+    - [x] 6.1.2.1 Subtask - Run C ABI cursor/batch harnesses under AddressSanitizer and UndefinedBehaviorSanitizer with invalid descriptors, guard pages, deep targets, huge strings, exact limits, cancellation, and every injected failure edge.
+    - [x] 6.1.2.2 Subtask - Run Zig cursor-parent ownership, plan reuse, batch conversion, copied-string, state, and teardown suites under sanitizers for binary and retained document sources.
+    - [x] 6.1.2.3 Subtask - Run isolated threaded and public `stream/2` corpora under sanitizers across done, parse/path/type/range/size failure, slow consumer, cancellation, halt, exception/death, close, GC, and shutdown.
+    - [x] 6.1.2.4 Subtask - Require no leak, double free, use-after-free, out-of-bounds access, integer overflow, uninitialized read, undefined behavior, C++ exception escape, stale iterator, parent pointer, borrowed string, or batch view.
 
 ## 6.2 Section — Scheduler, Demand, Lifecycle, and Memory Qualification
 

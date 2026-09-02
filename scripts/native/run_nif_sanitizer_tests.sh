@@ -72,9 +72,13 @@ env \
     test/native/projection_binary_lifetime_test.exs \
     test/native/projection_document_lifecycle_test.exs \
     test/native/threaded_projection_integration_test.exs \
+    test/native/stream_document_lifecycle_test.exs \
+    test/native/threaded_stream_lifecycle_test.exs \
     test/simd_json/document_api_test.exs \
     test/simd_json/error_test.exs \
     test/simd_json/phase_5_integration_test.exs \
-    test/simd_json/select_test.exs
+    test/simd_json/select_test.exs \
+    test/simd_json/stream_constructor_test.exs \
+    test/simd_json/stream_enumerable_test.exs
 
 printf 'threaded and public NIF sanitizer corpus passed\n'
