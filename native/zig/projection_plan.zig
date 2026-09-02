@@ -79,7 +79,10 @@ pub fn Implementation(comptime c: type) type {
 
             pub fn scalar(self: *const OwnedResults, index: usize) ?Scalar {
                 if (index >= self.native_slots.len) return null;
-                const slot = self.native_slots[index];
+                return scalarFromSlot(self.native_slots[index]);
+            }
+
+            pub fn scalarFromSlot(slot: c.simd_json_result_slot) ?Scalar {
                 if (slot.reserved != 0) return null;
 
                 return switch (slot.tag) {

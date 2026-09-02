@@ -185,6 +185,19 @@ measurements.
 
 ## Consequences
 
+### Phase 4 internal runtime checkpoint
+
+The private runtime now uses distinct correlated setup and batch operation
+kinds on the accepted Zigler-threaded coordinator. Binary setup owns one
+unpublished document graph; document setup reserves a shared streaming state
+that excludes selection and transfers its admitted-operation interlock to the
+cursor. Exact demand sequences serialize the real ABI v3 cursor, committed
+slots are copied into one bounded row list, slow consumers produce no prefetch,
+and cancellation plus cursor-first destruction converge on idempotent terminal
+ownership. Stream-specific diagnostics remain compile-time-gated and this
+checkpoint claims only local per-stream backpressure, not Milestone 4 global
+capacity or telemetry.
+
 Native progress is controlled directly by consumer demand, and early halt can
 release a huge parse without scanning the remainder. A cursor can remain idle
 while retaining a large input, so abandoned-stream cleanup and deterministic

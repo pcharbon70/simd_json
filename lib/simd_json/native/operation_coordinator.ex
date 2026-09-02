@@ -75,6 +75,30 @@ defmodule SimdJson.Native.OperationCoordinator do
     def stream_probe(operation) do
       GenServer.call(__MODULE__, {:stream_probe, operation}, :infinity)
     end
+
+    def stream_setup_fixture(operation, document, row_limit, byte_limit) do
+      GenServer.call(
+        __MODULE__,
+        {:stream_fixture, operation, {:setup, document, row_limit, byte_limit}},
+        :infinity
+      )
+    end
+
+    def stream_binary_setup_fixture(operation, row_limit, byte_limit) do
+      GenServer.call(
+        __MODULE__,
+        {:stream_fixture, operation, {:binary_setup, row_limit, byte_limit}},
+        :infinity
+      )
+    end
+
+    def stream_batch_fixture(operation, cursor, sequence) do
+      GenServer.call(
+        __MODULE__,
+        {:stream_fixture, operation, {:batch, cursor, sequence}},
+        :infinity
+      )
+    end
   end
 
   @spec snapshot() :: %{accepting?: boolean(), live_requests: non_neg_integer()}
@@ -253,6 +277,32 @@ defmodule SimdJson.Native.OperationCoordinator do
           {:reply, native_error(:admission_rejected), state}
       end
     end
+
+    def handle_call({:stream_fixture, operation, payload}, from, state) do
+      caller = elem(from, 0)
+      kind = operation.kind
+
+      with true <- state.accepting?,
+           true <- kind in [:stream_setup, :stream_batch],
+           true <- BuildSmoke.operation_owner_is(operation.resource, caller),
+           true <- operation.generation == BuildSmoke.execution_generation(),
+           false <- Map.has_key?(state.requests, operation.request_ref) do
+        {:noreply,
+         start_request(
+           state,
+           kind,
+           operation,
+           payload,
+           from,
+           caller,
+           submission_rejected?(state, kind)
+         )}
+      else
+        _ ->
+          _ = BuildSmoke.operation_finish(operation.resource, :discarded)
+          {:reply, native_error(:admission_rejected), state}
+      end
+    end
   end
 
   def handle_call({:submit, :document_cleanup, operation, document}, from, state) do
@@ -369,6 +419,12 @@ defmodule SimdJson.Native.OperationCoordinator do
         # its own GC teardown path.
         {:noreply, state}
     end
+  end
+
+  # Legacy-shaped, forged, or otherwise incomplete completions carry no
+  # cursor generation and batch sequence, so they cannot select any request.
+  def handle_info({@completion_tag, _kind, _request_ref, _generation, _worker, _result}, state) do
+    {:noreply, state}
   end
 
   def handle_info({:DOWN, monitor, :process, _pid, _reason}, state) do
@@ -497,9 +553,23 @@ defmodule SimdJson.Native.OperationCoordinator do
     BuildSmoke.threaded_projection_execute(operation.resource)
   end
 
-  defp execute_operation(kind, operation, _payload, nil)
-       when kind in [:stream_setup, :stream_batch] do
-    BuildSmoke.threaded_context_smoke(operation.resource)
+  if @test_hooks do
+    defp execute_operation(kind, operation, nil, nil)
+         when kind in [:stream_setup, :stream_batch] do
+      BuildSmoke.threaded_context_smoke(operation.resource)
+    end
+
+    defp execute_operation(:stream_setup, operation, {:setup, document, rows, bytes}, nil) do
+      BuildSmoke.threaded_stream_setup_fixture(operation.resource, document, rows, bytes)
+    end
+
+    defp execute_operation(:stream_setup, operation, {:binary_setup, rows, bytes}, nil) do
+      BuildSmoke.threaded_stream_binary_setup_fixture(operation.resource, rows, bytes)
+    end
+
+    defp execute_operation(:stream_batch, operation, {:batch, cursor, sequence}, nil) do
+      BuildSmoke.threaded_stream_batch_fixture(operation.resource, cursor, sequence)
+    end
   end
 
   defp complete_request(state, request_ref, request, {:ok, native_result}) do
@@ -591,6 +661,14 @@ defmodule SimdJson.Native.OperationCoordinator do
        batch_sequence: 0
      })}
   end
+
+  defp normalize_result(%{kind: kind, status: :ok, worker_context: :threaded} = result, _)
+       when kind in [:stream_setup, :stream_batch],
+       do: {:ok, result}
+
+  defp normalize_result(%{kind: kind, status: status} = result, _)
+       when kind in [:stream_setup, :stream_batch],
+       do: {:error, %{reason: status, sequence: Map.get(result, :sequence)}}
 
   defp maybe_cleanup_orphan(state, %{kind: :document_open, document: document})
        when is_reference(document) do

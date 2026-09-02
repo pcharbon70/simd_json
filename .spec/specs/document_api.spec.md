@@ -66,6 +66,10 @@ stream, Enumerable, cursor, batch, or stream type is public in this phase.
 Milestone 3 Phase 2 changes only the private ABI/resource graph. The root
 exports and all open/close/select error translations remain unchanged; no
 cursor handle, target descriptor, batch layout, or stream state reaches Elixir.
+Milestone 3 Phase 4 exercises select/stream exclusion and parent retention only
+through compile-time-gated private seams. The public document representation,
+root exports, errors, ownership rules, and absence of cursor/batch handles are
+unchanged until Phase 5.
 
 ```spec-meta
 id: simd_json.document_api

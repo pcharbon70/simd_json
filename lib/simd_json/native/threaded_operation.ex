@@ -163,6 +163,37 @@ defmodule SimdJson.Native.ThreadedOperation do
       configure_pause(operation, options)
       OperationCoordinator.stream_probe(operation)
     end
+
+    @doc false
+    def stream_setup_fixture(document, row_limit, byte_limit)
+        when is_reference(document) and is_integer(row_limit) and row_limit > 0 and
+               is_integer(byte_limit) and byte_limit > 0 do
+      generation = BuildSmoke.execution_generation()
+      operation = admit(<<>>, :stream_setup, generation)
+      OperationCoordinator.stream_setup_fixture(operation, document, row_limit, byte_limit)
+    end
+
+    def stream_binary_setup_fixture(input, row_limit, byte_limit)
+        when is_binary(input) and is_integer(row_limit) and row_limit > 0 and
+               is_integer(byte_limit) and byte_limit > 0 do
+      generation = BuildSmoke.execution_generation()
+      operation = admit(input, :stream_setup, generation)
+      OperationCoordinator.stream_binary_setup_fixture(operation, row_limit, byte_limit)
+    end
+
+    @doc false
+    def stream_batch_fixture(cursor, cursor_generation, sequence)
+        when is_reference(cursor) and is_integer(cursor_generation) and cursor_generation > 0 and
+               is_integer(sequence) and sequence >= 0 do
+      generation = BuildSmoke.execution_generation()
+
+      operation =
+        <<>>
+        |> admit(:stream_batch, generation)
+        |> Map.merge(%{cursor_generation: cursor_generation, batch_sequence: sequence})
+
+      OperationCoordinator.stream_batch_fixture(operation, cursor, sequence)
+    end
   end
 
   if @test_hooks do

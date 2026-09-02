@@ -47,6 +47,11 @@ no `stream/2`, Enumerable, cursor, batch, or stream resource is public yet.
 Phase 3 packages the forward-only native batch engine and its expanded C/Zig
 qualification corpus. The shell-backed ExUnit gates retain explicit bounded
 timeouts sized for clean CI compilation of that larger private native surface.
+Phase 4 packages private correlated setup/batch operations, binary and document
+cursor graphs, shared select/stream one-shot reservation, exact demand
+sequencing, copied bounded row lists, cancellation, and compile-time-gated
+lifecycle accounting. The root exports remain unchanged and no Enumerable,
+cursor, batch, diagnostic, or production-pool API is public.
 
 ```spec-meta
 id: simd_json.package

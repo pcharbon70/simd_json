@@ -30,6 +30,20 @@ inside the private native cursor. It adds no threaded admission, demand,
 prefetch, owner-reduction, or cleanup-coordinator behavior; those execution
 claims remain planned for Phase 4.
 
+Phase 4 connects that cursor to the existing correlated Zigler-threaded
+coordinator through private test seams. Distinct setup and batch operations
+carry request, application-generation, cursor-generation, and batch-sequence
+identity; caller death and stale completion discard converge on the existing
+coordinator owner. Binary setup retains one unpublished input/parser/document/
+plan/cursor graph, while document setup atomically reserves the shared
+fresh/selecting/streaming/consumed state and transfers its cleanup interlock to
+the cursor resource. Each demand admits one native ABI v3 batch, copies its
+complete row maps through a private join environment, advances the sequence
+only after delivery ownership, and performs no work while the consumer is
+idle. Test-only accounting exposes live setup/batch operations, worker entries,
+deliveries, discards, cursors, and retained parents; no public Enumerable or
+production pool surface is added before Phase 5 and Milestone 4 respectively.
+
 ```spec-meta
 id: simd_json.stream_execution
 kind: subsystem

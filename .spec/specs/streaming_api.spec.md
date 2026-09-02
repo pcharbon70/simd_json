@@ -29,6 +29,12 @@ Phase 3 likewise adds no public surface. Native row batches and indexed status
 are exercised only by C and Zig qualification harnesses; `stream/2`, Enumerable
 reduction, BEAM row conversion, and public runtime errors remain deferred.
 
+Phase 4 adds no public surface. Its private reduction-start and batch-demand
+seams prove lazy admission, exact copied row-map conversion, owner-first
+document exclusion, one in-flight batch, no prefetch while idle, and terminal
+cursor cleanup. `stream/2`, the opaque Enumerable implementation, public row
+delivery, and stable runtime exception translation remain Phase 5 work.
+
 ```spec-meta
 id: simd_json.streaming_api
 kind: api
