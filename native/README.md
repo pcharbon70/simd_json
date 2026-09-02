@@ -199,10 +199,13 @@ ownership keeps partial allocations private until publication.
 private ABI v3 cursor boundary. Construction copies normalized target segments
 and key bytes, borrows a document whose Zig resource retains its parent, and
 transfers exactly one immutable projection plan into the cursor. Destruction
-releases the plan and copied target in reverse order. The cursor state is
-monotonic and its reserved batch call validates bounded storage, cancellation,
-and terminal-state behavior, but array traversal and row production remain a
-later phase.
+releases the plan and copied target in reverse order. The cursor performs one
+forward-only target lookup, retains the target array iterator, and reuses the
+compiled projection engine for every source row. Its transactional batch call
+publishes only complete rows within the normalized row and encoded-byte limits,
+preserves a byte-limited next row without replay, validates enclosing and
+trailing input before reporting exact completion, and clears partial output on
+failure or cancellation.
 
 The release C ABI shared-artifact and Zigler NIF symbol surfaces are frozen in
 [`symbols`](./symbols). The standalone ABI retains the four ABI v1
@@ -445,10 +448,12 @@ ABI v3 cursor matrices add root, nested, empty-key, Unicode, maximum-index, and
 limit-boundary descriptors; one-time plan transfer; copied target ownership;
 ready/running/done/cancelled/closed behavior; bounded caller storage; every
 constructor checkpoint and exception class; null/partial teardown; and parent
-retention. The companion Zig cursor suite proves normalized serialization,
+retention. The companion C and Zig cursor suites additionally prove ordered
+multi-batch projection, exact done without an extra probe, scalar and nested
+path coverage, row/byte boundary transactionality, copied string ownership,
+indexed failures, malformed trailing-input detection, cancellation cleanup,
 idempotent owned cleanup, allocation-failure recovery, and reverse cursor-before-
-parent release. Phase 2 intentionally expects the reserved batch call to
-produce no rows.
+parent release.
 
 Run the ordinary and sanitizer matrices with:
 

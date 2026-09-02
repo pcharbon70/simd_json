@@ -71,6 +71,9 @@ typedef struct simd_json_test_stream_summary {
   uint64_t parent_generation;
   uint64_t current_row_index;
   uint64_t batch_sequence;
+  uint64_t target_lookups;
+  uint64_t projection_attempts;
+  uint64_t committed_rows;
   uint32_t state;
   uint32_t owns_projection_plan;
 } simd_json_test_stream_summary;

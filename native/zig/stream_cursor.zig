@@ -390,6 +390,9 @@ pub fn Implementation(comptime c: type, comptime projection: type) type {
                 parent_generation: u64,
                 current_row_index: u64,
                 batch_sequence: u64,
+                target_lookups: u64,
+                projection_attempts: u64,
+                committed_rows: u64,
                 state: u32,
                 owns_projection_plan: bool,
             };
@@ -421,6 +424,9 @@ pub fn Implementation(comptime c: type, comptime projection: type) type {
                     .parent_generation = native.parent_generation,
                     .current_row_index = native.current_row_index,
                     .batch_sequence = native.batch_sequence,
+                    .target_lookups = native.target_lookups,
+                    .projection_attempts = native.projection_attempts,
+                    .committed_rows = native.committed_rows,
                     .state = native.state,
                     .owns_projection_plan = native.owns_projection_plan == 1,
                 };
