@@ -99,6 +99,8 @@ This is per-stream demand control only and does not claim Milestone 4's global
 queue, fixed worker pool, cancellation registry, or telemetry.
 
 ```spec-meta
+Milestone 3 Phase 5 connects public Enumerable reduction to one correlated threaded setup followed by demand-driven correlated batch operations. Consumer work remains on the caller, native traversal remains threaded, and no global pool or admission claim is introduced.
+
 id: simd_json.native_execution
 kind: subsystem
 status: active

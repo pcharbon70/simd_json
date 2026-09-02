@@ -72,6 +72,8 @@ exports only `nif_init`, and neither traversal nor a public streaming surface is
 introduced.
 
 ```spec-meta
+Milestone 3 Phase 5 promotes only the existing ABI v3 cursor setup, bounded batch, and close bridge into the packaged runtime. Raw cursor and batch NIFs remain undocumented implementation details and the release export remains `nif_init` only.
+
 id: simd_json.native_build_and_abi
 kind: subsystem
 status: active

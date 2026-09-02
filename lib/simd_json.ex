@@ -1,8 +1,8 @@
 defmodule SimdJson do
   # covers: simd_json.package.mix_library simd_json.native_build_and_abi.layered_boundary simd_json.document_api.open_contract simd_json.document_api.binary_only simd_json.document_api.close_contract simd_json.document_api.document_argument_validation simd_json.projection_api.select_contract simd_json.projection_api.source_argument_validation simd_json.projection_api.output_key_identity simd_json.projection_api.scalar_results simd_json.projection_api.atomic_result
   @moduledoc """
-  Opens opaque JSON documents and selects scalar values using SIMD-accelerated
-  parsing.
+  Opens opaque JSON documents, selects scalar values, and lazily streams
+  projected array rows using SIMD-accelerated parsing.
 
   `select/2` extracts several named scalar paths from either a JSON binary or
   a caller-owned document. Results use the exact atom or binary keys supplied
@@ -22,8 +22,8 @@ defmodule SimdJson do
   strings are fresh binaries independent of their source.
 
   The API intentionally has no bang variant, eager decode, JSONPath, wildcard,
-  default-field policy, container materialization, public compiled plan,
-  stream, cursor, ownership-transfer, or native-handle operation.
+  default-field policy, container materialization, public compiled plan, raw
+  cursor/batch operation, ownership transfer, or native-handle operation.
 
   Threaded execution in this milestone is a qualification runtime. Production
   admission control and its bounded worker pool arrive in Milestone 4.

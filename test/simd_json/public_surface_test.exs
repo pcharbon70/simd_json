@@ -5,8 +5,9 @@ defmodule SimdJson.PublicSurfaceTest do
   alias SimdJson.Error
   alias SimdJson.Projection
   alias SimdJson.StreamOptions
+  alias SimdJson.Stream
 
-  @root_functions [close: 1, open: 1, select: 2]
+  @root_functions [close: 1, open: 1, select: 2, stream: 2]
   @struct_functions [__struct__: 0, __struct__: 1]
   @forbidden_functions [
     :decode,
@@ -16,7 +17,7 @@ defmodule SimdJson.PublicSurfaceTest do
     :project!,
     :compile_projection,
     :compile_projection!,
-    :stream,
+    :stream_batches,
     :cursor,
     :transfer,
     :owner,
@@ -34,16 +35,22 @@ defmodule SimdJson.PublicSurfaceTest do
     {:projection, :type},
     {:projection_entry, :type},
     {:projection_result, :type},
-    {:scalar_result, :type}
+    {:scalar_result, :type},
+    {:stream_fields, :type},
+    {:stream_option, :type},
+    {:stream_row, :type},
+    {:stream_target_path, :type},
+    {:stream_target_segment, :type}
   ]
 
   # covers: simd_json.document_api.milestone_scope simd_json.document_api.no_future_surface simd_json.projection_api.select_contract simd_json.projection_api.milestone_scope simd_json.projection_api.atom_and_surface_safety
-  test "exports the Milestone 1 baseline plus only the Milestone 2 select operation" do
+  test "exports the accepted document, projection, and streaming operations" do
     assert SimdJson.__info__(:functions) == @root_functions
     assert Document.__info__(:functions) == @struct_functions
-    assert Error.__info__(:functions) == @struct_functions
+    assert Error.__info__(:functions) == @struct_functions ++ [exception: 1, message: 1]
 
-    for module <- [SimdJson, Document, Error], {name, _arity} <- module.__info__(:functions) do
+    for module <- [SimdJson, Document, Error, Stream],
+        {name, _arity} <- module.__info__(:functions) do
       refute name in @forbidden_functions
     end
   end
@@ -75,13 +82,20 @@ defmodule SimdJson.PublicSurfaceTest do
   end
 
   # covers: simd_json.streaming_api.milestone_scope simd_json.streaming_api.lazy_construction simd_json.streaming_api.opaque_stream
-  test "keeps stream preflight internal without publishing a stream surface" do
+  test "publishes only the opaque stream shell over internal preflight" do
     stream_option_functions = StreamOptions.__info__(:functions)
 
-    assert stream_option_functions == [new: 2, snapshot_for_test: 1]
+    assert stream_option_functions == [
+             inspect_metadata: 1,
+             new: 2,
+             runtime: 1,
+             snapshot_for_test: 1
+           ]
+
     refute documented?(StreamOptions)
-    refute {:stream, 2} in SimdJson.__info__(:functions)
-    refute Code.ensure_loaded?(SimdJson.Stream)
+    assert {:stream, 2} in SimdJson.__info__(:functions)
+    assert Code.ensure_loaded?(Stream)
+    assert Stream.__info__(:functions) == [__struct__: 0, __struct__: 1, new: 1, options: 1]
     refute Code.ensure_loaded?(SimdJson.Cursor)
 
     for function <- [
@@ -108,7 +122,7 @@ defmodule SimdJson.PublicSurfaceTest do
       |> Enum.filter(&documented?/1)
       |> Enum.sort()
 
-    assert documented_runtime_modules == Enum.sort([SimdJson, Document, Error])
+    assert documented_runtime_modules == Enum.sort([SimdJson, Document, Error, Stream])
 
     for module <- modules, Atom.to_string(module) =~ ~r/^Elixir\.SimdJson\.Native\./ do
       refute documented?(module)
@@ -132,6 +146,7 @@ defmodule SimdJson.PublicSurfaceTest do
     assert type_kinds(Document) == [{:t, :opaque}]
     assert spec_names(Error) == []
     assert type_kinds(Error) == [{:reason, :type}, {:t, :type}]
+    assert type_kinds(Stream) == [{:t, :opaque}]
 
     {:ok, modules} = :application.get_key(:simd_json, :modules)
 
@@ -141,7 +156,11 @@ defmodule SimdJson.PublicSurfaceTest do
       |> Enum.sort()
 
     assert protocol_modules ==
-             Enum.sort([Inspect.SimdJson.Document, Inspect.SimdJson.Error])
+             Enum.sort([
+               Inspect.SimdJson.Document,
+               Inspect.SimdJson.Error,
+               Inspect.SimdJson.Stream
+             ])
   end
 
   # covers: simd_json.projection_api.milestone_scope simd_json.projection_api.error_path simd_json.projection_api.atom_and_surface_safety
@@ -163,7 +182,7 @@ defmodule SimdJson.PublicSurfaceTest do
       refute rendered =~ "native plan"
     end
 
-    for module <- [SimdJson, Document, Error] do
+    for module <- [SimdJson, Document, Error, Stream] do
       functions = module.__info__(:functions)
 
       for forbidden <- @forbidden_functions do
@@ -173,7 +192,7 @@ defmodule SimdJson.PublicSurfaceTest do
 
     refute Code.ensure_loaded?(SimdJson.CompiledProjection)
     refute Code.ensure_loaded?(SimdJson.Cursor)
-    refute Code.ensure_loaded?(SimdJson.Stream)
+    assert Code.ensure_loaded?(Stream)
   end
 
   # covers: simd_json.package.documentation_layout simd_json.projection_api.select_contract simd_json.projection_api.fresh_string_results simd_json.projection_api.milestone_scope simd_json.projection_execution.preproduction_boundary

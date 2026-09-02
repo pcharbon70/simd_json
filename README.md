@@ -68,6 +68,28 @@ handle, or public diagnostic API. The present threaded execution layer remains
 a pre-production qualification runtime; production admission control and a
 bounded worker pool arrive in Milestone 4.
 
+Stream a root or nested array lazily with a scalar projection:
+
+```elixir
+rows =
+  SimdJson.stream(json,
+    path: ["orders"],
+    fields: [sku: ["sku"], total: ["total"]],
+    batch_size: 500,
+    max_batch_bytes: 8_388_608
+  )
+
+Enum.take(rows, 10)
+```
+
+`SimdJson.stream/2` validates options immediately but performs no native work
+until its creating process begins enumeration. Binaries are replayable;
+documents are owner-bound and one-shot. Each returned string is a fresh result
+binary. One row-and-byte-bounded batch is requested at a time with no prefetch,
+and early halt closes the cursor without scanning the remaining array. Runtime
+failures raise a redacted `SimdJson.Error`; no row from a failing batch is
+published. The opaque Enumerable exposes no public cursor or batch API.
+
 Milestones 1 and 2 are active on the qualified Ubuntu 24.04 x86-64 target.
 Other platforms remain experimental or unsupported until they pass the same
 package, ABI, sanitizer, scheduler, lifecycle, benchmark, and shutdown gates.
@@ -96,3 +118,5 @@ Maintainers should also read the
 guide and
 [`Milestone 2 Projection API Acceptance Record`](docs/milestones/02-projection-api-acceptance.md)
 before changing the projection or qualification boundary.
+The public streaming contract and tuning guidance are documented in
+[`docs/milestones/03-batched-array-streaming.md`](docs/milestones/03-batched-array-streaming.md).

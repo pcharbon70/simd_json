@@ -31,9 +31,24 @@ atom-safety, error, off-scheduler, and qualification decisions remain binding.
 
 ## Status
 
-Milestone 3 is planned. Its three specifications retain complete bootstrap
-exceptions until public Enumerable, native safety, demand, scheduler,
-lifecycle, bounded-memory, and end-to-end ETL evidence is executed.
+Milestone 3 Phases 1–5 are implemented. `SimdJson.stream/2`, its opaque
+Enumerable, general native cursor setup, bounded batches, stable errors, and
+deterministic reducer cleanup are present. The three specifications retain
+bootstrap exceptions until Phase 6 executes supported-target native safety,
+scheduler, lifecycle, bounded-memory, and end-to-end ETL qualification.
+
+### Phase 5 public checkpoint
+
+Construction validates the full closed option set and captures the caller but
+does no native work. Reduction is owner-bound and requests exactly one setup,
+then one batch whenever no returned rows remain. Root and nested arrays use the
+normalized target grammar; each row uses one reusable native projection plan
+and returns exact caller keys with copied strings. Natural completion validates
+the full input. Halt, `Enum.take/2`, `Enum.find/2`, suspension termination, and
+consumer exceptions close without scanning the remainder. Binary sources are
+replayable; documents admit one selection or stream and remain consumed after
+cursor access. The runtime is still pre-production pending Phase 6 and the
+Milestone 4 global bounded worker pool.
 
 ## Prerequisites
 

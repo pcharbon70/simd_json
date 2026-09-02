@@ -48,6 +48,8 @@ state, and release cursor-before-parent ownership at terminal cleanup. No
 cursor handle or batch entry becomes public.
 
 ```spec-meta
+Milestone 3 Phase 5 makes the cursor reachable only through the opaque public Enumerable. General root/nested targets and normalized multi-field plans feed ABI v3; copied exact-key row maps cross the boundary while cursor, batch, storage, and diagnostics remain private.
+
 id: simd_json.stream_cursor
 kind: subsystem
 status: planned
