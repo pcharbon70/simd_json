@@ -42,8 +42,7 @@ defmodule SimdJson.Error do
           | :cancelled
           | :native_failure
 
-  @enforce_keys [:reason, :message]
-  defstruct [:reason, :byte_offset, :native_code, :path, :array_index, :message]
+  defexception [:reason, :byte_offset, :native_code, :path, :array_index, :message]
 
   @type t :: %__MODULE__{
           reason: reason(),

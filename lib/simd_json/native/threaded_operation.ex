@@ -252,6 +252,33 @@ defmodule SimdJson.Native.ThreadedOperation do
     |> OperationCoordinator.cleanup(document)
   end
 
+  def stream_setup(source_kind, source, projection, target, rows, bytes) do
+    generation = BuildSmoke.execution_generation()
+
+    operation =
+      admit(if(source_kind == :binary, do: source, else: <<>>), :stream_setup, generation)
+
+    OperationCoordinator.stream_setup(
+      operation,
+      source_kind,
+      source,
+      projection,
+      target,
+      rows,
+      bytes
+    )
+  end
+
+  def stream_batch(cursor, projection, cursor_generation, sequence) do
+    generation = BuildSmoke.execution_generation()
+
+    operation =
+      admit(<<>>, :stream_batch, generation)
+      |> Map.merge(%{cursor_generation: cursor_generation, batch_sequence: sequence})
+
+    OperationCoordinator.stream_batch(operation, cursor, projection, sequence)
+  end
+
   @spec submit(operation(), (-> result)) ::
           {:ok, result} | {:error, %{reason: :native_failure, stage: :threaded_submission}}
         when result: term()

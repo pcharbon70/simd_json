@@ -64,6 +64,14 @@ const StreamFixtureStatus = enum(u8) {
     invalid_target,
     native_failure,
     cursor_state,
+    invalid_json,
+    invalid_utf8,
+    unexpected_eof,
+    missing_field,
+    index_out_of_bounds,
+    incorrect_type,
+    number_out_of_range,
+    batch_too_large,
 };
 
 const StreamSetupFixtureResult = struct {
@@ -85,6 +93,10 @@ const StreamBatchFixtureResult = struct {
     encoded_bytes: u64,
     done: bool,
     rows: ?JoinCopiedTerm,
+    native_code: ?i32,
+    byte_offset: ?u64,
+    output_slot: ?u32,
+    array_index: ?u64,
     ready_for_delivery: bool,
 };
 
@@ -672,9 +684,7 @@ fn uint64Term(env: beam.env, term: e.ErlNifTerm) ?u64 {
     return value;
 }
 
-fn decodeProjection(record: *const OperationRecord) ProjectionDecodeError!DecodedProjection {
-    const env = record.private_env;
-    const projection = record.projectionTerm() catch return error.InvalidProjection;
+fn decodeProjectionTerm(env: beam.env, projection: beam.term) ProjectionDecodeError!DecodedProjection {
     const root_elements = tupleElements(env, projection, 3) orelse
         return error.InvalidProjection;
     const expected_tag = beam.make_into_atom("simd_json_projection_v1", .{ .env = env });
@@ -783,6 +793,34 @@ fn decodeProjection(record: *const OperationRecord) ProjectionDecodeError!Decode
         .paths = paths,
         .output_keys = output_keys,
     };
+}
+
+fn decodeProjection(record: *const OperationRecord) ProjectionDecodeError!DecodedProjection {
+    return decodeProjectionTerm(
+        record.private_env,
+        record.projectionTerm() catch return error.InvalidProjection,
+    );
+}
+
+fn decodeTargetTerm(env: beam.env, target: beam.term) ProjectionDecodeError![]stream_cursor.Segment {
+    const count = properListLength(env, target) orelse return error.InvalidProjection;
+    const segments = beam.allocator.alloc(stream_cursor.Segment, count) catch
+        return error.OutOfMemory;
+    errdefer beam.allocator.free(segments);
+    var list = target.v;
+    for (segments) |*segment| {
+        var head: e.ErlNifTerm = undefined;
+        var tail: e.ErlNifTerm = undefined;
+        if (e.enif_get_list_cell(env, list, &head, &tail) == 0)
+            return error.InvalidProjection;
+        list = tail;
+        var binary: e.ErlNifBinary = undefined;
+        if (e.enif_inspect_binary(env, head, &binary) != 0)
+            segment.* = .{ .object_key = binary.data[0..binary.size] }
+        else
+            segment.* = .{ .array_index = uint64Term(env, head) orelse return error.InvalidProjection };
+    }
+    return segments;
 }
 
 const OperationResourceCallbacks = struct {
@@ -2285,6 +2323,8 @@ fn streamSetupFixtureResult(
 
 pub fn threaded_stream_binary_setup_fixture(
     operation: OperationResource,
+    projection: beam.term,
+    target: beam.term,
     row_limit: u64,
     byte_limit: u64,
 ) StreamSetupFixtureResult {
@@ -2313,13 +2353,17 @@ pub fn threaded_stream_binary_setup_fixture(
         return streamSetupFixtureResult(.native_failure, record, null, record.markReadyForDelivery());
     }
 
-    const segments = [_]projection_plan.Segment{.{ .object_key = "value" }};
-    const paths = [_]projection_plan.NormalizedPath{.{ .path_slot = 0, .segments = &segments }};
-    const entries = [_]projection_plan.NormalizedEntry{.{ .output_slot = 0, .path_slot = 0 }};
-    var plan = projection_plan.OwnedPlan.init(beam.allocator, .{
-        .entries = &entries,
-        .paths = &paths,
-    }) catch |err| {
+    var decoded = decodeProjectionTerm(beam.context.env, projection) catch |err| {
+        worker_finished = true;
+        return streamSetupFixtureResult(if (err == error.OutOfMemory) .out_of_memory else .invalid_target, record, null, record.markReadyForDelivery());
+    };
+    defer decoded.deinit();
+    const target_segments = decodeTargetTerm(beam.context.env, target) catch |err| {
+        worker_finished = true;
+        return streamSetupFixtureResult(if (err == error.OutOfMemory) .out_of_memory else .invalid_target, record, null, record.markReadyForDelivery());
+    };
+    defer beam.allocator.free(target_segments);
+    var plan = projection_plan.OwnedPlan.init(beam.allocator, decoded.normalized()) catch |err| {
         worker_finished = true;
         return streamSetupFixtureResult(
             if (err == error.OutOfMemory) .out_of_memory else .native_failure,
@@ -2334,7 +2378,7 @@ pub fn threaded_stream_binary_setup_fixture(
         beam.allocator,
         owned_document.ownedOperationDocument(),
         &plan,
-        .{ .segments = &.{} },
+        .{ .segments = target_segments },
         .{ .rows = row_limit, .encoded_bytes = byte_limit },
         parent_generation,
     ) catch |err| {
@@ -2384,6 +2428,8 @@ pub fn threaded_stream_binary_setup_fixture(
 pub fn threaded_stream_setup_fixture(
     operation: OperationResource,
     document: DocumentResource,
+    projection: beam.term,
+    target: beam.term,
     row_limit: u64,
     byte_limit: u64,
 ) StreamSetupFixtureResult {
@@ -2428,13 +2474,17 @@ pub fn threaded_stream_setup_fixture(
             _ = parent_control.native.rollbackStream(reservation);
     };
 
-    const segments = [_]projection_plan.Segment{.{ .object_key = "value" }};
-    const paths = [_]projection_plan.NormalizedPath{.{ .path_slot = 0, .segments = &segments }};
-    const entries = [_]projection_plan.NormalizedEntry{.{ .output_slot = 0, .path_slot = 0 }};
-    var plan = projection_plan.OwnedPlan.init(beam.allocator, .{
-        .entries = &entries,
-        .paths = &paths,
-    }) catch |err| {
+    var decoded = decodeProjectionTerm(beam.context.env, projection) catch |err| {
+        worker_finished = true;
+        return streamSetupFixtureResult(if (err == error.OutOfMemory) .out_of_memory else .invalid_target, record, null, record.markReadyForDelivery());
+    };
+    defer decoded.deinit();
+    const target_segments = decodeTargetTerm(beam.context.env, target) catch |err| {
+        worker_finished = true;
+        return streamSetupFixtureResult(if (err == error.OutOfMemory) .out_of_memory else .invalid_target, record, null, record.markReadyForDelivery());
+    };
+    defer beam.allocator.free(target_segments);
+    var plan = projection_plan.OwnedPlan.init(beam.allocator, decoded.normalized()) catch |err| {
         worker_finished = true;
         return streamSetupFixtureResult(
             if (err == error.OutOfMemory) .out_of_memory else .native_failure,
@@ -2458,7 +2508,7 @@ pub fn threaded_stream_setup_fixture(
         beam.allocator,
         native_document,
         &plan,
-        .{ .segments = &.{} },
+        .{ .segments = target_segments },
         .{ .rows = row_limit, .encoded_bytes = byte_limit },
         reservation.generation,
     ) catch |err| {
@@ -2508,6 +2558,7 @@ pub fn threaded_stream_setup_fixture(
 pub fn threaded_stream_batch_fixture(
     operation: OperationResource,
     cursor: StreamCursorResource,
+    projection: beam.term,
     sequence: u64,
 ) StreamBatchFixtureResult {
     const record = operation.unpack();
@@ -2521,6 +2572,10 @@ pub fn threaded_stream_batch_fixture(
         .encoded_bytes = 0,
         .done = false,
         .rows = null,
+        .native_code = null,
+        .byte_offset = null,
+        .output_slot = null,
+        .array_index = null,
         .ready_for_delivery = false,
     };
     if (record.kind != .stream_batch or !record.beginRunning()) {
@@ -2555,13 +2610,38 @@ pub fn threaded_stream_batch_fixture(
         return result;
     };
     defer batch.deinit();
-    if (batch.next(&control.native)) |_| {
+    if (batch.next(&control.native)) |failure| {
+        _ = stream_cursor_demand_cancel(cursor);
+        worker_finished = true;
+        result.status = switch (failure.code) {
+            .invalid_json => .invalid_json,
+            .invalid_utf8 => .invalid_utf8,
+            .unexpected_eof => .unexpected_eof,
+            .out_of_memory => .out_of_memory,
+            .missing_field => .missing_field,
+            .index_out_of_bounds => .index_out_of_bounds,
+            .incorrect_type, .invalid_argument => .incorrect_type,
+            .number_out_of_range => .number_out_of_range,
+            .cursor_consumed, .cursor_state => .cursor_state,
+            .cancelled => .cancelled,
+            .batch_too_large => .batch_too_large,
+            .internal_failure => .native_failure,
+        };
+        result.native_code = failure.native_code;
+        result.byte_offset = failure.byte_offset;
+        result.output_slot = failure.output_slot;
+        result.array_index = failure.array_index;
+        result.ready_for_delivery = record.markReadyForDelivery();
+        return result;
+    }
+    var decoded = decodeProjectionTerm(beam.context.env, projection) catch {
         _ = stream_cursor_demand_cancel(cursor);
         worker_finished = true;
         result.status = .native_failure;
         result.ready_for_delivery = record.markReadyForDelivery();
         return result;
-    }
+    };
+    defer decoded.deinit();
     var rows = beam.make_empty_list(.{ .env = record.private_env });
     var row_index = batch.produced_rows;
     while (row_index > 0) {
@@ -2574,31 +2654,41 @@ pub fn threaded_stream_batch_fixture(
             result.ready_for_delivery = record.markReadyForDelivery();
             return result;
         };
-        const scalar = projection_plan.OwnedResults.scalarFromSlot(batch.slots[slot_index]) orelse {
+        var map = beam.term{ .v = e.enif_make_new_map(record.private_env) };
+        for (decoded.output_keys, 0..) |source_key, field_index| {
+            const scalar = projection_plan.OwnedResults.scalarFromSlot(batch.slots[slot_index + field_index]) orelse {
+                _ = stream_cursor_demand_cancel(cursor);
+                worker_finished = true;
+                result.status = .native_failure;
+                result.ready_for_delivery = record.markReadyForDelivery();
+                return result;
+            };
+            const value = scalarTerm(record.private_env, scalar) catch {
+                _ = stream_cursor_demand_cancel(cursor);
+                worker_finished = true;
+                result.status = .out_of_memory;
+                result.ready_for_delivery = record.markReadyForDelivery();
+                return result;
+            };
+            const key = beam.copy(record.private_env, source_key);
+            var next_map: e.ErlNifTerm = undefined;
+            if (e.enif_make_map_put(record.private_env, map.v, key.v, value.v, &next_map) == 0) {
+                _ = stream_cursor_demand_cancel(cursor);
+                worker_finished = true;
+                result.status = .out_of_memory;
+                result.ready_for_delivery = record.markReadyForDelivery();
+                return result;
+            }
+            map = .{ .v = next_map };
+        }
+        if (row.slot_count != decoded.output_keys.len) {
             _ = stream_cursor_demand_cancel(cursor);
             worker_finished = true;
             result.status = .native_failure;
             result.ready_for_delivery = record.markReadyForDelivery();
             return result;
-        };
-        const value = scalarTerm(record.private_env, scalar) catch {
-            _ = stream_cursor_demand_cancel(cursor);
-            worker_finished = true;
-            result.status = .out_of_memory;
-            result.ready_for_delivery = record.markReadyForDelivery();
-            return result;
-        };
-        const map = beam.term{ .v = e.enif_make_new_map(record.private_env) };
-        const key = beam.make_into_atom("value", .{ .env = record.private_env });
-        var next_map: e.ErlNifTerm = undefined;
-        if (e.enif_make_map_put(record.private_env, map.v, key.v, value.v, &next_map) == 0) {
-            _ = stream_cursor_demand_cancel(cursor);
-            worker_finished = true;
-            result.status = .out_of_memory;
-            result.ready_for_delivery = record.markReadyForDelivery();
-            return result;
         }
-        rows = .{ .v = e.enif_make_list_cell(record.private_env, next_map, rows.v) };
+        rows = .{ .v = e.enif_make_list_cell(record.private_env, map.v, rows.v) };
     }
     record.projection_result_payload.term = rows;
     _ = stream_cursor_demand_complete(cursor, sequence, batch.done);
