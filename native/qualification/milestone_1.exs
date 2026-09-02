@@ -7,7 +7,7 @@
 [
   schema_version: 1,
   qualified_on: ~D[2026-09-02],
-  input_sha256: "06f51abac2271213a7f7f7b8d8fe3cf40d859b3ef7fc2a43b2c8ab0c56d85b61",
+  input_sha256: "df9ec98e8c2ab5b6d33c96d3ccde68ca928ef69bfc6c42211054f3f63647498e",
   randomized_seed: 260_831_006,
   supported_targets: [
     [
@@ -41,6 +41,8 @@
     "bash scripts/ci/qualify_milestone_1.sh",
     "bash scripts/ci/qualify_milestone_2.sh",
     "bash scripts/ci/qualify_native_release.sh",
-    "bash scripts/ci/qualify_stream_runtime.sh"
+    "bash scripts/ci/qualify_stream_runtime.sh",
+    "bash scripts/ci/qualify_stream_benchmark.sh",
+    "bash scripts/ci/qualify_stream_execution.sh"
   ]
 ]

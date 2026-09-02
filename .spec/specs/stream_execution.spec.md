@@ -1,6 +1,6 @@
 # Stream Execution and Lifecycle
 
-Planned current-truth contract for Milestone 3 lazy cursor setup, correlated
+Current-truth contract for Milestone 3 lazy cursor setup, correlated
 threaded batches, per-stream demand backpressure, document consumption,
 cancellation, deterministic cleanup, scheduler qualification, and ETL evidence.
 
@@ -49,7 +49,7 @@ Milestone 3 Phase 5 binds public reduction to the constructing owner, performs l
 ```spec-meta
 id: simd_json.stream_execution
 kind: subsystem
-status: planned
+status: active
 summary: Milestone 3 runs lazy array setup and demand-driven batches off scheduler with one-owner state, no prefetch, prompt halt, and qualified bounded memory.
 surface:
   - native/**
@@ -281,10 +281,12 @@ consumption, binary lifetime, cursor state, slow-consumer, no-prefetch,
 early-halt, consumer exception/death, cancellation, close, shutdown, sanitizer,
 baseline, scheduler, and frozen end-to-end Jason ETL evidence.
 
-## Exceptions
+## Verification
 
-```spec-exceptions
-- id: simd_json.stream_execution.milestone_03_bootstrap
+```spec-verification
+- kind: command
+  target: bash scripts/ci/qualify_stream_execution.sh
+  execute: true
   covers:
     - simd_json.stream_execution.lazy_setup
     - simd_json.stream_execution.threaded_stream_work
@@ -312,5 +314,4 @@ baseline, scheduler, and frozen end-to-end Jason ETL evidence.
     - simd_json.stream_execution.midstream_failure_recovery
     - simd_json.stream_execution.concurrent_responsiveness
     - simd_json.stream_execution.jason_array_etl
-  reason: Milestone 3 stream execution and qualification do not exist; remove this exception and replace it with executed lazy setup, correlation, ownership, demand, cancellation, cleanup, scheduler, memory, sanitizer, and ETL benchmark evidence before activation.
 ```

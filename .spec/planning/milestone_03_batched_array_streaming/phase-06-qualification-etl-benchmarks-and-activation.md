@@ -95,7 +95,7 @@ Back to plan: [README](./README.md)
 
 ## 6.3 Section — ETL Benchmark, Documentation, and Spec Activation
 
-- [ ] 6.3 Section - Demonstrate bounded-memory product value end to end,
+- [x] 6.3 Section - Demonstrate bounded-memory product value end to end,
   publish reproducible operating evidence, and make implemented contracts
   active.
 
@@ -103,36 +103,36 @@ Back to plan: [README](./README.md)
   milestone. Fixtures, reduction, batch matrix, samples, and thresholds are
   frozen before accepted measurements.
 
-  - [ ] 6.3.1 Task - Freeze and run the Jason array ETL comparison.
+  - [x] 6.3.1 Task - Freeze and run the Jason array ETL comparison.
 
     The task compares equivalent successful and early-halt workflows rather
     than a native batch kernel against an unrelated decode call.
 
-    - [ ] 6.3.1.1 Subtask - Commit deterministic small, medium, and million-row sparse array fixtures with root/nested variants, large unselected fields, selected paths, expected reduction digest, huge-row cases, generator seed, and source digest.
-    - [ ] 6.3.1.2 Subtask - Before measurement, commit pinned Jason version, equivalent lookup/projection/reduction work, batch-size matrix, row/byte limits, warm-up, samples, GC/isolation/memory policy, early-halt points, and bounded-memory acceptance thresholds.
-    - [ ] 6.3.1.3 Subtask - Measure `SimdJson.stream/2` including validation, lazy setup, input copy, target lookup, plan compilation, every batch, row conversion, consumer reduction, final validation, and cleanup against Jason full decode plus equivalent operations.
-    - [ ] 6.3.1.4 Subtask - Record time to first row/batch, total latency, rows/input bytes per second, batch crossings, p50/p95/p99, process/binary/RSS/native peaks and baselines, retained input, allocated words/bytes, GC count/time, reductions, and scheduler utilization.
-    - [ ] 6.3.1.5 Subtask - Require memory to remain within the predeclared flat-per-batch envelope across thousands of batches and pass the declared large-fixture advantage over Jason; present latency/throughput as measured context rather than universal superiority.
+    - [x] 6.3.1.1 Subtask - Commit deterministic small, medium, and million-row sparse array fixtures with root/nested variants, large unselected fields, selected paths, expected reduction digest, huge-row cases, generator seed, and source digest.
+    - [x] 6.3.1.2 Subtask - Before measurement, commit pinned Jason version, equivalent lookup/projection/reduction work, batch-size matrix, row/byte limits, warm-up, samples, GC/isolation/memory policy, early-halt points, and bounded-memory acceptance thresholds.
+    - [x] 6.3.1.3 Subtask - Measure `SimdJson.stream/2` including validation, lazy setup, input copy, target lookup, plan compilation, every batch, row conversion, consumer reduction, final validation, and cleanup against Jason full decode plus equivalent operations.
+    - [x] 6.3.1.4 Subtask - Record time to first row/batch, total latency, rows/input bytes per second, batch crossings, p50/p95/p99, process/binary/RSS/native peaks and baselines, retained input, allocated words/bytes, GC count/time, reductions, and scheduler utilization.
+    - [x] 6.3.1.5 Subtask - Require memory to remain within the predeclared flat-per-batch envelope across thousands of batches and pass the declared large-fixture advantage over Jason; present latency/throughput as measured context rather than universal superiority.
 
-  - [ ] 6.3.2 Task - Publish stream operations and acceptance records.
+  - [x] 6.3.2 Task - Publish stream operations and acceptance records.
 
     The task makes API behavior, tuning, reproduction, limitations, and evidence
     discoverable without turning test seams into product features.
 
-    - [ ] 6.3.2.1 Subtask - Add a Milestone 3 operations guide covering options, defaults, root/nested targets, ownership, document consumption, errors, early halt, bounds, tuning, build/test/sanitizer/scheduler/demand/benchmark commands, fixture regeneration, upgrades, and failure triage.
-    - [ ] 6.3.2.2 Subtask - Add an immutable acceptance record with source revision/tree, ABI/tool/dependency versions, target, qualification fingerprint, seeds/digests, artifact locations, thresholds, batch/memory/scheduler results, limitations, and exact reproduction commands.
-    - [ ] 6.3.2.3 Subtask - Update roadmap, milestone, README, module docs, ExDoc extras, package metadata, and support statements to mark Milestone 3 active only on the actually qualified target.
-    - [ ] 6.3.2.4 Subtask - Keep the runtime labeled pre-production and explicitly defer batch API, raw cursor, prefetch, transfer, checkpoint/resume, parallel array work, eager decode, global worker admission, and telemetry.
+    - [x] 6.3.2.1 Subtask - Add a Milestone 3 operations guide covering options, defaults, root/nested targets, ownership, document consumption, errors, early halt, bounds, tuning, build/test/sanitizer/scheduler/demand/benchmark commands, fixture regeneration, upgrades, and failure triage.
+    - [x] 6.3.2.2 Subtask - Add an immutable acceptance record with source revision/tree, ABI/tool/dependency versions, target, qualification fingerprint, seeds/digests, artifact locations, thresholds, batch/memory/scheduler results, limitations, and exact reproduction commands.
+    - [x] 6.3.2.3 Subtask - Update roadmap, milestone, README, module docs, ExDoc extras, package metadata, and support statements to mark Milestone 3 active only on the actually qualified target.
+    - [x] 6.3.2.4 Subtask - Keep the runtime labeled pre-production and explicitly defer batch API, raw cursor, prefetch, transfer, checkpoint/resume, parallel array work, eager decode, global worker admission, and telemetry.
 
-  - [ ] 6.3.3 Task - Activate Milestone 3 current truth.
+  - [x] 6.3.3 Task - Activate Milestone 3 current truth.
 
     The task replaces bootstrap allowances with executed verification and
     audits every new and inherited contract against the final artifact.
 
-    - [ ] 6.3.3.1 Subtask - Add evidence inventories and executable qualification commands covering every Streaming API, Stream Cursor, and Stream Execution requirement and scenario.
-    - [ ] 6.3.3.2 Subtask - Set all three subjects to `active`, require executed verification strength, and remove their Milestone 3 bootstrap exceptions in the same change.
-    - [ ] 6.3.3.3 Subtask - Audit every `covers:` marker, decision link, status, surface, test target, command, roadmap link, plan checkbox, and generated SpecLed edge.
-    - [ ] 6.3.3.4 Subtask - Confirm every active Milestone 1 and 2 subject and qualification gate remains green after ABI v3, document use state, error metadata, Enumerable protocol, and public surface reconciliation.
+    - [x] 6.3.3.1 Subtask - Add evidence inventories and executable qualification commands covering every Streaming API, Stream Cursor, and Stream Execution requirement and scenario.
+    - [x] 6.3.3.2 Subtask - Set all three subjects to `active`, require executed verification strength, and remove their Milestone 3 bootstrap exceptions in the same change.
+    - [x] 6.3.3.3 Subtask - Audit every `covers:` marker, decision link, status, surface, test target, command, roadmap link, plan checkbox, and generated SpecLed edge.
+    - [x] 6.3.3.4 Subtask - Confirm every active Milestone 1 and 2 subject and qualification gate remains green after ABI v3, document use state, error metadata, Enumerable protocol, and public surface reconciliation.
 
 ## 6.4 Section — Phase 6 Integration Tests
 

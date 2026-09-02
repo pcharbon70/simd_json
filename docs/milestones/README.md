@@ -208,6 +208,12 @@ Milestone 2 is complete when one call extracts multiple paths, shared path prefi
 
 [Detailed implementation reference](03-batched-array-streaming.md)
 
+[Implementation and qualification operations](03-batched-array-streaming-operations.md)
+
+[Acceptance record](03-batched-array-streaming-acceptance.md)
+
+**Status:** Active on the qualified Ubuntu 24.04 x86-64 target.
+
 ### Goal
 
 Process arrays containing millions of records through a lazy Elixir `Enumerable`, returning projected rows in bounded native batches rather than decoding the complete array or crossing the NIF boundary for every field.

@@ -1,6 +1,6 @@
 # Milestone 3 — Batched Array Streaming
 
-[Back to the architecture overview](../../.spec/research/simdjson_beam_nif_architecture.md#proposed-implementation-milestones)
+[Back to the architecture overview](https://github.com/pcharbon70/simd_json/blob/main/.spec/research/simdjson_beam_nif_architecture.md#proposed-implementation-milestones)
 
 ## Outcome
 
@@ -16,7 +16,7 @@ Milestone 3 is governed by these accepted architecture decisions:
 - [Forward-Only Batched Array Cursor](https://github.com/pcharbon70/simd_json/blob/main/.spec/decisions/0008-forward-only-batched-array-cursor.md)
 - [Stream Ownership, Backpressure, and Lifetime](https://github.com/pcharbon70/simd_json/blob/main/.spec/decisions/0009-stream-ownership-backpressure-and-lifetime.md)
 
-Its implementation and closure evidence are defined by these planned
+Its implementation and closure evidence are defined by these active
 current-truth specifications:
 
 - [Streaming API](https://github.com/pcharbon70/simd_json/blob/main/.spec/specs/streaming_api.spec.md)
@@ -31,11 +31,10 @@ atom-safety, error, off-scheduler, and qualification decisions remain binding.
 
 ## Status
 
-Milestone 3 Phases 1–5 are implemented. `SimdJson.stream/2`, its opaque
-Enumerable, general native cursor setup, bounded batches, stable errors, and
-deterministic reducer cleanup are present. The three specifications retain
-bootstrap exceptions until Phase 6 executes supported-target native safety,
-scheduler, lifecycle, bounded-memory, and end-to-end ETL qualification.
+Milestone 3 is active on the qualified Ubuntu 24.04 x86-64 target.
+`SimdJson.stream/2`, its opaque Enumerable, ABI v3 cursor, bounded batches,
+stable errors, deterministic cleanup, sanitizer coverage, demand evidence, and
+million-row Jason ETL comparison have passed the Phase 6 acceptance gate.
 
 ### Phase 5 public checkpoint
 

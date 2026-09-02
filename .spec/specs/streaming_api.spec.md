@@ -1,6 +1,6 @@
 # Streaming API
 
-Planned current-truth contract for the Milestone 3 `SimdJson.stream/2` lazy
+Current-truth contract for the Milestone 3 `SimdJson.stream/2` lazy
 Enumerable, closed option grammar, projected row values, and indexed runtime
 errors.
 
@@ -40,7 +40,7 @@ Milestone 3 Phase 5 exposes `SimdJson.stream/2` and opaque `SimdJson.Stream.t()`
 ```spec-meta
 id: simd_json.streaming_api
 kind: api
-status: planned
+status: active
 summary: Milestone 3 exposes one owner-bound lazy Enumerable that yields projected rows from bounded native batches.
 surface:
   - lib/simd_json.ex
@@ -254,10 +254,12 @@ option grammar, laziness, typespec, doctest, Enumerable, scalar row, boundary,
 ownership, replay, indexed-error, batch atomicity, early-halt, redaction, atom
 safety, and public-surface evidence through the real native stream path.
 
-## Exceptions
+## Verification
 
-```spec-exceptions
-- id: simd_json.streaming_api.milestone_03_bootstrap
+```spec-verification
+- kind: command
+  target: MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs
+  execute: true
   covers:
     - simd_json.streaming_api.stream_contract
     - simd_json.streaming_api.lazy_construction
@@ -281,5 +283,4 @@ safety, and public-surface evidence through the real native stream path.
     - simd_json.streaming_api.owner_and_reduction_semantics
     - simd_json.streaming_api.early_halt_and_consumer_exception
     - simd_json.streaming_api.surface_and_redaction
-  reason: Milestone 3 public streaming is not implemented; remove this exception and replace it with executed lazy construction, option, Enumerable, row, ownership, error, cleanup, redaction, and surface evidence before activation.
 ```
