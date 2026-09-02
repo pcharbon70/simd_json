@@ -44,9 +44,9 @@ idle. Test-only accounting exposes live setup/batch operations, worker entries,
 deliveries, discards, cursors, and retained parents; no public Enumerable or
 production pool surface is added before Phase 5 and Milestone 4 respectively.
 
-```spec-meta
 Milestone 3 Phase 5 binds public reduction to the constructing owner, performs lazy setup on first demand, retains at most one returned batch, requests no next batch until its rows are consumed, and closes deterministically on done, halt, reducer exception, or runtime failure.
 
+```spec-meta
 id: simd_json.stream_execution
 kind: subsystem
 status: planned

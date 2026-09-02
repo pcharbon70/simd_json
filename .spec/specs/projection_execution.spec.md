@@ -62,9 +62,9 @@ private threaded cursor fixture. The shared document use state now excludes a
 stream reservation from selection, while the active public `select/2` worker,
 result shape, error translation, and qualification boundary remain unchanged.
 
-```spec-meta
 Milestone 3 Phase 5 accepts the normalized field plan and target at lazy setup, compiles one cursor-owned native plan, and uses output-slot order to atomically convert each native batch into exact-key BEAM maps.
 
+```spec-meta
 id: simd_json.projection_execution
 kind: subsystem
 status: active

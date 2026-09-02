@@ -35,9 +35,9 @@ document exclusion, one in-flight batch, no prefetch while idle, and terminal
 cursor cleanup. `stream/2`, the opaque Enumerable implementation, public row
 delivery, and stable runtime exception translation remain Phase 5 work.
 
-```spec-meta
 Milestone 3 Phase 5 exposes `SimdJson.stream/2` and opaque `SimdJson.Stream.t()` with Enumerable and redacted Inspect implementations. Construction mistakes raise synchronously; native setup and batch failures raise stable redacted `SimdJson.Error` values during owner reduction.
 
+```spec-meta
 id: simd_json.streaming_api
 kind: api
 status: planned

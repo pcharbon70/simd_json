@@ -28,6 +28,7 @@ defimpl Enumerable, for: SimdJson.Stream do
   alias SimdJson.Error
   alias SimdJson.Native.BuildSmoke
   alias SimdJson.Native.ThreadedOperation
+  alias SimdJson.Projection
   alias SimdJson.StreamOptions
 
   def count(_stream), do: {:error, __MODULE__}
@@ -67,7 +68,7 @@ defimpl Enumerable, for: SimdJson.Stream do
 
     case setup do
       {:ok, %{cursor: cursor}} -> drive(cursor, runtime.fields, 1, 0, [], acc, reducer)
-      {:error, native} -> raise translate(native)
+      {:error, native} -> raise translate(native, runtime.fields)
     end
   end
 
@@ -80,7 +81,7 @@ defimpl Enumerable, for: SimdJson.Stream do
         drive(cursor, projection, generation, sequence + 1, {rows, done}, acc, reducer)
 
       {:error, native} ->
-        close(cursor, {:raise, translate(native)})
+        close(cursor, {:raise, translate(native, projection)})
     end
   end
 
@@ -132,7 +133,7 @@ defimpl Enumerable, for: SimdJson.Stream do
     end
   end
 
-  defp translate(native) do
+  defp translate(native, projection) do
     native_reason = Map.get(native, :reason, :native_failure)
     reason = stable_reason(native_reason)
 
@@ -141,7 +142,8 @@ defimpl Enumerable, for: SimdJson.Stream do
       message: message(reason),
       byte_offset: safe_non_negative(Map.get(native, :byte_offset)),
       native_code: safe_integer(Map.get(native, :native_code)),
-      array_index: safe_non_negative(Map.get(native, :array_index))
+      array_index: safe_non_negative(Map.get(native, :array_index)),
+      path: Projection.path_for_output_slot(projection, Map.get(native, :output_slot))
     }
   end
 

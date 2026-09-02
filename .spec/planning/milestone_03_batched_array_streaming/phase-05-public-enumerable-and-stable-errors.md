@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 5 Phase - Expose the qualified internal stream slice as lazy
+- [x] 5 Phase - Expose the qualified internal stream slice as lazy
   `SimdJson.stream/2`, flatten bounded batches into exact row maps, raise stable
   indexed runtime errors, and lock the Milestone 3 public surface.
 
@@ -28,7 +28,7 @@ Back to plan: [README](./README.md)
 
 ## 5.1 Section — Public Stream Function and Opaque Type
 
-- [ ] 5.1 Section - Add one typed public constructor whose result performs no
+- [x] 5.1 Section - Add one typed public constructor whose result performs no
   native work until its owner begins Enumerable reduction.
 
   This section preserves the caller-mistake versus runtime-error boundary and
@@ -57,7 +57,7 @@ Back to plan: [README](./README.md)
 
 ## 5.2 Section — Enumerable Reduction, Row Delivery, and Errors
 
-- [ ] 5.2 Section - Turn private bounded batches into a row-by-row Enumerable
+- [x] 5.2 Section - Turn private bounded batches into a row-by-row Enumerable
   with one setup, demand-driven next calls, and deterministic after cleanup.
 
   This section makes ordinary Enum and Stream composition safe without exposing
@@ -104,7 +104,7 @@ Back to plan: [README](./README.md)
 
 ## 5.3 Section — Documentation and Current-Truth Reconciliation
 
-- [ ] 5.3 Section - Make public docs, active earlier contracts, package truth,
+- [x] 5.3 Section - Make public docs, active earlier contracts, package truth,
   and allowlists describe the added Enumerable without claiming qualification
   or production concurrency early.
 
@@ -142,7 +142,7 @@ Back to plan: [README](./README.md)
 
 ## 5.4 Section — Phase 5 Integration Tests
 
-- [ ] 5.4 Section - Prove the complete public contract across laziness,
+- [x] 5.4 Section - Prove the complete public contract across laziness,
   options, Enumerable control flow, row results, batch boundaries, indexed
   failures, ownership, backpressure, cleanup, redaction, and scope.
 

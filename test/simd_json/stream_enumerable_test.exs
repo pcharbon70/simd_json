@@ -65,4 +65,25 @@ defmodule SimdJson.StreamEnumerableTest do
     assert :ok = SimdJson.close(document)
     assert :ok = SimdJson.close(document)
   end
+
+  test "raises stable indexed field errors after whole-batch cleanup" do
+    stream =
+      SimdJson.stream(~s([{"value":1},{"other":2}]),
+        path: [],
+        fields: [value: ["value"]],
+        batch_size: 2
+      )
+
+    assert_raise Error, fn -> Enum.to_list(stream) end
+
+    try do
+      Enum.to_list(stream)
+    rescue
+      error in Error ->
+        assert error.reason == :no_such_field
+        assert error.array_index == 1
+        assert error.path == ["value"]
+        refute inspect(error) =~ "value"
+    end
+  end
 end
