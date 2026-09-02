@@ -1,6 +1,6 @@
 # Stream Cursor and Batch Engine
 
-Planned current-truth contract for the Milestone 3 private ABI v3 array cursor,
+Current-truth contract for the Milestone 3 private ABI v3 array cursor,
 forward-only target traversal, reusable per-row projection plan, bounded native
 batches, and transactional result ownership.
 
@@ -52,7 +52,7 @@ Milestone 3 Phase 5 makes the cursor reachable only through the opaque public En
 ```spec-meta
 id: simd_json.stream_cursor
 kind: subsystem
-status: planned
+status: active
 summary: Milestone 3 advances one retained array cursor through transactional row-and-byte-bounded projection batches using private ABI v3.
 surface:
   - native/include/**
@@ -267,10 +267,12 @@ exact-end, complete-validation, indexed-status, cancellation, failure injection,
 borrowed-string, threaded, public, and boundary-accounting
 evidence.
 
-## Exceptions
+## Verification
 
-```spec-exceptions
-- id: simd_json.stream_cursor.milestone_03_bootstrap
+```spec-verification
+- kind: command
+  target: bash scripts/ci/qualify_native_release.sh
+  execute: true
   covers:
     - simd_json.stream_cursor.private_abi_v3
     - simd_json.stream_cursor.opaque_cursor
@@ -295,5 +297,4 @@ evidence.
     - simd_json.stream_cursor.exact_end_and_trailing_validation
     - simd_json.stream_cursor.indexed_row_failure
     - simd_json.stream_cursor.cancellation_and_cleanup_matrix
-  reason: Milestone 3 native streaming cursor does not exist; remove this exception and replace it with executed ABI, traversal, plan-reuse, bounds, validation, status, lifetime, boundary, failure-cleanup, and sanitizer evidence before activation.
 ```

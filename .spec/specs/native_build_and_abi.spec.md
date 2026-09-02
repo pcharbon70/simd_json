@@ -1,5 +1,10 @@
 # Native Build and ABI
 
+Milestone 3 Phase 6 requalifies the cumulative ABI v1/v2/v3 package from
+vendored source, including ordinary and sanitizer cursor harnesses, the public
+stream path, offline reproducibility, and exact release symbol/string
+allowlists. The supported target and fail-closed upgrade policy are unchanged.
+
 Current-truth contract for the reproducible native toolchain, official simdjson source, and exception-safe language boundary required by Milestone 1.
 
 ## Intent

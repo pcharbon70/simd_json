@@ -61,7 +61,7 @@ document reservation. A source that is neither a binary nor a genuine
 JSON content, caller path contents, native identity, timing, generation, and
 exception text.
 
-The public root operations are `open/1`, `select/2`, and `close/1`. There is no
+The public root operations are `open/1`, `select/2`, `stream/2`, and `close/1`. There is no
 bang variant, eager decode, JSONPath, wildcard/filter/default policy,
 container materialization, streaming cursor, ownership transfer, raw native
 handle, or public diagnostic API. The present threaded execution layer remains
@@ -90,7 +90,7 @@ and early halt closes the cursor without scanning the remaining array. Runtime
 failures raise a redacted `SimdJson.Error`; no row from a failing batch is
 published. The opaque Enumerable exposes no public cursor or batch API.
 
-Milestones 1 and 2 are active on the qualified Ubuntu 24.04 x86-64 target.
+Milestones 1, 2, and 3 are active on the qualified Ubuntu 24.04 x86-64 target.
 Other platforms remain experimental or unsupported until they pass the same
 package, ABI, sanitizer, scheduler, lifecycle, benchmark, and shutdown gates.
 
@@ -120,3 +120,8 @@ guide and
 before changing the projection or qualification boundary.
 The public streaming contract and tuning guidance are documented in
 [`docs/milestones/03-batched-array-streaming.md`](docs/milestones/03-batched-array-streaming.md).
+Maintainers should also read the
+[`Milestone 3 Streaming Operations`](docs/milestones/03-batched-array-streaming-operations.md)
+guide and
+[`Milestone 3 Acceptance Record`](docs/milestones/03-batched-array-streaming-acceptance.md)
+before changing batch, cursor, lifecycle, or qualification behavior.

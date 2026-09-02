@@ -1,5 +1,10 @@
 # Projection Execution and Lifecycle
 
+Milestone 3 Phase 6 reruns this active subject as an inherited regression gate.
+Streaming continues to reuse the same normalized projection engine and
+threaded coordinator without weakening Milestone 2 ownership, scheduler,
+lifecycle, or sparse-allocation evidence.
+
 Active current-truth contract for Milestone 2 threaded projection admission,
 one-shot document consumption, temporary binary-source ownership,
 cancellation, cleanup, and end-to-end qualification.

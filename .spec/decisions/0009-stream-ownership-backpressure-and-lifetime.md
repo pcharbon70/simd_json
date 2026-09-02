@@ -12,6 +12,12 @@ affects:
 
 # Stream Ownership, Backpressure, and Lifetime
 
+Phase 6 qualification confirms this decision through the public Enumerable:
+one demanded batch at a time, suspension as a native progress boundary,
+deterministic terminal cleanup, and revision-bound scheduler, lifecycle, and
+million-row ETL evidence. These results remain per-stream and do not expand the
+decision into Milestone 4 global admission or telemetry.
+
 Phase 5 exposes the accepted owner-bound shell as `SimdJson.stream/2` returning
 opaque `SimdJson.Stream.t()`. Enumerable reduction performs one lazy threaded
 setup and serial correlated batches, holds only the current returned list, and
