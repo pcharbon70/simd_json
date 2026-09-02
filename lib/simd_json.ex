@@ -105,6 +105,8 @@ defmodule SimdJson do
   alias SimdJson.Native.BuildSmoke
   alias SimdJson.Native.ProjectionOperation
   alias SimdJson.Native.ThreadedOperation
+  alias SimdJson.Stream
+  alias SimdJson.StreamOptions
 
   @typedoc "An exact caller-supplied result key. No atom is created from a binary key."
   @type output_key :: atom() | binary()
@@ -132,6 +134,45 @@ defmodule SimdJson do
 
   @typedoc "The transactional map returned after every selected path succeeds."
   @type projection_result :: %{optional(output_key()) => scalar_result()}
+
+  @typedoc "A target segment locating the array to stream."
+  @type stream_target_segment :: path_segment()
+
+  @typedoc "A path locating the array to stream; the empty path selects a root array."
+  @type stream_target_path :: [stream_target_segment()]
+
+  @typedoc "The exact-key projection applied independently to every array row."
+  @type stream_fields :: projection()
+
+  @typedoc "Options for bounded array streaming."
+  @type stream_option ::
+          {:path, stream_target_path()}
+          | {:fields, stream_fields()}
+          | {:batch_size, 1..10_000}
+          | {:max_batch_bytes, 1..67_108_864}
+
+  @typedoc "One scalar-only projected row."
+  @type stream_row :: %{optional(output_key()) => scalar_result()}
+
+  @doc """
+  Constructs a lazy, owner-bound Enumerable over projected JSON array rows.
+
+  `:path` and `:fields` are required. Options are fully validated immediately,
+  but parsing, document admission, and native allocation wait until reduction.
+  Binary streams may be constructed again; a document stream is one-shot.
+  Batches default to 1,000 rows and 8 MiB, with maxima of 10,000 rows and
+  64 MiB. Returned string values are copied and each row contains scalars only.
+
+  Invalid sources or options raise `ArgumentError`. Runtime failures raise a
+  redacted `SimdJson.Error` during enumeration. A stream captures its creating
+  process and applies demand one batch at a time without prefetch.
+  """
+  @spec stream(binary() | Document.t(), [stream_option()]) :: Stream.t()
+  def stream(source, options) do
+    source
+    |> StreamOptions.new(options)
+    |> Stream.new()
+  end
 
   @doc """
   Opens one JSON binary as an opaque document owned by the calling process.
