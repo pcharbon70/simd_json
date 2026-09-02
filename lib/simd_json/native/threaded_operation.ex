@@ -53,8 +53,16 @@ defmodule SimdJson.Native.ThreadedOperation do
   @type operation :: %{
           resource: reference(),
           request_ref: reference(),
-          kind: :document_open | :document_cleanup | :threaded_smoke | :projection,
-          generation: pos_integer()
+          kind:
+            :document_open
+            | :document_cleanup
+            | :threaded_smoke
+            | :projection
+            | :stream_setup
+            | :stream_batch,
+          generation: pos_integer(),
+          cursor_generation: non_neg_integer(),
+          batch_sequence: non_neg_integer()
         }
 
   @spec admit(binary(), operation()[:kind], pos_integer() | nil) :: operation()
@@ -85,7 +93,9 @@ defmodule SimdJson.Native.ThreadedOperation do
       resource: resource,
       request_ref: request_ref,
       kind: kind,
-      generation: generation
+      generation: generation,
+      cursor_generation: 0,
+      batch_sequence: 0
     }
   end
 
@@ -117,7 +127,9 @@ defmodule SimdJson.Native.ThreadedOperation do
            resource: resource,
            request_ref: request_ref,
            kind: :projection,
-           generation: generation
+           generation: generation,
+           cursor_generation: 0,
+           batch_sequence: 0
          }}
 
       %{status: status, operation: nil} when is_atom(status) ->
@@ -130,6 +142,27 @@ defmodule SimdJson.Native.ThreadedOperation do
   def project(source_kind, source, normalized, options \\ [])
       when source_kind in [:binary, :document] and is_list(options) do
     OperationCoordinator.project(source_kind, source, normalized, options)
+  end
+
+  if @test_hooks do
+    @doc false
+    def stream_probe(kind, input, cursor_generation, batch_sequence, options \\ [])
+        when kind in [:stream_setup, :stream_batch] and is_binary(input) and
+               is_integer(cursor_generation) and cursor_generation > 0 and
+               is_integer(batch_sequence) and batch_sequence >= 0 and is_list(options) do
+      generation = BuildSmoke.execution_generation()
+
+      operation =
+        input
+        |> admit(kind, generation)
+        |> Map.merge(%{
+          cursor_generation: cursor_generation,
+          batch_sequence: batch_sequence
+        })
+
+      configure_pause(operation, options)
+      OperationCoordinator.stream_probe(operation)
+    end
   end
 
   if @test_hooks do
@@ -213,7 +246,11 @@ defmodule SimdJson.Native.ThreadedOperation do
 
   @spec correlated?(operation(), map()) :: boolean()
   def correlated?(operation, result) do
-    operation.kind == result.kind and operation.generation == result.generation
+    operation.kind == result.kind and operation.generation == result.generation and
+      Map.get(result, :request_ref, operation.request_ref) == operation.request_ref and
+      Map.get(result, :cursor_generation, operation.cursor_generation) ==
+        operation.cursor_generation and
+      Map.get(result, :batch_sequence, operation.batch_sequence) == operation.batch_sequence
   end
 
   if @test_hooks do

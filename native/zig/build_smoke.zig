@@ -70,6 +70,8 @@ pub const OperationKind = enum(u8) {
     document_cleanup,
     threaded_smoke,
     projection,
+    stream_setup,
+    stream_batch,
 };
 
 pub const ProjectionSourceKind = enum(u8) {
