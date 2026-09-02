@@ -11,6 +11,8 @@ package_root="${scratch_root}/simd_json-0.1.0"
 seed="${SIMD_JSON_QUALIFICATION_SEED:-$(sed -n 's/.*randomized_seed: \([0-9_]*\).*/\1/p' "${qualification_record}" | tr -d '_')}"
 zig_cache_root="${XDG_CACHE_HOME:-${HOME}/.cache}"
 zig_executable="${ZIG_EXECUTABLE_PATH:-${zig_cache_root}/zigler/zig-x86_64-linux-0.16.0/zig}"
+export ZIG_GLOBAL_CACHE_DIR="${ZIG_GLOBAL_CACHE_DIR:-${scratch_root}/zig-global-cache}"
+export ZIG_LOCAL_CACHE_DIR="${ZIG_LOCAL_CACHE_DIR:-${scratch_root}/zig-local-cache}"
 
 cleanup() {
   local original_status=$?
