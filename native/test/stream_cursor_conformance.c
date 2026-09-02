@@ -7,6 +7,7 @@
 #include <string.h>
 
 /* covers: simd_json.stream_cursor.private_abi_v3 simd_json.stream_cursor.opaque_cursor simd_json.stream_cursor.parent_retention simd_json.stream_cursor.projection_plan_reuse simd_json.stream_cursor.exception_and_failure_cleanup simd_json.stream_cursor.abi_v3_conformance */
+/* covers: simd_json.stream_cursor.single_target_lookup simd_json.stream_cursor.forward_only_rows simd_json.stream_cursor.row_count_bound simd_json.stream_cursor.encoded_byte_bound simd_json.stream_cursor.transactional_batch simd_json.stream_cursor.copied_row_values simd_json.stream_cursor.exact_done_detection simd_json.stream_cursor.complete_consumption_validation simd_json.stream_cursor.indexed_status simd_json.stream_cursor.batch_boundary simd_json.stream_cursor.internal_diagnostics simd_json.stream_cursor.target_lookup_and_retention simd_json.stream_cursor.reused_row_projection simd_json.stream_cursor.row_and_byte_boundaries simd_json.stream_cursor.exact_end_and_trailing_validation simd_json.stream_cursor.indexed_row_failure simd_json.stream_cursor.cancellation_and_cleanup_matrix */
 
 #define CHECK(condition)                                                       \
   do {                                                                         \
@@ -215,9 +216,60 @@ static uint32_t cancellation(void *context) {
   return *(const uint32_t *)context;
 }
 
+typedef struct counted_cancellation {
+  uint32_t calls;
+  uint32_t cancel_after;
+} counted_cancellation;
+
+static uint32_t cancel_after_count(void *context) {
+  counted_cancellation *counted = (counted_cancellation *)context;
+  counted->calls += 1;
+  return counted->calls >= counted->cancel_after ? 1 : 0;
+}
+
+static int cancellation_matrix(void) {
+  document_fixture fixture;
+  static const uint8_t target_key[] = "rows";
+  const simd_json_projection_segment target_segment = {
+      SIMD_JSON_PROJECTION_SEGMENT_OBJECT_KEY, 0, 0,
+      sizeof(target_key) - 1, 0};
+  const simd_json_stream_target target = {
+      &target_segment, 1, target_key, sizeof(target_key) - 1};
+  simd_json_stream_cursor_config config = config_for(create_plan(), 2, 1024);
+  simd_json_stream_cursor *cursor = NULL;
+  simd_json_stream_row rows[2];
+  simd_json_result_slot slots[2];
+  uint8_t bytes[32];
+  simd_json_stream_batch_storage batch = {
+      rows, 2, slots, 2, bytes, sizeof(bytes), 0, 0, 0, 0, 0};
+  counted_cancellation counted = {0, 5};
+  simd_json_cancellation_probe probe = {&counted, cancel_after_count};
+
+  CHECK(open_document(&fixture) == 0);
+  CHECK(simd_json_stream_cursor_create(fixture.document, &target, &config,
+                                       &cursor)
+            .code == SIMD_JSON_STATUS_OK);
+  const simd_json_stream_status status =
+      simd_json_stream_next_batch(cursor, &probe, &batch);
+  CHECK(status.code == SIMD_JSON_STATUS_CANCELLED && status.array_index == 1);
+  CHECK(batch.produced_rows == 0 && batch.produced_slots == 0 &&
+        batch.encoded_bytes == 0 && batch.done == SIMD_JSON_STREAM_NOT_DONE);
+  CHECK(simd_json_stream_next_batch(cursor, NULL, &batch).code ==
+        SIMD_JSON_STATUS_CANCELLED);
+  simd_json_stream_cursor_destroy(cursor);
+  close_document(&fixture);
+  CHECK(stream_is_quiescent() && projection_is_quiescent());
+  return 0;
+}
+
 static int state_and_storage_matrix(document_fixture *fixture) {
-  const simd_json_stream_target target = {NULL, 0, NULL, 0};
-  simd_json_stream_cursor_config config = config_for(create_plan(), 2, 16);
+  static const uint8_t target_key[] = "rows";
+  const simd_json_projection_segment target_segment = {
+      SIMD_JSON_PROJECTION_SEGMENT_OBJECT_KEY, 0, 0,
+      sizeof(target_key) - 1, 0};
+  const simd_json_stream_target target = {
+      &target_segment, 1, target_key, sizeof(target_key) - 1};
+  simd_json_stream_cursor_config config = config_for(create_plan(), 2, 1024);
   simd_json_stream_cursor *cursor = NULL;
   simd_json_stream_row rows[2];
   simd_json_result_slot slots[2];
@@ -233,9 +285,15 @@ static int state_and_storage_matrix(document_fixture *fixture) {
                                           &cursor);
   CHECK(status.code == SIMD_JSON_STATUS_OK && cursor != NULL);
   status = simd_json_stream_next_batch(cursor, NULL, &batch);
-  CHECK(status.code == SIMD_JSON_STATUS_INTERNAL_FAILURE);
-  CHECK(batch.produced_rows == 0 && batch.produced_slots == 0 &&
-        batch.encoded_bytes == 0 && batch.done == SIMD_JSON_STREAM_NOT_DONE);
+  CHECK(status.code == SIMD_JSON_STATUS_OK);
+  CHECK(batch.produced_rows == 1 && batch.produced_slots == 1 &&
+        batch.encoded_bytes == sizeof(simd_json_stream_row) +
+                                   sizeof(simd_json_result_slot) &&
+        batch.done == SIMD_JSON_STREAM_DONE);
+  CHECK(rows[0].array_index == 0 && rows[0].slot_offset == 0 &&
+        rows[0].slot_count == 1);
+  CHECK(slots[0].tag == SIMD_JSON_RESULT_SIGNED_INTEGER &&
+        slots[0].value.signed_integer == 1);
   cancelled = 2;
   CHECK(simd_json_stream_next_batch(cursor, &probe, &batch).code ==
         SIMD_JSON_STATUS_INVALID_ARGUMENT);
@@ -243,7 +301,7 @@ static int state_and_storage_matrix(document_fixture *fixture) {
   CHECK(simd_json_stream_next_batch(cursor, &probe, &batch).code ==
         SIMD_JSON_STATUS_CANCELLED);
   CHECK(simd_json_stream_next_batch(cursor, NULL, &batch).code ==
-        SIMD_JSON_STATUS_CANCELLED);
+        SIMD_JSON_STATUS_OK);
   CHECK(simd_json_test_stream_state_set(cursor, SIMD_JSON_STREAM_CURSOR_DONE));
   CHECK(simd_json_stream_next_batch(cursor, NULL, &batch).code ==
         SIMD_JSON_STATUS_OK);
@@ -315,6 +373,7 @@ int main(void) {
   CHECK(state_and_storage_matrix(&fixture) == 0);
   CHECK(exception_matrix(&fixture) == 0);
   close_document(&fixture);
+  CHECK(cancellation_matrix() == 0);
   simd_json_stream_cursor_destroy(NULL);
   CHECK(stream_is_quiescent() && projection_is_quiescent());
   puts("stream cursor conformance passed abi=3");

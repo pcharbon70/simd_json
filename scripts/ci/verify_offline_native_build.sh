@@ -65,6 +65,8 @@ fi
 
 zig_cache_root="${XDG_CACHE_HOME:-${HOME}/.cache}"
 zig_executable="${ZIG_EXECUTABLE_PATH:-${zig_cache_root}/zigler/zig-x86_64-linux-0.16.0/zig}"
+export ZIG_GLOBAL_CACHE_DIR="${ZIG_GLOBAL_CACHE_DIR:-${TMPDIR:-/tmp}/simd-json-zig-global-cache}"
+export ZIG_LOCAL_CACHE_DIR="${ZIG_LOCAL_CACHE_DIR:-${scratch_root}/zig-local-cache}"
 
 if [[ ! -x "${zig_executable}" ]]; then
   printf 'qualified Zig executable is unavailable: %s\n' "${zig_executable}" >&2

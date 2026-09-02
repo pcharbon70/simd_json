@@ -25,6 +25,11 @@ setup. It does not admit a stream request, reserve a document, traverse a
 target, start a threaded batch, construct a public Enumerable, or create a
 cleanup coordinator graph.
 
+Phase 3 implements forward-only traversal and transactional batches only
+inside the private native cursor. It adds no threaded admission, demand,
+prefetch, owner-reduction, or cleanup-coordinator behavior; those execution
+claims remain planned for Phase 4.
+
 ```spec-meta
 id: simd_json.stream_execution
 kind: subsystem

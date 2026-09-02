@@ -27,6 +27,19 @@ ownership, exception containment, allocation rollback, package inventory, and
 release visibility. Target lookup, row traversal, populated batches, threaded
 execution, and the public stream remain deliberately unimplemented.
 
+Phase 3 now implements the private forward-only batch engine. It locates root
+or nested target arrays once, retains enclosing On-Demand frames, reuses the
+single transferred projection plan for every attempted row, and publishes only
+complete row-and-byte-bounded batches with copied strings. Natural completion
+unwinds and validates remaining enclosing content without rewind or reparse;
+row failures carry checked indexes and optional slots, while cancellation and
+injected native failures clear the complete in-flight batch. C and Zig ordinary
+and sanitizer harnesses exercise bounds, exact completion, malformed trailing
+content, diagnostics, allocation rollback, and exception containment. The
+subject remains planned because threaded ownership and the public Enumerable
+arrive in Phases 4 and 5, and its bootstrap exception closes only during Phase
+6 activation.
+
 ```spec-meta
 id: simd_json.stream_cursor
 kind: subsystem

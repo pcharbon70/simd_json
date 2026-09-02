@@ -25,6 +25,10 @@ Phase 2 adds no public surface. It registers a private cursor resource and ABI
 v3 ownership machinery that remain unreachable from `SimdJson`, so `stream/2`,
 Enumerable reduction, row delivery, and runtime errors are still deferred.
 
+Phase 3 likewise adds no public surface. Native row batches and indexed status
+are exercised only by C and Zig qualification harnesses; `stream/2`, Enumerable
+reduction, BEAM row conversion, and public runtime errors remain deferred.
+
 ```spec-meta
 id: simd_json.streaming_api
 kind: api

@@ -2,12 +2,15 @@
 set -euo pipefail
 
 # covers: simd_json.native_build_and_abi.c_abi_conformance simd_json.native_build_and_abi.cpp_exception_translation simd_json.native_build_and_abi.partial_failure_cleanup simd_json.projection_engine.abi_v2_conformance simd_json.projection_engine.exception_and_failure_cleanup simd_json.stream_cursor.abi_v3_conformance simd_json.stream_cursor.exception_and_failure_cleanup
+# covers: simd_json.stream_cursor.single_target_lookup simd_json.stream_cursor.forward_only_rows simd_json.stream_cursor.projection_plan_reuse simd_json.stream_cursor.row_count_bound simd_json.stream_cursor.encoded_byte_bound simd_json.stream_cursor.transactional_batch simd_json.stream_cursor.copied_row_values simd_json.stream_cursor.exact_done_detection simd_json.stream_cursor.complete_consumption_validation simd_json.stream_cursor.indexed_status simd_json.stream_cursor.batch_boundary simd_json.stream_cursor.internal_diagnostics simd_json.stream_cursor.target_lookup_and_retention simd_json.stream_cursor.reused_row_projection simd_json.stream_cursor.row_and_byte_boundaries simd_json.stream_cursor.exact_end_and_trailing_validation simd_json.stream_cursor.indexed_row_failure simd_json.stream_cursor.cancellation_and_cleanup_matrix
 
 repository_root="$(git rev-parse --show-toplevel)"
 profile="${1:-ordinary}"
 scratch_root="$(mktemp -d "${TMPDIR:-/tmp}/simd-json-c-abi.XXXXXX")"
 zig_cache_root="${XDG_CACHE_HOME:-${HOME}/.cache}"
 zig_executable="${ZIG_EXECUTABLE_PATH:-${zig_cache_root}/zigler/zig-x86_64-linux-0.16.0/zig}"
+export ZIG_GLOBAL_CACHE_DIR="${ZIG_GLOBAL_CACHE_DIR:-${TMPDIR:-/tmp}/simd-json-zig-global-cache}"
+export ZIG_LOCAL_CACHE_DIR="${ZIG_LOCAL_CACHE_DIR:-${scratch_root}/zig-local-cache}"
 
 cleanup() {
   local original_status=$?
