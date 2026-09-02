@@ -38,6 +38,7 @@ pub fn Implementation(comptime c: type) type {
         pub const ProjectionState = enum(u8) {
             fresh,
             selecting,
+            streaming,
             consumed,
         };
 
@@ -55,8 +56,18 @@ pub fn Implementation(comptime c: type) type {
             generation: u64,
         };
 
+        pub const StreamReservation = struct {
+            generation: u64,
+        };
+
         pub const ProjectionReserveOutcome = union(enum) {
             reserved: ProjectionReservation,
+            cursor_consumed,
+            closed,
+        };
+
+        pub const StreamReserveOutcome = union(enum) {
+            reserved: StreamReservation,
             cursor_consumed,
             closed,
         };
@@ -524,6 +535,87 @@ pub fn Implementation(comptime c: type) type {
                 }
 
                 return .{ .reserved = .{ .generation = generation } };
+            }
+
+            /// Reserves the same one-shot document cursor for streaming. The
+            /// distinct transient state makes select/stream exclusion visible
+            /// without changing the terminal consumed contract.
+            pub fn reserveStream(self: *DocumentState) StreamReserveOutcome {
+                if (self.projectionState() != .fresh) return .cursor_consumed;
+                if (self.lifecycleState() != .open) return .closed;
+
+                _ = self.admitted_operations.fetchAdd(1, .acq_rel);
+                if (test_build) _ = Accounting.admitted_operations.fetchAdd(1, .acq_rel);
+                const generation = self.generation.load(.acquire);
+                if (self.lifecycleState() != .open or generation == 0) {
+                    self.releaseAdmissionCount();
+                    return .closed;
+                }
+                if (self.projection_state.cmpxchgStrong(
+                    @intFromEnum(ProjectionState.fresh),
+                    @intFromEnum(ProjectionState.streaming),
+                    .acq_rel,
+                    .acquire,
+                ) != null) {
+                    self.releaseAdmissionCount();
+                    return .cursor_consumed;
+                }
+                if (self.lifecycleState() != .open or
+                    generation != self.generation.load(.acquire))
+                {
+                    _ = self.projection_state.cmpxchgStrong(
+                        @intFromEnum(ProjectionState.streaming),
+                        @intFromEnum(ProjectionState.fresh),
+                        .acq_rel,
+                        .acquire,
+                    );
+                    self.releaseAdmissionCount();
+                    return .closed;
+                }
+                return .{ .reserved = .{ .generation = generation } };
+            }
+
+            pub fn rollbackStream(self: *DocumentState, reservation: StreamReservation) bool {
+                if (reservation.generation == 0) return false;
+                const rolled_back = self.projection_state.cmpxchgStrong(
+                    @intFromEnum(ProjectionState.streaming),
+                    @intFromEnum(ProjectionState.fresh),
+                    .acq_rel,
+                    .acquire,
+                ) == null;
+                if (rolled_back) self.releaseAdmissionCount();
+                return rolled_back;
+            }
+
+            pub fn commitStream(self: *DocumentState, reservation: StreamReservation) bool {
+                if (reservation.generation == 0 or
+                    reservation.generation != self.generation.load(.acquire) or
+                    self.lifecycleState() != .open) return false;
+                return self.projection_state.cmpxchgStrong(
+                    @intFromEnum(ProjectionState.streaming),
+                    @intFromEnum(ProjectionState.consumed),
+                    .acq_rel,
+                    .acquire,
+                ) == null;
+            }
+
+            pub fn releaseCommittedStream(
+                self: *DocumentState,
+                reservation: StreamReservation,
+            ) void {
+                std.debug.assert(reservation.generation != 0);
+                std.debug.assert(self.projectionState() == .consumed);
+                self.releaseAdmissionCount();
+            }
+
+            pub fn streamDocument(
+                self: *const DocumentState,
+                reservation: StreamReservation,
+            ) ?*c.simd_json_document {
+                if (reservation.generation != self.generation.load(.acquire) or
+                    self.projectionState() != .consumed or
+                    self.lifecycleState() != .open) return null;
+                return self.document_handle;
             }
 
             /// A reservation may be retried only while the worker has not

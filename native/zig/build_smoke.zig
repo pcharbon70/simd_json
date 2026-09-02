@@ -865,6 +865,7 @@ pub const DocumentOwnerState = enum(u8) {
 const DocumentProjectionOwnerState = enum(u8) {
     fresh,
     selecting,
+    streaming,
     consumed,
     closing,
     closed,
@@ -2063,6 +2064,7 @@ pub fn document_projection_owner_state(
 
     return switch (control.native.projectionState()) {
         .selecting => .selecting,
+        .streaming => .streaming,
         .consumed => .consumed,
         .fresh => switch (control.native.lifecycleState()) {
             .open => .fresh,
@@ -2070,6 +2072,31 @@ pub fn document_projection_owner_state(
             .closed => .closed,
         },
     };
+}
+
+/// Test-only bounded proof for the shared select/stream one-shot state. A
+/// rejected setup rolls back; cursor access commits permanently.
+pub fn document_stream_reservation_probe(
+    document: DocumentResource,
+    commit: bool,
+) !DocumentProjectionOwnerState {
+    const control = document.__payload.control orelse return .closed;
+    if (!pidsEqual(try beam.self(.{}), control.owner)) return .not_owner;
+    const reservation = switch (control.native.reserveStream()) {
+        .reserved => |value| value,
+        .cursor_consumed => return .consumed,
+        .closed => return .closed,
+    };
+    if (!commit) {
+        _ = control.native.rollbackStream(reservation);
+        return .fresh;
+    }
+    if (!control.native.commitStream(reservation)) {
+        _ = control.native.rollbackStream(reservation);
+        return .closed;
+    }
+    control.native.releaseCommittedStream(reservation);
+    return .consumed;
 }
 
 /// Coordinator-only bounded close reservation. Public ownership has already

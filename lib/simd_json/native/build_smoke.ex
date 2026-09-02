@@ -20,6 +20,7 @@ defmodule SimdJson.Native.BuildSmoke do
     :threaded_document_probe,
     :document_lifecycle,
     :document_projection_owner_state,
+    :document_stream_reservation_probe,
     :execution_set_cleanup_rejection,
     :execution_snapshot
   ]
@@ -102,6 +103,7 @@ defmodule SimdJson.Native.BuildSmoke do
         threaded_document_probe: [concurrency: :threaded],
         document_lifecycle: [],
         document_projection_owner_state: [],
+        document_stream_reservation_probe: [],
         execution_set_cleanup_rejection: [],
         execution_snapshot: []
       ],
