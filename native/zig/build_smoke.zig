@@ -45,7 +45,11 @@ const StreamCursorControl = struct {
     parent: ?DocumentResource,
     owner: beam.pid,
     parent_generation: u64,
+    demand_state: std.atomic.Value(u8),
+    next_sequence: std.atomic.Value(u64),
 };
+
+const StreamDemandState = enum(u8) { ready, running, done, cancelled, closed };
 
 const StreamCursorResourcePayload = struct {
     control: ?*StreamCursorControl,
@@ -2211,6 +2215,8 @@ pub fn stream_cursor_resource_fixture(
         .parent = document,
         .owner = owner,
         .parent_generation = parent_generation,
+        .demand_state = .init(@intFromEnum(StreamDemandState.ready)),
+        .next_sequence = .init(0),
     };
     _ = ExecutionAccounting.live_stream_cursor_resources.fetchAdd(1, .acq_rel);
 
@@ -2228,7 +2234,62 @@ pub fn stream_cursor_resource_close(cursor: StreamCursorResource) bool {
     return true;
 }
 
+pub fn stream_cursor_demand_reserve(cursor: StreamCursorResource, sequence: u64) bool {
+    const control = cursor.__payload.control orelse return false;
+    if (control.next_sequence.load(.acquire) != sequence) return false;
+    return control.demand_state.cmpxchgStrong(
+        @intFromEnum(StreamDemandState.ready),
+        @intFromEnum(StreamDemandState.running),
+        .acq_rel,
+        .acquire,
+    ) == null;
+}
+
+pub fn stream_cursor_demand_complete(
+    cursor: StreamCursorResource,
+    sequence: u64,
+    done: bool,
+) bool {
+    const control = cursor.__payload.control orelse return false;
+    if (control.next_sequence.load(.acquire) != sequence) return false;
+    const next: StreamDemandState = if (done) .done else .ready;
+    if (control.demand_state.cmpxchgStrong(
+        @intFromEnum(StreamDemandState.running),
+        @intFromEnum(next),
+        .acq_rel,
+        .acquire,
+    ) != null) return false;
+    _ = control.next_sequence.fetchAdd(1, .acq_rel);
+    return true;
+}
+
+pub fn stream_cursor_demand_cancel(cursor: StreamCursorResource) bool {
+    const control = cursor.__payload.control orelse return true;
+    while (true) {
+        const current: StreamDemandState = @enumFromInt(control.demand_state.load(.acquire));
+        switch (current) {
+            .done, .cancelled, .closed => return true,
+            .ready, .running => if (control.demand_state.cmpxchgWeak(
+                @intFromEnum(current),
+                @intFromEnum(StreamDemandState.cancelled),
+                .acq_rel,
+                .acquire,
+            ) == null) return true,
+        }
+    }
+}
+
+pub fn stream_cursor_demand_snapshot(cursor: StreamCursorResource) beam.term {
+    const control = cursor.__payload.control orelse
+        return beam.make(.{ StreamDemandState.closed, @as(u64, 0) }, .{});
+    return beam.make(.{
+        @as(StreamDemandState, @enumFromInt(control.demand_state.load(.acquire))),
+        control.next_sequence.load(.acquire),
+    }, .{});
+}
+
 fn destroyStreamCursorControl(control: *StreamCursorControl) void {
+    control.demand_state.store(@intFromEnum(StreamDemandState.closed), .release);
     control.native.deinit();
     if (control.parent) |parent| {
         control.parent = null;
