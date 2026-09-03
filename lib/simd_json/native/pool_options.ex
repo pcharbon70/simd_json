@@ -160,25 +160,3 @@ defmodule SimdJson.Native.PoolOptions do
 
   defp safe_executor(_value), do: :preproduction_threaded
 end
-
-defimpl Inspect, for: SimdJson.Native.PoolOptions do
-  import Inspect.Algebra
-
-  def inspect(options, inspect_options) do
-    snapshot = SimdJson.Native.PoolOptions.snapshot(options)
-
-    concat([
-      "#SimdJson.Native.PoolOptions<worker_count: ",
-      to_doc(snapshot.worker_count, inspect_options),
-      ", queue_capacity: ",
-      to_doc(snapshot.queue_capacity, inspect_options),
-      ", workers_explicit?: ",
-      to_doc(snapshot.workers_explicit?, inspect_options),
-      ", queue_explicit?: ",
-      to_doc(snapshot.queue_explicit?, inspect_options),
-      ", executor: ",
-      to_doc(snapshot.executor, inspect_options),
-      ">"
-    ])
-  end
-end

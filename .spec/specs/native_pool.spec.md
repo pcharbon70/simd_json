@@ -150,3 +150,30 @@ bootstrap:
     - JSON, caller paths, selected values, PIDs, and request references are absent
 ```
 
+## Verification
+
+```spec-verification
+- kind: command
+  target: MIX_ENV=test mix test test/native/pool_options_test.exs
+  execute: true
+  covers:
+    - simd_json.native_pool.fixed_configuration
+    - simd_json.native_pool.startup_validation
+    - simd_json.native_pool.redacted_snapshot
+    - simd_json.native_pool.configuration_preflight
+
+- kind: command
+  target: bash scripts/ci/qualify_native_pool.sh
+  execute: false
+  covers:
+    - simd_json.native_pool.nonblocking_bounded_admission
+    - simd_json.native_pool.owned_jobs
+    - simd_json.native_pool.fixed_workers
+    - simd_json.native_pool.cancellation
+    - simd_json.native_pool.resource_serialization
+    - simd_json.native_pool.telemetry
+    - simd_json.native_pool.shutdown
+    - simd_json.native_pool.saturation
+    - simd_json.native_pool.cancel_close_shutdown_races
+    - simd_json.native_pool.operational_visibility
+```

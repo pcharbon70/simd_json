@@ -19,7 +19,6 @@ defmodule SimdJson.Native.Diagnostics do
 
   @doc false
   def execution do
-    %{native_pool: native_pool} = OperationCoordinator.snapshot()
-    native_pool
+    OperationCoordinator.pool_snapshot()
   end
 end

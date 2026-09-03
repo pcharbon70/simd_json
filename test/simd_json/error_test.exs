@@ -37,6 +37,7 @@ defmodule SimdJson.ErrorTest do
       incorrect_type: "selected value has an incorrect type",
       number_out_of_range: "selected number is out of range",
       batch_too_large: "projected row exceeds max_batch_bytes",
+      busy: "native execution capacity is busy",
       cursor_consumed: "document cursor has already been consumed",
       cancelled: "JSON operation was cancelled",
       native_failure: "native JSON operation failed"

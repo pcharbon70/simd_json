@@ -124,6 +124,11 @@ defmodule SimdJson.Native.OperationCoordinator do
     GenServer.call(__MODULE__, :snapshot)
   end
 
+  @spec pool_snapshot() :: map()
+  def pool_snapshot do
+    GenServer.call(__MODULE__, :pool_snapshot)
+  end
+
   @spec begin_shutdown() :: :ok
   def begin_shutdown do
     GenServer.call(__MODULE__, :begin_shutdown, :infinity)
@@ -169,12 +174,11 @@ defmodule SimdJson.Native.OperationCoordinator do
   end
 
   def handle_call(:snapshot, _from, state) do
-    {:reply,
-     %{
-       accepting?: state.accepting?,
-       live_requests: map_size(state.requests),
-       native_pool: PoolOptions.snapshot(state.pool_options)
-     }, state}
+    {:reply, %{accepting?: state.accepting?, live_requests: map_size(state.requests)}, state}
+  end
+
+  def handle_call(:pool_snapshot, _from, state) do
+    {:reply, PoolOptions.snapshot(state.pool_options), state}
   end
 
   def handle_call(:begin_shutdown, _from, state) do

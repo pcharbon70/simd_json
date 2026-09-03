@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 1 Phase - Establish one closed, bounded configuration and admission
+- [x] 1 Phase - Establish one closed, bounded configuration and admission
   vocabulary before native worker or queue implementation begins.
 
   This phase validates runtime configuration at application startup, freezes
@@ -49,18 +49,18 @@ Back to plan: [README](./README.md)
     - [x] 1.3.1.3 Subtask - Preserve every existing error reason, message, and redaction behavior.
   - [x] 1.3.2 Task - Bound configuration inspection.
     - [x] 1.3.2.1 Subtask - Omit raw environment/application terms, PIDs, references, paths, inputs, and native identities.
-    - [x] 1.3.2.2 Subtask - Ensure forged configuration structs cannot render unbounded or sensitive content.
+    - [x] 1.3.2.2 Subtask - Ensure forged configuration cannot render unbounded or sensitive content through the diagnostic snapshot boundary.
 
 ## 1.4 Section — Phase 1 Integration Tests
 
-- [ ] 1.4 Section - Prove defaults, boundaries, invalid startup, immutable
+- [x] 1.4 Section - Prove defaults, boundaries, invalid startup, immutable
   snapshot behavior, redaction, and unchanged Milestone 1–3 execution.
 
-  - [ ] 1.4.1 Task - Execute the configuration matrix.
-    - [ ] 1.4.1.1 Subtask - Test defaults, both valid boundaries, representative interiors, and every invalid term class.
-    - [ ] 1.4.1.2 Subtask - Test deterministic normalization and explicit-source flags across scheduler counts.
-    - [ ] 1.4.1.3 Subtask - Test supervisor wiring consumes one normalized value and rejects invalid startup before coordinator admission.
-  - [ ] 1.4.2 Task - Run safety and regression gates.
-    - [ ] 1.4.2.1 Subtask - Test bounded redacted inspection and the stable busy error.
-    - [ ] 1.4.2.2 Subtask - Prove the executor marker remains pre-production and public pool controls remain absent.
-    - [ ] 1.4.2.3 Subtask - Run focused tests, full regression, formatting, `mix spec.next`, and the reported `mix spec.check` command.
+  - [x] 1.4.1 Task - Execute the configuration matrix.
+    - [x] 1.4.1.1 Subtask - Test defaults, both valid boundaries, representative interiors, and every invalid term class.
+    - [x] 1.4.1.2 Subtask - Test deterministic normalization and explicit-source flags across scheduler counts.
+    - [x] 1.4.1.3 Subtask - Test supervisor wiring consumes one normalized value and rejects invalid startup before coordinator admission.
+  - [x] 1.4.2 Task - Run safety and regression gates.
+    - [x] 1.4.2.1 Subtask - Test bounded redacted inspection and the stable busy error.
+    - [x] 1.4.2.2 Subtask - Prove the executor marker remains pre-production and public pool controls remain absent.
+    - [x] 1.4.2.3 Subtask - Run focused tests, full regression, formatting, `mix spec.next`, and the reported `mix spec.check` command.
