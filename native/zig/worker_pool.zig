@@ -1,6 +1,34 @@
 const std = @import("std");
 pub fn Implementation(comptime beam: type, comptime e: type) type {
     return struct {
+        pub const JobKind = enum(u8) { fixture };
+        pub const JobState = enum(u8) { queued, running, completed, cancelled };
+
+        pub const Job = struct {
+            allocator: std.mem.Allocator,
+            request_id: u64,
+            kind: JobKind,
+            state: std.atomic.Value(u8),
+            cancelled: std.atomic.Value(bool),
+            enqueued_at: i64,
+            bytes: []u8,
+            next: ?*Job,
+
+            pub fn create(allocator: std.mem.Allocator, request_id: u64, input: []const u8) !*Job {
+                const job = try allocator.create(Job);
+                errdefer allocator.destroy(job);
+                const bytes = try allocator.dupe(u8, input);
+                job.* = .{ .allocator = allocator, .request_id = request_id, .kind = .fixture, .state = .init(@intFromEnum(JobState.queued)), .cancelled = .init(false), .enqueued_at = std.time.nanoTimestamp(), .bytes = bytes, .next = null };
+                return job;
+            }
+
+            pub fn destroy(self: *Job) void {
+                const allocator = self.allocator;
+                allocator.free(self.bytes);
+                allocator.destroy(self);
+            }
+        };
+
         pub const Snapshot = struct {
             worker_count: usize,
             queue_capacity: usize,
