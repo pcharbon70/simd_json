@@ -69,6 +69,11 @@ result shape, error translation, and qualification boundary remain unchanged.
 
 Milestone 3 Phase 5 accepts the normalized field plan and target at lazy setup, compiles one cursor-owned native plan, and uses output-slot order to atomically convert each native batch into exact-key BEAM maps.
 
+Milestone 4 Phase 1 freezes finite worker and queue configuration but creates
+no pool job or global admission boundary. Projection correlation, retention,
+cancellation, document consumption, and cleanup continue through the existing
+qualified pre-production coordinator unchanged.
+
 ```spec-meta
 id: simd_json.projection_execution
 kind: subsystem

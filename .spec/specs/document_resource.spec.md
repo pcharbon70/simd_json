@@ -80,6 +80,11 @@ owned native graph without publishing a document resource.
 
 Milestone 3 Phase 5 routes public document streams through the same owner-first stream reservation, retained cursor parent, consumed terminal state, and idempotent owner close proven by the private Phase 4 lifecycle.
 
+Milestone 4 Phase 1 adds no native worker, queue, job, or resource transition.
+It validates future finite capacity before coordinator startup; document input,
+parser, cleanup, owner, generation, and one-shot lifecycle contracts remain
+unchanged.
+
 ```spec-meta
 id: simd_json.document_resource
 kind: subsystem

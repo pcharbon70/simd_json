@@ -282,6 +282,7 @@ defmodule SimdJson do
 
   defp stable_reason(:not_owner), do: :not_owner
   defp stable_reason(:closed), do: :closed
+  defp stable_reason(:busy), do: :busy
   defp stable_reason(_reason), do: :native_failure
 
   defp safe_offset(offset, logical_length)
@@ -303,6 +304,7 @@ defmodule SimdJson do
   defp message(:out_of_memory), do: "native JSON allocation failed"
   defp message(:closed), do: "document is closed"
   defp message(:not_owner), do: "document belongs to another process"
+  defp message(:busy), do: "native execution capacity is busy"
   defp message(:native_failure), do: "native JSON operation failed"
 
   defp native_failure_result do

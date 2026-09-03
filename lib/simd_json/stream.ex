@@ -164,6 +164,7 @@ defimpl Enumerable, for: SimdJson.Stream do
               :index_out_of_bounds,
               :incorrect_type,
               :number_out_of_range,
+              :busy,
               :batch_too_large
             ],
        do: reason
@@ -180,6 +181,7 @@ defimpl Enumerable, for: SimdJson.Stream do
   defp message(:index_out_of_bounds), do: "JSON array index is out of bounds"
   defp message(:number_out_of_range), do: "JSON number is out of range"
   defp message(:batch_too_large), do: "projected row exceeds the batch byte limit"
+  defp message(:busy), do: "native execution capacity is busy"
   defp message(:invalid_json), do: "invalid JSON"
   defp message(:invalid_utf8), do: "invalid UTF-8 in JSON input"
   defp message(:unexpected_eof), do: "unexpected end of JSON input"
@@ -191,7 +193,7 @@ defimpl Enumerable, for: SimdJson.Stream do
   defp message(:native_failure), do: "native JSON operation failed"
 
   defp error(reason)
-       when reason in [:not_owner, :closed, :cursor_consumed, :cancelled, :out_of_memory],
+       when reason in [:not_owner, :closed, :cursor_consumed, :cancelled, :out_of_memory, :busy],
        do: %Error{reason: reason, message: Atom.to_string(reason)}
 
   defp error(_reason),

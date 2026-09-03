@@ -41,3 +41,7 @@ Use this folder for durable cross-cutting decisions that shape the current Spec 
 - [Lazy Stream API and Bounded Options](./0007-lazy-stream-api-and-bounded-options.md)
 - [Forward-Only Batched Array Cursor](./0008-forward-only-batched-array-cursor.md)
 - [Stream Ownership, Backpressure, and Lifetime](./0009-stream-ownership-backpressure-and-lifetime.md)
+
+### Milestone 4 — Production Native Concurrency
+
+- [Bounded Native Pool Configuration and Admission](./0010-bounded-native-pool-configuration-and-admission.md)

@@ -37,6 +37,11 @@ delivery, and stable runtime exception translation remain Phase 5 work.
 
 Milestone 3 Phase 5 exposes `SimdJson.stream/2` and opaque `SimdJson.Stream.t()` with Enumerable and redacted Inspect implementations. Construction mistakes raise synchronously; native setup and batch failures raise stable redacted `SimdJson.Error` values during owner reduction.
 
+Milestone 4 Phase 1 reserves the shared `:busy` reason for future immediate
+global-capacity rejection. No Milestone 3 stream can produce it yet because the
+bounded pool and queue do not exist; stream construction, demand, errors,
+redaction, and Enumerable behavior otherwise remain unchanged.
+
 ```spec-meta
 id: simd_json.streaming_api
 kind: api

@@ -38,6 +38,7 @@ defmodule SimdJson.Error do
           | :incorrect_type
           | :number_out_of_range
           | :batch_too_large
+          | :busy
           | :cursor_consumed
           | :cancelled
           | :native_failure
@@ -70,6 +71,7 @@ defimpl Inspect, for: SimdJson.Error do
     :incorrect_type,
     :number_out_of_range,
     :batch_too_large,
+    :busy,
     :cursor_consumed,
     :cancelled,
     :native_failure

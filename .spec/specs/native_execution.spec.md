@@ -100,6 +100,12 @@ queue, fixed worker pool, cancellation registry, or telemetry.
 
 Milestone 3 Phase 5 connects public Enumerable reduction to one correlated threaded setup followed by demand-driven correlated batch operations. Consumer work remains on the caller, native traversal remains threaded, and no global pool or admission claim is introduced.
 
+Milestone 4 Phase 1 freezes and validates finite worker and queue configuration
+before the coordinator starts. It does not yet replace the qualified
+Zigler-threaded path, create pool workers, impose global queue admission, or
+change any open, select, or stream lifecycle. Diagnostics therefore continue
+to identify the executor as pre-production.
+
 ```spec-meta
 id: simd_json.native_execution
 kind: subsystem
@@ -114,6 +120,7 @@ surface:
   - docs/milestones/01-native-foundation.md
 decisions:
   - simd_json.off_scheduler_native_execution
+  - simd_json.bounded_native_pool_configuration_and_admission
 ```
 
 ## Requirements

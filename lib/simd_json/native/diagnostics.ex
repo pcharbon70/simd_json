@@ -3,6 +3,7 @@ defmodule SimdJson.Native.Diagnostics do
 
   alias SimdJson.Native.BuildGuard
   alias SimdJson.Native.BuildSmoke
+  alias SimdJson.Native.OperationCoordinator
 
   @doc false
   # covers: simd_json.native_build_and_abi.clean_checkout_build simd_json.native_build_and_abi.target_qualification
@@ -14,5 +15,10 @@ defmodule SimdJson.Native.Diagnostics do
       simdjson_padding: BuildSmoke.simdjson_padding(),
       native_fingerprint: BuildGuard.fingerprint()
     }
+  end
+
+  @doc false
+  def execution do
+    OperationCoordinator.pool_snapshot()
   end
 end

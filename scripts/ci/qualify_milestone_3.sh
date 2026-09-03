@@ -44,6 +44,7 @@ SIMD_JSON_QUALIFICATION_DIR="${qualification_root}/native" \
   run_step native_release bash scripts/ci/qualify_native_release.sh
 SIMD_JSON_QUALIFICATION_DIR="${qualification_root}/stream-execution" \
   run_step stream_execution bash scripts/ci/qualify_stream_execution.sh
+run_step formatter_plugin mix deps.compile zigler --force
 run_step formatting mix format --check-formatted
 run_step documentation mix docs --warnings-as-errors
 run_step full_test_suite env MIX_ENV=test mix test --seed 0

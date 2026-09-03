@@ -46,6 +46,11 @@ production pool surface is added before Phase 5 and Milestone 4 respectively.
 
 Milestone 3 Phase 5 binds public reduction to the constructing owner, performs lazy setup on first demand, retains at most one returned batch, requests no next batch until its rows are consumed, and closes deterministically on done, halt, reducer exception, or runtime failure.
 
+Milestone 4 Phase 1 validates finite future worker and queue capacity before
+coordinator startup. It does not add global admission, prefetch, parallel cursor
+work, pool cancellation, or telemetry, so all Milestone 3 per-stream demand and
+pre-production execution boundaries remain unchanged.
+
 ```spec-meta
 id: simd_json.stream_execution
 kind: subsystem
