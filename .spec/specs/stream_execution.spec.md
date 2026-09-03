@@ -1,6 +1,6 @@
 # Stream Execution and Lifecycle
 
-Milestone 4 Phase 2 workers accept no stream jobs, preserving cursor demand,
+Milestone 4 Phase 3 workers accept no stream jobs, preserving cursor demand,
 batch ownership, cancellation, and threaded execution semantics.
 
 Current-truth contract for Milestone 3 lazy cursor setup, correlated
@@ -74,6 +74,7 @@ decisions:
   - simd_json.stream_ownership_backpressure_and_lifetime
   - simd_json.forward_only_batched_array_cursor
   - simd_json.lazy_stream_api_and_bounded_options
+  - simd_json.owned_native_jobs_and_bounded_fifo
 ```
 
 ## Requirements

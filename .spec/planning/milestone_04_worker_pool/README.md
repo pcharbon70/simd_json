@@ -19,7 +19,7 @@ deterministic worker lifecycle.
 
 1. [Phase 1 — Configuration and Admission Contract](./phase-01-configuration-and-admission-contract.md)
 2. [Phase 2 — Native Pool State and Fixed Workers](./phase-02-native-pool-state-and-fixed-workers.md)
-3. Phase 3 — Owned Jobs and Non-blocking Queue
+3. [Phase 3 — Owned Jobs and Non-blocking Queue](./phase-03-owned-jobs-and-nonblocking-queue.md)
 4. Phase 4 — Cancellation, Delivery, and Resource Serialization
 5. Phase 5 — Telemetry, Public Operations, and Lifecycle
 6. Phase 6 — Saturation Qualification and Activation

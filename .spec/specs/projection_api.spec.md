@@ -1,6 +1,6 @@
 # Projection API
 
-Milestone 4 Phase 2 does not route projection jobs through the idle pool and
+Milestone 4 Phase 3 does not route projection jobs through the bounded pool and
 preserves this public surface and its errors.
 
 Active current-truth contract for the Milestone 2 `SimdJson.select/2` public
@@ -74,6 +74,7 @@ decisions:
   - simd_json.projection_api_and_validation
   - simd_json.projection_admission_consumption_and_lifetime
   - simd_json.document_resource_and_buffer_ownership
+  - simd_json.owned_native_jobs_and_bounded_fifo
 ```
 
 ## Requirements

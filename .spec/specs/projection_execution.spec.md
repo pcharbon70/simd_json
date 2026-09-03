@@ -1,7 +1,7 @@
 # Projection Execution and Lifecycle
 
-Milestone 4 Phase 2 workers remain idle; projection admission, ownership, and
-threaded execution retain their existing contract.
+Milestone 4 Phase 3 workers execute only owned test-fixture jobs; projection
+admission, ownership, and threaded execution retain their existing contract.
 
 Milestone 3 Phase 6 reruns this active subject as an inherited regression gate.
 Streaming continues to reuse the same normalized projection engine and
@@ -95,6 +95,7 @@ decisions:
   - simd_json.document_resource_and_buffer_ownership
   - simd_json.off_scheduler_native_execution
   - simd_json.projection_admission_consumption_and_lifetime
+  - simd_json.owned_native_jobs_and_bounded_fifo
 ```
 
 ## Requirements
