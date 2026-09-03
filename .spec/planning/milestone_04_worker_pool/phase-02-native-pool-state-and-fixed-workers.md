@@ -14,10 +14,10 @@ Back to plan: [README](./README.md)
 
 ## 2.2 Section — Fixed Worker Startup
 
-- [ ] 2.2 Section - Start exactly the normalized worker count once and keep
+- [x] 2.2 Section - Start exactly the normalized worker count once and keep
   workers asleep on the native condition without polling or per-request threads.
-  - [ ] 2.2.1 Task - Wire normalized startup through the coordinator boundary.
-  - [ ] 2.2.2 Task - Make identical startup idempotent and reject conflicting starts.
+  - [x] 2.2.1 Task - Wire normalized startup through the coordinator boundary.
+  - [x] 2.2.2 Task - Make identical startup idempotent and reject conflicting starts.
 
 ## 2.3 Section — Rollback and Join Primitives
 

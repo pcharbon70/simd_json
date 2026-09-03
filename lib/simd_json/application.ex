@@ -25,6 +25,7 @@ defmodule SimdJson.Application do
     end
 
     _generation = SimdJson.Native.BuildSmoke.execution_begin_shutdown()
+    _stopped? = SimdJson.Native.BuildSmoke.native_pool_stop()
     state
   end
 
