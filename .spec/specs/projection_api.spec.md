@@ -50,6 +50,11 @@ through private integration seams. It adds no public projection grammar,
 compiled plan, cursor, batch, or streaming export, and regression tests retain
 the active `select/2` behavior.
 
+Milestone 4 Phase 1 validates future pool capacity before coordinator startup
+without changing projection grammar, public results, errors, or admission.
+Projection execution remains on the qualified pre-production threaded path
+until later Milestone 4 phases route owned jobs through the bounded queue.
+
 ```spec-meta
 id: simd_json.projection_api
 kind: api

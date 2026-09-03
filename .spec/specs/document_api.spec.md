@@ -73,6 +73,11 @@ through compile-time-gated private seams. The public document representation,
 root exports, errors, ownership rules, and absence of cursor/batch handles are
 unchanged until Phase 5.
 
+Milestone 4 Phase 1 validates finite future pool capacity before the operation
+coordinator starts. Document API shape, synchronous validation, ownership,
+errors, and qualified threaded behavior remain unchanged until later pool
+phases route real jobs through bounded global admission.
+
 ```spec-meta
 id: simd_json.document_api
 kind: api

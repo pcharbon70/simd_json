@@ -60,6 +60,11 @@ sequencing, copied bounded row lists, cancellation, and compile-time-gated
 lifecycle accounting. The root exports remain unchanged and no Enumerable,
 cursor, batch, diagnostic, or production-pool API is public.
 
+Milestone 4 Phase 1 adds the accepted pool configuration decision, planned
+native-pool subject, and ordered implementation plan to the package-local Spec
+Led layout. No public pool configuration module or production execution claim
+is added to package documentation in this phase.
+
 ```spec-meta
 id: simd_json.package
 kind: package
