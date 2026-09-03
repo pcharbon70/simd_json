@@ -78,20 +78,20 @@ defmodule SimdJson.Native.PoolOptions do
   end
 
   @spec snapshot(t()) :: %{
-          worker_count: 1..64,
-          queue_capacity: 1..4096,
+          worker_count: 1..64 | nil,
+          queue_capacity: 1..4096 | nil,
           workers_explicit?: boolean(),
           queue_explicit?: boolean(),
           executor: :preproduction_threaded | :bounded_native_pool
         }
   def snapshot(%__MODULE__{} = options) do
-    Map.take(options, [
-      :worker_count,
-      :queue_capacity,
-      :workers_explicit?,
-      :queue_explicit?,
-      :executor
-    ])
+    %{
+      worker_count: safe_integer(options.worker_count, @worker_range),
+      queue_capacity: safe_integer(options.queue_capacity, @queue_range),
+      workers_explicit?: safe_boolean(options.workers_explicit?),
+      queue_explicit?: safe_boolean(options.queue_explicit?),
+      executor: safe_executor(options.executor)
+    }
   end
 
   @spec default_worker_count(pos_integer()) :: 1..32
@@ -144,5 +144,41 @@ defmodule SimdJson.Native.PoolOptions do
   defp validate_integer!(value, key, range) do
     raise ArgumentError,
           "#{inspect(key)} must be an integer in #{range.first}..#{range.last}, got: #{inspect(value)}"
+  end
+
+  defp safe_integer(value, first..last//_step)
+       when is_integer(value) and value >= first and value <= last,
+       do: value
+
+  defp safe_integer(_value, _range), do: nil
+
+  defp safe_boolean(value) when is_boolean(value), do: value
+  defp safe_boolean(_value), do: false
+
+  defp safe_executor(value) when value in [:preproduction_threaded, :bounded_native_pool],
+    do: value
+
+  defp safe_executor(_value), do: :preproduction_threaded
+end
+
+defimpl Inspect, for: SimdJson.Native.PoolOptions do
+  import Inspect.Algebra
+
+  def inspect(options, inspect_options) do
+    snapshot = SimdJson.Native.PoolOptions.snapshot(options)
+
+    concat([
+      "#SimdJson.Native.PoolOptions<worker_count: ",
+      to_doc(snapshot.worker_count, inspect_options),
+      ", queue_capacity: ",
+      to_doc(snapshot.queue_capacity, inspect_options),
+      ", workers_explicit?: ",
+      to_doc(snapshot.workers_explicit?, inspect_options),
+      ", queue_explicit?: ",
+      to_doc(snapshot.queue_explicit?, inspect_options),
+      ", executor: ",
+      to_doc(snapshot.executor, inspect_options),
+      ">"
+    ])
   end
 end

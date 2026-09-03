@@ -118,6 +118,7 @@ defmodule SimdJson.Native.ProjectionOperation do
               :index_out_of_bounds,
               :incorrect_type,
               :number_out_of_range,
+              :busy,
               :cursor_consumed,
               :cancelled
             ],
@@ -168,6 +169,7 @@ defmodule SimdJson.Native.ProjectionOperation do
   defp message(:index_out_of_bounds), do: "requested array index is out of bounds"
   defp message(:incorrect_type), do: "selected value has an incorrect type"
   defp message(:number_out_of_range), do: "selected number is out of range"
+  defp message(:busy), do: "native execution capacity is busy"
   defp message(:cursor_consumed), do: "document cursor has already been consumed"
   defp message(:cancelled), do: "JSON operation was cancelled"
   defp message(:native_failure), do: "native JSON operation failed"

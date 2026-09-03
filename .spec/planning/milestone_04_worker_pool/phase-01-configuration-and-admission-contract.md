@@ -40,16 +40,16 @@ Back to plan: [README](./README.md)
 
 ## 1.3 Section — Saturation Error and Redaction
 
-- [ ] 1.3 Section - Reserve the public `:busy` reason and stable redacted
+- [x] 1.3 Section - Reserve the public `:busy` reason and stable redacted
   meaning without pretending saturation can occur before the queue exists.
 
-  - [ ] 1.3.1 Task - Extend the common error contract.
-    - [ ] 1.3.1.1 Subtask - Add `:busy` to the closed reason type and safe inspector allowlist.
-    - [ ] 1.3.1.2 Subtask - Define `:busy` as immediate global-capacity rejection with all unrelated metadata nil.
-    - [ ] 1.3.1.3 Subtask - Preserve every existing error reason, message, and redaction behavior.
-  - [ ] 1.3.2 Task - Bound configuration inspection.
-    - [ ] 1.3.2.1 Subtask - Omit raw environment/application terms, PIDs, references, paths, inputs, and native identities.
-    - [ ] 1.3.2.2 Subtask - Ensure forged configuration structs cannot render unbounded or sensitive content.
+  - [x] 1.3.1 Task - Extend the common error contract.
+    - [x] 1.3.1.1 Subtask - Add `:busy` to the closed reason type and safe inspector allowlist.
+    - [x] 1.3.1.2 Subtask - Define `:busy` as immediate global-capacity rejection with all unrelated metadata nil.
+    - [x] 1.3.1.3 Subtask - Preserve every existing error reason, message, and redaction behavior.
+  - [x] 1.3.2 Task - Bound configuration inspection.
+    - [x] 1.3.2.1 Subtask - Omit raw environment/application terms, PIDs, references, paths, inputs, and native identities.
+    - [x] 1.3.2.2 Subtask - Ensure forged configuration structs cannot render unbounded or sensitive content.
 
 ## 1.4 Section — Phase 1 Integration Tests
 
