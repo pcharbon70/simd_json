@@ -396,6 +396,10 @@ pub fn native_pool_cancel_fixture(request: PoolRequestResource) bool {
     return pool.cancelRequest(request);
 }
 
+pub fn native_pool_request_state_fixture(request: PoolRequestResource) worker_pool.TerminalState {
+    return @enumFromInt(request.__payload.*.terminal.load(.acquire));
+}
+
 pub fn native_pool_abandon_monitor_fixture(request: PoolRequestResource) bool {
     const pool = pool_ref.load(.acquire) orelse return false;
     pool.abandonMonitor(request);

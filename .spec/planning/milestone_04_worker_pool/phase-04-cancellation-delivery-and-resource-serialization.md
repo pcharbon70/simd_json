@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 4 Phase - Establish monitored cancellation, unique result delivery, and
+- [x] 4 Phase - Establish monitored cancellation, unique result delivery, and
   per-resource serialization without routing public operations or enabling
   production pool diagnostics.
 
@@ -32,8 +32,8 @@ Back to plan: [README](./README.md)
 
 ## 4.4 Section — Phase 4 Integration Tests
 
-- [ ] 4.4 Section - Prove caller death, timeout-style cancellation, unique
+- [x] 4.4 Section - Prove caller death, timeout-style cancellation, unique
   delivery, orphan discard, resource races, shutdown cleanup, unchanged
   routing, and earlier milestone gates.
-  - [ ] 4.4.1 Task - Add focused race and lifecycle coverage.
-  - [ ] 4.4.2 Task - Run regression, formatting, native, and spec qualification.
+  - [x] 4.4.1 Task - Add focused race and lifecycle coverage.
+  - [x] 4.4.2 Task - Run regression, formatting, native, and spec qualification.

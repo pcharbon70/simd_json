@@ -1,8 +1,8 @@
 # Native Execution
 
-Milestone 4 Phase 3 establishes an owned test-fixture job path, bounded FIFO,
-immediate saturation rejection, and deterministic cleanup but does not route
-operations away from the qualified Zigler threaded bridge.
+Milestone 4 Phase 4 adds monitored cancellation, correlated fixture delivery,
+and resource serialization but does not route operations away from the
+qualified Zigler threaded bridge.
 
 Current-truth contract for scheduler isolation, threaded request correlation, cancellation-safe retention, and scheduler responsiveness during Milestone 1.
 
@@ -126,6 +126,7 @@ decisions:
   - simd_json.off_scheduler_native_execution
   - simd_json.bounded_native_pool_configuration_and_admission
   - simd_json.owned_native_jobs_and_bounded_fifo
+  - simd_json.monitored_delivery_and_resource_serialization
 ```
 
 ## Requirements

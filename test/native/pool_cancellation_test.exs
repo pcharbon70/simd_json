@@ -64,6 +64,32 @@ defmodule SimdJson.Native.PoolCancellationTest do
              BuildSmoke.native_pool_snapshot()
   end
 
+  # covers: simd_json.native_pool.cancellation simd_json.native_pool.shutdown
+  test "shutdown cancels queued and running monitored jobs without delivery" do
+    assert BuildSmoke.native_pool_start(2, 2) == :ok
+    assert BuildSmoke.native_pool_pause_workers(true)
+
+    running =
+      for payload <- ["running-a", "running-b"] do
+        BuildSmoke.native_pool_submit_monitored_fixture(payload)
+      end
+
+    await(fn -> BuildSmoke.native_pool_snapshot().running_jobs == 2 end)
+
+    queued =
+      for payload <- ["queued-a", "queued-b"] do
+        BuildSmoke.native_pool_submit_monitored_fixture(payload)
+      end
+
+    assert BuildSmoke.native_pool_stop()
+
+    for submission <- running ++ queued do
+      assert BuildSmoke.native_pool_request_state_fixture(submission.request) == :cancelled
+    end
+
+    refute_receive {SimdJson.Native, _, _}, 20
+  end
+
   defp await(predicate, attempts \\ 1_000)
 
   defp await(predicate, 0),

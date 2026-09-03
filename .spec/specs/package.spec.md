@@ -1,7 +1,8 @@
 # SimdJson Package
 
-Milestone 4 Phase 3 adds internal owned fixture jobs and bounded FIFO admission
-without public modules, functions, dependencies, or configuration keys.
+Milestone 4 Phase 4 adds internal monitored fixture delivery and resource
+serialization without public modules, functions, dependencies, or
+configuration keys.
 
 Milestone 3 Phase 6 adds the active streaming modules, ABI v3 cursor sources,
 operations and acceptance guides, qualification scripts, frozen compressed ETL

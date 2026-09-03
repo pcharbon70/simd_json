@@ -322,6 +322,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             queue_capacity: usize,
             live_workers: std.atomic.Value(usize),
             accepting: std.atomic.Value(bool),
+            shutdown_requested: std.atomic.Value(bool),
             stopping: bool,
             queue_head: ?*Job,
             queue_tail: ?*Job,
@@ -354,7 +355,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 errdefer e.enif_cond_destroy(condition);
                 const threads = try allocator.alloc(beam.tid, workers);
                 errdefer allocator.free(threads);
-                runtime.* = .{ .allocator = allocator, .mutex = mutex, .condition = condition, .threads = threads, .queue_capacity = queue_capacity, .live_workers = .init(0), .accepting = .init(true), .stopping = false, .queue_head = null, .queue_tail = null, .queued_jobs = 0, .running_jobs = 0, .completed_jobs = 0, .cancelled_jobs = 0, .delivered_jobs = 0, .discarded_jobs = 0, .completed_checksum = 0, .rejected_jobs = 0, .retained_bytes = 0, .next_request_id = 1, .last_dequeued_request = 0, .pause_workers = false, .dequeue_order_hash = 0 };
+                runtime.* = .{ .allocator = allocator, .mutex = mutex, .condition = condition, .threads = threads, .queue_capacity = queue_capacity, .live_workers = .init(0), .accepting = .init(true), .shutdown_requested = .init(false), .stopping = false, .queue_head = null, .queue_tail = null, .queued_jobs = 0, .running_jobs = 0, .completed_jobs = 0, .cancelled_jobs = 0, .delivered_jobs = 0, .discarded_jobs = 0, .completed_checksum = 0, .rejected_jobs = 0, .retained_bytes = 0, .next_request_id = 1, .last_dequeued_request = 0, .pause_workers = false, .dequeue_order_hash = 0 };
                 var started: usize = 0;
                 errdefer runtime.rollback(started);
                 while (started < workers) : (started += 1) {
@@ -367,6 +368,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             }
 
             fn rollback(self: *Runtime, started: usize) void {
+                self.shutdown_requested.store(true, .release);
                 e.enif_mutex_lock(self.mutex);
                 self.stopping = true;
                 e.enif_cond_broadcast(self.condition);
@@ -552,12 +554,21 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 e.enif_mutex_unlock(runtime.mutex);
                 var checksum: u64 = 0;
                 if (!job.?.isCancelled()) {
-                    for (job.?.bytes) |byte| checksum +%= byte;
+                    for (job.?.bytes, 0..) |byte, index| {
+                        if (index % 4096 == 0 and runtime.shutdown_requested.load(.acquire)) {
+                            job.?.cancelled.store(true, .release);
+                            break;
+                        }
+                        checksum +%= byte;
+                    }
                 }
+                if (runtime.shutdown_requested.load(.acquire))
+                    job.?.cancelled.store(true, .release);
                 const retained = job.?.bytes.len;
                 var cancelled = job.?.isCancelled();
                 var delivery: ?DeliveryOutcome = null;
                 if (job.?.request) |request| {
+                    if (cancelled) _ = request.cancel();
                     delivery = request.deliver(checksum);
                     cancelled = delivery.? == .cancelled;
                 }
