@@ -4,12 +4,14 @@ defmodule SimdJson.Native.OperationCoordinator do
   use GenServer
 
   alias SimdJson.Native.BuildSmoke
+  alias SimdJson.Native.PoolOptions
   alias SimdJson.Native.ThreadedOperation
 
   @completion_tag {__MODULE__, :threaded_completion}
   @test_hooks Mix.env() == :test
 
   defstruct accepting?: true,
+            pool_options: nil,
             requests: %{},
             caller_monitors: %{},
             worker_monitors: %{},
@@ -30,8 +32,8 @@ defmodule SimdJson.Native.OperationCoordinator do
           orphaned?: boolean()
         }
 
-  def start_link(_options) do
-    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
+  def start_link(%PoolOptions{} = pool_options) do
+    GenServer.start_link(__MODULE__, pool_options, name: __MODULE__)
   end
 
   def child_spec(options) do
@@ -156,9 +158,9 @@ defmodule SimdJson.Native.OperationCoordinator do
   end
 
   @impl true
-  def init(:ok) do
+  def init(%PoolOptions{} = pool_options) do
     _generation = BuildSmoke.execution_resume()
-    {:ok, %__MODULE__{}}
+    {:ok, %__MODULE__{pool_options: pool_options}}
   end
 
   @impl true
@@ -167,7 +169,12 @@ defmodule SimdJson.Native.OperationCoordinator do
   end
 
   def handle_call(:snapshot, _from, state) do
-    {:reply, %{accepting?: state.accepting?, live_requests: map_size(state.requests)}, state}
+    {:reply,
+     %{
+       accepting?: state.accepting?,
+       live_requests: map_size(state.requests),
+       native_pool: PoolOptions.snapshot(state.pool_options)
+     }, state}
   end
 
   def handle_call(:begin_shutdown, _from, state) do

@@ -26,17 +26,17 @@ Back to plan: [README](./README.md)
 
 ## 1.2 Section — Startup Preflight and Effective Snapshot
 
-- [ ] 1.2 Section - Validate configuration once before the coordinator accepts
+- [x] 1.2 Section - Validate configuration once before the coordinator accepts
   operations and retain one immutable effective snapshot.
 
-  - [ ] 1.2.1 Task - Implement deterministic preflight.
-    - [ ] 1.2.1.1 Subtask - Normalize defaults from a bounded scheduler count and validate explicit values completely.
-    - [ ] 1.2.1.2 Subtask - Fail startup with controlled `ArgumentError` messages before any operation admission.
-    - [ ] 1.2.1.3 Subtask - Pass the normalized value through the supervision boundary without rereading mutable application configuration.
-  - [ ] 1.2.2 Task - Expose honest bounded diagnostics.
-    - [ ] 1.2.2.1 Subtask - Snapshot effective workers, queue capacity, explicit flags, and executor phase only.
-    - [ ] 1.2.2.2 Subtask - Keep the phase marker `:preproduction_threaded` until real pool routing is qualified.
-    - [ ] 1.2.2.3 Subtask - Prove no request, allocation, generation, or native worker state changes during pure normalization.
+  - [x] 1.2.1 Task - Implement deterministic preflight.
+    - [x] 1.2.1.1 Subtask - Normalize defaults from a bounded scheduler count and validate explicit values completely.
+    - [x] 1.2.1.2 Subtask - Fail startup with controlled `ArgumentError` messages before any operation admission.
+    - [x] 1.2.1.3 Subtask - Pass the normalized value through the supervision boundary without rereading mutable application configuration.
+  - [x] 1.2.2 Task - Expose honest bounded diagnostics.
+    - [x] 1.2.2.1 Subtask - Snapshot effective workers, queue capacity, explicit flags, and executor phase only.
+    - [x] 1.2.2.2 Subtask - Keep the phase marker `:preproduction_threaded` until real pool routing is qualified.
+    - [x] 1.2.2.3 Subtask - Prove no request, allocation, generation, or native worker state changes during pure normalization.
 
 ## 1.3 Section — Saturation Error and Redaction
 

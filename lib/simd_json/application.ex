@@ -3,9 +3,13 @@ defmodule SimdJson.Application do
 
   use Application
 
+  alias SimdJson.Native.OperationCoordinator
+  alias SimdJson.Native.PoolOptions
+
   @impl true
   def start(_type, _args) do
-    children = [SimdJson.Native.OperationCoordinator]
+    pool_options = PoolOptions.from_application_env()
+    children = [{OperationCoordinator, pool_options}]
 
     Supervisor.start_link(children,
       strategy: :one_for_one,
@@ -15,8 +19,8 @@ defmodule SimdJson.Application do
 
   @impl true
   def prep_stop(state) do
-    if Process.whereis(SimdJson.Native.OperationCoordinator) do
-      :ok = SimdJson.Native.OperationCoordinator.begin_shutdown()
+    if Process.whereis(OperationCoordinator) do
+      :ok = OperationCoordinator.begin_shutdown()
       await_operation_drain()
     end
 
@@ -25,7 +29,7 @@ defmodule SimdJson.Application do
   end
 
   defp await_operation_drain do
-    case SimdJson.Native.OperationCoordinator.snapshot() do
+    case OperationCoordinator.snapshot() do
       %{live_requests: 0} ->
         :ok
 

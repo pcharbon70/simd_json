@@ -59,6 +59,41 @@ defmodule SimdJson.Native.PoolOptions do
           "online scheduler count must be a positive integer, got: #{inspect(schedulers_online)}"
   end
 
+  @spec from_application_env(atom(), pos_integer()) :: t()
+  def from_application_env(
+        application \\ :simd_json,
+        schedulers_online \\ System.schedulers_online()
+      )
+      when is_atom(application) do
+    options =
+      [:native_workers, :native_queue_size]
+      |> Enum.flat_map(fn key ->
+        case Application.fetch_env(application, key) do
+          {:ok, value} -> [{key, value}]
+          :error -> []
+        end
+      end)
+
+    normalize(options, schedulers_online)
+  end
+
+  @spec snapshot(t()) :: %{
+          worker_count: 1..64,
+          queue_capacity: 1..4096,
+          workers_explicit?: boolean(),
+          queue_explicit?: boolean(),
+          executor: :preproduction_threaded | :bounded_native_pool
+        }
+  def snapshot(%__MODULE__{} = options) do
+    Map.take(options, [
+      :worker_count,
+      :queue_capacity,
+      :workers_explicit?,
+      :queue_explicit?,
+      :executor
+    ])
+  end
+
   @spec default_worker_count(pos_integer()) :: 1..32
   def default_worker_count(schedulers_online)
       when is_integer(schedulers_online) and schedulers_online > 0 do
