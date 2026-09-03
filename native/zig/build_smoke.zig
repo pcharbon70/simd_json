@@ -5,8 +5,10 @@ const c = @import("simd_json_abi");
 const document_resource = @import("document_resource").Implementation(c);
 const projection_plan = @import("projection_plan").Implementation(c);
 const stream_cursor = @import("stream_cursor").Implementation(c, projection_plan);
-const worker_pool = @import("worker_pool").Implementation(beam, e);
+const worker_pool = @import("worker_pool").Implementation(beam, e, root);
 const root = @import("root");
+
+pub const PoolRequestResource = worker_pool.RequestResource;
 
 extern fn simd_json_build_smoke_version() callconv(.c) u32;
 extern fn simd_json_build_smoke_padding() callconv(.c) u32;
@@ -381,6 +383,16 @@ pub fn native_pool_start_with_failure(workers: usize, queue_capacity: usize, fai
 pub fn native_pool_submit_fixture(input: []const u8) worker_pool.SubmitResult {
     const pool = pool_ref.load(.acquire) orelse return .{ .status = .stopped, .request_id = 0 };
     return pool.submit(input);
+}
+
+pub fn native_pool_submit_monitored_fixture(input: []const u8) !worker_pool.MonitoredSubmission {
+    const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
+    return pool.submitMonitored(input);
+}
+
+pub fn native_pool_cancel_fixture(request: PoolRequestResource) bool {
+    const pool = pool_ref.load(.acquire) orelse return false;
+    return pool.cancelRequest(request);
 }
 
 pub fn native_pool_pause_workers(paused: bool) bool {
