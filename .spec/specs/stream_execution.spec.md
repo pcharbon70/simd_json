@@ -1,5 +1,8 @@
 # Stream Execution and Lifecycle
 
+Milestone 4 Phase 2 workers accept no stream jobs, preserving cursor demand,
+batch ownership, cancellation, and threaded execution semantics.
+
 Current-truth contract for Milestone 3 lazy cursor setup, correlated
 threaded batches, per-stream demand backpressure, document consumption,
 cancellation, deterministic cleanup, scheduler qualification, and ETL evidence.

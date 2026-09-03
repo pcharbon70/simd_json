@@ -1,5 +1,8 @@
 # Projection Execution and Lifecycle
 
+Milestone 4 Phase 2 workers remain idle; projection admission, ownership, and
+threaded execution retain their existing contract.
+
 Milestone 3 Phase 6 reruns this active subject as an inherited regression gate.
 Streaming continues to reuse the same normalized projection engine and
 threaded coordinator without weakening Milestone 2 ownership, scheduler,

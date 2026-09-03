@@ -1,5 +1,8 @@
 # Native Execution
 
+Milestone 4 Phase 2 establishes idle fixed workers and deterministic joins but
+does not route operations away from the qualified Zigler threaded bridge.
+
 Current-truth contract for scheduler isolation, threaded request correlation, cancellation-safe retention, and scheduler responsiveness during Milestone 1.
 
 ## Intent

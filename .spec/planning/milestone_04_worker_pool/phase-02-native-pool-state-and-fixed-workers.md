@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 2 Phase - Establish the native pool lifetime and fixed idle workers
+- [x] 2 Phase - Establish the native pool lifetime and fixed idle workers
   without routing production jobs or claiming bounded-pool execution.
 
 ## 2.1 Section — Shared Pool State
@@ -28,7 +28,7 @@ Back to plan: [README](./README.md)
 
 ## 2.4 Section — Phase 2 Integration Tests
 
-- [ ] 2.4 Section - Verify exact worker counts, sleeping behavior, idempotence,
+- [x] 2.4 Section - Verify exact worker counts, sleeping behavior, idempotence,
   rollback, repeated start/stop, redaction, symbols, and prior milestone gates.
-  - [ ] 2.4.1 Task - Add native and BEAM lifecycle coverage.
-  - [ ] 2.4.2 Task - Run formatting, regression, sanitizer, and spec checks.
+  - [x] 2.4.1 Task - Add native and BEAM lifecycle coverage.
+  - [x] 2.4.2 Task - Run formatting, regression, sanitizer, and spec checks.
