@@ -24,10 +24,10 @@ Back to plan: [README](./README.md)
 
 ## 4.3 Section — Resource Serialization and Close Interlocks
 
-- [ ] 4.3 Section - Serialize conflicting state-advancing fixture jobs while
+- [x] 4.3 Section - Serialize conflicting state-advancing fixture jobs while
   allowing independent resources to execute concurrently.
-  - [ ] 4.3.1 Task - Reject overlapping work and prevent admission after close.
-  - [ ] 4.3.2 Task - Release reservations exactly once across cancellation,
+  - [x] 4.3.1 Task - Reject overlapping work and prevent admission after close.
+  - [x] 4.3.2 Task - Release reservations exactly once across cancellation,
     completion, and close races.
 
 ## 4.4 Section — Phase 4 Integration Tests

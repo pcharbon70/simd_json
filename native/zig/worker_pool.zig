@@ -192,6 +192,64 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             request: RequestResource,
         };
 
+        pub const SerializationState = enum(u8) { ready, reserved, closing, closed };
+        pub const CloseStatus = enum(u8) { closed, closing, already_closed };
+
+        pub const ResourceControl = struct {
+            state: std.atomic.Value(u8),
+
+            fn reserve(self: *ResourceControl) !void {
+                const current: SerializationState = @enumFromInt(self.state.load(.acquire));
+                if (current != .ready) return if (current == .reserved)
+                    error.resource_busy
+                else
+                    error.resource_closed;
+                if (self.state.cmpxchgStrong(
+                    @intFromEnum(SerializationState.ready),
+                    @intFromEnum(SerializationState.reserved),
+                    .acq_rel,
+                    .acquire,
+                ) != null) return error.resource_busy;
+            }
+
+            fn releaseReservation(self: *ResourceControl) void {
+                while (true) {
+                    const current: SerializationState = @enumFromInt(self.state.load(.acquire));
+                    const next = switch (current) {
+                        .reserved => SerializationState.ready,
+                        .closing => SerializationState.closed,
+                        .ready, .closed => return,
+                    };
+                    if (self.state.cmpxchgWeak(
+                        @intFromEnum(current),
+                        @intFromEnum(next),
+                        .acq_rel,
+                        .acquire,
+                    ) == null) return;
+                }
+            }
+
+            pub fn close(self: *ResourceControl) CloseStatus {
+                while (true) {
+                    const current: SerializationState = @enumFromInt(self.state.load(.acquire));
+                    const next, const result = switch (current) {
+                        .ready => .{ SerializationState.closed, CloseStatus.closed },
+                        .reserved => .{ SerializationState.closing, CloseStatus.closing },
+                        .closing => return .closing,
+                        .closed => return .already_closed,
+                    };
+                    if (self.state.cmpxchgWeak(
+                        @intFromEnum(current),
+                        @intFromEnum(next),
+                        .acq_rel,
+                        .acquire,
+                    ) == null) return result;
+                }
+            }
+        };
+
+        pub const SerializationResource = beam.Resource(ResourceControl, root, .{});
+
         pub const Job = struct {
             allocator: std.mem.Allocator,
             request_id: u64,
@@ -201,13 +259,14 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             enqueued_at: i64,
             bytes: []u8,
             request: ?*RequestControl,
+            serialization: ?SerializationResource,
             next: ?*Job,
 
             pub fn create(allocator: std.mem.Allocator, request_id: u64, input: []const u8) !*Job {
                 const job = try allocator.create(Job);
                 errdefer allocator.destroy(job);
                 const bytes = try allocator.dupe(u8, input);
-                job.* = .{ .allocator = allocator, .request_id = request_id, .kind = .fixture, .state = .init(@intFromEnum(JobState.queued)), .cancelled = .init(false), .enqueued_at = e.enif_monotonic_time(e.ERL_NIF_USEC), .bytes = bytes, .request = null, .next = null };
+                job.* = .{ .allocator = allocator, .request_id = request_id, .kind = .fixture, .state = .init(@intFromEnum(JobState.queued)), .cancelled = .init(false), .enqueued_at = e.enif_monotonic_time(e.ERL_NIF_USEC), .bytes = bytes, .request = null, .serialization = null, .next = null };
                 return job;
             }
 
@@ -221,9 +280,18 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                     if (self.request) |request| request.cancelled.load(.acquire) else false;
             }
 
+            fn attachSerialization(self: *Job, resource: SerializationResource) void {
+                resource.keep();
+                self.serialization = resource;
+            }
+
             pub fn destroy(self: *Job) void {
                 const allocator = self.allocator;
                 if (self.request) |request| request.release();
+                if (self.serialization) |resource| {
+                    resource.__payload.releaseReservation();
+                    resource.release();
+                }
                 allocator.free(self.bytes);
                 allocator.destroy(self);
             }
@@ -377,6 +445,51 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 self.next_request_id +%= 1;
                 const job = try Job.create(self.allocator, request_id, input);
                 job.attachRequest(control);
+                self.retained_bytes += input.len;
+                if (self.queue_tail) |tail| tail.next = job else self.queue_head = job;
+                self.queue_tail = job;
+                self.queued_jobs += 1;
+                e.enif_cond_signal(self.condition);
+                return .{
+                    .request_id = request_id,
+                    .request_ref = beam.copy(beam.context.env, .{ .v = control.request_ref }),
+                    .request = request,
+                };
+            }
+
+            pub fn submitSerialized(
+                self: *Runtime,
+                input: []const u8,
+                resource: SerializationResource,
+            ) !MonitoredSubmission {
+                try resource.__payload.reserve();
+                errdefer resource.__payload.releaseReservation();
+                if (input.len > 1_048_576) return error.input_too_large;
+                const owner = try beam.self(.{});
+                const control = try RequestControl.create(self.allocator, owner);
+                const request = RequestResource.create(control, .{}) catch |reason| {
+                    control.release();
+                    return reason;
+                };
+                errdefer request.release();
+                control.resource_object.store(@ptrCast(request.__payload), .release);
+                var monitored_owner = owner;
+                if (e.enif_monitor_process(beam.context.env, @ptrCast(request.__payload), &monitored_owner, &control.monitor) != 0)
+                    return error.monitor_failed;
+                control.monitored.store(true, .release);
+
+                e.enif_mutex_lock(self.mutex);
+                defer e.enif_mutex_unlock(self.mutex);
+                if (self.stopping or !self.accepting.load(.acquire)) return error.pool_stopped;
+                if (self.queued_jobs >= self.queue_capacity) {
+                    self.rejected_jobs += 1;
+                    return error.pool_busy;
+                }
+                const request_id = self.next_request_id;
+                self.next_request_id +%= 1;
+                const job = try Job.create(self.allocator, request_id, input);
+                job.attachRequest(control);
+                job.attachSerialization(resource);
                 self.retained_bytes += input.len;
                 if (self.queue_tail) |tail| tail.next = job else self.queue_head = job;
                 self.queue_tail = job;

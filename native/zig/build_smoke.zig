@@ -9,6 +9,7 @@ const worker_pool = @import("worker_pool").Implementation(beam, e, root);
 const root = @import("root");
 
 pub const PoolRequestResource = worker_pool.RequestResource;
+pub const PoolSerializationResource = worker_pool.SerializationResource;
 
 extern fn simd_json_build_smoke_version() callconv(.c) u32;
 extern fn simd_json_build_smoke_padding() callconv(.c) u32;
@@ -399,6 +400,26 @@ pub fn native_pool_abandon_monitor_fixture(request: PoolRequestResource) bool {
     const pool = pool_ref.load(.acquire) orelse return false;
     pool.abandonMonitor(request);
     return true;
+}
+
+pub fn native_pool_serialization_fixture() !PoolSerializationResource {
+    return PoolSerializationResource.create(.{ .state = .init(@intFromEnum(worker_pool.SerializationState.ready)) }, .{});
+}
+
+pub fn native_pool_submit_serialized_fixture(
+    input: []const u8,
+    resource: PoolSerializationResource,
+) !worker_pool.MonitoredSubmission {
+    const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
+    return pool.submitSerialized(input, resource);
+}
+
+pub fn native_pool_close_serialization_fixture(resource: PoolSerializationResource) worker_pool.CloseStatus {
+    return resource.__payload.close();
+}
+
+pub fn native_pool_serialization_state_fixture(resource: PoolSerializationResource) worker_pool.SerializationState {
+    return @enumFromInt(resource.__payload.state.load(.acquire));
 }
 
 pub fn native_pool_pause_workers(paused: bool) bool {
