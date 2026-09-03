@@ -24,6 +24,7 @@ surface:
   - docs/milestones/04-worker-pool-and-operations.md
 decisions:
   - simd_json.bounded_native_pool_configuration_and_admission
+  - simd_json.fixed_native_worker_lifecycle
 bootstrap:
   reason: Phase 1 establishes configuration only; native pool execution begins in Phase 2.
   requirements:
@@ -161,6 +162,13 @@ bootstrap:
     - simd_json.native_pool.startup_validation
     - simd_json.native_pool.redacted_snapshot
     - simd_json.native_pool.configuration_preflight
+
+- kind: command
+  target: MIX_ENV=test mix test test/native/pool_worker_lifecycle_test.exs
+  execute: true
+  covers:
+    - simd_json.native_pool.fixed_workers
+    - simd_json.native_pool.shutdown
 
 - kind: command
   target: bash scripts/ci/qualify_native_pool.sh

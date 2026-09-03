@@ -1,5 +1,8 @@
 # Document Resource
 
+Milestone 4 Phase 2 workers accept no jobs, preserving existing document
+ownership, serialization, and destruction.
+
 Current-truth contract for the opaque `SimdJson.Document` resource, padded input memory, process ownership, and exactly-once native cleanup required by Milestone 1.
 
 ## Intent

@@ -164,6 +164,12 @@ defmodule SimdJson.Native.OperationCoordinator do
 
   @impl true
   def init(%PoolOptions{} = pool_options) do
+    case BuildSmoke.native_pool_start(pool_options.worker_count, pool_options.queue_capacity) do
+      status when status in [:ok, :already_started] -> :ok
+      :conflicting_configuration -> raise "native pool already has conflicting configuration"
+      :startup_failed -> raise "native pool worker startup failed"
+    end
+
     _generation = BuildSmoke.execution_resume()
     {:ok, %__MODULE__{pool_options: pool_options}}
   end

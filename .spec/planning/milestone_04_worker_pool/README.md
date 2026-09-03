@@ -18,7 +18,7 @@ deterministic worker lifecycle.
 ## Phase Order
 
 1. [Phase 1 — Configuration and Admission Contract](./phase-01-configuration-and-admission-contract.md)
-2. Phase 2 — Native Pool State and Fixed Workers
+2. [Phase 2 — Native Pool State and Fixed Workers](./phase-02-native-pool-state-and-fixed-workers.md)
 3. Phase 3 — Owned Jobs and Non-blocking Queue
 4. Phase 4 — Cancellation, Delivery, and Resource Serialization
 5. Phase 5 — Telemetry, Public Operations, and Lifecycle
@@ -58,4 +58,3 @@ projection, streaming, memory, and sanitizer gates.
 - Telemetry explains latency and capacity without user content.
 - Partial startup and shutdown leak no jobs, resources, environments, or threads.
 - All Milestone 1–3 gates remain green and the native-pool spec is active.
-

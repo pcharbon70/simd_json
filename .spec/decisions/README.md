@@ -45,3 +45,4 @@ Use this folder for durable cross-cutting decisions that shape the current Spec 
 ### Milestone 4 — Production Native Concurrency
 
 - [Bounded Native Pool Configuration and Admission](./0010-bounded-native-pool-configuration-and-admission.md)
+- [Fixed Native Worker Lifecycle](./0011-fixed-native-worker-lifecycle.md)

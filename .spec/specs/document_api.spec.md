@@ -1,5 +1,8 @@
 # Document API and Errors
 
+Milestone 4 Phase 2 starts idle native workers only; document operations and
+this public contract remain on the qualified threaded path unchanged.
+
 Current-truth contract for the deliberately narrow Milestone 1 Elixir API and its stable structured error boundary.
 
 ## Intent

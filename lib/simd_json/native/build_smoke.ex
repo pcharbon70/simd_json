@@ -25,7 +25,8 @@ defmodule SimdJson.Native.BuildSmoke do
     :document_projection_owner_state,
     :document_stream_reservation_probe,
     :execution_set_cleanup_rejection,
-    :execution_snapshot
+    :execution_snapshot,
+    :native_pool_start_with_failure
   ]
   @cxx_flags [
                "-std=c++17",
@@ -57,6 +58,7 @@ defmodule SimdJson.Native.BuildSmoke do
       zig_code_path: "./native/zig/build_smoke.zig",
       optimize: {:env, :safe},
       extra_modules: [
+        worker_pool: {"./native/zig/worker_pool.zig", []},
         document_resource: {"./native/zig/document_resource.zig", []},
         projection_plan: {"./native/zig/projection_plan.zig", []},
         stream_cursor: {"./native/zig/stream_cursor.zig", []}
@@ -93,6 +95,10 @@ defmodule SimdJson.Native.BuildSmoke do
         execution_generation: [],
         execution_begin_shutdown: [],
         execution_resume: [],
+        native_pool_start: [],
+        native_pool_snapshot: [],
+        native_pool_stop: [],
+        native_pool_start_with_failure: [],
         document_resource_registration_smoke: [],
         document_resource_fixture: [],
         stream_cursor_resource_fixture: [],
@@ -137,6 +143,7 @@ defmodule SimdJson.Native.BuildSmoke do
       optimize: {:env, :safe},
       ignore: @test_only_nifs,
       extra_modules: [
+        worker_pool: {"./native/zig/worker_pool.zig", []},
         document_resource: {"./native/zig/document_resource.zig", []},
         projection_plan: {"./native/zig/projection_plan.zig", []},
         stream_cursor: {"./native/zig/stream_cursor.zig", []}
@@ -173,6 +180,9 @@ defmodule SimdJson.Native.BuildSmoke do
         execution_generation: [],
         execution_begin_shutdown: [],
         execution_resume: [],
+        native_pool_start: [],
+        native_pool_snapshot: [],
+        native_pool_stop: [],
         stream_cursor_resource_close: [],
         threaded_stream_setup_fixture: [concurrency: :threaded],
         threaded_stream_binary_setup_fixture: [concurrency: :threaded],

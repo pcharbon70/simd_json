@@ -1,5 +1,8 @@
 # Projection API
 
+Milestone 4 Phase 2 does not route projection jobs through the idle pool and
+preserves this public surface and its errors.
+
 Active current-truth contract for the Milestone 2 `SimdJson.select/2` public
 API, projection grammar, scalar result map, and stable projection errors.
 

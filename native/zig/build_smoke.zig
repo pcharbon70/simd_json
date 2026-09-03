@@ -5,6 +5,7 @@ const c = @import("simd_json_abi");
 const document_resource = @import("document_resource").Implementation(c);
 const projection_plan = @import("projection_plan").Implementation(c);
 const stream_cursor = @import("stream_cursor").Implementation(c, projection_plan);
+const worker_pool = @import("worker_pool").Implementation(beam, e);
 const root = @import("root");
 
 extern fn simd_json_build_smoke_version() callconv(.c) u32;
@@ -339,6 +340,43 @@ const Runtime = struct {
 };
 
 var runtime_ref = std.atomic.Value(?*Runtime).init(null);
+var pool_ref = std.atomic.Value(?*worker_pool.Runtime).init(null);
+
+pub const PoolStartStatus = enum(u8) { ok, already_started, conflicting_configuration, startup_failed };
+
+pub fn native_pool_start(workers: usize, queue_capacity: usize) PoolStartStatus {
+    if (pool_ref.load(.acquire)) |pool| {
+        const current = pool.snapshot();
+        return if (current.worker_count == workers and current.queue_capacity == queue_capacity)
+            .already_started
+        else
+            .conflicting_configuration;
+    }
+    const pool = worker_pool.Runtime.create(beam.allocator, workers, queue_capacity) catch return .startup_failed;
+    if (pool_ref.cmpxchgStrong(null, pool, .acq_rel, .acquire) != null) {
+        pool.destroy();
+        return .conflicting_configuration;
+    }
+    return .ok;
+}
+
+pub fn native_pool_snapshot() ?worker_pool.Snapshot {
+    const pool = pool_ref.load(.acquire) orelse return null;
+    return pool.snapshot();
+}
+
+pub fn native_pool_stop() bool {
+    const pool = pool_ref.swap(null, .acq_rel) orelse return false;
+    pool.destroy();
+    return true;
+}
+
+pub fn native_pool_start_with_failure(workers: usize, queue_capacity: usize, fail_after: usize) PoolStartStatus {
+    if (pool_ref.load(.acquire) != null) return .conflicting_configuration;
+    const pool = worker_pool.Runtime.createWithFailure(beam.allocator, workers, queue_capacity, fail_after) catch return .startup_failed;
+    pool_ref.store(pool, .release);
+    return .ok;
+}
 
 const JoinCopiedTermPayload = struct {
     term: beam.term,
@@ -2889,6 +2927,7 @@ pub fn resource_on_unload(env: beam.env, private_data: ?*anyopaque) callconv(.c)
     const runtime: *Runtime = @ptrCast(@alignCast(private_data orelse return));
     runtime.accepting.store(false, .release);
     runtime_ref.store(null, .release);
+    _ = native_pool_stop();
     runtime.requestShutdownAndJoin();
 }
 
