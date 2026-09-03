@@ -3,6 +3,8 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
     return struct {
         pub const JobKind = enum(u8) { fixture };
         pub const JobState = enum(u8) { queued, running, completed, cancelled };
+        pub const SubmitStatus = enum(u8) { accepted, busy, stopped, out_of_memory, input_too_large };
+        pub const SubmitResult = struct { status: SubmitStatus, request_id: u64 };
 
         pub const Job = struct {
             allocator: std.mem.Allocator,
@@ -18,7 +20,7 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
                 const job = try allocator.create(Job);
                 errdefer allocator.destroy(job);
                 const bytes = try allocator.dupe(u8, input);
-                job.* = .{ .allocator = allocator, .request_id = request_id, .kind = .fixture, .state = .init(@intFromEnum(JobState.queued)), .cancelled = .init(false), .enqueued_at = std.time.nanoTimestamp(), .bytes = bytes, .next = null };
+                job.* = .{ .allocator = allocator, .request_id = request_id, .kind = .fixture, .state = .init(@intFromEnum(JobState.queued)), .cancelled = .init(false), .enqueued_at = e.enif_monotonic_time(e.ERL_NIF_USEC), .bytes = bytes, .next = null };
                 return job;
             }
 
@@ -37,6 +39,9 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
             queued_jobs: usize,
             running_jobs: usize,
             completed_jobs: usize,
+            rejected_jobs: usize,
+            retained_bytes: usize,
+            last_dequeued_request: u64,
         };
 
         pub const Runtime = struct {
@@ -54,6 +59,11 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
             running_jobs: usize,
             completed_jobs: usize,
             completed_checksum: u64,
+            rejected_jobs: usize,
+            retained_bytes: usize,
+            next_request_id: u64,
+            last_dequeued_request: u64,
+            pause_workers: bool,
 
             pub fn create(allocator: std.mem.Allocator, workers: usize, queue_capacity: usize) !*Runtime {
                 return createWithFailure(allocator, workers, queue_capacity, null);
@@ -70,7 +80,7 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
                 errdefer e.enif_cond_destroy(condition);
                 const threads = try allocator.alloc(beam.tid, workers);
                 errdefer allocator.free(threads);
-                runtime.* = .{ .allocator = allocator, .mutex = mutex, .condition = condition, .threads = threads, .queue_capacity = queue_capacity, .live_workers = .init(0), .accepting = .init(true), .stopping = false, .queue_head = null, .queue_tail = null, .queued_jobs = 0, .running_jobs = 0, .completed_jobs = 0, .completed_checksum = 0 };
+                runtime.* = .{ .allocator = allocator, .mutex = mutex, .condition = condition, .threads = threads, .queue_capacity = queue_capacity, .live_workers = .init(0), .accepting = .init(true), .stopping = false, .queue_head = null, .queue_tail = null, .queued_jobs = 0, .running_jobs = 0, .completed_jobs = 0, .completed_checksum = 0, .rejected_jobs = 0, .retained_bytes = 0, .next_request_id = 1, .last_dequeued_request = 0, .pause_workers = false };
                 var started: usize = 0;
                 errdefer runtime.rollback(started);
                 while (started < workers) : (started += 1) {
@@ -115,6 +125,33 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
                 return true;
             }
 
+            pub fn submit(self: *Runtime, input: []const u8) SubmitResult {
+                if (input.len > 1_048_576) return .{ .status = .input_too_large, .request_id = 0 };
+                e.enif_mutex_lock(self.mutex);
+                defer e.enif_mutex_unlock(self.mutex);
+                if (self.stopping or !self.accepting.load(.acquire)) return .{ .status = .stopped, .request_id = 0 };
+                if (self.queued_jobs >= self.queue_capacity) {
+                    self.rejected_jobs += 1;
+                    return .{ .status = .busy, .request_id = 0 };
+                }
+                const request_id = self.next_request_id;
+                self.next_request_id +%= 1;
+                const job = Job.create(self.allocator, request_id, input) catch return .{ .status = .out_of_memory, .request_id = 0 };
+                self.retained_bytes += input.len;
+                if (self.queue_tail) |tail| tail.next = job else self.queue_head = job;
+                self.queue_tail = job;
+                self.queued_jobs += 1;
+                e.enif_cond_signal(self.condition);
+                return .{ .status = .accepted, .request_id = request_id };
+            }
+
+            pub fn setPaused(self: *Runtime, paused: bool) void {
+                e.enif_mutex_lock(self.mutex);
+                self.pause_workers = paused;
+                if (!paused) e.enif_cond_broadcast(self.condition);
+                e.enif_mutex_unlock(self.mutex);
+            }
+
             fn pop(self: *Runtime) ?*Job {
                 const job = self.queue_head orelse return null;
                 self.queue_head = job.next;
@@ -122,6 +159,7 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
                 job.next = null;
                 self.queued_jobs -= 1;
                 self.running_jobs += 1;
+                self.last_dequeued_request = job.request_id;
                 job.state.store(@intFromEnum(JobState.running), .release);
                 return job;
             }
@@ -129,7 +167,7 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
             pub fn snapshot(self: *Runtime) Snapshot {
                 e.enif_mutex_lock(self.mutex);
                 defer e.enif_mutex_unlock(self.mutex);
-                return .{ .worker_count = self.threads.len, .queue_capacity = self.queue_capacity, .live_workers = self.live_workers.load(.acquire), .accepting = self.accepting.load(.acquire), .queued_jobs = self.queued_jobs, .running_jobs = self.running_jobs, .completed_jobs = self.completed_jobs };
+                return .{ .worker_count = self.threads.len, .queue_capacity = self.queue_capacity, .live_workers = self.live_workers.load(.acquire), .accepting = self.accepting.load(.acquire), .queued_jobs = self.queued_jobs, .running_jobs = self.running_jobs, .completed_jobs = self.completed_jobs, .rejected_jobs = self.rejected_jobs, .retained_bytes = self.retained_bytes, .last_dequeued_request = self.last_dequeued_request };
             }
         };
 
@@ -144,14 +182,17 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
                     e.enif_mutex_unlock(runtime.mutex);
                     break;
                 }
+                while (runtime.pause_workers and !runtime.stopping) e.enif_cond_wait(runtime.condition, runtime.mutex);
                 e.enif_mutex_unlock(runtime.mutex);
                 var checksum: u64 = 0;
                 for (job.?.bytes) |byte| checksum +%= byte;
+                const retained = job.?.bytes.len;
                 job.?.state.store(@intFromEnum(JobState.completed), .release);
                 job.?.destroy();
                 e.enif_mutex_lock(runtime.mutex);
                 runtime.running_jobs -= 1;
                 runtime.completed_jobs += 1;
+                runtime.retained_bytes -= retained;
                 runtime.completed_checksum +%= checksum;
                 e.enif_cond_broadcast(runtime.condition);
             }

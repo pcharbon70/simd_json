@@ -26,7 +26,9 @@ defmodule SimdJson.Native.BuildSmoke do
     :document_stream_reservation_probe,
     :execution_set_cleanup_rejection,
     :execution_snapshot,
-    :native_pool_start_with_failure
+    :native_pool_start_with_failure,
+    :native_pool_submit_fixture,
+    :native_pool_pause_workers
   ]
   @cxx_flags [
                "-std=c++17",
@@ -99,6 +101,8 @@ defmodule SimdJson.Native.BuildSmoke do
         native_pool_snapshot: [],
         native_pool_stop: [],
         native_pool_start_with_failure: [],
+        native_pool_submit_fixture: [],
+        native_pool_pause_workers: [],
         document_resource_registration_smoke: [],
         document_resource_fixture: [],
         stream_cursor_resource_fixture: [],

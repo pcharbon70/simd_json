@@ -378,6 +378,17 @@ pub fn native_pool_start_with_failure(workers: usize, queue_capacity: usize, fai
     return .ok;
 }
 
+pub fn native_pool_submit_fixture(input: []const u8) worker_pool.SubmitResult {
+    const pool = pool_ref.load(.acquire) orelse return .{ .status = .stopped, .request_id = 0 };
+    return pool.submit(input);
+}
+
+pub fn native_pool_pause_workers(paused: bool) bool {
+    const pool = pool_ref.load(.acquire) orelse return false;
+    pool.setPaused(paused);
+    return true;
+}
+
 const JoinCopiedTermPayload = struct {
     term: beam.term,
 };

@@ -20,9 +20,9 @@ Back to plan: [README](./README.md)
 
 ## 3.3 Section — Exact Non-blocking Admission
 
-- [ ] 3.3 Section - Reject immediately at queue capacity before allocating a job.
-  - [ ] 3.3.1 Task - Account queued, running, completed, rejected, and retained bytes.
-  - [ ] 3.3.2 Task - Add bounded test-only pause controls for deterministic saturation.
+- [x] 3.3 Section - Reject immediately at queue capacity before allocating a job.
+  - [x] 3.3.1 Task - Account queued, running, completed, rejected, and retained bytes.
+  - [x] 3.3.2 Task - Add bounded test-only pause controls for deterministic saturation.
 
 ## 3.4 Section — Phase 3 Integration Tests
 
