@@ -34,6 +34,9 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
             queue_capacity: usize,
             live_workers: usize,
             accepting: bool,
+            queued_jobs: usize,
+            running_jobs: usize,
+            completed_jobs: usize,
         };
 
         pub const Runtime = struct {
@@ -45,6 +48,12 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
             live_workers: std.atomic.Value(usize),
             accepting: std.atomic.Value(bool),
             stopping: bool,
+            queue_head: ?*Job,
+            queue_tail: ?*Job,
+            queued_jobs: usize,
+            running_jobs: usize,
+            completed_jobs: usize,
+            completed_checksum: u64,
 
             pub fn create(allocator: std.mem.Allocator, workers: usize, queue_capacity: usize) !*Runtime {
                 return createWithFailure(allocator, workers, queue_capacity, null);
@@ -61,7 +70,7 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
                 errdefer e.enif_cond_destroy(condition);
                 const threads = try allocator.alloc(beam.tid, workers);
                 errdefer allocator.free(threads);
-                runtime.* = .{ .allocator = allocator, .mutex = mutex, .condition = condition, .threads = threads, .queue_capacity = queue_capacity, .live_workers = .init(0), .accepting = .init(true), .stopping = false };
+                runtime.* = .{ .allocator = allocator, .mutex = mutex, .condition = condition, .threads = threads, .queue_capacity = queue_capacity, .live_workers = .init(0), .accepting = .init(true), .stopping = false, .queue_head = null, .queue_tail = null, .queued_jobs = 0, .running_jobs = 0, .completed_jobs = 0, .completed_checksum = 0 };
                 var started: usize = 0;
                 errdefer runtime.rollback(started);
                 while (started < workers) : (started += 1) {
@@ -94,8 +103,33 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
                 allocator.destroy(self);
             }
 
+            pub fn enqueueOwned(self: *Runtime, job: *Job) bool {
+                e.enif_mutex_lock(self.mutex);
+                defer e.enif_mutex_unlock(self.mutex);
+                if (self.stopping or !self.accepting.load(.acquire)) return false;
+                job.next = null;
+                if (self.queue_tail) |tail| tail.next = job else self.queue_head = job;
+                self.queue_tail = job;
+                self.queued_jobs += 1;
+                e.enif_cond_signal(self.condition);
+                return true;
+            }
+
+            fn pop(self: *Runtime) ?*Job {
+                const job = self.queue_head orelse return null;
+                self.queue_head = job.next;
+                if (self.queue_head == null) self.queue_tail = null;
+                job.next = null;
+                self.queued_jobs -= 1;
+                self.running_jobs += 1;
+                job.state.store(@intFromEnum(JobState.running), .release);
+                return job;
+            }
+
             pub fn snapshot(self: *Runtime) Snapshot {
-                return .{ .worker_count = self.threads.len, .queue_capacity = self.queue_capacity, .live_workers = self.live_workers.load(.acquire), .accepting = self.accepting.load(.acquire) };
+                e.enif_mutex_lock(self.mutex);
+                defer e.enif_mutex_unlock(self.mutex);
+                return .{ .worker_count = self.threads.len, .queue_capacity = self.queue_capacity, .live_workers = self.live_workers.load(.acquire), .accepting = self.accepting.load(.acquire), .queued_jobs = self.queued_jobs, .running_jobs = self.running_jobs, .completed_jobs = self.completed_jobs };
             }
         };
 
@@ -103,8 +137,24 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
             const runtime: *Runtime = @ptrCast(@alignCast(raw.?));
             _ = runtime.live_workers.fetchAdd(1, .acq_rel);
             e.enif_mutex_lock(runtime.mutex);
-            while (!runtime.stopping) e.enif_cond_wait(runtime.condition, runtime.mutex);
-            e.enif_mutex_unlock(runtime.mutex);
+            while (true) {
+                while (runtime.queue_head == null and !runtime.stopping) e.enif_cond_wait(runtime.condition, runtime.mutex);
+                const job = runtime.pop();
+                if (job == null and runtime.stopping) {
+                    e.enif_mutex_unlock(runtime.mutex);
+                    break;
+                }
+                e.enif_mutex_unlock(runtime.mutex);
+                var checksum: u64 = 0;
+                for (job.?.bytes) |byte| checksum +%= byte;
+                job.?.state.store(@intFromEnum(JobState.completed), .release);
+                job.?.destroy();
+                e.enif_mutex_lock(runtime.mutex);
+                runtime.running_jobs -= 1;
+                runtime.completed_jobs += 1;
+                runtime.completed_checksum +%= checksum;
+                e.enif_cond_broadcast(runtime.condition);
+            }
             _ = runtime.live_workers.fetchSub(1, .acq_rel);
             return null;
         }

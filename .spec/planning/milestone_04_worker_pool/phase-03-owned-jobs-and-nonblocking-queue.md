@@ -14,9 +14,9 @@ Back to plan: [README](./README.md)
 
 ## 3.2 Section — FIFO Worker Queue
 
-- [ ] 3.2 Section - Add one condition-backed FIFO consumed only by fixed workers.
-  - [ ] 3.2.1 Task - Preserve enqueue order and wake workers without polling.
-  - [ ] 3.2.2 Task - Drain or destroy every queued descriptor during shutdown.
+- [x] 3.2 Section - Add one condition-backed FIFO consumed only by fixed workers.
+  - [x] 3.2.1 Task - Preserve enqueue order and wake workers without polling.
+  - [x] 3.2.2 Task - Drain or destroy every queued descriptor during shutdown.
 
 ## 3.3 Section — Exact Non-blocking Admission
 
