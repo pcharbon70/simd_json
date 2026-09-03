@@ -42,6 +42,7 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
             rejected_jobs: usize,
             retained_bytes: usize,
             last_dequeued_request: u64,
+            dequeue_order_hash: u64,
         };
 
         pub const Runtime = struct {
@@ -64,6 +65,7 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
             next_request_id: u64,
             last_dequeued_request: u64,
             pause_workers: bool,
+            dequeue_order_hash: u64,
 
             pub fn create(allocator: std.mem.Allocator, workers: usize, queue_capacity: usize) !*Runtime {
                 return createWithFailure(allocator, workers, queue_capacity, null);
@@ -80,7 +82,7 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
                 errdefer e.enif_cond_destroy(condition);
                 const threads = try allocator.alloc(beam.tid, workers);
                 errdefer allocator.free(threads);
-                runtime.* = .{ .allocator = allocator, .mutex = mutex, .condition = condition, .threads = threads, .queue_capacity = queue_capacity, .live_workers = .init(0), .accepting = .init(true), .stopping = false, .queue_head = null, .queue_tail = null, .queued_jobs = 0, .running_jobs = 0, .completed_jobs = 0, .completed_checksum = 0, .rejected_jobs = 0, .retained_bytes = 0, .next_request_id = 1, .last_dequeued_request = 0, .pause_workers = false };
+                runtime.* = .{ .allocator = allocator, .mutex = mutex, .condition = condition, .threads = threads, .queue_capacity = queue_capacity, .live_workers = .init(0), .accepting = .init(true), .stopping = false, .queue_head = null, .queue_tail = null, .queued_jobs = 0, .running_jobs = 0, .completed_jobs = 0, .completed_checksum = 0, .rejected_jobs = 0, .retained_bytes = 0, .next_request_id = 1, .last_dequeued_request = 0, .pause_workers = false, .dequeue_order_hash = 0 };
                 var started: usize = 0;
                 errdefer runtime.rollback(started);
                 while (started < workers) : (started += 1) {
@@ -160,6 +162,7 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
                 self.queued_jobs -= 1;
                 self.running_jobs += 1;
                 self.last_dequeued_request = job.request_id;
+                self.dequeue_order_hash = self.dequeue_order_hash *% 131 +% job.request_id;
                 job.state.store(@intFromEnum(JobState.running), .release);
                 return job;
             }
@@ -167,7 +170,7 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
             pub fn snapshot(self: *Runtime) Snapshot {
                 e.enif_mutex_lock(self.mutex);
                 defer e.enif_mutex_unlock(self.mutex);
-                return .{ .worker_count = self.threads.len, .queue_capacity = self.queue_capacity, .live_workers = self.live_workers.load(.acquire), .accepting = self.accepting.load(.acquire), .queued_jobs = self.queued_jobs, .running_jobs = self.running_jobs, .completed_jobs = self.completed_jobs, .rejected_jobs = self.rejected_jobs, .retained_bytes = self.retained_bytes, .last_dequeued_request = self.last_dequeued_request };
+                return .{ .worker_count = self.threads.len, .queue_capacity = self.queue_capacity, .live_workers = self.live_workers.load(.acquire), .accepting = self.accepting.load(.acquire), .queued_jobs = self.queued_jobs, .running_jobs = self.running_jobs, .completed_jobs = self.completed_jobs, .rejected_jobs = self.rejected_jobs, .retained_bytes = self.retained_bytes, .last_dequeued_request = self.last_dequeued_request, .dequeue_order_hash = self.dequeue_order_hash };
             }
         };
 

@@ -25,6 +25,7 @@ surface:
 decisions:
   - simd_json.bounded_native_pool_configuration_and_admission
   - simd_json.fixed_native_worker_lifecycle
+  - simd_json.owned_native_jobs_and_bounded_fifo
 bootstrap:
   reason: Phase 1 establishes configuration only; native pool execution begins in Phase 2.
   requirements:
@@ -169,6 +170,16 @@ bootstrap:
   covers:
     - simd_json.native_pool.fixed_workers
     - simd_json.native_pool.shutdown
+
+- kind: command
+  target: MIX_ENV=test mix test test/native/pool_queue_test.exs
+  execute: true
+  covers:
+    - simd_json.native_pool.nonblocking_bounded_admission
+    - simd_json.native_pool.owned_jobs
+    - simd_json.native_pool.fixed_workers
+    - simd_json.native_pool.shutdown
+    - simd_json.native_pool.saturation
 
 - kind: command
   target: bash scripts/ci/qualify_native_pool.sh

@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 3 Phase - Establish owned native jobs and exact bounded FIFO admission
+- [x] 3 Phase - Establish owned native jobs and exact bounded FIFO admission
   without routing public operations or enabling production pool diagnostics.
 
 ## 3.1 Section — Owned Job Descriptor
@@ -26,7 +26,7 @@ Back to plan: [README](./README.md)
 
 ## 3.4 Section — Phase 3 Integration Tests
 
-- [ ] 3.4 Section - Prove ownership, FIFO, exact capacity, immediate busy,
+- [x] 3.4 Section - Prove ownership, FIFO, exact capacity, immediate busy,
   shutdown cleanup, redaction, unchanged routing, and earlier milestone gates.
-  - [ ] 3.4.1 Task - Add focused concurrency and lifecycle coverage.
-  - [ ] 3.4.2 Task - Run regression, formatting, native, and spec qualification.
+  - [x] 3.4.1 Task - Add focused concurrency and lifecycle coverage.
+  - [x] 3.4.2 Task - Run regression, formatting, native, and spec qualification.

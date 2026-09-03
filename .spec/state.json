@@ -139,6 +139,23 @@
         "id": "simd_json.fixed_native_worker_lifecycle",
         "status": "accepted",
         "title": "Fixed Native Worker Lifecycle"
+      },
+      {
+        "affects": [
+          "simd_json.native_pool",
+          "simd_json.native_execution",
+          "simd_json.document_api",
+          "simd_json.document_resource",
+          "simd_json.projection_api",
+          "simd_json.projection_execution",
+          "simd_json.stream_execution",
+          "simd_json.package"
+        ],
+        "date": "2026-09-03",
+        "file": ".spec/decisions/0012-owned-native-jobs-and-bounded-fifo.md",
+        "id": "simd_json.owned_native_jobs_and_bounded_fifo",
+        "status": "accepted",
+        "title": "Owned Native Jobs and Bounded FIFO"
       }
     ]
   },
@@ -2838,7 +2855,8 @@
           "decisions": [
             "simd_json.native_stack_and_c_abi",
             "simd_json.document_resource_and_buffer_ownership",
-            "simd_json.off_scheduler_native_execution"
+            "simd_json.off_scheduler_native_execution",
+            "simd_json.owned_native_jobs_and_bounded_fifo"
           ],
           "id": "simd_json.document_api",
           "kind": "api",
@@ -2861,7 +2879,8 @@
         "meta": {
           "decisions": [
             "simd_json.document_resource_and_buffer_ownership",
-            "simd_json.off_scheduler_native_execution"
+            "simd_json.off_scheduler_native_execution",
+            "simd_json.owned_native_jobs_and_bounded_fifo"
           ],
           "id": "simd_json.document_resource",
           "kind": "subsystem",
@@ -2908,7 +2927,8 @@
         "meta": {
           "decisions": [
             "simd_json.off_scheduler_native_execution",
-            "simd_json.bounded_native_pool_configuration_and_admission"
+            "simd_json.bounded_native_pool_configuration_and_admission",
+            "simd_json.owned_native_jobs_and_bounded_fifo"
           ],
           "id": "simd_json.native_execution",
           "kind": "subsystem",
@@ -2931,7 +2951,8 @@
         "meta": {
           "decisions": [
             "simd_json.bounded_native_pool_configuration_and_admission",
-            "simd_json.fixed_native_worker_lifecycle"
+            "simd_json.fixed_native_worker_lifecycle",
+            "simd_json.owned_native_jobs_and_bounded_fifo"
           ],
           "id": "simd_json.native_pool",
           "kind": "subsystem",
@@ -2984,7 +3005,8 @@
           "decisions": [
             "simd_json.projection_api_and_validation",
             "simd_json.projection_admission_consumption_and_lifetime",
-            "simd_json.document_resource_and_buffer_ownership"
+            "simd_json.document_resource_and_buffer_ownership",
+            "simd_json.owned_native_jobs_and_bounded_fifo"
           ],
           "id": "simd_json.projection_api",
           "kind": "api",
@@ -3033,7 +3055,8 @@
           "decisions": [
             "simd_json.document_resource_and_buffer_ownership",
             "simd_json.off_scheduler_native_execution",
-            "simd_json.projection_admission_consumption_and_lifetime"
+            "simd_json.projection_admission_consumption_and_lifetime",
+            "simd_json.owned_native_jobs_and_bounded_fifo"
           ],
           "id": "simd_json.projection_execution",
           "kind": "subsystem",
@@ -3113,7 +3136,8 @@
             "simd_json.projection_admission_consumption_and_lifetime",
             "simd_json.stream_ownership_backpressure_and_lifetime",
             "simd_json.forward_only_batched_array_cursor",
-            "simd_json.lazy_stream_api_and_bounded_options"
+            "simd_json.lazy_stream_api_and_bounded_options",
+            "simd_json.owned_native_jobs_and_bounded_fifo"
           ],
           "id": "simd_json.stream_execution",
           "kind": "subsystem",
@@ -3288,6 +3312,20 @@
         "kind": "command",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_worker_lifecycle_test.exs"
+      },
+      {
+        "covers": [
+          "simd_json.native_pool.nonblocking_bounded_admission",
+          "simd_json.native_pool.owned_jobs",
+          "simd_json.native_pool.fixed_workers",
+          "simd_json.native_pool.shutdown",
+          "simd_json.native_pool.saturation"
+        ],
+        "execute": true,
+        "file": ".spec/specs/native_pool.spec.md",
+        "kind": "command",
+        "subject_id": "simd_json.native_pool",
+        "target": "MIX_ENV=test mix test test/native/pool_queue_test.exs"
       },
       {
         "covers": [
@@ -3700,13 +3738,13 @@
   "specification_version": "1.0",
   "summary": {
     "decision_parse_errors": 0,
-    "decisions": 11,
+    "decisions": 12,
     "exceptions": 0,
     "findings": 0,
     "requirements": 149,
     "scenarios": 73,
     "subjects": 13,
-    "verifications": 35
+    "verifications": 36
   },
   "verification": {
     "claims": [
@@ -4525,6 +4563,61 @@
         "verification_index": 1
       },
       {
+        "cover_id": "simd_json.native_pool.fixed_workers",
+        "file": ".spec/specs/native_pool.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "executed",
+        "subject_id": "simd_json.native_pool",
+        "target": "MIX_ENV=test mix test test/native/pool_queue_test.exs",
+        "verification_index": 2
+      },
+      {
+        "cover_id": "simd_json.native_pool.nonblocking_bounded_admission",
+        "file": ".spec/specs/native_pool.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "executed",
+        "subject_id": "simd_json.native_pool",
+        "target": "MIX_ENV=test mix test test/native/pool_queue_test.exs",
+        "verification_index": 2
+      },
+      {
+        "cover_id": "simd_json.native_pool.owned_jobs",
+        "file": ".spec/specs/native_pool.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "executed",
+        "subject_id": "simd_json.native_pool",
+        "target": "MIX_ENV=test mix test test/native/pool_queue_test.exs",
+        "verification_index": 2
+      },
+      {
+        "cover_id": "simd_json.native_pool.saturation",
+        "file": ".spec/specs/native_pool.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "executed",
+        "subject_id": "simd_json.native_pool",
+        "target": "MIX_ENV=test mix test test/native/pool_queue_test.exs",
+        "verification_index": 2
+      },
+      {
+        "cover_id": "simd_json.native_pool.shutdown",
+        "file": ".spec/specs/native_pool.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "executed",
+        "subject_id": "simd_json.native_pool",
+        "target": "MIX_ENV=test mix test test/native/pool_queue_test.exs",
+        "verification_index": 2
+      },
+      {
         "cover_id": "simd_json.native_pool.cancel_close_shutdown_races",
         "file": ".spec/specs/native_pool.spec.md",
         "kind": "command",
@@ -4533,7 +4626,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
-        "verification_index": 2
+        "verification_index": 3
       },
       {
         "cover_id": "simd_json.native_pool.cancellation",
@@ -4544,7 +4637,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
-        "verification_index": 2
+        "verification_index": 3
       },
       {
         "cover_id": "simd_json.native_pool.fixed_workers",
@@ -4555,7 +4648,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
-        "verification_index": 2
+        "verification_index": 3
       },
       {
         "cover_id": "simd_json.native_pool.nonblocking_bounded_admission",
@@ -4566,7 +4659,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
-        "verification_index": 2
+        "verification_index": 3
       },
       {
         "cover_id": "simd_json.native_pool.operational_visibility",
@@ -4577,7 +4670,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
-        "verification_index": 2
+        "verification_index": 3
       },
       {
         "cover_id": "simd_json.native_pool.owned_jobs",
@@ -4588,7 +4681,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
-        "verification_index": 2
+        "verification_index": 3
       },
       {
         "cover_id": "simd_json.native_pool.resource_serialization",
@@ -4599,7 +4692,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
-        "verification_index": 2
+        "verification_index": 3
       },
       {
         "cover_id": "simd_json.native_pool.saturation",
@@ -4610,7 +4703,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
-        "verification_index": 2
+        "verification_index": 3
       },
       {
         "cover_id": "simd_json.native_pool.shutdown",
@@ -4621,7 +4714,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
-        "verification_index": 2
+        "verification_index": 3
       },
       {
         "cover_id": "simd_json.native_pool.telemetry",
@@ -4632,7 +4725,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
-        "verification_index": 2
+        "verification_index": 3
       },
       {
         "cover_id": "simd_json.package.mix_library",
@@ -6366,13 +6459,13 @@
     "default_minimum_strength": "claimed",
     "strength_summary": {
       "claimed": 16,
-      "executed": 204,
+      "executed": 209,
       "linked": 21
     },
     "threshold_failures": 0
   },
   "workspace": {
-    "decision_count": 11,
+    "decision_count": 12,
     "spec_count": 13
   }
 }

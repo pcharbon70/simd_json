@@ -1,7 +1,7 @@
 # Document Resource
 
-Milestone 4 Phase 2 workers accept no jobs, preserving existing document
-ownership, serialization, and destruction.
+Milestone 4 Phase 3 workers accept only allocator-owned test-fixture jobs,
+preserving existing document ownership, serialization, and destruction.
 
 Current-truth contract for the opaque `SimdJson.Document` resource, padded input memory, process ownership, and exactly-once native cleanup required by Milestone 1.
 
@@ -103,6 +103,7 @@ surface:
 decisions:
   - simd_json.document_resource_and_buffer_ownership
   - simd_json.off_scheduler_native_execution
+  - simd_json.owned_native_jobs_and_bounded_fifo
 ```
 
 ## Requirements

@@ -1,5 +1,5 @@
 # This historically named record binds cumulative Milestone 1, Milestone 2,
-# and the implemented Milestone 3 phases
+# and the implemented Milestone 3 and Milestone 4 phases
 # qualification to every ABI-, runtime-, test-, benchmark-, and
 # evidence-relevant input. It is intentionally outside the fingerprint so the
 # expected digest can be updated after (and only after) the matrix passes.
@@ -7,7 +7,7 @@
 [
   schema_version: 1,
   qualified_on: ~D[2026-09-03],
-  input_sha256: "2f4a3f4590beca3b81fcf6d174e4277a35fcaad405db3450aee47411bbad995f",
+  input_sha256: "a9fcd989d7313ceaf1e5c67f9a27f08fd033e390fa7f1655966886c299ffacc7",
   randomized_seed: 260_831_006,
   supported_targets: [
     [
@@ -24,6 +24,7 @@
     "mix hex.build --unpack",
     "mix compile --force",
     "mix test test/native",
+    "mix test test/native/pool_queue_test.exs",
     "bash scripts/ci/verify_offline_native_build.sh",
     "bash scripts/native/run_c_abi_conformance.sh ordinary",
     "bash scripts/native/run_c_abi_conformance.sh sanitizer",
