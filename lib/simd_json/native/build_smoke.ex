@@ -30,7 +30,8 @@ defmodule SimdJson.Native.BuildSmoke do
     :native_pool_submit_fixture,
     :native_pool_pause_workers,
     :native_pool_submit_monitored_fixture,
-    :native_pool_cancel_fixture
+    :native_pool_cancel_fixture,
+    :native_pool_abandon_monitor_fixture
   ]
   @cxx_flags [
                "-std=c++17",
@@ -108,6 +109,7 @@ defmodule SimdJson.Native.BuildSmoke do
         native_pool_pause_workers: [],
         native_pool_submit_monitored_fixture: [],
         native_pool_cancel_fixture: [],
+        native_pool_abandon_monitor_fixture: [],
         document_resource_registration_smoke: [],
         document_resource_fixture: [],
         stream_cursor_resource_fixture: [],

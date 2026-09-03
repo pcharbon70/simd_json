@@ -395,6 +395,12 @@ pub fn native_pool_cancel_fixture(request: PoolRequestResource) bool {
     return pool.cancelRequest(request);
 }
 
+pub fn native_pool_abandon_monitor_fixture(request: PoolRequestResource) bool {
+    const pool = pool_ref.load(.acquire) orelse return false;
+    pool.abandonMonitor(request);
+    return true;
+}
+
 pub fn native_pool_pause_workers(paused: bool) bool {
     const pool = pool_ref.load(.acquire) orelse return false;
     pool.setPaused(paused);

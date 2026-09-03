@@ -17,10 +17,10 @@ Back to plan: [README](./README.md)
 
 ## 4.2 Section — Correlated Result Delivery
 
-- [ ] 4.2 Section - Deliver at most one result to the matching live caller by
+- [x] 4.2 Section - Deliver at most one result to the matching live caller by
   unique reference using an independently allocated NIF environment.
-  - [ ] 4.2.1 Task - Discard failed or orphaned sends as normal cleanup.
-  - [ ] 4.2.2 Task - Account delivered, discarded, and cancelled terminals.
+  - [x] 4.2.1 Task - Discard failed or orphaned sends as normal cleanup.
+  - [x] 4.2.2 Task - Account delivered, discarded, and cancelled terminals.
 
 ## 4.3 Section — Resource Serialization and Close Interlocks
 

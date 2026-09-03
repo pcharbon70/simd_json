@@ -5,6 +5,8 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
         pub const JobState = enum(u8) { queued, running, completed, cancelled };
         pub const SubmitStatus = enum(u8) { accepted, busy, stopped, out_of_memory, input_too_large };
         pub const SubmitResult = struct { status: SubmitStatus, request_id: u64 };
+        pub const TerminalState = enum(u8) { pending, delivering, delivered, discarded, cancelled };
+        const DeliveryOutcome = enum(u8) { delivered, discarded, cancelled };
 
         pub const RequestControl = struct {
             allocator: std.mem.Allocator,
@@ -13,9 +15,17 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             monitored: std.atomic.Value(bool),
             resource_object: std.atomic.Value(?*anyopaque),
             monitor: beam.monitor,
+            caller: beam.pid,
+            private_env: beam.env,
+            request_ref: e.ErlNifTerm,
+            terminal: std.atomic.Value(u8),
 
-            fn create(allocator: std.mem.Allocator) !*RequestControl {
+            fn create(allocator: std.mem.Allocator, caller: beam.pid) !*RequestControl {
                 const control = try allocator.create(RequestControl);
+                const private_env = e.enif_alloc_env() orelse {
+                    allocator.destroy(control);
+                    return error.out_of_memory;
+                };
                 control.* = .{
                     .allocator = allocator,
                     .references = .init(1),
@@ -23,6 +33,10 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                     .monitored = .init(false),
                     .resource_object = .init(null),
                     .monitor = undefined,
+                    .caller = caller,
+                    .private_env = private_env,
+                    .request_ref = e.enif_make_ref(private_env),
+                    .terminal = .init(@intFromEnum(TerminalState.pending)),
                 };
                 return control;
             }
@@ -34,11 +48,54 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             fn release(self: *RequestControl) void {
                 const previous = self.references.fetchSub(1, .acq_rel);
                 std.debug.assert(previous > 0);
-                if (previous == 1) self.allocator.destroy(self);
+                if (previous == 1) {
+                    e.enif_free_env(self.private_env);
+                    self.allocator.destroy(self);
+                }
             }
 
             fn cancel(self: *RequestControl) bool {
+                if (self.terminal.load(.acquire) != @intFromEnum(TerminalState.pending))
+                    return false;
                 return !self.cancelled.swap(true, .acq_rel);
+            }
+
+            fn deliver(self: *RequestControl, checksum: u64) DeliveryOutcome {
+                if (self.cancelled.load(.acquire)) {
+                    _ = self.terminal.cmpxchgStrong(
+                        @intFromEnum(TerminalState.pending),
+                        @intFromEnum(TerminalState.cancelled),
+                        .acq_rel,
+                        .acquire,
+                    );
+                    return .cancelled;
+                }
+                if (self.terminal.cmpxchgStrong(
+                    @intFromEnum(TerminalState.pending),
+                    @intFromEnum(TerminalState.delivering),
+                    .acq_rel,
+                    .acquire,
+                ) != null) return .cancelled;
+
+                const env = self.private_env;
+                const ok_parts = [_]e.ErlNifTerm{
+                    e.enif_make_atom(env, "ok"),
+                    e.enif_make_uint64(env, checksum),
+                };
+                const ok = e.enif_make_tuple_from_array(env, &ok_parts, ok_parts.len);
+                const message_parts = [_]e.ErlNifTerm{
+                    e.enif_make_atom(env, "Elixir.SimdJson.Native"),
+                    self.request_ref,
+                    ok,
+                };
+                const message = e.enif_make_tuple_from_array(env, &message_parts, message_parts.len);
+                var caller = self.caller;
+                const delivered = e.enif_send(null, &caller, env, message) != 0;
+                self.terminal.store(
+                    @intFromEnum(if (delivered) TerminalState.delivered else TerminalState.discarded),
+                    .release,
+                );
+                return if (delivered) .delivered else .discarded;
             }
 
             fn demonitor(self: *RequestControl) void {
@@ -131,6 +188,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
 
         pub const MonitoredSubmission = struct {
             request_id: u64,
+            request_ref: beam.term,
             request: RequestResource,
         };
 
@@ -180,6 +238,8 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             running_jobs: usize,
             completed_jobs: usize,
             cancelled_jobs: usize,
+            delivered_jobs: usize,
+            discarded_jobs: usize,
             rejected_jobs: usize,
             retained_bytes: usize,
             last_dequeued_request: u64,
@@ -201,6 +261,8 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             running_jobs: usize,
             completed_jobs: usize,
             cancelled_jobs: usize,
+            delivered_jobs: usize,
+            discarded_jobs: usize,
             completed_checksum: u64,
             rejected_jobs: usize,
             retained_bytes: usize,
@@ -224,7 +286,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 errdefer e.enif_cond_destroy(condition);
                 const threads = try allocator.alloc(beam.tid, workers);
                 errdefer allocator.free(threads);
-                runtime.* = .{ .allocator = allocator, .mutex = mutex, .condition = condition, .threads = threads, .queue_capacity = queue_capacity, .live_workers = .init(0), .accepting = .init(true), .stopping = false, .queue_head = null, .queue_tail = null, .queued_jobs = 0, .running_jobs = 0, .completed_jobs = 0, .cancelled_jobs = 0, .completed_checksum = 0, .rejected_jobs = 0, .retained_bytes = 0, .next_request_id = 1, .last_dequeued_request = 0, .pause_workers = false, .dequeue_order_hash = 0 };
+                runtime.* = .{ .allocator = allocator, .mutex = mutex, .condition = condition, .threads = threads, .queue_capacity = queue_capacity, .live_workers = .init(0), .accepting = .init(true), .stopping = false, .queue_head = null, .queue_tail = null, .queued_jobs = 0, .running_jobs = 0, .completed_jobs = 0, .cancelled_jobs = 0, .delivered_jobs = 0, .discarded_jobs = 0, .completed_checksum = 0, .rejected_jobs = 0, .retained_bytes = 0, .next_request_id = 1, .last_dequeued_request = 0, .pause_workers = false, .dequeue_order_hash = 0 };
                 var started: usize = 0;
                 errdefer runtime.rollback(started);
                 while (started < workers) : (started += 1) {
@@ -292,7 +354,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             pub fn submitMonitored(self: *Runtime, input: []const u8) !MonitoredSubmission {
                 if (input.len > 1_048_576) return error.input_too_large;
                 const owner = try beam.self(.{});
-                const control = try RequestControl.create(self.allocator);
+                const control = try RequestControl.create(self.allocator, owner);
                 const request = RequestResource.create(control, .{}) catch |reason| {
                     control.release();
                     return reason;
@@ -320,11 +382,19 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 self.queue_tail = job;
                 self.queued_jobs += 1;
                 e.enif_cond_signal(self.condition);
-                return .{ .request_id = request_id, .request = request };
+                return .{
+                    .request_id = request_id,
+                    .request_ref = beam.copy(beam.context.env, .{ .v = control.request_ref }),
+                    .request = request,
+                };
             }
 
             pub fn cancelRequest(_: *Runtime, request: RequestResource) bool {
                 return request.__payload.*.cancel();
+            }
+
+            pub fn abandonMonitor(_: *Runtime, request: RequestResource) void {
+                request.__payload.*.demonitor();
             }
 
             pub fn setPaused(self: *Runtime, paused: bool) void {
@@ -350,7 +420,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             pub fn snapshot(self: *Runtime) Snapshot {
                 e.enif_mutex_lock(self.mutex);
                 defer e.enif_mutex_unlock(self.mutex);
-                return .{ .worker_count = self.threads.len, .queue_capacity = self.queue_capacity, .live_workers = self.live_workers.load(.acquire), .accepting = self.accepting.load(.acquire), .queued_jobs = self.queued_jobs, .running_jobs = self.running_jobs, .completed_jobs = self.completed_jobs, .cancelled_jobs = self.cancelled_jobs, .rejected_jobs = self.rejected_jobs, .retained_bytes = self.retained_bytes, .last_dequeued_request = self.last_dequeued_request, .dequeue_order_hash = self.dequeue_order_hash };
+                return .{ .worker_count = self.threads.len, .queue_capacity = self.queue_capacity, .live_workers = self.live_workers.load(.acquire), .accepting = self.accepting.load(.acquire), .queued_jobs = self.queued_jobs, .running_jobs = self.running_jobs, .completed_jobs = self.completed_jobs, .cancelled_jobs = self.cancelled_jobs, .delivered_jobs = self.delivered_jobs, .discarded_jobs = self.discarded_jobs, .rejected_jobs = self.rejected_jobs, .retained_bytes = self.retained_bytes, .last_dequeued_request = self.last_dequeued_request, .dequeue_order_hash = self.dequeue_order_hash };
             }
         };
 
@@ -372,13 +442,23 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                     for (job.?.bytes) |byte| checksum +%= byte;
                 }
                 const retained = job.?.bytes.len;
-                const cancelled = job.?.isCancelled();
+                var cancelled = job.?.isCancelled();
+                var delivery: ?DeliveryOutcome = null;
+                if (job.?.request) |request| {
+                    delivery = request.deliver(checksum);
+                    cancelled = delivery.? == .cancelled;
+                }
                 job.?.state.store(@intFromEnum(if (cancelled) JobState.cancelled else JobState.completed), .release);
                 if (job.?.request) |request| request.demonitor();
                 job.?.destroy();
                 e.enif_mutex_lock(runtime.mutex);
                 runtime.running_jobs -= 1;
                 if (cancelled) runtime.cancelled_jobs += 1 else runtime.completed_jobs += 1;
+                if (delivery) |outcome| switch (outcome) {
+                    .delivered => runtime.delivered_jobs += 1,
+                    .discarded => runtime.discarded_jobs += 1,
+                    .cancelled => {},
+                };
                 runtime.retained_bytes -= retained;
                 runtime.completed_checksum +%= checksum;
                 e.enif_cond_broadcast(runtime.condition);
