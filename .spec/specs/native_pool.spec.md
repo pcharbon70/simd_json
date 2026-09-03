@@ -6,10 +6,11 @@ bounded admission, cancellation, lifecycle, and operational evidence.
 ## Intent
 
 This subject replaces the provisional Zigler-threaded bridge with a
-library-owned execution subsystem. Milestone 4 Phase 1 defines only the closed
-configuration and admission vocabulary. It does not yet create native workers,
-route operations through a global queue, emit public telemetry, or claim
-production readiness.
+library-owned execution subsystem. Milestone 4 Phase 4 has established fixed
+workers, bounded owned jobs, monitored cancellation, correlated fixture result
+delivery, and per-resource serialization. It does not yet route public
+operations through the pool, emit public telemetry, or claim production
+readiness.
 
 ```spec-meta
 id: simd_json.native_pool
@@ -26,6 +27,7 @@ decisions:
   - simd_json.bounded_native_pool_configuration_and_admission
   - simd_json.fixed_native_worker_lifecycle
   - simd_json.owned_native_jobs_and_bounded_fifo
+  - simd_json.monitored_delivery_and_resource_serialization
 bootstrap:
   reason: Phase 1 establishes configuration only; native pool execution begins in Phase 2.
   requirements:
@@ -180,6 +182,16 @@ bootstrap:
     - simd_json.native_pool.fixed_workers
     - simd_json.native_pool.shutdown
     - simd_json.native_pool.saturation
+
+- kind: command
+  target: MIX_ENV=test mix test test/native/pool_cancellation_test.exs test/native/pool_delivery_test.exs test/native/pool_resource_serialization_test.exs
+  execute: true
+  covers:
+    - simd_json.native_pool.cancellation
+    - simd_json.native_pool.owned_jobs
+    - simd_json.native_pool.resource_serialization
+    - simd_json.native_pool.shutdown
+    - simd_json.native_pool.cancel_close_shutdown_races
 
 - kind: command
   target: bash scripts/ci/qualify_native_pool.sh

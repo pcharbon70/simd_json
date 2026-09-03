@@ -1,7 +1,7 @@
 # Document API and Errors
 
-Milestone 4 Phase 3 gives the fixed workers owned test-fixture jobs and a
-bounded FIFO only; document operations and this public contract remain on the
+Milestone 4 Phase 4 adds monitored delivery and serialization only to pool
+test fixtures; document operations and this public contract remain on the
 qualified threaded path unchanged.
 
 Current-truth contract for the deliberately narrow Milestone 1 Elixir API and its stable structured error boundary.
@@ -99,6 +99,7 @@ decisions:
   - simd_json.document_resource_and_buffer_ownership
   - simd_json.off_scheduler_native_execution
   - simd_json.owned_native_jobs_and_bounded_fifo
+  - simd_json.monitored_delivery_and_resource_serialization
 ```
 
 ## Requirements

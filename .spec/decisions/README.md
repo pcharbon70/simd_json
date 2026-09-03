@@ -47,3 +47,4 @@ Use this folder for durable cross-cutting decisions that shape the current Spec 
 - [Bounded Native Pool Configuration and Admission](./0010-bounded-native-pool-configuration-and-admission.md)
 - [Fixed Native Worker Lifecycle](./0011-fixed-native-worker-lifecycle.md)
 - [Owned Native Jobs and Bounded FIFO](./0012-owned-native-jobs-and-bounded-fifo.md)
+- [Monitored Delivery and Resource Serialization](./0013-monitored-delivery-and-resource-serialization.md)

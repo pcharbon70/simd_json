@@ -28,7 +28,15 @@ defmodule SimdJson.Native.BuildSmoke do
     :execution_snapshot,
     :native_pool_start_with_failure,
     :native_pool_submit_fixture,
-    :native_pool_pause_workers
+    :native_pool_pause_workers,
+    :native_pool_submit_monitored_fixture,
+    :native_pool_cancel_fixture,
+    :native_pool_request_state_fixture,
+    :native_pool_abandon_monitor_fixture,
+    :native_pool_serialization_fixture,
+    :native_pool_submit_serialized_fixture,
+    :native_pool_close_serialization_fixture,
+    :native_pool_serialization_state_fixture
   ]
   @cxx_flags [
                "-std=c++17",
@@ -69,7 +77,9 @@ defmodule SimdJson.Native.BuildSmoke do
         :DocumentResource,
         :StreamCursorResource,
         :OperationResource,
-        :JoinCopiedTerm
+        :JoinCopiedTerm,
+        :PoolRequestResource,
+        :PoolSerializationResource
       ],
       callbacks: [
         on_load: :resource_on_load,
@@ -103,6 +113,14 @@ defmodule SimdJson.Native.BuildSmoke do
         native_pool_start_with_failure: [],
         native_pool_submit_fixture: [],
         native_pool_pause_workers: [],
+        native_pool_submit_monitored_fixture: [],
+        native_pool_cancel_fixture: [],
+        native_pool_request_state_fixture: [],
+        native_pool_abandon_monitor_fixture: [],
+        native_pool_serialization_fixture: [],
+        native_pool_submit_serialized_fixture: [],
+        native_pool_close_serialization_fixture: [],
+        native_pool_serialization_state_fixture: [],
         document_resource_registration_smoke: [],
         document_resource_fixture: [],
         stream_cursor_resource_fixture: [],
@@ -156,7 +174,9 @@ defmodule SimdJson.Native.BuildSmoke do
         :DocumentResource,
         :StreamCursorResource,
         :OperationResource,
-        :JoinCopiedTerm
+        :JoinCopiedTerm,
+        :PoolRequestResource,
+        :PoolSerializationResource
       ],
       callbacks: [
         on_load: :resource_on_load,
