@@ -21,10 +21,10 @@ Back to plan: [README](./README.md)
 
 ## 2.3 Section — Rollback and Join Primitives
 
-- [ ] 2.3 Section - Stop admission, wake workers, join every started thread, and
+- [x] 2.3 Section - Stop admission, wake workers, join every started thread, and
   release primitives in reverse order, including partial-start failure.
-  - [ ] 2.3.1 Task - Add bounded test-only thread-creation fault injection.
-  - [ ] 2.3.2 Task - Prove partial startup leaves no live worker or allocation.
+  - [x] 2.3.1 Task - Add bounded test-only thread-creation fault injection.
+  - [x] 2.3.2 Task - Prove partial startup leaves no live worker or allocation.
 
 ## 2.4 Section — Phase 2 Integration Tests
 

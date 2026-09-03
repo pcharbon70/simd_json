@@ -19,6 +19,10 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
             stopping: bool,
 
             pub fn create(allocator: std.mem.Allocator, workers: usize, queue_capacity: usize) !*Runtime {
+                return createWithFailure(allocator, workers, queue_capacity, null);
+            }
+
+            pub fn createWithFailure(allocator: std.mem.Allocator, workers: usize, queue_capacity: usize, fail_after: ?usize) !*Runtime {
                 if (workers == 0 or workers > 64 or queue_capacity == 0 or queue_capacity > 4096)
                     return error.invalid_configuration;
                 const runtime = try allocator.create(Runtime);
@@ -33,6 +37,7 @@ pub fn Implementation(comptime beam: type, comptime e: type) type {
                 var started: usize = 0;
                 errdefer runtime.rollback(started);
                 while (started < workers) : (started += 1) {
+                    if (fail_after != null and started == fail_after.?) return error.injected_thread_failure;
                     if (e.enif_thread_create(@constCast("simd_json_pool_worker"), &threads[started], workerMain, runtime, null) != 0)
                         return error.thread_unavailable;
                 }

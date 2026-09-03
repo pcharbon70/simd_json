@@ -371,6 +371,13 @@ pub fn native_pool_stop() bool {
     return true;
 }
 
+pub fn native_pool_start_with_failure(workers: usize, queue_capacity: usize, fail_after: usize) PoolStartStatus {
+    if (pool_ref.load(.acquire) != null) return .conflicting_configuration;
+    const pool = worker_pool.Runtime.createWithFailure(beam.allocator, workers, queue_capacity, fail_after) catch return .startup_failed;
+    pool_ref.store(pool, .release);
+    return .ok;
+}
+
 const JoinCopiedTermPayload = struct {
     term: beam.term,
 };
