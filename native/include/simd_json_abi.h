@@ -20,7 +20,7 @@ extern "C" {
  * SIMD_JSON_REQUIRED_PADDING initialized bytes must follow the logical input.
  */
 
-#define SIMD_JSON_ABI_VERSION UINT32_C(3)
+#define SIMD_JSON_ABI_VERSION UINT32_C(4)
 #define SIMD_JSON_REQUIRED_PADDING UINT64_C(64)
 #define SIMD_JSON_MAX_DEPTH UINT64_C(1024)
 #define SIMD_JSON_BYTE_OFFSET_UNAVAILABLE UINT64_MAX
@@ -29,6 +29,10 @@ extern "C" {
 #define SIMD_JSON_ARRAY_INDEX_UNAVAILABLE UINT64_MAX
 #define SIMD_JSON_STREAM_MAX_BATCH_SIZE UINT64_C(10000)
 #define SIMD_JSON_STREAM_MAX_BATCH_BYTES UINT64_C(67108864)
+#define SIMD_JSON_DECODE_MAX_CONTAINER_ENTRIES UINT64_C(10000000)
+#define SIMD_JSON_DECODE_MAX_STRING_BYTES UINT64_C(67108864)
+#define SIMD_JSON_DECODE_MAX_OUTPUT_BYTES UINT64_C(268435456)
+#define SIMD_JSON_DECODE_BYTE_RANGE_UNAVAILABLE UINT64_MAX
 
 typedef int32_t simd_json_status_code;
 
@@ -52,6 +56,8 @@ typedef struct simd_json_parser simd_json_parser;
 typedef struct simd_json_document simd_json_document;
 typedef struct simd_json_projection_plan simd_json_projection_plan;
 typedef struct simd_json_stream_cursor simd_json_stream_cursor;
+typedef struct simd_json_decode_materializer simd_json_decode_materializer;
+typedef struct simd_json_decode_result simd_json_decode_result;
 
 typedef struct simd_json_status {
   simd_json_status_code code;
@@ -223,6 +229,67 @@ typedef uint32_t simd_json_stream_cursor_state;
 #define SIMD_JSON_STREAM_CURSOR_CANCELLED UINT32_C(3)
 #define SIMD_JSON_STREAM_CURSOR_CLOSED UINT32_C(4)
 
+typedef uint32_t simd_json_decode_node_tag;
+
+#define SIMD_JSON_DECODE_NODE_OBJECT UINT32_C(1)
+#define SIMD_JSON_DECODE_NODE_ARRAY UINT32_C(2)
+#define SIMD_JSON_DECODE_NODE_STRING UINT32_C(3)
+#define SIMD_JSON_DECODE_NODE_SIGNED_INTEGER UINT32_C(4)
+#define SIMD_JSON_DECODE_NODE_UNSIGNED_INTEGER UINT32_C(5)
+#define SIMD_JSON_DECODE_NODE_DOUBLE UINT32_C(6)
+#define SIMD_JSON_DECODE_NODE_TRUE UINT32_C(7)
+#define SIMD_JSON_DECODE_NODE_FALSE UINT32_C(8)
+#define SIMD_JSON_DECODE_NODE_NULL UINT32_C(9)
+
+typedef struct simd_json_decode_byte_range {
+  uint64_t offset;
+  uint64_t length;
+} simd_json_decode_byte_range;
+
+typedef union simd_json_decode_node_value {
+  int64_t signed_integer;
+  uint64_t unsigned_integer;
+  double floating_point;
+  simd_json_decode_byte_range bytes;
+} simd_json_decode_node_value;
+
+/* Container nodes name a contiguous edge range; strings name copied bytes. */
+typedef struct simd_json_decode_node {
+  simd_json_decode_node_tag tag;
+  uint32_t reserved;
+  uint64_t edge_offset;
+  uint64_t edge_count;
+  simd_json_decode_node_value value;
+} simd_json_decode_node;
+
+/* Array edges use unavailable key offset/length and object edges name a key. */
+typedef struct simd_json_decode_edge {
+  uint64_t key_offset;
+  uint64_t key_length;
+  uint64_t value_node;
+  uint64_t reserved;
+} simd_json_decode_edge;
+
+typedef struct simd_json_decode_config {
+  uint64_t max_depth;
+  uint64_t max_container_entries;
+  uint64_t max_string_bytes;
+  uint64_t max_output_bytes;
+  uint64_t reserved;
+} simd_json_decode_config;
+
+/* All pointers borrow immutable result-owned storage until result destruction. */
+typedef struct simd_json_decode_result_view {
+  const simd_json_decode_node *nodes;
+  uint64_t node_count;
+  const simd_json_decode_edge *edges;
+  uint64_t edge_count;
+  const uint8_t *copied_bytes;
+  uint64_t copied_byte_count;
+  uint64_t root_node;
+  uint64_t reserved;
+} simd_json_decode_result_view;
+
 #if defined(_WIN32) && defined(SIMD_JSON_ABI_BUILD_SHARED)
 #define SIMD_JSON_ABI_EXPORT __declspec(dllexport)
 #elif defined(SIMD_JSON_ABI_BUILD_SHARED) && defined(__GNUC__)
@@ -322,6 +389,38 @@ SIMD_JSON_ABI_EXPORT simd_json_stream_status simd_json_stream_next_batch(
     const simd_json_cancellation_probe *cancellation,
     simd_json_stream_batch_storage *batch) SIMD_JSON_ABI_NOEXCEPT;
 
+/*
+ * Constructs an operation-scoped iterative materializer. The document remains
+ * caller-owned and must outlive the materializer. `out_materializer` is always
+ * cleared before validation and receives the only owner on success.
+ */
+SIMD_JSON_ABI_EXPORT simd_json_status simd_json_decode_materializer_create(
+    simd_json_document *document,
+    const simd_json_decode_config *config,
+    simd_json_decode_materializer **out_materializer) SIMD_JSON_ABI_NOEXCEPT;
+
+/* NULL is accepted. A materializer may publish at most one result. */
+SIMD_JSON_ABI_EXPORT void simd_json_decode_materializer_destroy(
+    simd_json_decode_materializer *materializer) SIMD_JSON_ABI_NOEXCEPT;
+
+/*
+ * Builds privately and publishes only a complete owned result. On every
+ * failure `out_result` is NULL. Phase 3 supplies value traversal.
+ */
+SIMD_JSON_ABI_EXPORT simd_json_status simd_json_decode_materializer_execute(
+    simd_json_decode_materializer *materializer,
+    const simd_json_cancellation_probe *cancellation,
+    simd_json_decode_result **out_result) SIMD_JSON_ABI_NOEXCEPT;
+
+/* Returns an immutable borrowed graph view; the output is cleared on failure. */
+SIMD_JSON_ABI_EXPORT simd_json_status simd_json_decode_result_read(
+    const simd_json_decode_result *result,
+    simd_json_decode_result_view *out_view) SIMD_JSON_ABI_NOEXCEPT;
+
+/* NULL is accepted. Every graph allocation is released exactly once. */
+SIMD_JSON_ABI_EXPORT void simd_json_decode_result_destroy(
+    simd_json_decode_result *result) SIMD_JSON_ABI_NOEXCEPT;
+
 #undef SIMD_JSON_ABI_EXPORT
 #undef SIMD_JSON_ABI_NOEXCEPT
 
@@ -403,12 +502,12 @@ SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_result_slot, value) == 8,
                             "result slot value layout changed");
 SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_result_slot) == 24,
                             "result slot layout changed");
-SIMD_JSON_ABI_STATIC_ASSERT(SIMD_JSON_ABI_VERSION == UINT32_C(3),
+SIMD_JSON_ABI_STATIC_ASSERT(SIMD_JSON_ABI_VERSION == UINT32_C(4),
                             "private ABI version changed");
 SIMD_JSON_ABI_STATIC_ASSERT(sizeof(void *) == 8,
-                            "ABI v3 requires 64-bit data pointers");
+                            "ABI v4 requires 64-bit data pointers");
 SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_cancellation_check) == 8,
-                            "ABI v3 requires 64-bit function pointers");
+                            "ABI v4 requires 64-bit function pointers");
 SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_target, segments) == 0,
                             "stream target segment pointer layout changed");
 SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_target, segment_count) == 8,
@@ -485,6 +584,34 @@ SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_stream_status, array_index) == 24
                             "stream array index layout changed");
 SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_stream_status) == 32,
                             "stream status layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_decode_node_tag) == 4,
+                            "decode node tags must be four bytes");
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_decode_byte_range) == 16,
+                            "decode byte range layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_decode_node_value) == 16,
+                            "decode node value layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_decode_node, tag) == 0,
+                            "decode node tag layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_decode_node, edge_offset) == 8,
+                            "decode node edge offset layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_decode_node, value) == 24,
+                            "decode node value layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_decode_node) == 40,
+                            "decode node layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_decode_edge) == 32,
+                            "decode edge layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_decode_config) == 40,
+                            "decode config layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_decode_result_view, nodes) == 0,
+                            "decode view node pointer layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_decode_result_view, edges) == 16,
+                            "decode view edge pointer layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_decode_result_view, copied_bytes) == 32,
+                            "decode view byte pointer layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_decode_result_view, root_node) == 48,
+                            "decode view root layout changed");
+SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_decode_result_view) == 64,
+                            "decode result view layout changed");
 
 #undef SIMD_JSON_ABI_STATIC_ASSERT
 

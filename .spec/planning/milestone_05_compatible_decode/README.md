@@ -16,7 +16,7 @@ contracts established by Milestones 1–4.
 ## Phase Order
 
 1. [Phase 1 — Compatibility Contract and Preflight](./phase-01-compatibility-contract-and-preflight.md)
-2. Phase 2 — ABI v4 and Iterative Materializer Ownership
+2. [Phase 2 — ABI v4 and Iterative Materializer Ownership](./phase-02-abi-v4-and-iterative-materializer-ownership.md)
 3. Phase 3 — Scalar, Container, Number, and String Materialization
 4. Phase 4 — Bounded Pool Execution, Cancellation, and Limits
 5. Phase 5 — Public Decode API, Raising Wrapper, and Stable Errors
@@ -48,4 +48,3 @@ contracts established by Milestones 1–4.
 - Keys and strings are independent binaries and numbers never silently round.
 - Limits, cancellation, and failures release partial state exactly once.
 - Differential, scheduler, memory, benchmark, and sanitizer gates pass.
-
