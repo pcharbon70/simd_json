@@ -15,10 +15,10 @@ Back to plan: [README](./README.md)
 
 ## 5.2 Section — Public Stream Routing
 
-- [ ] 5.2 Section - Execute lazy stream setup and each demand-driven batch on
+- [x] 5.2 Section - Execute lazy stream setup and each demand-driven batch on
   the same bounded native pool.
-  - [ ] 5.2.1 Task - Retain copied projection and target terms for setup jobs.
-  - [ ] 5.2.2 Task - Retain cursor resources and preserve one-in-flight demand.
+  - [x] 5.2.1 Task - Retain copied projection and target terms for setup jobs.
+  - [x] 5.2.2 Task - Retain cursor resources and preserve one-in-flight demand.
 
 ## 5.3 Section — Redacted Telemetry and Lifecycle
 
