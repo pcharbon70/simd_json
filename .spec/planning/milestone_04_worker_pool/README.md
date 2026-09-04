@@ -21,7 +21,7 @@ deterministic worker lifecycle.
 2. [Phase 2 — Native Pool State and Fixed Workers](./phase-02-native-pool-state-and-fixed-workers.md)
 3. [Phase 3 — Owned Jobs and Non-blocking Queue](./phase-03-owned-jobs-and-nonblocking-queue.md)
 4. [Phase 4 — Cancellation, Delivery, and Resource Serialization](./phase-04-cancellation-delivery-and-resource-serialization.md)
-5. Phase 5 — Telemetry, Public Operations, and Lifecycle
+5. [Phase 5 — Telemetry, Public Operations, and Lifecycle](./phase-05-telemetry-public-operations-and-lifecycle.md)
 6. Phase 6 — Saturation Qualification and Activation
 
 Phase 1 publishes no pool controls and does not claim production execution.

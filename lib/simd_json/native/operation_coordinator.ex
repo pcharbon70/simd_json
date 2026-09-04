@@ -231,13 +231,18 @@ defmodule SimdJson.Native.OperationCoordinator do
 
   if @test_hooks do
     def handle_call({:release_pause, request_ref}, _from, state) do
-      case Map.fetch(state.requests, request_ref) do
-        {:ok, request} ->
+      request =
+        Enum.find_value(state.requests, fn {_delivery_ref, request} ->
+          if request.operation.request_ref == request_ref, do: request
+        end)
+
+      case request do
+        nil ->
+          {:reply, {:error, :unknown_request}, state}
+
+        request ->
           true = BuildSmoke.operation_release_pause(request.operation.resource)
           {:reply, :ok, state}
-
-        :error ->
-          {:reply, {:error, :unknown_request}, state}
       end
     end
   end
@@ -273,7 +278,8 @@ defmodule SimdJson.Native.OperationCoordinator do
              reject_submission?,
              nil,
              document_target,
-             diagnostics?
+             diagnostics?,
+             Keyword.has_key?(options, :pause)
            )}
 
         {:error, reason} ->
@@ -431,6 +437,13 @@ defmodule SimdJson.Native.OperationCoordinator do
   end
 
   @impl true
+  def handle_info({SimdJson.Native, request_ref, {:ok, native_result}}, state) do
+    case Map.fetch(state.requests, request_ref) do
+      {:ok, request} -> complete_request(state, request_ref, request, {:ok, native_result})
+      :error -> {:noreply, state}
+    end
+  end
+
   def handle_info(
         {@completion_tag, kind, request_ref, generation, cursor_generation, batch_sequence,
          worker, result},
@@ -506,10 +519,73 @@ defmodule SimdJson.Native.OperationCoordinator do
          reject_submission? \\ false,
          open_failure_for_test \\ nil,
          document_target \\ nil,
-         diagnostics? \\ false
+         diagnostics? \\ false,
+         legacy? \\ false
+       ) do
+    caller_monitor = Process.monitor(caller)
+
+    if not legacy? and pool_submission?(kind, payload, reject_submission?, open_failure_for_test) do
+      case ThreadedOperation.submit_to_pool(operation, payload) do
+        {:ok, submission} ->
+          request = %{
+            kind: kind,
+            operation: operation,
+            from: from,
+            caller: caller,
+            caller_monitor: caller_monitor,
+            worker: nil,
+            worker_monitor: nil,
+            pool_request: submission.request,
+            document_target: document_target,
+            diagnostics?: diagnostics?,
+            orphaned?: false
+          }
+
+          %{
+            state
+            | requests: Map.put(state.requests, submission.request_ref, request),
+              caller_monitors:
+                Map.put(state.caller_monitors, caller_monitor, submission.request_ref)
+          }
+
+        {:error, reason} ->
+          Process.demonitor(caller_monitor, [:flush])
+          release_projection_reservation(operation)
+          _ = BuildSmoke.operation_finish(operation.resource, :discarded)
+          GenServer.reply(from, pool_submission_error(reason))
+          state
+      end
+    else
+      start_legacy_request(
+        state,
+        kind,
+        operation,
+        payload,
+        from,
+        caller,
+        caller_monitor,
+        reject_submission?,
+        open_failure_for_test,
+        document_target,
+        diagnostics?
+      )
+    end
+  end
+
+  defp start_legacy_request(
+         state,
+         kind,
+         operation,
+         payload,
+         from,
+         caller,
+         caller_monitor,
+         reject_submission?,
+         open_failure_for_test,
+         document_target,
+         diagnostics?
        ) do
     coordinator = self()
-    caller_monitor = Process.monitor(caller)
 
     {worker, worker_monitor} =
       spawn_monitor(fn ->
@@ -547,6 +623,21 @@ defmodule SimdJson.Native.OperationCoordinator do
         worker_monitors: Map.put(state.worker_monitors, worker_monitor, operation.request_ref)
     }
   end
+
+  defp pool_submission?(kind, payload, false, nil)
+       when kind in [:document_open, :document_cleanup, :projection],
+       do: payload == nil or kind == :document_cleanup
+
+  defp pool_submission?(:stream_setup, {source_kind, _, _, _, _, _}, false, nil)
+       when source_kind in [:binary, :document],
+       do: true
+
+  defp pool_submission?(:stream_batch, {:batch, _, _, _}, false, nil), do: true
+  defp pool_submission?(_kind, _payload, _rejected?, _failure), do: false
+
+  defp pool_submission_error(:busy), do: {:error, %{reason: :busy}}
+  defp pool_submission_error(:stopped), do: native_error(:admission_rejected)
+  defp pool_submission_error(:native_failure), do: native_error(:pool_submission)
 
   if @test_hooks do
     defp submission_rejected?(state, kind) do
