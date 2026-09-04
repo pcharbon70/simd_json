@@ -27,7 +27,25 @@ defmodule SimdJson.Native.PoolSaturationTest do
     assert BuildSmoke.native_pool_start(workers, queue_capacity) == :ok
     assert BuildSmoke.native_pool_pause_workers(true)
 
-    accepted = fill_until_busy(1, [])
+    running =
+      for id <- 1..workers do
+        assert %{status: :accepted, request_id: ^id} =
+                 BuildSmoke.native_pool_submit_fixture(Integer.to_string(id))
+
+        id
+      end
+
+    await(fn -> BuildSmoke.native_pool_snapshot().running_jobs == workers end)
+
+    queued =
+      for id <- (workers + 1)..(workers + queue_capacity) do
+        assert %{status: :accepted, request_id: ^id} =
+                 BuildSmoke.native_pool_submit_fixture(Integer.to_string(id))
+
+        id
+      end
+
+    accepted = running ++ queued
 
     saturated = BuildSmoke.native_pool_snapshot()
     assert length(accepted) == workers + queue_capacity
@@ -103,21 +121,6 @@ defmodule SimdJson.Native.PoolSaturationTest do
     sorted = Enum.sort(samples)
     index = ceil(percentile / 100 * length(sorted)) - 1
     Enum.at(sorted, max(index, 0))
-  end
-
-  defp fill_until_busy(id, accepted) do
-    case BuildSmoke.native_pool_submit_fixture(Integer.to_string(id)) do
-      %{status: :accepted, request_id: ^id} ->
-        fill_until_busy(id + 1, [id | accepted])
-
-      %{status: :busy, request_id: 0} ->
-        if BuildSmoke.native_pool_snapshot().running_jobs < 4 do
-          Process.sleep(1)
-          fill_until_busy(id, accepted)
-        else
-          Enum.reverse(accepted)
-        end
-    end
   end
 
   defp await(predicate, attempts \\ 2_000)

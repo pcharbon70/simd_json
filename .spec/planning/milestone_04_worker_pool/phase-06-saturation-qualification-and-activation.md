@@ -22,10 +22,10 @@ Back to plan: [README](./README.md)
 
 ## 6.3 Section — Race, Shutdown, and Sanitizer Matrix
 
-- [ ] 6.3 Section - Exercise cancellation, delivery, close, and shutdown races
+- [x] 6.3 Section - Exercise cancellation, delivery, close, and shutdown races
   through ordinary and sanitizer-backed qualification.
-  - [ ] 6.3.1 Task - Repeat race scenarios with fixed seeds and full cleanup.
-  - [ ] 6.3.2 Task - Aggregate native, release-symbol, and regression gates in
+  - [x] 6.3.1 Task - Repeat race scenarios with fixed seeds and full cleanup.
+  - [x] 6.3.2 Task - Aggregate native, release-symbol, and regression gates in
     one pool qualification command.
 
 ## 6.4 Section — Operations Documentation and Spec Activation
