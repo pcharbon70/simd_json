@@ -22,10 +22,10 @@ Back to plan: [README](./README.md)
 
 ## 1.3 Section — Decode Error and Limit Vocabulary
 
-- [ ] 1.3 Section - Reserve stable materialization and configured-limit errors
+- [x] 1.3 Section - Reserve stable materialization and configured-limit errors
   while preserving redacted inspection.
-  - [ ] 1.3.1 Task - Add depth, output-size, and container-size limit reasons.
-  - [ ] 1.3.2 Task - Prove forged metadata and input never escape inspection.
+  - [x] 1.3.1 Task - Add depth, output-size, and container-size limit reasons.
+  - [x] 1.3.2 Task - Prove forged metadata and input never escape inspection.
 
 ## 1.4 Section — Phase 1 Integration and Package Boundaries
 

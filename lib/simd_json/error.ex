@@ -37,6 +37,11 @@ defmodule SimdJson.Error do
           | :index_out_of_bounds
           | :incorrect_type
           | :number_out_of_range
+          | :max_depth_exceeded
+          | :input_too_large
+          | :container_too_large
+          | :string_too_large
+          | :output_too_large
           | :batch_too_large
           | :busy
           | :cursor_consumed
@@ -70,6 +75,11 @@ defimpl Inspect, for: SimdJson.Error do
     :index_out_of_bounds,
     :incorrect_type,
     :number_out_of_range,
+    :max_depth_exceeded,
+    :input_too_large,
+    :container_too_large,
+    :string_too_large,
+    :output_too_large,
     :batch_too_large,
     :busy,
     :cursor_consumed,

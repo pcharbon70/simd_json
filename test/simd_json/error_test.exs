@@ -36,6 +36,11 @@ defmodule SimdJson.ErrorTest do
       index_out_of_bounds: "requested array index is out of bounds",
       incorrect_type: "selected value has an incorrect type",
       number_out_of_range: "selected number is out of range",
+      max_depth_exceeded: "JSON nesting depth exceeds the configured limit",
+      input_too_large: "JSON input exceeds the configured byte limit",
+      container_too_large: "JSON container exceeds the configured entry limit",
+      string_too_large: "decoded string exceeds the configured byte limit",
+      output_too_large: "decoded output exceeds the configured byte limit",
       batch_too_large: "projected row exceeds max_batch_bytes",
       busy: "native execution capacity is busy",
       cursor_consumed: "document cursor has already been consumed",
@@ -51,6 +56,34 @@ defmodule SimdJson.ErrorTest do
       assert error.native_code == nil
       assert error.path == nil
       assert error.array_index == nil
+    end
+  end
+
+  # covers: simd_json.decode_api.iterative_limits simd_json.decode_api.shared_errors simd_json.decode_api.bounded_failure
+  test "decode limit reasons remain stable and redact forged source metadata" do
+    secret = "decode-limit-secret-2281"
+
+    for reason <- [
+          :max_depth_exceeded,
+          :input_too_large,
+          :container_too_large,
+          :string_too_large,
+          :output_too_large
+        ] do
+      error = %Error{
+        reason: reason,
+        byte_offset: 19,
+        native_code: nil,
+        path: [secret],
+        message: secret
+      }
+
+      rendered = inspect(error)
+      assert rendered =~ "reason: #{inspect(reason)}"
+      assert rendered =~ "byte_offset: 19"
+      assert rendered =~ "path: <caller-supplied>"
+      refute rendered =~ secret
+      assert byte_size(rendered) < 180
     end
   end
 
