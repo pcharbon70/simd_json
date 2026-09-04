@@ -1,5 +1,8 @@
 # Projection Execution and Lifecycle
 
+Projection admission, cancellation, conversion, and lifecycle behavior remain
+regression-locked under cumulative ABI v4.
+
 Milestone 5 Phase 1 introduces no projection job or lifecycle change; decode
 preflight remains native-free and independent of projection resources.
 

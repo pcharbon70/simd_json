@@ -1,5 +1,8 @@
 # Native Build and ABI
 
+Milestone 5 Phase 2 advances the cumulative private contract to ABI v4 with
+five versioned decode ownership symbols while preserving ABI v1-v3 layouts.
+
 Milestone 5 Phase 1 packages authored decode planning and BEAM preflight inputs
 without changing the native ABI, compiler inputs, or release symbols.
 

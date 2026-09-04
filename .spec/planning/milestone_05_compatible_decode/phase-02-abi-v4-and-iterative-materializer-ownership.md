@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 2 Phase - Freeze the private decode ABI and establish iterative native
+- [x] 2 Phase - Freeze the private decode ABI and establish iterative native
   materializer, result, and Zig ownership before value conversion.
 
 ## 2.1 Section — ABI v4 Decode Graph Contract
@@ -33,8 +33,8 @@ Back to plan: [README](./README.md)
 
 ## 2.4 Section — Phase 2 Integration and Qualification
 
-- [ ] 2.4 Section - Integrate ABI v4 sources and tests into native builds,
+- [x] 2.4 Section - Integrate ABI v4 sources and tests into native builds,
   symbol policy, packaging, traceability, and sanitizer qualification.
-  - [ ] 2.4.1 Task - Run ordinary and sanitizer C/Zig ownership matrices.
-  - [ ] 2.4.2 Task - Reconcile the manifest, qualification fingerprint, format,
+  - [x] 2.4.1 Task - Run ordinary and sanitizer C/Zig ownership matrices.
+  - [x] 2.4.2 Task - Reconcile the manifest, qualification fingerprint, format,
     regression suite, traceability, and SpecLed state.

@@ -14,6 +14,7 @@ defmodule SimdJson.Native.ReleaseQualificationTest do
     assert version_script =~ "SIMD_JSON_ABI_1"
     assert version_script =~ "SIMD_JSON_ABI_2"
     assert version_script =~ "SIMD_JSON_ABI_3"
+    assert version_script =~ "SIMD_JSON_ABI_4"
     assert version_script =~ "} SIMD_JSON_ABI_2;"
 
     for symbol <- ~w(
@@ -21,6 +22,8 @@ defmodule SimdJson.Native.ReleaseQualificationTest do
           simd_json_projection_execute
           simd_json_stream_cursor_create
           simd_json_stream_next_batch
+          simd_json_decode_materializer_create
+          simd_json_decode_result_read
         ) do
       assert allowlist =~ symbol
     end

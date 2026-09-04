@@ -21,3 +21,12 @@ SIMD_JSON_ABI_3 {
     simd_json_stream_cursor_destroy;
     simd_json_stream_next_batch;
 } SIMD_JSON_ABI_2;
+
+SIMD_JSON_ABI_4 {
+  global:
+    simd_json_decode_materializer_create;
+    simd_json_decode_materializer_destroy;
+    simd_json_decode_materializer_execute;
+    simd_json_decode_result_destroy;
+    simd_json_decode_result_read;
+} SIMD_JSON_ABI_3;

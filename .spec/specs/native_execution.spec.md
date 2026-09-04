@@ -1,5 +1,8 @@
 # Native Execution
 
+ABI v4 only establishes private decode owners; it adds no scheduler or pool
+bypass, and decode admission remains deferred to Milestone 5 Phase 4.
+
 Milestone 5 Phase 1 decode preflight performs no admission or native work; the
 bounded pool remains unchanged until decode execution is implemented later.
 

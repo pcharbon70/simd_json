@@ -1,5 +1,8 @@
 # Document Resource
 
+ABI v4 adds no document ownership transfer: an opaque decode materializer is
+operation-scoped and its caller retains the document through destruction.
+
 Milestone 5 Phase 1 adds native-free decode preflight only and does not create,
 retain, consume, or transition a document resource.
 

@@ -1,5 +1,8 @@
 # Document API and Errors
 
+ABI v4 preserves document open, ownership, and close unchanged; decode
+materializers borrow a document and cannot replace its owning resource.
+
 Milestone 5 Phase 1 reserves decode-only limit reasons in the shared redacted
 error type without changing document operations or translations.
 
