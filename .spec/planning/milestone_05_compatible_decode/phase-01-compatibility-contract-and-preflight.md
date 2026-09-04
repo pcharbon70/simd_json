@@ -15,10 +15,10 @@ Back to plan: [README](./README.md)
 
 ## 1.2 Section — Native-free Decode Preflight
 
-- [ ] 1.2 Section - Normalize binary input and the closed option grammar before
+- [x] 1.2 Section - Normalize binary input and the closed option grammar before
   any request, native allocation, parsing, or document transition.
-  - [ ] 1.2.1 Task - Accept only a binary plus an empty proper keyword list.
-  - [ ] 1.2.2 Task - Retain a bounded opaque snapshot with no source content.
+  - [x] 1.2.1 Task - Accept only a binary plus an empty proper keyword list.
+  - [x] 1.2.2 Task - Retain a bounded opaque snapshot with no source content.
 
 ## 1.3 Section — Decode Error and Limit Vocabulary
 
@@ -35,4 +35,3 @@ Back to plan: [README](./README.md)
     functions remain absent.
   - [ ] 1.4.2 Task - Reconcile package, manifest, qualification fingerprint,
     formatting, tests, traceability, and spec state.
-
