@@ -1,5 +1,8 @@
 # Document API and Errors
 
+Milestone 5 Phase 1 reserves decode-only limit reasons in the shared redacted
+error type without changing document operations or translations.
+
 Milestone 4 Phase 5 routes `open/1` and owner cleanup through bounded native
 workers. Saturation uses the existing redacted `:busy` reason and exposes no
 pool control or caller identity.

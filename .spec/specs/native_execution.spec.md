@@ -1,5 +1,8 @@
 # Native Execution
 
+Milestone 5 Phase 1 decode preflight performs no admission or native work; the
+bounded pool remains unchanged until decode execution is implemented later.
+
 Milestone 4 Phase 5 supersedes the provisional production launcher. Open,
 cleanup, select, stream setup, and next-batch execute on fixed native workers;
 ordinary submit NIFs only validate and enqueue owned jobs.

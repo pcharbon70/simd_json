@@ -75,6 +75,11 @@ Operational telemetry uses the standard `:telemetry` events
 measurements contain bounded capacity, size, and duration values and never JSON
 content, paths, PIDs, request references, or native addresses.
 
+Milestone 5 Phase 1 defines a safe Jason 1.4.5 compatibility subset and an
+internal binary-plus-empty-options preflight. Eager `decode` functions are not
+public until their iterative native materializer and bounded-pool execution are
+implemented and qualified in later phases.
+
 Stream a root or nested array lazily with a scalar projection:
 
 ```elixir

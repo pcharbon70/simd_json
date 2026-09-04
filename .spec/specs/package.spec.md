@@ -1,5 +1,10 @@
 # SimdJson Package
 
+Milestone 5 Phase 1 packages the accepted safe decode compatibility decision,
+planned decode subject, six-phase plan, and undocumented native-free preflight.
+No `decode` function, native materializer, ABI change, or runtime dependency is
+introduced.
+
 Milestone 4 Phase 6 activates the bounded native-pool contract and packages its
 saturation profile, machine-readable evidence, race/sanitizer qualifier, and
 operations guidance. Phase 5 added the standard `telemetry` runtime dependency while all

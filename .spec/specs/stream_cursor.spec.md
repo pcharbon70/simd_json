@@ -1,5 +1,8 @@
 # Stream Cursor and Batch Engine
 
+Milestone 5 Phase 1 makes the existing early-halt regression assertion wait
+for asynchronous cursor cleanup to reach its documented quiescent state.
+
 Milestone 4 Phase 5 retains each cursor for its queued or running next-batch
 job. Existing demand reservation still permits exactly one state-advancing
 batch and releases on completion, cancellation, or close.

@@ -1,5 +1,8 @@
 # Document Resource
 
+Milestone 5 Phase 1 adds native-free decode preflight only and does not create,
+retain, consume, or transition a document resource.
+
 Milestone 4 Phase 5 retains documents in queued and running pool jobs. Cleanup
 stops later admission and native state outlives the final retained job.
 

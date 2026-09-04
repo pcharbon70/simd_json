@@ -308,6 +308,8 @@ Milestone 4 is complete when workers and queued jobs are always bounded, saturat
 
 [Detailed implementation reference](05-compatible-decode-api.md)
 
+**Status:** Planned; Phase 1 contract and native-free preflight complete.
+
 ### Goal
 
 Add familiar eager decoding for adoption and interoperability while preserving all scheduler, ownership, atom-safety, concurrency, cancellation, and error guarantees established by the earlier milestones.

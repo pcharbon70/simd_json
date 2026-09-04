@@ -1,5 +1,8 @@
 # Stream Execution and Lifecycle
 
+Milestone 5 Phase 1 introduces no cursor, demand, admission, or cleanup change;
+the decode preflight performs no native operation.
+
 Milestone 4 Phase 5 routes lazy setup and every demanded batch through the
 bounded native pool. Early halt closes without prefetch and leaves no queued
 or running stream job.

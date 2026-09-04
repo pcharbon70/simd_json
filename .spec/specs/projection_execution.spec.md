@@ -1,5 +1,8 @@
 # Projection Execution and Lifecycle
 
+Milestone 5 Phase 1 introduces no projection job or lifecycle change; decode
+preflight remains native-free and independent of projection resources.
+
 Milestone 4 Phase 5 retains the normalized plan, binary or document source,
 ownership state, cancellation state, and result environment in one typed pool
 job executed by a fixed native worker.
