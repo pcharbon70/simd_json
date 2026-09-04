@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 6 Phase - Qualify the production pool under saturation and activate the
+- [x] 6 Phase - Qualify the production pool under saturation and activate the
   Milestone 4 contract.
 
 ## 6.1 Section — Saturation and FIFO Fairness
@@ -30,9 +30,9 @@ Back to plan: [README](./README.md)
 
 ## 6.4 Section — Operations Documentation and Spec Activation
 
-- [ ] 6.4 Section - Publish pool sizing and operational limits, activate the
+- [x] 6.4 Section - Publish pool sizing and operational limits, activate the
   native-pool contract, and reconcile all current truth.
-  - [ ] 6.4.1 Task - Document sizing, saturation, telemetry, cancellation,
+  - [x] 6.4.1 Task - Document sizing, saturation, telemetry, cancellation,
     shutdown, upgrade, and troubleshooting guidance.
-  - [ ] 6.4.2 Task - Run formatting, package, native, regression, traceability,
+  - [x] 6.4.2 Task - Run formatting, package, native, regression, traceability,
     and spec-led gates with no unchecked Milestone 4 work.

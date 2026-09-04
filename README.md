@@ -64,7 +64,7 @@ exception text.
 The public root operations are `open/1`, `select/2`, `stream/2`, and `close/1`. There is no
 bang variant, eager decode, JSONPath, wildcard/filter/default policy,
 container materialization, streaming cursor, ownership transfer, raw native
-handle, or public diagnostic API. Milestone 4 Phase 5 routes native work
+handle, or public diagnostic API. The active Milestone 4 runtime routes native work
 through a bounded worker pool and non-blocking queue configured at application
 startup. Saturation
 returns the existing redacted `:busy` error.

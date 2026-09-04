@@ -1,6 +1,8 @@
 # SimdJson Package
 
-Milestone 4 Phase 5 adds the standard `telemetry` runtime dependency while all
+Milestone 4 Phase 6 activates the bounded native-pool contract and packages its
+saturation profile, machine-readable evidence, race/sanitizer qualifier, and
+operations guidance. Phase 5 added the standard `telemetry` runtime dependency while all
 pool, request, diagnostics, and lifecycle controls remain private. The public
 operation surface is unchanged.
 
