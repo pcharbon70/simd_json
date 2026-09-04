@@ -82,6 +82,10 @@ common_cxx_flags=(
   -o "${scratch_root}/simd_json_stream_cursor.o"
 
 "${zig_executable}" c++ "${common_cxx_flags[@]}" "${profile_flags[@]}" \
+  -c "${repository_root}/native/src/simd_json_decode_materializer.cpp" \
+  -o "${scratch_root}/simd_json_decode_materializer.o"
+
+"${zig_executable}" c++ "${common_cxx_flags[@]}" "${profile_flags[@]}" \
   -c "${repository_root}/native/vendor/simdjson/simdjson.cpp" \
   -o "${scratch_root}/simdjson.o"
 
@@ -89,6 +93,7 @@ common_cxx_flags=(
   "${scratch_root}/simd_json_abi.o" \
   "${scratch_root}/simd_json_projection.o" \
   "${scratch_root}/simd_json_stream_cursor.o" \
+  "${scratch_root}/simd_json_decode_materializer.o" \
   "${scratch_root}/simdjson.o"
 
 test_command=("${zig_executable}" test \
@@ -175,3 +180,29 @@ if [[ "${profile}" == "sanitizer" ]]; then
 fi
 
 env "${runtime_environment[@]}" "${stream_test_command[@]}"
+
+decode_test_command=("${zig_executable}" test \
+  -I "${repository_root}/native/include" \
+  --dep decode_materializer \
+  -Mroot="${repository_root}/native/test/decode_materializer_test.zig" \
+  -Mdecode_materializer="${repository_root}/native/zig/decode_materializer.zig" \
+  -L "${scratch_root}" \
+  -lsimd_json_abi_test \
+  -lc++ \
+  -lc \
+  -O Debug)
+
+if [[ "${profile}" == "sanitizer" ]]; then
+  decode_test_command+=(
+    "${asan_preinit}"
+    -L "${sanitizer_runtime_dir}"
+    -lasan
+    -lubsan
+    -lpthread
+    -ldl
+    -lrt
+    -lm
+  )
+fi
+
+env "${runtime_environment[@]}" "${decode_test_command[@]}"

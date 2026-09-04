@@ -24,11 +24,11 @@ Back to plan: [README](./README.md)
 
 ## 2.3 Section — Zig Decode Ownership and Rollback
 
-- [ ] 2.3 Section - Serialize limits and own materializer/result handles in
+- [x] 2.3 Section - Serialize limits and own materializer/result handles in
   Zig without exposing raw BEAM terms or input-derived pointers.
-  - [ ] 2.3.1 Task - Transfer each handle at one documented boundary and make
+  - [x] 2.3.1 Task - Transfer each handle at one documented boundary and make
     deinitialization idempotent.
-  - [ ] 2.3.2 Task - Validate borrowed graph views and rollback every partial
+  - [x] 2.3.2 Task - Validate borrowed graph views and rollback every partial
     construction path.
 
 ## 2.4 Section — Phase 2 Integration and Qualification
