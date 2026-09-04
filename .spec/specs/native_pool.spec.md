@@ -9,14 +9,14 @@ This subject replaces the provisional Zigler-threaded bridge with a
 library-owned execution subsystem. Milestone 4 Phase 5 routes public open,
 cleanup, select, stream setup, and next-batch work through fixed native workers
 with bounded admission. Elixir emits redacted operational telemetry from
-native timing metadata, while shutdown drains and joins the pool. Phase 6 owns
-saturation qualification and final activation.
+native timing metadata, while shutdown drains and joins the pool. Phase 6
+qualifies saturation, races, sanitizers, and operational evidence.
 
 ```spec-meta
 id: simd_json.native_pool
 kind: subsystem
-status: planned
-summary: Milestone 4 will run native jobs through fixed workers and a bounded non-blocking queue with explicit cancellation and redacted telemetry.
+status: active
+summary: Native jobs run through fixed workers and a bounded non-blocking queue with explicit cancellation and redacted telemetry.
 surface:
   - lib/simd_json/native/**
   - native/**
@@ -29,19 +29,7 @@ decisions:
   - simd_json.owned_native_jobs_and_bounded_fifo
   - simd_json.monitored_delivery_and_resource_serialization
   - simd_json.production_native_pool_routing_and_telemetry
-bootstrap:
-  reason: Phase 1 establishes configuration only; native pool execution begins in Phase 2.
-  requirements:
-    - simd_json.native_pool.fixed_configuration
-    - simd_json.native_pool.startup_validation
-    - simd_json.native_pool.redacted_snapshot
-    - simd_json.native_pool.nonblocking_bounded_admission
-    - simd_json.native_pool.owned_jobs
-    - simd_json.native_pool.fixed_workers
-    - simd_json.native_pool.cancellation
-    - simd_json.native_pool.resource_serialization
-    - simd_json.native_pool.telemetry
-    - simd_json.native_pool.shutdown
+  - simd_json.native_pool_qualification_and_activation
 ```
 
 ## Requirements
@@ -196,7 +184,7 @@ bootstrap:
 
 - kind: command
   target: bash scripts/ci/qualify_native_pool.sh
-  execute: false
+  execute: true
   covers:
     - simd_json.native_pool.nonblocking_bounded_admission
     - simd_json.native_pool.owned_jobs

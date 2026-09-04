@@ -271,7 +271,7 @@ through plan execution, copied-string construction, join, and terminal release.
 Binary projection uses the same state implementation in an unpublished
 worker-local document graph.
 
-Milestone 4 Phase 5 routes document, projection, stream setup, and next-batch
+The active Milestone 4 runtime routes document, projection, stream setup, and next-batch
 operations through `zig/worker_pool.zig`. The pool owns fixed threads, a finite
 FIFO queue, copied term environments, retained resources, caller monitoring,
 and correlated result delivery. Application stop drains coordinator requests

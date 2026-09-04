@@ -267,6 +267,8 @@ Milestone 3 is complete when a very large target array can be processed with bou
 
 [Detailed implementation reference](04-worker-pool-and-operations.md)
 
+**Status:** Active on the qualified Ubuntu 24.04 x86-64 target.
+
 ### Goal
 
 Replace provisional native execution with a production-ready, fixed-capacity subsystem whose queueing, cancellation, shutdown, and observability behavior are explicit.

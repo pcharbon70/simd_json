@@ -61,6 +61,12 @@ Normal scheduler work is limited to validating small terms, enqueueing a bounded
 
 ## Pool sizing
 
+The production configuration keys are `:native_workers` (accepted range
+`1..64`) and `:native_queue_size` (accepted range `1..4096`). The default
+worker count is half the online schedulers, rounded up and capped at 32; the
+default queue capacity is 256. Values are read once during application startup,
+and invalid values fail startup rather than being clamped.
+
 The worker count is fixed after startup or after an explicitly supported reconfiguration boundary. A reasonable initial default is based on online schedulers but should be conservative because simdjson is CPU- and memory-bandwidth-intensive.
 
 ```elixir
@@ -295,3 +301,29 @@ Potential later improvements include:
 - distributed capacity coordination.
 
 None of these should weaken the fixed-capacity and non-blocking submission guarantees.
+
+## Production runbook
+
+Start with the defaults, then reduce `:native_workers` when simdjson competes
+with other CPU- or memory-bandwidth-heavy native work. Increase the queue only
+when measured bursts are short enough that the added retained input memory and
+queue delay are acceptable. A `:busy` result is deliberate backpressure; retry
+with a bounded BEAM timer or shed work instead of spinning.
+
+Attach telemetry handlers to the job and queue events above. Alert on sustained
+rejections, rising p95/p99 queue duration, cancellation growth, or retained
+bytes that fail to return to baseline. Metadata is intentionally redacted, so
+correlate incidents with application-owned request identifiers outside this
+library when needed.
+
+Deploy native code with an application or VM restart. In-place NIF replacement
+is rejected while the old pool exists. On shutdown, stop new traffic first and
+allow the application callback to drain coordinator requests and join workers.
+If shutdown stalls, capture the redacted pool snapshot and telemetry totals;
+never log submitted JSON or native addresses.
+
+Run `bash scripts/ci/qualify_native_pool.sh` on the qualified target after
+changing pool, lifecycle, resource, compiler, or sanitizer inputs. Evidence is
+written under `_build/qualification/native-pool` by default, including
+`saturation.json` with capacity, latency, scheduler, ordering, and retained
+memory measurements.
