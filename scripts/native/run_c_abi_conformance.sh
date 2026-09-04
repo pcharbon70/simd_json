@@ -84,6 +84,10 @@ common_cxx_flags=(
   -c "${repository_root}/native/test/stream_cursor_conformance.c" \
   -o "${scratch_root}/stream_cursor_conformance.o"
 
+"${zig_executable}" cc "${common_c_flags[@]}" "${profile_flags[@]}" \
+  -c "${repository_root}/native/test/decode_materializer_conformance.c" \
+  -o "${scratch_root}/decode_materializer_conformance.o"
+
 "${zig_executable}" c++ "${common_cxx_flags[@]}" "${profile_flags[@]}" \
   -c "${repository_root}/native/src/simd_json_abi.cpp" \
   -o "${scratch_root}/simd_json_abi.o"
@@ -97,6 +101,10 @@ common_cxx_flags=(
   -o "${scratch_root}/simd_json_stream_cursor.o"
 
 "${zig_executable}" c++ "${common_cxx_flags[@]}" "${profile_flags[@]}" \
+  -c "${repository_root}/native/src/simd_json_decode_materializer.cpp" \
+  -o "${scratch_root}/simd_json_decode_materializer.o"
+
+"${zig_executable}" c++ "${common_cxx_flags[@]}" "${profile_flags[@]}" \
   -c "${repository_root}/native/vendor/simdjson/simdjson.cpp" \
   -o "${scratch_root}/simdjson.o"
 
@@ -104,6 +112,7 @@ common_cxx_flags=(
   "${scratch_root}/simd_json_abi.o" \
   "${scratch_root}/simd_json_projection.o" \
   "${scratch_root}/simd_json_stream_cursor.o" \
+  "${scratch_root}/simd_json_decode_materializer.o" \
   "${scratch_root}/simdjson.o"
 
 "${zig_executable}" c++ "${profile_flags[@]}" \
@@ -133,3 +142,10 @@ env "${runtime_environment[@]}" "${scratch_root}/projection_engine_conformance"
   -o "${scratch_root}/stream_cursor_conformance"
 
 env "${runtime_environment[@]}" "${scratch_root}/stream_cursor_conformance"
+
+"${zig_executable}" c++ "${profile_flags[@]}" \
+  "${scratch_root}/decode_materializer_conformance.o" \
+  "${scratch_root}/libsimd_json_abi_test.a" \
+  -o "${scratch_root}/decode_materializer_conformance"
+
+env "${runtime_environment[@]}" "${scratch_root}/decode_materializer_conformance"

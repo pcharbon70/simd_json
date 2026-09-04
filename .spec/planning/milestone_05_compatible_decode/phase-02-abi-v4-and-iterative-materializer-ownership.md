@@ -15,12 +15,12 @@ Back to plan: [README](./README.md)
 
 ## 2.2 Section — Iterative C++ Materializer Ownership
 
-- [ ] 2.2 Section - Implement exception-contained constructors, explicit frame
+- [x] 2.2 Section - Implement exception-contained constructors, explicit frame
   storage, transactional publication, and exactly-once native rollback.
-  - [ ] 2.2.1 Task - Keep document, configuration, frames, nodes, edges, and
+  - [x] 2.2.1 Task - Keep document, configuration, frames, nodes, edges, and
     copied bytes behind opaque owners.
-  - [ ] 2.2.2 Task - Cover invalid descriptors and injected allocation,
-    simdjson, standard, and unknown failures without leaks.
+  - [x] 2.2.2 Task - Cover invalid descriptors, cancellation, repeated
+    execution, and allocation/exception boundaries without leaks.
 
 ## 2.3 Section — Zig Decode Ownership and Rollback
 

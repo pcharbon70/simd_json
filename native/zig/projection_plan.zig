@@ -521,7 +521,7 @@ pub fn Implementation(comptime c: type) type {
         } else struct {};
 
         comptime {
-            if (c.SIMD_JSON_ABI_VERSION != 3)
+            if (c.SIMD_JSON_ABI_VERSION != 4)
                 @compileError("projection ownership requires private ABI version 3");
             if (c.SIMD_JSON_MAX_DEPTH != 1024)
                 @compileError("projection traversal depth bound changed");

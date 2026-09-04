@@ -7,7 +7,7 @@ defmodule SimdJson.Native.ReleaseQualificationTest do
   @qualification Code.eval_file("native/qualification/milestone_1.exs") |> elem(0)
   @manifest Code.eval_file("native/manifest.exs") |> elem(0)
 
-  test "the cumulative symbol contract retains ABI v1 and v2 under ABI v3" do
+  test "the cumulative symbol contract retains ABI v1 through v3 under ABI v4" do
     version_script = File.read!("native/symbols/c_abi.version")
     allowlist = File.read!("native/symbols/c_abi.allowlist")
 

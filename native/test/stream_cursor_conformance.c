@@ -363,7 +363,7 @@ static int exception_matrix(document_fixture *fixture) {
 
 int main(void) {
   document_fixture fixture;
-  CHECK(SIMD_JSON_ABI_VERSION == 3);
+  CHECK(SIMD_JSON_ABI_VERSION == 4);
   CHECK(SIMD_JSON_STREAM_MAX_BATCH_SIZE == 10000);
   CHECK(SIMD_JSON_STREAM_MAX_BATCH_BYTES == 67108864);
   CHECK(stream_is_quiescent() && projection_is_quiescent());
@@ -376,6 +376,6 @@ int main(void) {
   CHECK(cancellation_matrix() == 0);
   simd_json_stream_cursor_destroy(NULL);
   CHECK(stream_is_quiescent() && projection_is_quiescent());
-  puts("stream cursor conformance passed abi=3");
+  puts("stream cursor conformance passed abi=4");
   return 0;
 }
