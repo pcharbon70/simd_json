@@ -15,10 +15,10 @@ Back to plan: [README](./README.md)
 
 ## 6.2 Section — Latency and Memory Qualification
 
-- [ ] 6.2 Section - Record bounded admission, scheduler wake-up, queue,
+- [x] 6.2 Section - Record bounded admission, scheduler wake-up, queue,
   execution, cancellation, and retained-memory evidence.
-  - [ ] 6.2.1 Task - Add a deterministic operational qualification profile.
-  - [ ] 6.2.2 Task - Retain machine-readable percentile and capacity evidence.
+  - [x] 6.2.1 Task - Add a deterministic operational qualification profile.
+  - [x] 6.2.2 Task - Retain machine-readable percentile and capacity evidence.
 
 ## 6.3 Section — Race, Shutdown, and Sanitizer Matrix
 
