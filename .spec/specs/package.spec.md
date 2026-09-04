@@ -1,8 +1,11 @@
 # SimdJson Package
 
-Milestone 4 Phase 4 adds internal monitored fixture delivery and resource
-serialization without public modules, functions, dependencies, or
-configuration keys.
+Milestone 4 Phase 5 adds the standard `telemetry` runtime dependency while all
+pool, request, diagnostics, and lifecycle controls remain private. The public
+operation surface is unchanged.
+
+Milestone 4 Phase 4 established internal monitored delivery and serialization;
+Phase 5 adds production routing and telemetry without new public functions.
 
 Milestone 3 Phase 6 adds the active streaming modules, ABI v3 cursor sources,
 operations and acceptance guides, qualification scripts, frozen compressed ETL

@@ -6,8 +6,8 @@
 # covers: simd_json.native_build_and_abi.pinned_toolchain simd_json.native_build_and_abi.target_qualification simd_json.native_build_and_abi.dependency_upgrade_gate
 [
   schema_version: 1,
-  qualified_on: ~D[2026-09-03],
-  input_sha256: "d098cf6f6520cbec39d815001bdfa3d0182cca12676203374254ed9ca6d2f31a",
+  qualified_on: ~D[2026-09-04],
+  input_sha256: "05e990e02bfeeea78645aea1bbab212d785cdf8ed6a030b85b3db0181a522f93",
   randomized_seed: 260_831_006,
   supported_targets: [
     [
@@ -26,6 +26,7 @@
     "mix test test/native",
     "mix test test/native/pool_queue_test.exs",
     "mix test test/native/pool_cancellation_test.exs test/native/pool_delivery_test.exs test/native/pool_resource_serialization_test.exs",
+    "mix test test/native/pool_public_operations_test.exs test/native/pool_public_stream_test.exs test/native/pool_telemetry_test.exs",
     "bash scripts/ci/verify_offline_native_build.sh",
     "bash scripts/native/run_c_abi_conformance.sh ordinary",
     "bash scripts/native/run_c_abi_conformance.sh sanitizer",

@@ -48,3 +48,4 @@ Use this folder for durable cross-cutting decisions that shape the current Spec 
 - [Fixed Native Worker Lifecycle](./0011-fixed-native-worker-lifecycle.md)
 - [Owned Native Jobs and Bounded FIFO](./0012-owned-native-jobs-and-bounded-fifo.md)
 - [Monitored Delivery and Resource Serialization](./0013-monitored-delivery-and-resource-serialization.md)
+- [Production Native Pool Routing and Telemetry](./0014-production-native-pool-routing-and-telemetry.md)

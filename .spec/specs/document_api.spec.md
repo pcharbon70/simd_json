@@ -1,8 +1,11 @@
 # Document API and Errors
 
-Milestone 4 Phase 4 adds monitored delivery and serialization only to pool
-test fixtures; document operations and this public contract remain on the
-qualified threaded path unchanged.
+Milestone 4 Phase 5 routes `open/1` and owner cleanup through bounded native
+workers. Saturation uses the existing redacted `:busy` reason and exposes no
+pool control or caller identity.
+
+Milestone 4 Phase 4 established monitored delivery and serialization fixtures
+that Phase 5 now applies to public document operations.
 
 Current-truth contract for the deliberately narrow Milestone 1 Elixir API and its stable structured error boundary.
 

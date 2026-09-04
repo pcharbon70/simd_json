@@ -62,7 +62,8 @@ defmodule SimdJson.Native.ThreadedOperation do
             | :stream_batch,
           generation: pos_integer(),
           cursor_generation: non_neg_integer(),
-          batch_sequence: non_neg_integer()
+          batch_sequence: non_neg_integer(),
+          input_bytes: non_neg_integer()
         }
 
   @spec admit(binary(), operation()[:kind], pos_integer() | nil) :: operation()
@@ -95,7 +96,8 @@ defmodule SimdJson.Native.ThreadedOperation do
       kind: kind,
       generation: generation,
       cursor_generation: 0,
-      batch_sequence: 0
+      batch_sequence: 0,
+      input_bytes: byte_size(input)
     }
   end
 
@@ -129,7 +131,8 @@ defmodule SimdJson.Native.ThreadedOperation do
            kind: :projection,
            generation: generation,
            cursor_generation: 0,
-           batch_sequence: 0
+           batch_sequence: 0,
+           input_bytes: if(source_kind == :binary, do: byte_size(source), else: 0)
          }}
 
       %{status: status, operation: nil} when is_atom(status) ->
@@ -238,7 +241,12 @@ defmodule SimdJson.Native.ThreadedOperation do
   @spec open(binary(), keyword()) :: {:ok, reference()} | {:error, map()}
   def open(input, options \\ []) when is_binary(input) and is_list(options) do
     generation = BuildSmoke.execution_generation()
-    operation = admit(input, :document_open, generation)
+
+    operation =
+      input
+      |> admit(:document_open, generation)
+      |> Map.put(:test_legacy?, Keyword.has_key?(options, :pause))
+
     configure_pause(operation, options)
     OperationCoordinator.open(operation)
   end
@@ -296,6 +304,60 @@ defmodule SimdJson.Native.ThreadedOperation do
       {:error, %{reason: :native_failure, stage: :threaded_submission}}
   end
 
+  @spec submit_to_pool(operation(), term()) ::
+          {:ok, %{request_ref: reference(), request: reference(), request_id: pos_integer()}}
+          | {:error, :busy | :stopped | :native_failure}
+  def submit_to_pool(operation, payload) do
+    submission =
+      case {operation.kind, payload} do
+        {:document_open, nil} ->
+          BuildSmoke.native_pool_submit_open(operation.resource)
+
+        {:document_cleanup, document} ->
+          BuildSmoke.native_pool_submit_cleanup(operation.resource, document)
+
+        {:projection, nil} ->
+          BuildSmoke.native_pool_submit_projection(operation.resource)
+
+        {:stream_setup, {:binary, _source, projection, target, rows, bytes}} ->
+          BuildSmoke.native_pool_submit_stream_binary_setup(
+            operation.resource,
+            projection,
+            target,
+            rows,
+            bytes
+          )
+
+        {:stream_setup, {:document, document, projection, target, rows, bytes}} ->
+          BuildSmoke.native_pool_submit_stream_document_setup(
+            operation.resource,
+            document,
+            projection,
+            target,
+            rows,
+            bytes
+          )
+
+        {:stream_batch, {:batch, cursor, projection, sequence}} ->
+          BuildSmoke.native_pool_submit_stream_batch(
+            operation.resource,
+            cursor,
+            projection,
+            sequence
+          )
+      end
+
+    {:ok, submission}
+  rescue
+    error in ErlangError ->
+      {:error, pool_error(error.original)}
+
+    _error ->
+      {:error, :native_failure}
+  catch
+    _kind, _reason -> {:error, :native_failure}
+  end
+
   @spec cancel(operation()) :: :ok
   def cancel(operation) do
     true = BuildSmoke.operation_cancel(operation.resource)
@@ -349,4 +411,8 @@ defmodule SimdJson.Native.ThreadedOperation do
   end
 
   defp rollback_projection(_operation), do: :ok
+
+  defp pool_error(reason) when reason in [:pool_busy, :resource_busy], do: :busy
+  defp pool_error(reason) when reason in [:pool_stopped, :resource_closed], do: :stopped
+  defp pool_error(_reason), do: :native_failure
 end

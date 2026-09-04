@@ -1,8 +1,11 @@
 # Projection Execution and Lifecycle
 
-Milestone 4 Phase 4 workers execute only monitored test-fixture jobs;
-projection admission, ownership, and threaded execution retain their existing
-contract.
+Milestone 4 Phase 5 retains the normalized plan, binary or document source,
+ownership state, cancellation state, and result environment in one typed pool
+job executed by a fixed native worker.
+
+Milestone 4 Phase 4 proved monitored fixture jobs; Phase 5 applies those
+ownership and delivery rules to production projection jobs.
 
 Milestone 3 Phase 6 reruns this active subject as an inherited regression gate.
 Streaming continues to reuse the same normalized projection engine and

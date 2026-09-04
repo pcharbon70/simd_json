@@ -13,7 +13,7 @@ defmodule SimdJson.Native.PoolOptionsTest do
              queue_capacity: 256,
              workers_explicit?: false,
              queue_explicit?: false,
-             executor: :preproduction_threaded
+             executor: :bounded_native_pool
            } = PoolOptions.normalize([], 1)
 
     assert PoolOptions.default_worker_count(2) == 1
@@ -113,7 +113,7 @@ defmodule SimdJson.Native.PoolOptionsTest do
     assert Diagnostics.execution() == pool_before
     assert pool_before.worker_count in 1..64
     assert pool_before.queue_capacity in 1..4096
-    assert pool_before.executor == :preproduction_threaded
+    assert pool_before.executor == :bounded_native_pool
 
     _normalized = PoolOptions.normalize([native_workers: 64, native_queue_size: 4096], 1)
 

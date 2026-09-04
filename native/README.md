@@ -271,6 +271,14 @@ through plan execution, copied-string construction, join, and terminal release.
 Binary projection uses the same state implementation in an unpublished
 worker-local document graph.
 
+Milestone 4 Phase 5 routes document, projection, stream setup, and next-batch
+operations through `zig/worker_pool.zig`. The pool owns fixed threads, a finite
+FIFO queue, copied term environments, retained resources, caller monitoring,
+and correlated result delivery. Application stop drains coordinator requests
+before joining those workers; NIF unload also joins them. In-place NIF upgrade
+is intentionally rejected while an old runtime exists, so deploys must restart
+the application before replacing native code.
+
 The two fixture functions on the internal `SimdJson.Native.BuildSmoke` module
 exist solely to prove resource registration and opacity. They create only the
 fixed-size empty state and are not part of `SimdJson`'s public API. Future child

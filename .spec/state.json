@@ -173,6 +173,26 @@
         "id": "simd_json.monitored_delivery_and_resource_serialization",
         "status": "accepted",
         "title": "Monitored Delivery and Resource Serialization"
+      },
+      {
+        "affects": [
+          "simd_json.native_pool",
+          "simd_json.native_execution",
+          "simd_json.document_api",
+          "simd_json.document_resource",
+          "simd_json.projection_api",
+          "simd_json.projection_execution",
+          "simd_json.stream_cursor",
+          "simd_json.stream_execution",
+          "simd_json.streaming_api",
+          "simd_json.package",
+          "simd_json.native_build_and_abi"
+        ],
+        "date": "2026-09-04",
+        "file": ".spec/decisions/0014-production-native-pool-routing-and-telemetry.md",
+        "id": "simd_json.production_native_pool_routing_and_telemetry",
+        "status": "accepted",
+        "title": "Production Native Pool Routing and Telemetry"
       }
     ]
   },
@@ -2973,7 +2993,8 @@
             "simd_json.bounded_native_pool_configuration_and_admission",
             "simd_json.fixed_native_worker_lifecycle",
             "simd_json.owned_native_jobs_and_bounded_fifo",
-            "simd_json.monitored_delivery_and_resource_serialization"
+            "simd_json.monitored_delivery_and_resource_serialization",
+            "simd_json.production_native_pool_routing_and_telemetry"
           ],
           "id": "simd_json.native_pool",
           "kind": "subsystem",
@@ -3776,7 +3797,7 @@
   "specification_version": "1.0",
   "summary": {
     "decision_parse_errors": 0,
-    "decisions": 13,
+    "decisions": 14,
     "exceptions": 0,
     "findings": 0,
     "requirements": 149,
@@ -6558,7 +6579,7 @@
     "threshold_failures": 0
   },
   "workspace": {
-    "decision_count": 13,
+    "decision_count": 14,
     "spec_count": 13
   }
 }

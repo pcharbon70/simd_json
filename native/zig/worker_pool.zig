@@ -1,7 +1,15 @@
 const std = @import("std");
-pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type) type {
+pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type, comptime ops: type) type {
     return struct {
-        pub const JobKind = enum(u8) { fixture };
+        pub const JobKind = enum(u8) {
+            fixture,
+            document_open,
+            document_cleanup,
+            projection,
+            stream_binary_setup,
+            stream_document_setup,
+            stream_batch,
+        };
         pub const JobState = enum(u8) { queued, running, completed, cancelled };
         pub const SubmitStatus = enum(u8) { accepted, busy, stopped, out_of_memory, input_too_large };
         pub const SubmitResult = struct { status: SubmitStatus, request_id: u64 };
@@ -87,6 +95,51 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                     e.enif_make_atom(env, "Elixir.SimdJson.Native"),
                     self.request_ref,
                     ok,
+                };
+                const message = e.enif_make_tuple_from_array(env, &message_parts, message_parts.len);
+                var caller = self.caller;
+                const delivered = e.enif_send(null, &caller, env, message) != 0;
+                self.terminal.store(
+                    @intFromEnum(if (delivered) TerminalState.delivered else TerminalState.discarded),
+                    .release,
+                );
+                return if (delivered) .delivered else .discarded;
+            }
+
+            fn deliverTerm(
+                self: *RequestControl,
+                env: beam.env,
+                result: beam.term,
+                queue_duration: u64,
+                execution_duration: u64,
+            ) DeliveryOutcome {
+                if (self.cancelled.load(.acquire)) {
+                    _ = self.terminal.cmpxchgStrong(
+                        @intFromEnum(TerminalState.pending),
+                        @intFromEnum(TerminalState.cancelled),
+                        .acq_rel,
+                        .acquire,
+                    );
+                    return .cancelled;
+                }
+                if (self.terminal.cmpxchgStrong(
+                    @intFromEnum(TerminalState.pending),
+                    @intFromEnum(TerminalState.delivering),
+                    .acq_rel,
+                    .acquire,
+                ) != null) return .cancelled;
+
+                const reply_parts = [_]e.ErlNifTerm{ e.enif_make_atom(env, "ok"), result.v };
+                const reply = e.enif_make_tuple_from_array(env, &reply_parts, reply_parts.len);
+                const measurements = beam.make(.{
+                    .queue_duration = queue_duration,
+                    .execution_duration = execution_duration,
+                }, .{ .env = env });
+                const message_parts = [_]e.ErlNifTerm{
+                    e.enif_make_atom(env, "Elixir.SimdJson.Native"),
+                    e.enif_make_copy(env, self.request_ref),
+                    reply,
+                    measurements.v,
                 };
                 const message = e.enif_make_tuple_from_array(env, &message_parts, message_parts.len);
                 var caller = self.caller;
@@ -258,6 +311,15 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             cancelled: std.atomic.Value(bool),
             enqueued_at: i64,
             bytes: []u8,
+            env: ?beam.env,
+            operation: ?ops.OperationResource,
+            document: ?ops.DocumentResource,
+            cursor: ?ops.StreamCursorResource,
+            projection: ?beam.term,
+            target: ?beam.term,
+            row_limit: u64,
+            byte_limit: u64,
+            sequence: u64,
             request: ?*RequestControl,
             serialization: ?SerializationResource,
             next: ?*Job,
@@ -266,7 +328,25 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 const job = try allocator.create(Job);
                 errdefer allocator.destroy(job);
                 const bytes = try allocator.dupe(u8, input);
-                job.* = .{ .allocator = allocator, .request_id = request_id, .kind = .fixture, .state = .init(@intFromEnum(JobState.queued)), .cancelled = .init(false), .enqueued_at = e.enif_monotonic_time(e.ERL_NIF_USEC), .bytes = bytes, .request = null, .serialization = null, .next = null };
+                job.* = .{ .allocator = allocator, .request_id = request_id, .kind = .fixture, .state = .init(@intFromEnum(JobState.queued)), .cancelled = .init(false), .enqueued_at = e.enif_monotonic_time(e.ERL_NIF_USEC), .bytes = bytes, .env = null, .operation = null, .document = null, .cursor = null, .projection = null, .target = null, .row_limit = 0, .byte_limit = 0, .sequence = 0, .request = null, .serialization = null, .next = null };
+                return job;
+            }
+
+            pub fn createOperation(
+                allocator: std.mem.Allocator,
+                request_id: u64,
+                kind: JobKind,
+                operation: ops.OperationResource,
+            ) !*Job {
+                const job = try create(allocator, request_id, &.{});
+                const env = e.enif_alloc_env() orelse {
+                    job.destroy();
+                    return error.out_of_memory;
+                };
+                job.kind = kind;
+                job.env = env;
+                operation.keep();
+                job.operation = operation;
                 return job;
             }
 
@@ -292,6 +372,10 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                     resource.__payload.releaseReservation();
                     resource.release();
                 }
+                if (self.operation) |resource| resource.release();
+                if (self.document) |resource| resource.release();
+                if (self.cursor) |resource| resource.release();
+                if (self.env) |env| e.enif_free_env(env);
                 allocator.free(self.bytes);
                 allocator.destroy(self);
             }
@@ -313,6 +397,10 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             last_dequeued_request: u64,
             dequeue_order_hash: u64,
         };
+
+        fn encodeResult(env: beam.env, value: anytype) beam.term {
+            return beam.make(value, .{ .env = env });
+        }
 
         pub const Runtime = struct {
             allocator: std.mem.Allocator,
@@ -504,6 +592,67 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 };
             }
 
+            pub fn submitOperation(
+                self: *Runtime,
+                kind: JobKind,
+                operation: ops.OperationResource,
+                document: ?ops.DocumentResource,
+                cursor: ?ops.StreamCursorResource,
+                projection: ?beam.term,
+                target: ?beam.term,
+                row_limit: u64,
+                byte_limit: u64,
+                sequence: u64,
+            ) !MonitoredSubmission {
+                const owner = try beam.self(.{});
+                const control = try RequestControl.create(self.allocator, owner);
+                const request = RequestResource.create(control, .{}) catch |reason| {
+                    control.release();
+                    return reason;
+                };
+                errdefer request.release();
+                control.resource_object.store(@ptrCast(request.__payload), .release);
+                var monitored_owner = owner;
+                if (e.enif_monitor_process(beam.context.env, @ptrCast(request.__payload), &monitored_owner, &control.monitor) != 0)
+                    return error.monitor_failed;
+                control.monitored.store(true, .release);
+
+                e.enif_mutex_lock(self.mutex);
+                defer e.enif_mutex_unlock(self.mutex);
+                if (self.stopping or !self.accepting.load(.acquire)) return error.pool_stopped;
+                if (self.queued_jobs >= self.queue_capacity) {
+                    self.rejected_jobs += 1;
+                    return error.pool_busy;
+                }
+                const request_id = self.next_request_id;
+                self.next_request_id +%= 1;
+                const job = try Job.createOperation(self.allocator, request_id, kind, operation);
+                errdefer job.destroy();
+                job.attachRequest(control);
+                if (document) |resource| {
+                    resource.keep();
+                    job.document = resource;
+                }
+                if (cursor) |resource| {
+                    resource.keep();
+                    job.cursor = resource;
+                }
+                if (projection) |term| job.projection = beam.copy(job.env.?, term);
+                if (target) |term| job.target = beam.copy(job.env.?, term);
+                job.row_limit = row_limit;
+                job.byte_limit = byte_limit;
+                job.sequence = sequence;
+                if (self.queue_tail) |tail| tail.next = job else self.queue_head = job;
+                self.queue_tail = job;
+                self.queued_jobs += 1;
+                e.enif_cond_signal(self.condition);
+                return .{
+                    .request_id = request_id,
+                    .request_ref = beam.copy(beam.context.env, .{ .v = control.request_ref }),
+                    .request = request,
+                };
+            }
+
             pub fn cancelRequest(_: *Runtime, request: RequestResource) bool {
                 return request.__payload.*.cancel();
             }
@@ -552,16 +701,35 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 }
                 while (runtime.pause_workers and !runtime.stopping) e.enif_cond_wait(runtime.condition, runtime.mutex);
                 e.enif_mutex_unlock(runtime.mutex);
+                const execution_started = e.enif_monotonic_time(e.ERL_NIF_USEC);
                 var checksum: u64 = 0;
-                if (!job.?.isCancelled()) {
-                    for (job.?.bytes, 0..) |byte, index| {
+                var native_result: ?beam.term = null;
+                if (!job.?.isCancelled()) switch (job.?.kind) {
+                    .fixture => for (job.?.bytes, 0..) |byte, index| {
                         if (index % 4096 == 0 and runtime.shutdown_requested.load(.acquire)) {
                             job.?.cancelled.store(true, .release);
                             break;
                         }
                         checksum +%= byte;
-                    }
-                }
+                    },
+                    else => {
+                        beam.context = .{
+                            .mode = .independent,
+                            .allocator = job.?.allocator,
+                            .env = job.?.env.?,
+                            .io = beam.io.get(job.?.allocator),
+                        };
+                        native_result = switch (job.?.kind) {
+                            .document_open => if (ops.threaded_document_open(job.?.operation.?)) |result| encodeResult(job.?.env.?, result) else |_| null,
+                            .document_cleanup => encodeResult(job.?.env.?, ops.threaded_document_cleanup(job.?.operation.?, job.?.document.?)),
+                            .projection => ops.pool_encode_projection_result(job.?.env.?, ops.threaded_projection_execute(job.?.operation.?)),
+                            .stream_binary_setup => encodeResult(job.?.env.?, ops.threaded_stream_binary_setup_fixture(job.?.operation.?, job.?.projection.?, job.?.target.?, job.?.row_limit, job.?.byte_limit)),
+                            .stream_document_setup => encodeResult(job.?.env.?, ops.threaded_stream_setup_fixture(job.?.operation.?, job.?.document.?, job.?.projection.?, job.?.target.?, job.?.row_limit, job.?.byte_limit)),
+                            .stream_batch => encodeResult(job.?.env.?, ops.threaded_stream_batch_fixture(job.?.operation.?, job.?.cursor.?, job.?.projection.?, job.?.sequence)),
+                            .fixture => unreachable,
+                        };
+                    },
+                };
                 if (runtime.shutdown_requested.load(.acquire))
                     job.?.cancelled.store(true, .release);
                 const retained = job.?.bytes.len;
@@ -569,7 +737,13 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 var delivery: ?DeliveryOutcome = null;
                 if (job.?.request) |request| {
                     if (cancelled) _ = request.cancel();
-                    delivery = request.deliver(checksum);
+                    const execution_finished = e.enif_monotonic_time(e.ERL_NIF_USEC);
+                    const queue_duration: u64 = @intCast(@max(0, execution_started - job.?.enqueued_at));
+                    const execution_duration: u64 = @intCast(@max(0, execution_finished - execution_started));
+                    delivery = if (native_result) |result|
+                        request.deliverTerm(job.?.env.?, result, queue_duration, execution_duration)
+                    else
+                        request.deliver(checksum);
                     cancelled = delivery.? == .cancelled;
                 }
                 job.?.state.store(@intFromEnum(if (cancelled) JobState.cancelled else JobState.completed), .release);

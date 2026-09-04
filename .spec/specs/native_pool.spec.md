@@ -6,11 +6,11 @@ bounded admission, cancellation, lifecycle, and operational evidence.
 ## Intent
 
 This subject replaces the provisional Zigler-threaded bridge with a
-library-owned execution subsystem. Milestone 4 Phase 4 has established fixed
-workers, bounded owned jobs, monitored cancellation, correlated fixture result
-delivery, and per-resource serialization. It does not yet route public
-operations through the pool, emit public telemetry, or claim production
-readiness.
+library-owned execution subsystem. Milestone 4 Phase 5 routes public open,
+cleanup, select, stream setup, and next-batch work through fixed native workers
+with bounded admission. Elixir emits redacted operational telemetry from
+native timing metadata, while shutdown drains and joins the pool. Phase 6 owns
+saturation qualification and final activation.
 
 ```spec-meta
 id: simd_json.native_pool
@@ -28,6 +28,7 @@ decisions:
   - simd_json.fixed_native_worker_lifecycle
   - simd_json.owned_native_jobs_and_bounded_fifo
   - simd_json.monitored_delivery_and_resource_serialization
+  - simd_json.production_native_pool_routing_and_telemetry
 bootstrap:
   reason: Phase 1 establishes configuration only; native pool execution begins in Phase 2.
   requirements:

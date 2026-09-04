@@ -5,7 +5,7 @@ const c = @import("simd_json_abi");
 const document_resource = @import("document_resource").Implementation(c);
 const projection_plan = @import("projection_plan").Implementation(c);
 const stream_cursor = @import("stream_cursor").Implementation(c, projection_plan);
-const worker_pool = @import("worker_pool").Implementation(beam, e, root);
+const worker_pool = @import("worker_pool").Implementation(beam, e, root, @This());
 const root = @import("root");
 
 pub const PoolRequestResource = worker_pool.RequestResource;
@@ -418,6 +418,57 @@ pub fn native_pool_submit_serialized_fixture(
     return pool.submitSerialized(input, resource);
 }
 
+pub fn native_pool_submit_open(operation: OperationResource) !worker_pool.MonitoredSubmission {
+    const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
+    return pool.submitOperation(.document_open, operation, null, null, null, null, 0, 0, 0);
+}
+
+pub fn native_pool_submit_cleanup(
+    operation: OperationResource,
+    document: DocumentResource,
+) !worker_pool.MonitoredSubmission {
+    const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
+    return pool.submitOperation(.document_cleanup, operation, document, null, null, null, 0, 0, 0);
+}
+
+pub fn native_pool_submit_projection(operation: OperationResource) !worker_pool.MonitoredSubmission {
+    const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
+    return pool.submitOperation(.projection, operation, null, null, null, null, 0, 0, 0);
+}
+
+pub fn native_pool_submit_stream_binary_setup(
+    operation: OperationResource,
+    projection: beam.term,
+    target: beam.term,
+    row_limit: u64,
+    byte_limit: u64,
+) !worker_pool.MonitoredSubmission {
+    const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
+    return pool.submitOperation(.stream_binary_setup, operation, null, null, projection, target, row_limit, byte_limit, 0);
+}
+
+pub fn native_pool_submit_stream_document_setup(
+    operation: OperationResource,
+    document: DocumentResource,
+    projection: beam.term,
+    target: beam.term,
+    row_limit: u64,
+    byte_limit: u64,
+) !worker_pool.MonitoredSubmission {
+    const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
+    return pool.submitOperation(.stream_document_setup, operation, document, null, projection, target, row_limit, byte_limit, 0);
+}
+
+pub fn native_pool_submit_stream_batch(
+    operation: OperationResource,
+    cursor: StreamCursorResource,
+    projection: beam.term,
+    sequence: u64,
+) !worker_pool.MonitoredSubmission {
+    const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
+    return pool.submitOperation(.stream_batch, operation, null, cursor, projection, null, 0, 0, sequence);
+}
+
 pub fn native_pool_close_serialization_fixture(resource: PoolSerializationResource) worker_pool.CloseStatus {
     return resource.__payload.close();
 }
@@ -723,7 +774,7 @@ const OperationRecord = struct {
             !self.cancelled.load(.acquire))
         {
             beam.context.io.sleep(.{ .nanoseconds = 1_000_000 }, .awake) catch {};
-            beam.yield() catch break;
+            if (beam.context.mode == .threaded) beam.yield() catch break;
         }
     }
 };
@@ -1122,6 +1173,24 @@ pub const ProjectionResult = struct {
     boundary_count: usize,
 };
 
+pub fn pool_encode_projection_result(env: beam.env, result: ProjectionResult) beam.term {
+    return beam.make(.{
+        .status = result.status,
+        .kind = result.kind,
+        .generation = result.generation,
+        .worker_context = result.worker_context,
+        .native_code = result.native_code,
+        .byte_offset = result.byte_offset,
+        .output_slot = result.output_slot,
+        .result = if (result.result) |value| value.__payload.term else null,
+        .ready_for_delivery = result.ready_for_delivery,
+        .compilation_nanoseconds = result.compilation_nanoseconds,
+        .traversal_nanoseconds = result.traversal_nanoseconds,
+        .term_construction_nanoseconds = result.term_construction_nanoseconds,
+        .boundary_count = result.boundary_count,
+    }, .{ .env = env });
+}
+
 var module_loaded = std.atomic.Value(bool).init(false);
 var module_generation = std.atomic.Value(u64).init(0);
 
@@ -1131,7 +1200,10 @@ fn executionContext() ExecutionContext {
         .threaded => .threaded,
         .dirty, .dirty_yield => .dirty,
         .callback => .callback,
-        .yielding, .independent => .unsupported,
+        .yielding => .unsupported,
+        // The library-owned pool installs an independent environment on each
+        // fixed worker before entering the same operation implementations.
+        .independent => .threaded,
     };
 }
 
@@ -1584,9 +1656,9 @@ pub fn threaded_context_smoke(operation: OperationResource) !ThreadedSmokeResult
 
     record.pauseAt(.before_copy);
     if (record.cancelled.load(.acquire)) return error.operation_cancelled;
-    try beam.yield();
+    if (beam.context.mode == .threaded) try beam.yield();
     const input_length = try record.inputLength();
-    try beam.yield();
+    if (beam.context.mode == .threaded) try beam.yield();
 
     record.pauseAt(.before_delivery);
     const result = ThreadedSmokeResult{
@@ -1735,7 +1807,8 @@ fn constructProjectionMap(
     decoded: *const DecodedProjection,
     results: *const projection_plan.OwnedResults,
 ) ProjectionConversionError!beam.term {
-    const env = record.private_env;
+    const pool_worker = beam.context.mode == .independent;
+    const env = if (pool_worker) beam.context.env else record.private_env;
     if (projectionCheckpointFails(record)) return error.OutOfMemory;
     var map = beam.term{ .v = e.enif_make_new_map(env) };
 
@@ -1749,7 +1822,8 @@ fn constructProjectionMap(
         const scalar = results.scalar(output_slot) orelse return error.InvalidSlot;
         const value = try scalarTerm(env, scalar);
         var next: e.ErlNifTerm = undefined;
-        if (e.enif_make_map_put(env, map.v, key.v, value.v, &next) == 0)
+        const output_key = if (pool_worker) beam.copy(env, key) else key;
+        if (e.enif_make_map_put(env, map.v, output_key.v, value.v, &next) == 0)
             return error.OutOfMemory;
         map = .{ .v = next };
     }
@@ -2110,7 +2184,7 @@ pub fn threaded_document_open(operation: OperationResource) !DocumentOpenResult 
             documentOpenResult(.cancelled, record, null, null);
     }
 
-    try beam.yield();
+    if (beam.context.mode == .threaded) try beam.yield();
     record.pauseAt(.before_delivery);
     if (record.cancelled.load(.acquire)) {
         _ = control.native.closeAndDestroy();
@@ -2960,10 +3034,13 @@ pub fn resource_on_upgrade(
     else
         null;
 
-    const generation = if (old_runtime) |old| blk: {
-        old.accepting.store(false, .release);
-        break :blk old.generation.load(.acquire) + 1;
-    } else module_generation.load(.acquire) + 1;
+    // A loaded pool can contain instruction pointers and live resource jobs
+    // owned by this exact shared object. In-place upgrade is deliberately
+    // rejected; restart the application so unload joins every native worker
+    // before replacement code is loaded.
+    if (old_runtime != null or pool_ref.load(.acquire) != null) return -1;
+
+    const generation = module_generation.load(.acquire) + 1;
 
     const runtime = Runtime.create(beam.allocator, generation) catch return -1;
     slot.* = @ptrCast(runtime);

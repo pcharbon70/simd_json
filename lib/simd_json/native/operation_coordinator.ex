@@ -6,6 +6,7 @@ defmodule SimdJson.Native.OperationCoordinator do
   alias SimdJson.Native.BuildSmoke
   alias SimdJson.Native.PoolOptions
   alias SimdJson.Native.ThreadedOperation
+  alias SimdJson.Native.Telemetry
 
   @completion_tag {__MODULE__, :threaded_completion}
   @test_hooks Mix.env() == :test
@@ -231,13 +232,18 @@ defmodule SimdJson.Native.OperationCoordinator do
 
   if @test_hooks do
     def handle_call({:release_pause, request_ref}, _from, state) do
-      case Map.fetch(state.requests, request_ref) do
-        {:ok, request} ->
+      request =
+        Enum.find_value(state.requests, fn {_delivery_ref, request} ->
+          if request.operation.request_ref == request_ref, do: request
+        end)
+
+      case request do
+        nil ->
+          {:reply, {:error, :unknown_request}, state}
+
+        request ->
           true = BuildSmoke.operation_release_pause(request.operation.resource)
           {:reply, :ok, state}
-
-        :error ->
-          {:reply, {:error, :unknown_request}, state}
       end
     end
   end
@@ -273,7 +279,8 @@ defmodule SimdJson.Native.OperationCoordinator do
              reject_submission?,
              nil,
              document_target,
-             diagnostics?
+             diagnostics?,
+             Keyword.has_key?(options, :pause)
            )}
 
         {:error, reason} ->
@@ -421,7 +428,9 @@ defmodule SimdJson.Native.OperationCoordinator do
          caller,
          reject_submission?,
          open_failure_for_test,
-         nil
+         nil,
+         false,
+         Map.get(operation, :test_legacy?, false)
        )}
     else
       _ ->
@@ -431,6 +440,16 @@ defmodule SimdJson.Native.OperationCoordinator do
   end
 
   @impl true
+  def handle_info({SimdJson.Native, request_ref, {:ok, native_result}, measurements}, state) do
+    case Map.fetch(state.requests, request_ref) do
+      {:ok, request} ->
+        complete_request(state, request_ref, request, {:ok, native_result}, measurements)
+
+      :error ->
+        {:noreply, state}
+    end
+  end
+
   def handle_info(
         {@completion_tag, kind, request_ref, generation, cursor_generation, batch_sequence,
          worker, result},
@@ -506,10 +525,84 @@ defmodule SimdJson.Native.OperationCoordinator do
          reject_submission? \\ false,
          open_failure_for_test \\ nil,
          document_target \\ nil,
-         diagnostics? \\ false
+         diagnostics? \\ false,
+         legacy? \\ false
+       ) do
+    caller_monitor = Process.monitor(caller)
+
+    if not legacy? and not legacy_request_active?(state) and
+         pool_submission?(kind, payload, reject_submission?, open_failure_for_test) do
+      case ThreadedOperation.submit_to_pool(operation, payload) do
+        {:ok, submission} ->
+          request = %{
+            kind: kind,
+            operation: operation,
+            from: from,
+            caller: caller,
+            caller_monitor: caller_monitor,
+            worker: nil,
+            worker_monitor: nil,
+            pool_request: submission.request,
+            started_at: System.monotonic_time(),
+            document_target: document_target,
+            diagnostics?: diagnostics?,
+            orphaned?: false
+          }
+
+          %{
+            state
+            | requests: Map.put(state.requests, submission.request_ref, request),
+              caller_monitors:
+                Map.put(state.caller_monitors, caller_monitor, submission.request_ref)
+          }
+          |> tap(fn _state ->
+            Telemetry.start(
+              operation_name(kind),
+              operation.input_bytes,
+              BuildSmoke.native_pool_snapshot()
+            )
+          end)
+
+        {:error, reason} ->
+          capacity = BuildSmoke.native_pool_snapshot()
+          Process.demonitor(caller_monitor, [:flush])
+          release_projection_reservation(operation)
+          _ = BuildSmoke.operation_finish(operation.resource, :discarded)
+          GenServer.reply(from, pool_submission_error(reason))
+          if reason == :busy and capacity, do: Telemetry.rejected(operation_name(kind), capacity)
+          state
+      end
+    else
+      start_legacy_request(
+        state,
+        kind,
+        operation,
+        payload,
+        from,
+        caller,
+        caller_monitor,
+        reject_submission?,
+        open_failure_for_test,
+        document_target,
+        diagnostics?
+      )
+    end
+  end
+
+  defp start_legacy_request(
+         state,
+         kind,
+         operation,
+         payload,
+         from,
+         caller,
+         caller_monitor,
+         reject_submission?,
+         open_failure_for_test,
+         document_target,
+         diagnostics?
        ) do
     coordinator = self()
-    caller_monitor = Process.monitor(caller)
 
     {worker, worker_monitor} =
       spawn_monitor(fn ->
@@ -547,6 +640,29 @@ defmodule SimdJson.Native.OperationCoordinator do
         worker_monitors: Map.put(state.worker_monitors, worker_monitor, operation.request_ref)
     }
   end
+
+  defp pool_submission?(kind, payload, false, nil)
+       when kind in [:document_open, :document_cleanup, :projection],
+       do: payload == nil or kind == :document_cleanup
+
+  defp pool_submission?(:stream_setup, {source_kind, _, _, _, _, _}, false, nil)
+       when source_kind in [:binary, :document],
+       do: true
+
+  defp pool_submission?(:stream_batch, {:batch, _, _, _}, false, nil), do: true
+  defp pool_submission?(_kind, _payload, _rejected?, _failure), do: false
+
+  if @test_hooks do
+    defp legacy_request_active?(state) do
+      Enum.any?(state.requests, fn {_reference, request} -> is_pid(request.worker) end)
+    end
+  else
+    defp legacy_request_active?(_state), do: false
+  end
+
+  defp pool_submission_error(:busy), do: {:error, %{reason: :busy}}
+  defp pool_submission_error(:stopped), do: native_error(:admission_rejected)
+  defp pool_submission_error(:native_failure), do: native_error(:pool_submission)
 
   if @test_hooks do
     defp submission_rejected?(state, kind) do
@@ -659,12 +775,22 @@ defmodule SimdJson.Native.OperationCoordinator do
         sequence
       )
     end
+
+    defp default_stream_projection,
+      do: {:simd_json_projection_v1, [{0, :value, 0}], [{0, ["value"]}]}
   end
 
-  defp default_stream_projection,
-    do: {:simd_json_projection_v1, [{0, :value, 0}], [{0, ["value"]}]}
-
   defp complete_request(state, request_ref, request, {:ok, native_result}) do
+    complete_request(state, request_ref, request, {:ok, native_result}, nil)
+  end
+
+  defp complete_request(state, request_ref, request, {:error, error}) do
+    release_projection_reservation(request.operation)
+    maybe_reply(request, {:error, error})
+    {:noreply, remove_request(state, request_ref, request)}
+  end
+
+  defp complete_request(state, request_ref, request, {:ok, native_result}, measurements) do
     correlated? =
       native_result.kind == request.kind and
         native_result.generation == request.operation.generation and
@@ -685,19 +811,29 @@ defmodule SimdJson.Native.OperationCoordinator do
         {:noreply, remove_request(state, request_ref, request)}
 
       true ->
+        conversion_started = System.monotonic_time()
         response = normalize_result(native_result, request.diagnostics?)
+        conversion_duration = System.monotonic_time() - conversion_started
         maybe_reply(request, response)
+        maybe_emit_stop(request, measurements, conversion_duration, response)
         release_projection_reservation(request.operation)
         _ = BuildSmoke.operation_finish(request.operation.resource, :delivered)
         {:noreply, remove_request(state, request_ref, request)}
     end
   end
 
-  defp complete_request(state, request_ref, request, {:error, error}) do
-    release_projection_reservation(request.operation)
-    maybe_reply(request, {:error, error})
-    {:noreply, remove_request(state, request_ref, request)}
+  defp maybe_emit_stop(%{started_at: started_at, kind: kind}, measurements, conversion, response)
+       when is_map(measurements) do
+    Telemetry.stop(operation_name(kind), started_at, measurements, conversion, response)
   end
+
+  defp maybe_emit_stop(_request, _measurements, _conversion, _response), do: :ok
+
+  defp operation_name(:document_open), do: :open
+  defp operation_name(:document_cleanup), do: :close
+  defp operation_name(:projection), do: :select
+  defp operation_name(:stream_setup), do: :stream_setup
+  defp operation_name(:stream_batch), do: :next_batch
 
   defp normalize_result(%{kind: :document_open, status: :ok, document: document}, _diagnostics?) do
     {:ok, document}

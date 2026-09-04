@@ -1,5 +1,9 @@
 # Stream Cursor and Batch Engine
 
+Milestone 4 Phase 5 retains each cursor for its queued or running next-batch
+job. Existing demand reservation still permits exactly one state-advancing
+batch and releases on completion, cancellation, or close.
+
 Current-truth contract for the Milestone 3 private ABI v3 array cursor,
 forward-only target traversal, reusable per-row projection plan, bounded native
 batches, and transactional result ownership.

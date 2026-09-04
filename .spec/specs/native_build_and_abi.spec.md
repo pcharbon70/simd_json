@@ -1,5 +1,9 @@
 # Native Build and ABI
 
+Milestone 4 Phase 5 adds private typed pool submission entries without changing
+the C ABI or release export rule. Unload joins workers, and unsafe in-place NIF
+upgrade is rejected in favor of an application restart.
+
 Milestone 3 Phase 6 requalifies the cumulative ABI v1/v2/v3 package from
 vendored source, including ordinary and sanitizer cursor harnesses, the public
 stream path, offline reproducibility, and exact release symbol/string

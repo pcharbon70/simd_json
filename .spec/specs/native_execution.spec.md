@@ -1,8 +1,11 @@
 # Native Execution
 
-Milestone 4 Phase 4 adds monitored cancellation, correlated fixture delivery,
-and resource serialization but does not route operations away from the
-qualified Zigler threaded bridge.
+Milestone 4 Phase 5 supersedes the provisional production launcher. Open,
+cleanup, select, stream setup, and next-batch execute on fixed native workers;
+ordinary submit NIFs only validate and enqueue owned jobs.
+
+Milestone 4 Phase 4 established monitored cancellation, delivery, and
+serialization prerequisites consumed by the Phase 5 production pool.
 
 Current-truth contract for scheduler isolation, threaded request correlation, cancellation-safe retention, and scheduler responsiveness during Milestone 1.
 

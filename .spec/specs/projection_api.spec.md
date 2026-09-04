@@ -1,7 +1,11 @@
 # Projection API
 
-Milestone 4 Phase 4 does not route projection jobs through the bounded pool and
-preserves this public surface and its errors.
+Milestone 4 Phase 5 preserves BEAM preflight and exact-key results while
+routing accepted projections through bounded native workers. Saturation maps
+to the established redacted `:busy` reason.
+
+Milestone 4 Phase 4 established pool delivery prerequisites; Phase 5 routes
+projection jobs while preserving this public surface and its errors.
 
 Active current-truth contract for the Milestone 2 `SimdJson.select/2` public
 API, projection grammar, scalar result map, and stable projection errors.
