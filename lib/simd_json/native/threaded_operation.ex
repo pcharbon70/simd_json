@@ -62,7 +62,8 @@ defmodule SimdJson.Native.ThreadedOperation do
             | :stream_batch,
           generation: pos_integer(),
           cursor_generation: non_neg_integer(),
-          batch_sequence: non_neg_integer()
+          batch_sequence: non_neg_integer(),
+          input_bytes: non_neg_integer()
         }
 
   @spec admit(binary(), operation()[:kind], pos_integer() | nil) :: operation()
@@ -95,7 +96,8 @@ defmodule SimdJson.Native.ThreadedOperation do
       kind: kind,
       generation: generation,
       cursor_generation: 0,
-      batch_sequence: 0
+      batch_sequence: 0,
+      input_bytes: byte_size(input)
     }
   end
 
@@ -129,7 +131,8 @@ defmodule SimdJson.Native.ThreadedOperation do
            kind: :projection,
            generation: generation,
            cursor_generation: 0,
-           batch_sequence: 0
+           batch_sequence: 0,
+           input_bytes: if(source_kind == :binary, do: byte_size(source), else: 0)
          }}
 
       %{status: status, operation: nil} when is_atom(status) ->

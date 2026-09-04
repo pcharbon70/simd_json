@@ -46,7 +46,7 @@ defmodule SimdJson.Native.PoolOptions do
       queue_capacity: queue_size,
       workers_explicit?: workers_explicit?,
       queue_explicit?: queue_explicit?,
-      executor: :preproduction_threaded
+      executor: :bounded_native_pool
     }
   end
 

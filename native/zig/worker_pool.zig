@@ -106,7 +106,13 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 return if (delivered) .delivered else .discarded;
             }
 
-            fn deliverTerm(self: *RequestControl, env: beam.env, result: beam.term) DeliveryOutcome {
+            fn deliverTerm(
+                self: *RequestControl,
+                env: beam.env,
+                result: beam.term,
+                queue_duration: u64,
+                execution_duration: u64,
+            ) DeliveryOutcome {
                 if (self.cancelled.load(.acquire)) {
                     _ = self.terminal.cmpxchgStrong(
                         @intFromEnum(TerminalState.pending),
@@ -125,10 +131,15 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
 
                 const reply_parts = [_]e.ErlNifTerm{ e.enif_make_atom(env, "ok"), result.v };
                 const reply = e.enif_make_tuple_from_array(env, &reply_parts, reply_parts.len);
+                const measurements = beam.make(.{
+                    .queue_duration = queue_duration,
+                    .execution_duration = execution_duration,
+                }, .{ .env = env });
                 const message_parts = [_]e.ErlNifTerm{
                     e.enif_make_atom(env, "Elixir.SimdJson.Native"),
                     e.enif_make_copy(env, self.request_ref),
                     reply,
+                    measurements.v,
                 };
                 const message = e.enif_make_tuple_from_array(env, &message_parts, message_parts.len);
                 var caller = self.caller;
@@ -690,6 +701,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 }
                 while (runtime.pause_workers and !runtime.stopping) e.enif_cond_wait(runtime.condition, runtime.mutex);
                 e.enif_mutex_unlock(runtime.mutex);
+                const execution_started = e.enif_monotonic_time(e.ERL_NIF_USEC);
                 var checksum: u64 = 0;
                 var native_result: ?beam.term = null;
                 if (!job.?.isCancelled()) switch (job.?.kind) {
@@ -725,8 +737,11 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 var delivery: ?DeliveryOutcome = null;
                 if (job.?.request) |request| {
                     if (cancelled) _ = request.cancel();
+                    const execution_finished = e.enif_monotonic_time(e.ERL_NIF_USEC);
+                    const queue_duration: u64 = @intCast(@max(0, execution_started - job.?.enqueued_at));
+                    const execution_duration: u64 = @intCast(@max(0, execution_finished - execution_started));
                     delivery = if (native_result) |result|
-                        request.deliverTerm(job.?.env.?, result)
+                        request.deliverTerm(job.?.env.?, result, queue_duration, execution_duration)
                     else
                         request.deliver(checksum);
                     cancelled = delivery.? == .cancelled;

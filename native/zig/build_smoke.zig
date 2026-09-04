@@ -3036,10 +3036,13 @@ pub fn resource_on_upgrade(
     else
         null;
 
-    const generation = if (old_runtime) |old| blk: {
-        old.accepting.store(false, .release);
-        break :blk old.generation.load(.acquire) + 1;
-    } else module_generation.load(.acquire) + 1;
+    // A loaded pool can contain instruction pointers and live resource jobs
+    // owned by this exact shared object. In-place upgrade is deliberately
+    // rejected; restart the application so unload joins every native worker
+    // before replacement code is loaded.
+    if (old_runtime != null or pool_ref.load(.acquire) != null) return -1;
+
+    const generation = module_generation.load(.acquire) + 1;
 
     const runtime = Runtime.create(beam.allocator, generation) catch return -1;
     slot.* = @ptrCast(runtime);

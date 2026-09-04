@@ -22,11 +22,11 @@ Back to plan: [README](./README.md)
 
 ## 5.3 Section — Redacted Telemetry and Lifecycle
 
-- [ ] 5.3 Section - Emit bounded queue and job telemetry and make application,
+- [x] 5.3 Section - Emit bounded queue and job telemetry and make application,
   unload, and upgrade shutdown ownership explicit.
-  - [ ] 5.3.1 Task - Publish duration, size, capacity, operation, and outcome
+  - [x] 5.3.1 Task - Publish duration, size, capacity, operation, and outcome
     data without caller identity, references, paths, or JSON content.
-  - [ ] 5.3.2 Task - Stop admission, cancel or drain work, join fixed workers,
+  - [x] 5.3.2 Task - Stop admission, cancel or drain work, join fixed workers,
     and reject unsafe in-place native upgrades.
 
 ## 5.4 Section — Phase 5 Integration and Contract Reconciliation
