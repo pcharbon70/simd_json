@@ -146,6 +146,15 @@ Object keys are binary terms. Duplicate-key behavior must be measured against th
 
 ## Compatibility matrix
 
+The baseline compatibility target is Jason 1.4.5 with binary input and an
+empty option list. Arrays preserve order, object keys remain binaries, the last
+duplicate key wins, and all top-level JSON value types are accepted. Iodata,
+key atomization, structs, custom decoders, decimal modes, and other non-empty
+options are intentionally unsupported in the first release. A byte-order mark,
+trailing non-whitespace data, malformed UTF-8 or surrogate pairs, and
+non-finite floating results are rejected. Integers must remain exact or return
+`:number_out_of_range` without silent float conversion.
+
 Before claiming compatibility, record expected behavior for:
 
 | Area | Questions to settle |
