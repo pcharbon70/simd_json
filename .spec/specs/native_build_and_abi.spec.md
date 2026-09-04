@@ -1,5 +1,8 @@
 # Native Build and ABI
 
+Milestone 5 Phase 1 packages authored decode planning and BEAM preflight inputs
+without changing the native ABI, compiler inputs, or release symbols.
+
 Milestone 4 Phase 5 adds private typed pool submission entries without changing
 the C ABI or release export rule. Unload joins workers, and unsafe in-place NIF
 upgrade is rejected in favor of an application restart.

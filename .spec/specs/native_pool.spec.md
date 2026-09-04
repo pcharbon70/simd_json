@@ -1,5 +1,9 @@
 # Native Worker Pool and Admission
 
+Milestone 5 Phase 1 hardens the existing early-stream-halt qualification to
+await asynchronous pool cleanup before asserting quiescence; runtime behavior
+and capacity are unchanged.
+
 Current-truth contract for Milestone 4 fixed-capacity native execution,
 bounded admission, cancellation, lifecycle, and operational evidence.
 

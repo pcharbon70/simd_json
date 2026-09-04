@@ -37,9 +37,27 @@ defmodule SimdJson.Native.PoolPublicStreamTest do
       )
 
     assert Enum.take(stream, 1) == [%{id: 1}]
+    await_pool_quiescence()
     snapshot = BuildSmoke.native_pool_snapshot()
     assert snapshot.queued_jobs == 0
     assert snapshot.running_jobs == 0
     assert snapshot.retained_bytes == 0
+  end
+
+  defp await_pool_quiescence(attempts \\ 1_000)
+
+  defp await_pool_quiescence(0),
+    do: flunk("native pool did not quiesce after stream halt")
+
+  defp await_pool_quiescence(attempts) do
+    snapshot = BuildSmoke.native_pool_snapshot()
+
+    if snapshot.queued_jobs == 0 and snapshot.running_jobs == 0 and
+         snapshot.retained_bytes == 0 do
+      :ok
+    else
+      Process.sleep(1)
+      await_pool_quiescence(attempts - 1)
+    end
   end
 end

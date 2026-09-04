@@ -2,6 +2,7 @@ defmodule SimdJson.PublicSurfaceTest do
   use ExUnit.Case, async: true
 
   alias SimdJson.Document
+  alias SimdJson.DecodeOptions
   alias SimdJson.Error
   alias SimdJson.Projection
   alias SimdJson.StreamOptions
@@ -110,6 +111,23 @@ defmodule SimdJson.PublicSurfaceTest do
         ] do
       refute Enum.any?(stream_option_functions, fn {name, _arity} -> name == function end)
     end
+  end
+
+  # covers: simd_json.decode_api.binary_input simd_json.decode_api.closed_options
+  test "keeps decode preflight internal and the eager API unpublished" do
+    assert DecodeOptions.__info__(:functions) == [
+             __struct__: 0,
+             __struct__: 1,
+             input: 1,
+             new: 2,
+             snapshot_for_test: 1
+           ]
+
+    refute documented?(DecodeOptions)
+    refute {:decode, 1} in SimdJson.__info__(:functions)
+    refute {:decode, 2} in SimdJson.__info__(:functions)
+    refute {:decode!, 1} in SimdJson.__info__(:functions)
+    refute {:decode!, 2} in SimdJson.__info__(:functions)
   end
 
   # covers: simd_json.document_api.milestone_scope simd_json.document_api.no_future_surface simd_json.native_execution.preproduction_boundary simd_json.projection_api.milestone_scope

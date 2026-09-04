@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 1 Phase - Freeze the safe Jason-compatible decode boundary and implement
+- [x] 1 Phase - Freeze the safe Jason-compatible decode boundary and implement
   its native-free preflight without publishing decode functions.
 
 ## 1.1 Section — Compatibility Contract and Phase Plan
@@ -29,9 +29,9 @@ Back to plan: [README](./README.md)
 
 ## 1.4 Section — Phase 1 Integration and Package Boundaries
 
-- [ ] 1.4 Section - Lock the unpublished decode surface, package the authored
+- [x] 1.4 Section - Lock the unpublished decode surface, package the authored
   contract, and run SpecLed plus regression gates.
-  - [ ] 1.4.1 Task - Prove preflight performs no native admission and decode
+  - [x] 1.4.1 Task - Prove preflight performs no native admission and decode
     functions remain absent.
-  - [ ] 1.4.2 Task - Reconcile package, manifest, qualification fingerprint,
+  - [x] 1.4.2 Task - Reconcile package, manifest, qualification fingerprint,
     formatting, tests, traceability, and spec state.

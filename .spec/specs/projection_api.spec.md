@@ -1,5 +1,8 @@
 # Projection API
 
+Milestone 5 Phase 1 extends only the shared error reason type; projection
+grammar, results, translations, and public functions remain unchanged.
+
 Milestone 4 Phase 5 preserves BEAM preflight and exact-key results while
 routing accepted projections through bounded native workers. Saturation maps
 to the established redacted `:busy` reason.

@@ -1,5 +1,8 @@
 # Streaming API
 
+Milestone 5 Phase 1 reserves shared decode-limit reasons without changing the
+stream option grammar, Enumerable behavior, or runtime translations.
+
 Milestone 4 Phase 5 changes execution ownership only: the same lazy opaque
 Enumerable submits setup and one batch at a time to the bounded native pool.
 Pool controls and telemetry configuration remain private.
