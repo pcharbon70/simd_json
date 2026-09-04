@@ -11,7 +11,7 @@ defmodule SimdJson.Native.CAbiConformanceTest do
 
     assert status == 0, output
     assert output =~ "C ABI conformance passed"
-    assert output =~ "projection plan conformance passed abi=3"
-    assert output =~ "stream cursor conformance passed abi=3"
+    assert output =~ "projection plan conformance passed abi=4"
+    assert output =~ "stream cursor conformance passed abi=4"
   end
 end

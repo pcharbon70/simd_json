@@ -1,5 +1,8 @@
 # Projection API
 
+ABI v4 preserves projection normalization, execution, typed values, and public
+surface while adding separately owned private decode descriptors.
+
 Milestone 5 Phase 1 extends only the shared error reason type; projection
 grammar, results, translations, and public functions remain unchanged.
 

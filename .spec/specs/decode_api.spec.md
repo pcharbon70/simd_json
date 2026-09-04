@@ -22,6 +22,7 @@ surface:
   - docs/milestones/05-compatible-decode-api.md
 decisions:
   - simd_json.safe_decode_compatibility_contract
+  - simd_json.flat_owned_decode_result_abi
 bootstrap:
   reason: Phase 1 establishes contract and preflight only; materialization begins in Phase 2 and public decode functions arrive in Phase 5.
   requirements:
@@ -145,4 +146,3 @@ bootstrap:
     - simd_json.decode_api.compatible_materialization
     - simd_json.decode_api.bounded_failure
 ```
-

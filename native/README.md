@@ -179,6 +179,13 @@ and adds fixed target, cursor-config, cancellation-probe, row, batch-storage,
 always receives caller-owned row and slot storage; no container crosses the C
 boundary.
 
+Milestone 5 Phase 2 advances the cumulative private surface to ABI v4. Opaque
+decode materializer and result owners expose only a flat immutable graph view:
+checked node/edge indices and copied byte ranges, never C++ containers or input
+pointers. The materializer reserves an explicit bounded frame vector and
+publishes no partial graph; Phase 3 adds JSON value population to this frozen
+ownership boundary.
+
 [`src/simd_json_abi.cpp`](./src/simd_json_abi.cpp) validates every object,
 array, and scalar through the official On-Demand API and rewinds a successful
 document before publishing it. [`src/simd_json_projection.cpp`](./src/simd_json_projection.cpp)

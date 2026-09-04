@@ -1,5 +1,8 @@
 # Streaming API
 
+The public Enumerable and stream option contracts remain unchanged under ABI
+v4 and expose none of the private decode ownership surface.
+
 Milestone 5 Phase 1 reserves shared decode-limit reasons without changing the
 stream option grammar, Enumerable behavior, or runtime translations.
 

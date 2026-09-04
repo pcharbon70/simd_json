@@ -88,6 +88,7 @@ required_package_files=(
   native/src/simd_json_native_internal.hpp
   native/src/simd_json_projection.cpp
   native/src/simd_json_stream_cursor.cpp
+  native/src/simd_json_decode_materializer.cpp
   native/symbols/c_abi.allowlist
   native/symbols/c_abi.version
   native/symbols/nif.allowlist
@@ -97,6 +98,8 @@ required_package_files=(
   native/test/projection_plan_test.zig
   native/test/stream_cursor_conformance.c
   native/test/stream_cursor_test.zig
+  native/test/decode_materializer_conformance.c
+  native/test/decode_materializer_test.zig
   native/vendor/simdjson/simdjson.cpp
   native/vendor/simdjson/simdjson.h
   native/vendor/simdjson/README.md
@@ -107,6 +110,7 @@ required_package_files=(
   native/zig/document_resource.zig
   native/zig/projection_plan.zig
   native/zig/stream_cursor.zig
+  native/zig/decode_materializer.zig
 )
 
 for relative_path in "${required_package_files[@]}"; do

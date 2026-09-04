@@ -1,5 +1,8 @@
 # Stream Execution and Lifecycle
 
+Stream setup and batch execution retain ABI v3 semantics under cumulative ABI
+v4; decode owners neither share nor consume stream cursor state.
+
 Milestone 5 Phase 1 introduces no cursor, demand, admission, or cleanup change;
 the decode preflight performs no native operation.
 

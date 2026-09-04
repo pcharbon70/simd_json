@@ -457,7 +457,7 @@ pub fn Implementation(comptime c: type, comptime projection: type) type {
         } else struct {};
 
         comptime {
-            if (c.SIMD_JSON_ABI_VERSION != 3)
+            if (c.SIMD_JSON_ABI_VERSION != 4)
                 @compileError("stream cursor ownership requires private ABI version 3");
             if (c.SIMD_JSON_ARRAY_INDEX_UNAVAILABLE != std.math.maxInt(u64) or
                 c.SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE != std.math.maxInt(u32))

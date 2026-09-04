@@ -71,7 +71,8 @@ defmodule SimdJson.Native.BuildSmoke do
         worker_pool: {"./native/zig/worker_pool.zig", []},
         document_resource: {"./native/zig/document_resource.zig", []},
         projection_plan: {"./native/zig/projection_plan.zig", []},
-        stream_cursor: {"./native/zig/stream_cursor.zig", []}
+        stream_cursor: {"./native/zig/stream_cursor.zig", []},
+        decode_materializer: {"./native/zig/decode_materializer.zig", []}
       ],
       resources: [
         :DocumentResource,
@@ -159,6 +160,7 @@ defmodule SimdJson.Native.BuildSmoke do
           {"../../../native/src/simd_json_abi.cpp", @cxx_flags},
           {"../../../native/src/simd_json_projection.cpp", @cxx_flags},
           {"../../../native/src/simd_json_stream_cursor.cpp", @cxx_flags},
+          {"../../../native/src/simd_json_decode_materializer.cpp", @cxx_flags},
           {"../../../native/vendor/simdjson/simdjson.cpp", @cxx_flags}
         ],
         link_lib: @sanitizer_libraries,
@@ -174,7 +176,8 @@ defmodule SimdJson.Native.BuildSmoke do
         worker_pool: {"./native/zig/worker_pool.zig", []},
         document_resource: {"./native/zig/document_resource.zig", []},
         projection_plan: {"./native/zig/projection_plan.zig", []},
-        stream_cursor: {"./native/zig/stream_cursor.zig", []}
+        stream_cursor: {"./native/zig/stream_cursor.zig", []},
+        decode_materializer: {"./native/zig/decode_materializer.zig", []}
       ],
       resources: [
         :DocumentResource,
@@ -232,6 +235,7 @@ defmodule SimdJson.Native.BuildSmoke do
           {"../../../native/src/simd_json_abi.cpp", @cxx_flags},
           {"../../../native/src/simd_json_projection.cpp", @cxx_flags},
           {"../../../native/src/simd_json_stream_cursor.cpp", @cxx_flags},
+          {"../../../native/src/simd_json_decode_materializer.cpp", @cxx_flags},
           {"../../../native/vendor/simdjson/simdjson.cpp", @cxx_flags}
         ],
         link_lib: @sanitizer_libraries,
