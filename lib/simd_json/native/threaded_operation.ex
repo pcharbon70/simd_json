@@ -241,7 +241,12 @@ defmodule SimdJson.Native.ThreadedOperation do
   @spec open(binary(), keyword()) :: {:ok, reference()} | {:error, map()}
   def open(input, options \\ []) when is_binary(input) and is_list(options) do
     generation = BuildSmoke.execution_generation()
-    operation = admit(input, :document_open, generation)
+
+    operation =
+      input
+      |> admit(:document_open, generation)
+      |> Map.put(:test_legacy?, Keyword.has_key?(options, :pause))
+
     configure_pause(operation, options)
     OperationCoordinator.open(operation)
   end

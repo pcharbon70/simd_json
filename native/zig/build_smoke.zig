@@ -1182,7 +1182,7 @@ pub fn pool_encode_projection_result(env: beam.env, result: ProjectionResult) be
         .native_code = result.native_code,
         .byte_offset = result.byte_offset,
         .output_slot = result.output_slot,
-        .result = if (result.result) |value| beam.copy(env, value.__payload.term) else null,
+        .result = if (result.result) |value| value.__payload.term else null,
         .ready_for_delivery = result.ready_for_delivery,
         .compilation_nanoseconds = result.compilation_nanoseconds,
         .traversal_nanoseconds = result.traversal_nanoseconds,
@@ -1606,10 +1606,6 @@ pub fn operation_metadata(operation: OperationResource) beam.term {
     }, .{});
 }
 
-pub fn operation_pool_env(operation: OperationResource) beam.env {
-    return operation.unpack().private_env;
-}
-
 pub fn operation_cancel(operation: OperationResource) bool {
     const record = operation.unpack();
     record.cancel();
@@ -1811,7 +1807,8 @@ fn constructProjectionMap(
     decoded: *const DecodedProjection,
     results: *const projection_plan.OwnedResults,
 ) ProjectionConversionError!beam.term {
-    const env = record.private_env;
+    const pool_worker = beam.context.mode == .independent;
+    const env = if (pool_worker) beam.context.env else record.private_env;
     if (projectionCheckpointFails(record)) return error.OutOfMemory;
     var map = beam.term{ .v = e.enif_make_new_map(env) };
 
@@ -1825,7 +1822,8 @@ fn constructProjectionMap(
         const scalar = results.scalar(output_slot) orelse return error.InvalidSlot;
         const value = try scalarTerm(env, scalar);
         var next: e.ErlNifTerm = undefined;
-        if (e.enif_make_map_put(env, map.v, key.v, value.v, &next) == 0)
+        const output_key = if (pool_worker) beam.copy(env, key) else key;
+        if (e.enif_make_map_put(env, map.v, output_key.v, value.v, &next) == 0)
             return error.OutOfMemory;
         map = .{ .v = next };
     }

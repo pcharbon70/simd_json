@@ -1,7 +1,10 @@
 # Document Resource
 
-Milestone 4 Phase 4 serializes only pool fixture resources, preserving existing
-document ownership, serialization, and destruction.
+Milestone 4 Phase 5 retains documents in queued and running pool jobs. Cleanup
+stops later admission and native state outlives the final retained job.
+
+Milestone 4 Phase 4 established the serialization interlock now used by Phase
+5 production jobs without weakening document ownership or destruction.
 
 Current-truth contract for the opaque `SimdJson.Document` resource, padded input memory, process ownership, and exactly-once native cleanup required by Milestone 1.
 

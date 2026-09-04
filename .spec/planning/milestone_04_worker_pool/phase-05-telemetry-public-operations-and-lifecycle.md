@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 5 Phase - Route the public operation families through the bounded native
+- [x] 5 Phase - Route the public operation families through the bounded native
   pool, emit redacted operational telemetry, and own the pool lifecycle.
 
 ## 5.1 Section — Public Open and Select Routing
@@ -31,8 +31,8 @@ Back to plan: [README](./README.md)
 
 ## 5.4 Section — Phase 5 Integration and Contract Reconciliation
 
-- [ ] 5.4 Section - Prove production routing, telemetry redaction, lifecycle,
+- [x] 5.4 Section - Prove production routing, telemetry redaction, lifecycle,
   release surface, and all earlier milestone regressions.
-  - [ ] 5.4.1 Task - Add focused public-operation, telemetry, and shutdown tests.
-  - [ ] 5.4.2 Task - Reconcile current truth and run formatting, native, package,
+  - [x] 5.4.1 Task - Add focused public-operation, telemetry, and shutdown tests.
+  - [x] 5.4.2 Task - Reconcile current truth and run formatting, native, package,
     regression, and spec-led gates.

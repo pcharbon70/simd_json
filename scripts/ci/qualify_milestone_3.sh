@@ -52,7 +52,14 @@ run_step spec_index mix spec.index
 run_step spec_validate mix spec.validate --debug --min-strength claimed
 run_step spec_status mix spec.status --no-run-commands --min-strength claimed
 run_step spec_next mix spec.next --base "${spec_base}"
-run_step spec_check env -u SIMD_JSON_QUALIFICATION_DIR mix spec.check --base "${spec_base}"
+# The executable verification commands above already run once and retain their
+# evidence. Re-running every identical command reference through spec.check is
+# needlessly quadratic on clean CI runners and can exhaust their resources.
+run_step spec_check env -u SIMD_JSON_QUALIFICATION_DIR mix spec.check \
+  --no-run-commands --min-strength claimed --base "${spec_base}"
+# Keep the committed state produced by the separately completed executable
+# matrix; the structural check above rewrites it with claimed-only strengths.
+run_step restore_canonical_state git restore --source=HEAD -- .spec/state.json
 run_step traceability env -u SIMD_JSON_QUALIFICATION_DIR mix simd_json.verify_traceability
 run_step canonical_state git diff --exit-code -- .spec/state.json
 

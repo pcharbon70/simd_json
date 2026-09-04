@@ -428,7 +428,9 @@ defmodule SimdJson.Native.OperationCoordinator do
          caller,
          reject_submission?,
          open_failure_for_test,
-         nil
+         nil,
+         false,
+         Map.get(operation, :test_legacy?, false)
        )}
     else
       _ ->
@@ -528,7 +530,8 @@ defmodule SimdJson.Native.OperationCoordinator do
        ) do
     caller_monitor = Process.monitor(caller)
 
-    if not legacy? and pool_submission?(kind, payload, reject_submission?, open_failure_for_test) do
+    if not legacy? and not legacy_request_active?(state) and
+         pool_submission?(kind, payload, reject_submission?, open_failure_for_test) do
       case ThreadedOperation.submit_to_pool(operation, payload) do
         {:ok, submission} ->
           request = %{
@@ -649,6 +652,14 @@ defmodule SimdJson.Native.OperationCoordinator do
   defp pool_submission?(:stream_batch, {:batch, _, _, _}, false, nil), do: true
   defp pool_submission?(_kind, _payload, _rejected?, _failure), do: false
 
+  if @test_hooks do
+    defp legacy_request_active?(state) do
+      Enum.any?(state.requests, fn {_reference, request} -> is_pid(request.worker) end)
+    end
+  else
+    defp legacy_request_active?(_state), do: false
+  end
+
   defp pool_submission_error(:busy), do: {:error, %{reason: :busy}}
   defp pool_submission_error(:stopped), do: native_error(:admission_rejected)
   defp pool_submission_error(:native_failure), do: native_error(:pool_submission)
@@ -764,10 +775,10 @@ defmodule SimdJson.Native.OperationCoordinator do
         sequence
       )
     end
-  end
 
-  defp default_stream_projection,
-    do: {:simd_json_projection_v1, [{0, :value, 0}], [{0, ["value"]}]}
+    defp default_stream_projection,
+      do: {:simd_json_projection_v1, [{0, :value, 0}], [{0, ["value"]}]}
+  end
 
   defp complete_request(state, request_ref, request, {:ok, native_result}) do
     complete_request(state, request_ref, request, {:ok, native_result}, nil)

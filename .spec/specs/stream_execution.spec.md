@@ -1,7 +1,11 @@
 # Stream Execution and Lifecycle
 
-Milestone 4 Phase 4 workers accept no stream jobs, preserving cursor demand,
-batch ownership, cancellation, and threaded execution semantics.
+Milestone 4 Phase 5 routes lazy setup and every demanded batch through the
+bounded native pool. Early halt closes without prefetch and leaves no queued
+or running stream job.
+
+Milestone 4 Phase 4 proved the pool primitives that Phase 5 now applies to
+stream jobs while preserving cursor demand, batch ownership, and cancellation.
 
 Current-truth contract for Milestone 3 lazy cursor setup, correlated
 threaded batches, per-stream demand backpressure, document consumption,

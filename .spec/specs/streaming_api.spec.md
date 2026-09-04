@@ -1,5 +1,9 @@
 # Streaming API
 
+Milestone 4 Phase 5 changes execution ownership only: the same lazy opaque
+Enumerable submits setup and one batch at a time to the bounded native pool.
+Pool controls and telemetry configuration remain private.
+
 Current-truth contract for the Milestone 3 `SimdJson.stream/2` lazy
 Enumerable, closed option grammar, projected row values, and indexed runtime
 errors.
