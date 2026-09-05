@@ -1,5 +1,9 @@
 # SimdJson Package
 
+Milestone 6 Phase 2 Section 2.1 packages deterministic CI failure seeds,
+failure provenance, and executable release-reliability contracts without
+changing the public API or Hex archive identity.
+
 Milestone 6 Phase 1 targets public Hex package `simd_json` version `0.1.0`
 with matching `:simd_json` application and `SimdJson.*` module ownership.
 Section 1.2 licenses wrapper code under MIT and packages separate, unmodified

@@ -124,6 +124,29 @@ bootstrap:
   then:
     - Matching public evidence activates the release subject
     - A material defect follows the pre-approved patch, revert, or retirement runbook
+
+- id: simd_json.release.ci_cache_equivalence
+  covers:
+    - simd_json.release.green_ci
+  given:
+    - One exact revision on the qualified GitHub runner
+  when:
+    - The required workflow runs once with empty dependency and native caches
+    - The same workflow runs again with restored caches
+  then:
+    - Both runs bootstrap the formatter and native toolchain in the same explicit Mix environment
+    - Both runs pass and report the same qualification input identity
+
+- id: simd_json.release.ci_native_reliability
+  covers:
+    - simd_json.release.green_ci
+  given:
+    - The recorded sanitizer and lifecycle failure seeds
+  when:
+    - Isolated sanitizer, repeated native, and full-suite regression runs execute
+  then:
+    - Every run exits normally without a VM abort
+    - Every run starts and finishes with quiescent native lifecycle gauges
 ```
 
 ## Verification

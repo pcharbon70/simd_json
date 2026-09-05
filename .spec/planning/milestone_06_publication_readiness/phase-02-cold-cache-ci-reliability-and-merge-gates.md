@@ -14,16 +14,16 @@ release-readiness waiver.
 
 ## 2.1 Section — Reproduce and Specify CI Failures
 
-- [ ] 2.1 Section - Turn the current formatter and native-runtime symptoms into deterministic tests.
-  - [ ] 2.1.1 Task - Reproduce without developer caches.
-    - [ ] 2.1.1.1 Subtask - Run the aggregate qualifier in an isolated build directory after dependency retrieval.
-    - [ ] 2.1.1.2 Subtask - Demonstrate that `mix format` cannot resolve `Zig.Formatter` after the preceding clean native steps.
-    - [ ] 2.1.1.3 Subtask - Record Mix environment, code paths, cache key, and command order without leaking runner state.
-    - [ ] 2.1.1.4 Subtask - Reproduce the seed `215441` lifecycle abort under tracing and isolate the responsible test-order interaction.
-  - [ ] 2.1.2 Task - Add a regression contract.
-    - [ ] 2.1.2.1 Subtask - Require formatter-plugin compilation before every strict formatting gate.
-    - [ ] 2.1.2.2 Subtask - Require success with both an empty cache and a restored cache.
-    - [ ] 2.1.2.3 Subtask - Require repeated randomized full-suite runs to complete without a native VM abort or leaked lifecycle state.
+- [x] 2.1 Section - Turn the current formatter and native-runtime symptoms into deterministic tests.
+  - [x] 2.1.1 Task - Reproduce without developer caches.
+    - [x] 2.1.1.1 Subtask - Run the aggregate qualifier in an isolated build directory after dependency retrieval.
+    - [x] 2.1.1.2 Subtask - Demonstrate that `mix format` cannot resolve `Zig.Formatter` after the preceding clean native steps.
+    - [x] 2.1.1.3 Subtask - Record Mix environment, code paths, cache key, and command order without leaking runner state.
+    - [x] 2.1.1.4 Subtask - Reproduce seeds `215441`, `935088`, and `661703`, and isolate the sanitizer and stale-baseline interactions.
+  - [x] 2.1.2 Task - Add a regression contract.
+    - [x] 2.1.2.1 Subtask - Require formatter-plugin compilation before every strict formatting gate.
+    - [x] 2.1.2.2 Subtask - Require success with both an empty cache and a restored cache.
+    - [x] 2.1.2.3 Subtask - Require repeated randomized full-suite runs to complete without a native VM abort or leaked lifecycle state.
 
 ## 2.2 Section — Deterministic Tool Bootstrap
 
