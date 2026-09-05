@@ -69,7 +69,10 @@ required_package_files=(
   docs/milestones/02-projection-api-operations.md
   docs/milestones/02-projection-api-acceptance.md
   docs/milestones/03-batched-array-streaming.md
+  docs/milestones/05-compatible-decode-api.md
+  docs/milestones/05-compatible-decode-api-acceptance.md
   lib/simd_json.ex
+  lib/simd_json/decode_options.ex
   lib/simd_json/document.ex
   lib/simd_json/error.ex
   lib/simd_json/projection.ex

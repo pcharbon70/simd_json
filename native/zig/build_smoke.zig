@@ -1840,12 +1840,9 @@ fn constructDecodeTerm(
         index -= 1;
         const node = graph.nodes[index];
         terms[index] = switch (node.tag) {
-            c.SIMD_JSON_DECODE_NODE_SIGNED_INTEGER =>
-            beam.make(node.value.signed_integer, .{ .env = env }),
-            c.SIMD_JSON_DECODE_NODE_UNSIGNED_INTEGER =>
-            beam.make(node.value.unsigned_integer, .{ .env = env }),
-            c.SIMD_JSON_DECODE_NODE_DOUBLE =>
-            beam.make(node.value.floating_point, .{ .env = env }),
+            c.SIMD_JSON_DECODE_NODE_SIGNED_INTEGER => beam.make(node.value.signed_integer, .{ .env = env }),
+            c.SIMD_JSON_DECODE_NODE_UNSIGNED_INTEGER => beam.make(node.value.unsigned_integer, .{ .env = env }),
+            c.SIMD_JSON_DECODE_NODE_DOUBLE => beam.make(node.value.floating_point, .{ .env = env }),
             c.SIMD_JSON_DECODE_NODE_TRUE => beam.make(true, .{ .env = env }),
             c.SIMD_JSON_DECODE_NODE_FALSE => beam.make(false, .{ .env = env }),
             c.SIMD_JSON_DECODE_NODE_NULL => beam.make(null, .{ .env = env }),

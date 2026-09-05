@@ -1,6 +1,6 @@
 # Milestone 5 — Jason-Compatible Decode API
 
-[Back to the architecture overview](../../.spec/research/simdjson_beam_nif_architecture.md#proposed-implementation-milestones)
+[Back to the architecture overview](https://github.com/pcharbon70/simd_json/blob/main/.spec/research/simdjson_beam_nif_architecture.md#proposed-implementation-milestones)
 
 ## Outcome
 

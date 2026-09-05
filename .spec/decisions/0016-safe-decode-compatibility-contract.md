@@ -42,3 +42,9 @@ validated before admission.
 
 Compatibility is measurable and safe rather than universal. Future option or
 iodata support requires a separate decision, public contract, and evidence.
+
+Phase 6 accepts this contract on the qualified Ubuntu 24.04 x86-64 target. Its
+differential corpus records Jason's first-value duplicate-key behavior against
+the accepted last-value SimdJson behavior, and the aggregate qualifier binds
+compatibility, resource, scheduler, sanitizer, package, and benchmark evidence
+to the source revision.

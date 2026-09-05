@@ -245,6 +245,29 @@ defmodule SimdJson.PublicSurfaceTest do
     assert root_doc =~ "public compiled plan"
   end
 
+  # covers: simd_json.package.documentation_layout simd_json.decode_api.binary_input simd_json.decode_api.closed_options simd_json.decode_api.complete_values simd_json.decode_api.binary_keys simd_json.decode_api.exact_numbers simd_json.decode_api.iterative_limits simd_json.decode_api.pool_execution simd_json.decode_api.shared_errors
+  test "publishes the accepted decode contract and qualification boundary" do
+    extras = Mix.Project.config() |> Keyword.fetch!(:docs) |> Keyword.fetch!(:extras)
+
+    assert "docs/milestones/05-compatible-decode-api.md" in extras
+    assert "docs/milestones/05-compatible-decode-api-acceptance.md" in extras
+
+    acceptance = File.read!("docs/milestones/05-compatible-decode-api-acceptance.md")
+    decode_spec = File.read!(".spec/specs/decode_api.spec.md")
+    workflow = File.read!(".github/workflows/ci.yml")
+
+    assert acceptance =~ "Jason 1.4.5"
+    assert acceptance =~ "last value"
+    assert acceptance =~ "bounded worker pool"
+    assert acceptance =~ "qualify_milestone_5.sh"
+    assert decode_spec =~ "status: active"
+    refute decode_spec =~ "bootstrap:"
+    assert workflow =~ "bash scripts/ci/qualify_milestone_5.sh"
+
+    plans = Path.wildcard(".spec/planning/milestone_05_compatible_decode/phase-*.md")
+    refute Enum.any?(plans, &(File.read!(&1) =~ "- [ ]"))
+  end
+
   defp documented?(module) do
     case Code.fetch_docs(module) do
       {:docs_v1, _, _, _, %{} = module_doc, _, _} -> map_size(module_doc) > 0

@@ -1,5 +1,8 @@
 # Streaming API
 
+Milestone 5 Phase 6 activates eager decode without changing the independently
+active lazy streaming contract or its preference for partial large-data work.
+
 Milestone 5 Phase 5 publishes eager decode as a separate complete-value API.
 The lazy owner-bound stream surface and its bounded options remain unchanged.
 

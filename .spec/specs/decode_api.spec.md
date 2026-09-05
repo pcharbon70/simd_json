@@ -15,8 +15,8 @@ the contract, preflight, and native graph; public functions arrive in Phase 5.
 ```spec-meta
 id: simd_json.decode_api
 kind: feature
-status: planned
-summary: Milestone 5 will provide binary-only eager decode through the bounded native pool with a documented safe Jason compatibility subset.
+status: active
+summary: Milestone 5 provides binary-only eager decode through the bounded native pool with a documented safe Jason compatibility subset.
 surface:
   - lib/simd_json/decode_options.ex
   - lib/simd_json/error.ex
@@ -25,17 +25,6 @@ surface:
 decisions:
   - simd_json.safe_decode_compatibility_contract
   - simd_json.flat_owned_decode_result_abi
-bootstrap:
-  reason: Phase 5 implements the public surface; Phase 6 differential qualification and milestone activation remain pending.
-  requirements:
-    - simd_json.decode_api.binary_input
-    - simd_json.decode_api.closed_options
-    - simd_json.decode_api.complete_values
-    - simd_json.decode_api.binary_keys
-    - simd_json.decode_api.exact_numbers
-    - simd_json.decode_api.iterative_limits
-    - simd_json.decode_api.pool_execution
-    - simd_json.decode_api.shared_errors
 ```
 
 ## Requirements
@@ -54,7 +43,7 @@ bootstrap:
 - id: simd_json.decode_api.complete_values
   statement: Decode shall materialize every JSON value type with maps, lists, copied binaries, exact numeric terms, booleans, and nil according to the pinned compatibility matrix.
   priority: must
-  stability: evolving
+  stability: stable
 
 - id: simd_json.decode_api.binary_keys
   statement: Object keys shall be copied binaries, arbitrary input shall never create atoms, and the last duplicate key shall win.
@@ -64,12 +53,12 @@ bootstrap:
 - id: simd_json.decode_api.exact_numbers
   statement: Integers shall remain exact or return number_out_of_range without float rounding, and non-finite floating results shall fail.
   priority: must
-  stability: evolving
+  stability: stable
 
 - id: simd_json.decode_api.iterative_limits
   statement: Materialization shall use a bounded explicit stack and stable depth, container, string, input, and output limit failures.
   priority: must
-  stability: evolving
+  stability: stable
 
 - id: simd_json.decode_api.pool_execution
   statement: Decode shall execute through the Milestone 4 bounded pool with cancellation, busy rejection, redacted telemetry, and exactly-once cleanup.
@@ -137,7 +126,7 @@ bootstrap:
 
 - kind: command
   target: bash scripts/ci/qualify_decode.sh
-  execute: false
+  execute: true
   covers:
     - simd_json.decode_api.complete_values
     - simd_json.decode_api.binary_keys

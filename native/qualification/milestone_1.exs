@@ -1,13 +1,13 @@
 # This historically named record binds cumulative Milestone 1, Milestone 2,
-# and the implemented Milestone 3 and Milestone 4 phases
+# and the implemented Milestone 3, Milestone 4, and Milestone 5 phases
 # qualification to every ABI-, runtime-, test-, benchmark-, and
 # evidence-relevant input. It is intentionally outside the fingerprint so the
 # expected digest can be updated after (and only after) the matrix passes.
 # covers: simd_json.native_build_and_abi.pinned_toolchain simd_json.native_build_and_abi.target_qualification simd_json.native_build_and_abi.dependency_upgrade_gate
 [
   schema_version: 1,
-  qualified_on: ~D[2026-09-04],
-  input_sha256: "b6c4dee4d62320cbe239f8e3b1cfb8989b5daa7e3d39f709da9d1f206a0af2cc",
+  qualified_on: ~D[2026-09-05],
+  input_sha256: "597b130f469d321a231ee5a50cc6e033c1142976334491f868038316861aa9c8",
   randomized_seed: 260_831_006,
   supported_targets: [
     [
@@ -47,6 +47,9 @@
     "bash scripts/ci/qualify_stream_runtime.sh",
     "bash scripts/ci/qualify_stream_benchmark.sh",
     "bash scripts/ci/qualify_stream_execution.sh",
-    "bash scripts/ci/qualify_milestone_3.sh"
+    "bash scripts/ci/qualify_milestone_3.sh",
+    "bash scripts/ci/qualify_milestone_4.sh",
+    "bash scripts/ci/qualify_decode.sh",
+    "bash scripts/ci/qualify_milestone_5.sh"
   ]
 ]

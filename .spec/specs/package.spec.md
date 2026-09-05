@@ -1,5 +1,9 @@
 # SimdJson Package
 
+Milestone 5 Phase 6 packages differential, benchmark, scheduler, sanitizer,
+and aggregate qualification gates; publishes the decode acceptance record;
+and activates the completed compatibility contract.
+
 Milestone 5 Phase 4 packages private graph-to-BEAM conversion, typed decode
 pool routing, lifecycle regressions, and updated qualification evidence while
 still exporting no public `decode` function.
@@ -95,7 +99,7 @@ is added to package documentation in this phase.
 id: simd_json.package
 kind: package
 status: active
-summary: Active native foundation and projection library with a public pre-production Milestone 3 lazy streaming surface pending Phase 6 qualification.
+summary: Active native foundation, projection, streaming, bounded-pool, and Jason-compatible eager decode library on the qualified target.
 surface:
   - .tool-versions
   - README.md

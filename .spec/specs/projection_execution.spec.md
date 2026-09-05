@@ -1,5 +1,8 @@
 # Projection Execution and Lifecycle
 
+Milestone 5 Phase 6 includes projection execution in cumulative regression and
+sanitizer qualification while accepting the separate decode operation.
+
 Milestone 5 Phase 4 shares fixed-worker dispatch and cancellation accounting
 with decode while leaving projection reservations and conversion unchanged.
 

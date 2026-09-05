@@ -306,9 +306,10 @@ Milestone 4 is complete when workers and queued jobs are always bounded, saturat
 
 ## Milestone 5 — Jason-Compatible Decode API
 
-[Detailed implementation reference](05-compatible-decode-api.md)
+[Detailed implementation reference](05-compatible-decode-api.md) ·
+[Acceptance record](05-compatible-decode-api-acceptance.md)
 
-**Status:** Planned; Phase 1 contract and native-free preflight complete.
+**Status:** Accepted on the qualified Ubuntu 24.04 x86-64 target.
 
 ### Goal
 

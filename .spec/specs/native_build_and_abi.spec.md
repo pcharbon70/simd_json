@@ -1,5 +1,8 @@
 # Native Build and ABI
 
+Milestone 5 Phase 6 binds ABI v4 package, symbol, C/Zig, sanitizer, and release
+evidence to the accepted qualification fingerprint.
+
 Milestone 5 Phase 2 advances the cumulative private contract to ABI v4 with
 five versioned decode ownership symbols while preserving ABI v1-v3 layouts.
 Phase 3 populates the frozen layouts without adding or changing exported

@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 6 Phase - Qualify the safe decode compatibility contract and activate
+- [x] 6 Phase - Qualify the safe decode compatibility contract and activate
   Milestone 5 on the supported target.
 
 ## 6.1 Section — Differential Compatibility Corpus
@@ -30,9 +30,9 @@ Back to plan: [README](./README.md)
 
 ## 6.4 Section — Acceptance and Spec Activation
 
-- [ ] 6.4 Section - Publish accepted compatibility and operational guidance,
+- [x] 6.4 Section - Publish accepted compatibility and operational guidance,
   activate the decode subject, and reconcile all current truth.
-  - [ ] 6.4.1 Task - Document supported behavior, known differences, sizing,
+  - [x] 6.4.1 Task - Document supported behavior, known differences, sizing,
     saturation, telemetry, and eager-allocation tradeoffs.
-  - [ ] 6.4.2 Task - Close every Milestone 5 checkbox and pass formatting,
+  - [x] 6.4.2 Task - Close every Milestone 5 checkbox and pass formatting,
     docs, release, traceability, qualification, and SpecLed gates.

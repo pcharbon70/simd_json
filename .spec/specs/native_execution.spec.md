@@ -1,5 +1,8 @@
 # Native Execution
 
+Milestone 5 Phase 6 qualifies concurrent decode scheduler responsiveness,
+cancellation cleanup, and native gauges through the aggregate release gate.
+
 Milestone 5 Phase 4 adds decode as a typed bounded-pool job with monitored
 cancellation and private-environment delivery. No synchronous or dirty-NIF
 fallback exists, and the public decode API remains deferred to Phase 5.

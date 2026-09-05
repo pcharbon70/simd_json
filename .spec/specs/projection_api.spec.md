@@ -1,5 +1,8 @@
 # Projection API
 
+Milestone 5 Phase 6 activates decode while retaining the independently active
+projection surface and its cumulative qualification coverage unchanged.
+
 Milestone 5 Phase 4 adds a separate decode pool-job discriminator while
 preserving projection admission, normalization, results, and public behavior.
 
