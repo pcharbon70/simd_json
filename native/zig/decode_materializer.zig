@@ -163,9 +163,16 @@ pub fn Implementation(comptime c: type) type {
             }
 
             pub fn execute(self: *OwnedMaterializer) Error!OwnedResult {
+                return self.executeCancellable(null);
+            }
+
+            pub fn executeCancellable(
+                self: *OwnedMaterializer,
+                cancellation: ?*const c.simd_json_cancellation_probe,
+            ) Error!OwnedResult {
                 const handle = self.handle orelse return error.InvalidArgument;
                 var result: ?*c.simd_json_decode_result = null;
-                const status = c.simd_json_decode_materializer_execute(handle, null, &result);
+                const status = c.simd_json_decode_materializer_execute(handle, cancellation, &result);
                 if (status.code != c.SIMD_JSON_STATUS_OK or result == null) {
                     if (result) |unexpected| c.simd_json_decode_result_destroy(unexpected);
                     return statusError(status.code);

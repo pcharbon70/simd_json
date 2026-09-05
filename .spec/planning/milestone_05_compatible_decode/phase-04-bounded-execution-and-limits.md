@@ -25,11 +25,11 @@ Back to plan: [README](./README.md)
 
 ## 4.3 Section — Typed Pool Job and Telemetry
 
-- [ ] 4.3 Section - Add decode as an owned typed job in the fixed worker pool
+- [x] 4.3 Section - Add decode as an owned typed job in the fixed worker pool
   with FIFO admission, busy rejection, caller monitoring, and cancellation.
-  - [ ] 4.3.1 Task - Route private decode submission through the existing pool
+  - [x] 4.3.1 Task - Route private decode submission through the existing pool
     with no synchronous or dirty-NIF fallback.
-  - [ ] 4.3.2 Task - Emit redacted decode queue/execution/outcome telemetry and
+  - [x] 4.3.2 Task - Emit redacted decode queue/execution/outcome telemetry and
     return all lifecycle gauges to baseline.
 
 ## 4.4 Section — Phase 4 Integration and Qualification

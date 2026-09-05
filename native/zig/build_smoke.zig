@@ -135,6 +135,7 @@ pub const OperationKind = enum(u8) {
     document_cleanup,
     threaded_smoke,
     projection,
+    decode,
     stream_setup,
     stream_batch,
 };
@@ -442,6 +443,11 @@ pub fn native_pool_submit_cleanup(
 pub fn native_pool_submit_projection(operation: OperationResource) !worker_pool.MonitoredSubmission {
     const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
     return pool.submitOperation(.projection, operation, null, null, null, null, 0, 0, 0);
+}
+
+pub fn native_pool_submit_decode(operation: OperationResource) !worker_pool.MonitoredSubmission {
+    const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
+    return pool.submitOperation(.decode, operation, null, null, null, null, 0, 0, 0);
 }
 
 pub fn native_pool_submit_stream_binary_setup(
@@ -1929,6 +1935,112 @@ pub fn threaded_decode_fixture(input: []const u8) beam.term {
     const value = constructDecodeTerm(env, graph) catch |err| return decodeErrorTerm(env, err);
     const parts = [_]e.ErlNifTerm{ e.enif_make_atom(env, "ok"), value.v };
     return .{ .v = e.enif_make_tuple_from_array(env, &parts, parts.len) };
+}
+
+fn decodePoolResult(
+    env: beam.env,
+    record: *OperationRecord,
+    status: []const u8,
+    value: ?beam.term,
+) beam.term {
+    return beam.make(.{
+        .status = beam.make_into_atom(status, .{ .env = env }),
+        .kind = record.kind,
+        .generation = record.generation,
+        .worker_context = executionContext(),
+        .result = value,
+        .ready_for_delivery = record.markReadyForDelivery(),
+    }, .{ .env = env });
+}
+
+fn decodePoolCancelled(env: beam.env, record: *OperationRecord) beam.term {
+    return beam.make(.{
+        .status = beam.make_into_atom("cancelled", .{ .env = env }),
+        .kind = record.kind,
+        .generation = record.generation,
+        .worker_context = executionContext(),
+        .result = @as(?beam.term, null),
+        .ready_for_delivery = false,
+    }, .{ .env = env });
+}
+
+fn decodeFailureName(err: anyerror) []const u8 {
+    return switch (err) {
+        error.InvalidArgument => "invalid_argument",
+        error.OutOfMemory => "out_of_memory",
+        error.Cancelled => "cancelled",
+        error.MaxDepthExceeded => "max_depth_exceeded",
+        error.MaxContainerEntriesExceeded => "max_container_entries_exceeded",
+        error.MaxStringBytesExceeded => "max_string_bytes_exceeded",
+        error.MaxOutputBytesExceeded => "max_output_bytes_exceeded",
+        error.InvalidGraph => "invalid_graph",
+        else => "native_failure",
+    };
+}
+
+/// Pool-only eager decode executor. The operation owns the input environment;
+/// the pool owns the result environment and publishes only the finished map.
+pub fn threaded_decode_execute(operation: OperationResource) beam.term {
+    const env = beam.context.env;
+    const record = operation.unpack();
+    if (record.kind != .decode or !record.beginRunning())
+        return decodePoolCancelled(env, record);
+    var worker_finished = false;
+    defer if (!worker_finished) record.abortRunning();
+
+    var document = document_resource.DocumentState.empty();
+    defer std.debug.assert(document.closeAndDestroy());
+    const cancellation = document_resource.CancellationProbe{
+        .context = @ptrCast(record),
+        .is_cancelled = operationCancelled,
+        .at_boundary = operationBoundary,
+    };
+    const input = record.inputBytes() catch {
+        worker_finished = true;
+        return decodePoolResult(env, record, "invalid_argument", null);
+    };
+    const opened = document.openOwnedCancellable(beam.allocator, input, cancellation);
+    if (opened != .ok) {
+        const status: []const u8 = switch (opened) {
+            .ok => unreachable,
+            .invalid_json => "invalid_json",
+            .invalid_utf8 => "invalid_utf8",
+            .unexpected_eof => "unexpected_eof",
+            .out_of_memory => "out_of_memory",
+            .invalid_argument => "invalid_argument",
+            .internal_failure => if (record.cancelled.load(.acquire)) "cancelled" else "native_failure",
+        };
+        worker_finished = true;
+        return decodePoolResult(env, record, status, null);
+    }
+    const native_document = document.ownedOperationDocument() orelse {
+        worker_finished = true;
+        return decodePoolResult(env, record, "native_failure", null);
+    };
+    var materializer = decode_materializer.OwnedMaterializer.init(native_document, decode_limits) catch |err| {
+        worker_finished = true;
+        return decodePoolResult(env, record, decodeFailureName(err), null);
+    };
+    defer materializer.deinit();
+    var native_cancellation = c.simd_json_cancellation_probe{
+        .context = @ptrCast(record),
+        .check = projectionCancellation,
+    };
+    var result = materializer.executeCancellable(&native_cancellation) catch |err| {
+        worker_finished = true;
+        return decodePoolResult(env, record, decodeFailureName(err), null);
+    };
+    defer result.deinit();
+    const graph = result.graph() catch |err| {
+        worker_finished = true;
+        return decodePoolResult(env, record, decodeFailureName(err), null);
+    };
+    const value = constructDecodeTerm(env, graph) catch |err| {
+        worker_finished = true;
+        return decodePoolResult(env, record, decodeFailureName(err), null);
+    };
+    worker_finished = true;
+    return decodePoolResult(env, record, "ok", value);
 }
 
 fn scalarTerm(

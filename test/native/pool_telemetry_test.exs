@@ -55,4 +55,23 @@ defmodule SimdJson.Native.PoolTelemetryTest do
     refute rendered =~ inspect(self())
     refute rendered =~ "#Reference<"
   end
+
+  test "private decode jobs emit redacted queue and execution telemetry" do
+    secret = "decode-secret-#{System.unique_integer([:positive])}"
+    input = Jason.encode!(%{secret => [1, 2, 3]})
+
+    assert {:ok, %{^secret => [1, 2, 3]}} =
+             SimdJson.Native.ThreadedOperation.decode_fixture(input)
+
+    assert_receive {:telemetry, [:simd_json, :job, :start], start, %{operation: :decode}}
+
+    assert_receive {:telemetry, [:simd_json, :job, :stop], stop,
+                    %{operation: :decode, outcome: :ok}}
+
+    assert start.input_bytes == byte_size(input)
+    assert stop.queue_duration >= 0
+    assert stop.execution_duration >= 0
+    refute inspect({start, stop}) =~ secret
+    refute inspect({start, stop}) =~ input
+  end
 end
