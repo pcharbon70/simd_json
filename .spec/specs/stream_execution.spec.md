@@ -1,5 +1,8 @@
 # Stream Execution and Lifecycle
 
+Milestone 5 Phase 6 includes stream execution in cumulative regression and
+sanitizer qualification while accepting the separate eager decode path.
+
 Milestone 5 Phase 4 adds an independent decode job variant; stream cursor
 serialization, demand, batching, cancellation, and cleanup remain unchanged.
 

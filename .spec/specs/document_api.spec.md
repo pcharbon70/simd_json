@@ -1,5 +1,8 @@
 # Document API and Errors
 
+Milestone 5 Phase 6 differentially qualifies decode without changing document
+ownership or lifecycle behavior; cumulative regression gates remain active.
+
 Milestone 5 Phase 4 uses worker-owned temporary documents for private eager
 decode and destroys them before delivery; public document operations remain
 unchanged.

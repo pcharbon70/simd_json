@@ -94,7 +94,9 @@ content, paths, PIDs, request references, or native addresses.
 Milestone 5 implements its safe Jason 1.4.5 compatibility subset through an
 iterative native materializer and bounded-pool execution. The compatibility
 surface intentionally excludes iodata, key atomization, structs, custom
-decoders, decimal modes, and every non-empty option list.
+decoders, decimal modes, and every non-empty option list. The supported
+behavior, qualification boundary, and evidence contract are recorded in the
+[Milestone 5 acceptance record](docs/milestones/05-compatible-decode-api-acceptance.md).
 
 Stream a root or nested array lazily with a scalar projection:
 

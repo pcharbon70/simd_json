@@ -21,7 +21,9 @@ defmodule SimdJson.MixProject do
           "docs/milestones/02-projection-api-acceptance.md",
           "docs/milestones/03-batched-array-streaming.md",
           "docs/milestones/03-batched-array-streaming-operations.md",
-          "docs/milestones/03-batched-array-streaming-acceptance.md"
+          "docs/milestones/03-batched-array-streaming-acceptance.md",
+          "docs/milestones/05-compatible-decode-api.md",
+          "docs/milestones/05-compatible-decode-api-acceptance.md"
         ]
       ],
       package: package(),

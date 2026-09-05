@@ -217,6 +217,7 @@
     "docs/milestones/03-batched-array-streaming-acceptance.md",
     "docs/milestones/04-worker-pool-and-operations.md",
     "docs/milestones/05-compatible-decode-api.md",
+    "docs/milestones/05-compatible-decode-api-acceptance.md",
     "bench/stream_etl_policy.exs",
     "bench/stream_fixtures/manifest.exs",
     "bench/stream_fixtures/small.json.gz",
