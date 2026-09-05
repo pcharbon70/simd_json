@@ -4,6 +4,7 @@
 
 /* covers: simd_json.decode_api.complete_values simd_json.decode_api.iterative_limits simd_json.native_build_and_abi.exception_containment simd_json.native_build_and_abi.partial_failure_cleanup */
 
+#include <algorithm>
 #include <atomic>
 #include <cmath>
 #include <cstdint>
@@ -105,13 +106,48 @@ bool cancellation_requested(const simd_json_cancellation_probe *probe) {
   return probe != nullptr && probe->check(probe->context) != 0;
 }
 
+uint64_t retained_bytes(const simd_json_decode_result &result) noexcept {
+  return static_cast<uint64_t>(result.nodes.size()) * sizeof(simd_json_decode_node) +
+         static_cast<uint64_t>(result.edges.size()) * sizeof(simd_json_decode_edge) +
+         static_cast<uint64_t>(result.copied_bytes.size());
+}
+
+bool budget_allows(const simd_json_decode_result &result, uint64_t added,
+                   const simd_json_decode_config &config) noexcept {
+  const uint64_t retained = retained_bytes(result);
+  return retained <= config.max_output_bytes &&
+         added <= config.max_output_bytes - retained;
+}
+
+simd_json_status copy_bytes(simd_json_decode_result &result,
+                            std::string_view bytes,
+                            const simd_json_decode_config &config,
+                            const simd_json_cancellation_probe *cancellation,
+                            uint64_t &out_offset) {
+  if (bytes.size() > config.max_string_bytes)
+    return make_status(SIMD_JSON_STATUS_MAX_STRING_BYTES_EXCEEDED);
+  if (!budget_allows(result, static_cast<uint64_t>(bytes.size()), config))
+    return make_status(SIMD_JSON_STATUS_MAX_OUTPUT_BYTES_EXCEEDED);
+  out_offset = static_cast<uint64_t>(result.copied_bytes.size());
+  result.copied_bytes.reserve(result.copied_bytes.size() + bytes.size());
+  constexpr size_t chunk_size = 16 * 1024;
+  for (size_t offset = 0; offset < bytes.size(); offset += chunk_size) {
+    if (cancellation_requested(cancellation))
+      return make_status(SIMD_JSON_STATUS_CANCELLED);
+    const size_t count = std::min(chunk_size, bytes.size() - offset);
+    result.copied_bytes.insert(result.copied_bytes.end(), bytes.begin() + offset,
+                               bytes.begin() + offset + count);
+  }
+  return make_status(SIMD_JSON_STATUS_OK);
+}
+
 simd_json_status append_node(simd_json_decode_result &result,
                              simd_json_decode_node node,
                              const simd_json_decode_config &config,
                              uint64_t &out_index) {
   const uint64_t count = static_cast<uint64_t>(result.nodes.size());
-  if (count >= config.max_output_bytes / sizeof(node))
-    return make_status(SIMD_JSON_STATUS_OUT_OF_MEMORY);
+  if (!budget_allows(result, sizeof(node), config))
+    return make_status(SIMD_JSON_STATUS_MAX_OUTPUT_BYTES_EXCEEDED);
   result.nodes.push_back(node);
   out_index = count;
   return make_status(SIMD_JSON_STATUS_OK);
@@ -121,9 +157,10 @@ simd_json_status open_value(simd_json_decode_materializer &materializer,
                             simd_json_decode_result &result,
                             simdjson::ondemand::value value,
                             uint64_t depth,
+                            const simd_json_cancellation_probe *cancellation,
                             uint64_t &out_node) {
   if (depth > materializer.config.max_depth)
-    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+    return make_status(SIMD_JSON_STATUS_MAX_DEPTH_EXCEEDED);
   simdjson::ondemand::json_type type;
   simdjson::error_code error = value.type().get(type);
   if (error != simdjson::SUCCESS) return status_from_simdjson(error);
@@ -178,15 +215,11 @@ simd_json_status open_value(simd_json_decode_materializer &materializer,
     std::string_view string;
     error = value.get_string().get(string);
     if (error != simdjson::SUCCESS) return status_from_simdjson(error);
-    if (string.size() > materializer.config.max_string_bytes ||
-        string.size() > materializer.config.max_output_bytes ||
-        result.copied_bytes.size() > materializer.config.max_output_bytes -
-                                         string.size())
-      return make_status(SIMD_JSON_STATUS_OUT_OF_MEMORY);
     node.tag = SIMD_JSON_DECODE_NODE_STRING;
-    node.value.bytes.offset = static_cast<uint64_t>(result.copied_bytes.size());
+    simd_json_status copied = copy_bytes(result, string, materializer.config,
+                                         cancellation, node.value.bytes.offset);
+    if (copied.code != SIMD_JSON_STATUS_OK) return copied;
     node.value.bytes.length = static_cast<uint64_t>(string.size());
-    result.copied_bytes.insert(result.copied_bytes.end(), string.begin(), string.end());
     return append_node(result, node, materializer.config, out_node);
   }
   if (type == simdjson::ondemand::json_type::number) {
@@ -223,8 +256,10 @@ simd_json_status finalize_frame(simd_json_decode_result &result,
     const uint64_t offset = static_cast<uint64_t>(result.edges.size());
     const uint64_t count = static_cast<uint64_t>(typed.pending_edges.size());
     if (count > config.max_container_entries ||
-        count > config.max_output_bytes / sizeof(simd_json_decode_edge))
-      return make_status(SIMD_JSON_STATUS_OUT_OF_MEMORY);
+        !budget_allows(result, count * sizeof(simd_json_decode_edge), config))
+      return make_status(count > config.max_container_entries
+                             ? SIMD_JSON_STATUS_MAX_CONTAINER_ENTRIES_EXCEEDED
+                             : SIMD_JSON_STATUS_MAX_OUTPUT_BYTES_EXCEEDED);
     result.edges.insert(result.edges.end(), typed.pending_edges.begin(),
                         typed.pending_edges.end());
     result.nodes[typed.node_index].edge_offset = offset;
@@ -235,7 +270,8 @@ simd_json_status finalize_frame(simd_json_decode_result &result,
 
 simd_json_status open_document(simd_json_decode_materializer &materializer,
                                simd_json_decode_result &result,
-                               simdjson::ondemand::document &document) {
+                               simdjson::ondemand::document &document,
+                               const simd_json_cancellation_probe *cancellation) {
   simdjson::ondemand::json_type type;
   simdjson::error_code error = document.type().get(type);
   if (error != simdjson::SUCCESS) return status_from_simdjson(error);
@@ -244,7 +280,7 @@ simd_json_status open_document(simd_json_decode_materializer &materializer,
     simdjson::ondemand::value root;
     error = document.get_value().get(root);
     if (error != simdjson::SUCCESS) return status_from_simdjson(error);
-    return open_value(materializer, result, root, 1, result.root_node);
+    return open_value(materializer, result, root, 1, cancellation, result.root_node);
   }
 
   simd_json_decode_node node{};
@@ -274,12 +310,11 @@ simd_json_status open_document(simd_json_decode_materializer &materializer,
     std::string_view string;
     error = document.get_string().get(string);
     if (error != simdjson::SUCCESS) return status_from_simdjson(error);
-    if (string.size() > materializer.config.max_string_bytes ||
-        string.size() > materializer.config.max_output_bytes)
-      return make_status(SIMD_JSON_STATUS_OUT_OF_MEMORY);
     node.tag = SIMD_JSON_DECODE_NODE_STRING;
-    node.value.bytes = {0, static_cast<uint64_t>(string.size())};
-    result.copied_bytes.insert(result.copied_bytes.end(), string.begin(), string.end());
+    simd_json_status copied = copy_bytes(result, string, materializer.config,
+                                         cancellation, node.value.bytes.offset);
+    if (copied.code != SIMD_JSON_STATUS_OK) return copied;
+    node.value.bytes.length = static_cast<uint64_t>(string.size());
   } else if (type == simdjson::ondemand::json_type::boolean) {
     bool boolean = false;
     error = document.get_bool().get(boolean);
@@ -303,7 +338,7 @@ simd_json_status traverse(simd_json_decode_materializer &materializer,
   simdjson::ondemand::document *document = simd_json_native::document_value(materializer.document);
   if (document == nullptr) return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
   simdjson::error_code error = simdjson::SUCCESS;
-  simd_json_status status = open_document(materializer, result, *document);
+  simd_json_status status = open_document(materializer, result, *document, cancellation);
   if (status.code != SIMD_JSON_STATUS_OK) return status;
 
   while (!materializer.frames.empty()) {
@@ -324,36 +359,33 @@ simd_json_status traverse(simd_json_decode_materializer &materializer,
     uint64_t child_node = UINT64_MAX;
     if (auto *parent = std::get_if<object_frame>(&materializer.frames[parent_index])) {
       if (parent->pending_edges.size() >= materializer.config.max_container_entries)
-        return make_status(SIMD_JSON_STATUS_OUT_OF_MEMORY);
+        return make_status(SIMD_JSON_STATUS_MAX_CONTAINER_ENTRIES_EXCEEDED);
       simdjson::ondemand::field field;
       if ((error = std::move(*parent->position).get(field)) != simdjson::SUCCESS)
         return status_from_simdjson(error);
       std::string_view key;
       if ((error = field.unescaped_key().get(key)) != simdjson::SUCCESS)
         return status_from_simdjson(error);
-      if (key.size() > materializer.config.max_string_bytes ||
-          key.size() > materializer.config.max_output_bytes ||
-          result.copied_bytes.size() > materializer.config.max_output_bytes - key.size())
-        return make_status(SIMD_JSON_STATUS_OUT_OF_MEMORY);
-      const uint64_t key_offset = static_cast<uint64_t>(result.copied_bytes.size());
-      result.copied_bytes.insert(result.copied_bytes.end(), key.begin(), key.end());
+      uint64_t key_offset = 0;
+      status = copy_bytes(result, key, materializer.config, cancellation, key_offset);
+      if (status.code != SIMD_JSON_STATUS_OK) return status;
       const uint64_t depth = parent->depth + 1;
       parent->awaiting_child = true;
       simdjson::ondemand::value child = field.value();
-      status = open_value(materializer, result, child, depth, child_node);
+      status = open_value(materializer, result, child, depth, cancellation, child_node);
       if (status.code != SIMD_JSON_STATUS_OK) return status;
       std::get<object_frame>(materializer.frames[parent_index]).pending_edges.push_back(
           {key_offset, static_cast<uint64_t>(key.size()), child_node, 0});
     } else {
       auto &array_parent = std::get<array_frame>(materializer.frames[parent_index]);
       if (array_parent.pending_edges.size() >= materializer.config.max_container_entries)
-        return make_status(SIMD_JSON_STATUS_OUT_OF_MEMORY);
+        return make_status(SIMD_JSON_STATUS_MAX_CONTAINER_ENTRIES_EXCEEDED);
       simdjson::ondemand::value child;
       if ((error = (*array_parent.position).get(child)) != simdjson::SUCCESS)
         return status_from_simdjson(error);
       const uint64_t depth = array_parent.depth + 1;
       array_parent.awaiting_child = true;
-      status = open_value(materializer, result, child, depth, child_node);
+      status = open_value(materializer, result, child, depth, cancellation, child_node);
       if (status.code != SIMD_JSON_STATUS_OK) return status;
       std::get<array_frame>(materializer.frames[parent_index]).pending_edges.push_back(
           {SIMD_JSON_DECODE_BYTE_RANGE_UNAVAILABLE,

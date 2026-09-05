@@ -1,7 +1,8 @@
 # Native Worker Pool and Admission
 
-ABI v4 does not alter capacity, FIFO admission, worker lifecycle, or job
-ownership. Decode job routing remains intentionally unavailable in Phase 2.
+Milestone 5 Phase 4 adds decode to the existing typed FIFO job set without
+changing worker count or queue capacity. Busy rejection, caller monitoring,
+cancellation, redacted telemetry, and shutdown cleanup reuse pool invariants.
 
 Milestone 5 Phase 1 hardens the existing early-stream-halt qualification to
 await asynchronous pool cleanup before asserting quiescence; runtime behavior

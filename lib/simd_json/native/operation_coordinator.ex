@@ -95,6 +95,10 @@ defmodule SimdJson.Native.OperationCoordinator do
       GenServer.call(__MODULE__, {:stream_probe, operation}, :infinity)
     end
 
+    def decode_fixture(operation) do
+      GenServer.call(__MODULE__, {:submit, :decode, operation, nil}, :infinity)
+    end
+
     def stream_setup_fixture(operation, document, row_limit, byte_limit) do
       GenServer.call(
         __MODULE__,
@@ -142,7 +146,12 @@ defmodule SimdJson.Native.OperationCoordinator do
     end
 
     @spec set_submission_rejection_for_test(
-            :document_open | :document_cleanup | :projection | :stream_setup | :stream_batch,
+            :document_open
+            | :document_cleanup
+            | :projection
+            | :decode
+            | :stream_setup
+            | :stream_batch,
             boolean()
           ) :: :ok
     def set_submission_rejection_for_test(kind, reject?)
@@ -150,6 +159,7 @@ defmodule SimdJson.Native.OperationCoordinator do
                :document_open,
                :document_cleanup,
                :projection,
+               :decode,
                :stream_setup,
                :stream_batch
              ] and
@@ -190,7 +200,7 @@ defmodule SimdJson.Native.OperationCoordinator do
 
   def handle_call(:begin_shutdown, _from, state) do
     Enum.each(state.requests, fn {_request_ref, request} ->
-      if request.kind in [:document_open, :projection] do
+      if request.kind in [:document_open, :projection, :decode] do
         _ = BuildSmoke.operation_cancel(request.operation.resource)
       end
     end)
@@ -488,18 +498,22 @@ defmodule SimdJson.Native.OperationCoordinator do
       request_ref = state.caller_monitors[monitor] ->
         request = Map.fetch!(state.requests, request_ref)
 
-        if request.kind in [:document_open, :projection, :stream_setup, :stream_batch] do
+        if request.kind in [:document_open, :projection, :decode, :stream_setup, :stream_batch] do
           _ = BuildSmoke.operation_cancel(request.operation.resource)
         end
 
-        request = %{request | orphaned?: true, caller: nil, caller_monitor: nil, from: nil}
+        if request.kind == :decode do
+          {:noreply, remove_request(state, request_ref, request)}
+        else
+          request = %{request | orphaned?: true, caller: nil, caller_monitor: nil, from: nil}
 
-        {:noreply,
-         %{
-           state
-           | requests: Map.put(state.requests, request_ref, request),
-             caller_monitors: Map.delete(state.caller_monitors, monitor)
-         }}
+          {:noreply,
+           %{
+             state
+             | requests: Map.put(state.requests, request_ref, request),
+               caller_monitors: Map.delete(state.caller_monitors, monitor)
+           }}
+        end
 
       request_ref = state.worker_monitors[monitor] ->
         # A normal worker sends completion before it exits, so reaching this
@@ -642,7 +656,7 @@ defmodule SimdJson.Native.OperationCoordinator do
   end
 
   defp pool_submission?(kind, payload, false, nil)
-       when kind in [:document_open, :document_cleanup, :projection],
+       when kind in [:document_open, :document_cleanup, :projection, :decode],
        do: payload == nil or kind == :document_cleanup
 
   defp pool_submission?(:stream_setup, {source_kind, _, _, _, _, _}, false, nil)
@@ -832,6 +846,7 @@ defmodule SimdJson.Native.OperationCoordinator do
   defp operation_name(:document_open), do: :open
   defp operation_name(:document_cleanup), do: :close
   defp operation_name(:projection), do: :select
+  defp operation_name(:decode), do: :decode
   defp operation_name(:stream_setup), do: :stream_setup
   defp operation_name(:stream_batch), do: :next_batch
 
@@ -880,6 +895,11 @@ defmodule SimdJson.Native.OperationCoordinator do
 
     {:error, error}
   end
+
+  defp normalize_result(%{kind: :decode, status: :ok, result: result}, _), do: {:ok, result}
+
+  defp normalize_result(%{kind: :decode, status: status}, _),
+    do: {:error, %{reason: status}}
 
   defp normalize_result(%{kind: kind, context: :threaded} = result, _diagnostics?)
        when kind in [:stream_setup, :stream_batch] do

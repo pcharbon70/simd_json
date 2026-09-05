@@ -3,10 +3,18 @@ const beam = @import("beam");
 const e = @import("erl_nif");
 const c = @import("simd_json_abi");
 const document_resource = @import("document_resource").Implementation(c);
+const decode_materializer = @import("decode_materializer").Implementation(c);
 const projection_plan = @import("projection_plan").Implementation(c);
 const stream_cursor = @import("stream_cursor").Implementation(c, projection_plan);
 const worker_pool = @import("worker_pool").Implementation(beam, e, root, @This());
 const root = @import("root");
+
+const decode_limits = decode_materializer.Limits{
+    .depth = 1_024,
+    .container_entries = 1_000_000,
+    .string_bytes = 64 * 1024 * 1024,
+    .output_bytes = 256 * 1024 * 1024,
+};
 
 pub const PoolRequestResource = worker_pool.RequestResource;
 pub const PoolSerializationResource = worker_pool.SerializationResource;
@@ -127,6 +135,7 @@ pub const OperationKind = enum(u8) {
     document_cleanup,
     threaded_smoke,
     projection,
+    decode,
     stream_setup,
     stream_batch,
 };
@@ -434,6 +443,11 @@ pub fn native_pool_submit_cleanup(
 pub fn native_pool_submit_projection(operation: OperationResource) !worker_pool.MonitoredSubmission {
     const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
     return pool.submitOperation(.projection, operation, null, null, null, null, 0, 0, 0);
+}
+
+pub fn native_pool_submit_decode(operation: OperationResource) !worker_pool.MonitoredSubmission {
+    const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
+    return pool.submitOperation(.decode, operation, null, null, null, null, 0, 0, 0);
 }
 
 pub fn native_pool_submit_stream_binary_setup(
@@ -1612,6 +1626,10 @@ pub fn operation_cancel(operation: OperationResource) bool {
     return true;
 }
 
+pub fn pool_operation_cancelled(operation: OperationResource) bool {
+    return operation.unpack().cancelled.load(.acquire);
+}
+
 pub fn operation_finish(operation: OperationResource, outcome: OperationOutcome) bool {
     return operation.unpack().finish(outcome);
 }
@@ -1787,6 +1805,247 @@ fn projectionOpenFailureResult(
 }
 
 const ProjectionConversionError = error{ OutOfMemory, InvalidSlot, Cancelled };
+
+const DecodeConversionError = error{ OutOfMemory, InvalidGraph };
+
+fn decodeByteSlice(
+    graph: decode_materializer.Graph,
+    offset: u64,
+    length: u64,
+) DecodeConversionError![]const u8 {
+    const start = std.math.cast(usize, offset) orelse return error.InvalidGraph;
+    const size = std.math.cast(usize, length) orelse return error.InvalidGraph;
+    if (start > graph.copied_bytes.len or size > graph.copied_bytes.len - start)
+        return error.InvalidGraph;
+    return graph.copied_bytes[start .. start + size];
+}
+
+/// Converts validated preorder storage from the leaves upward. Terms are
+/// created only in the calling worker's private environment and remain
+/// unpublished until the complete root has been constructed.
+fn constructDecodeTerm(
+    env: beam.env,
+    graph: decode_materializer.Graph,
+) DecodeConversionError!beam.term {
+    const root_node = graph.root_node orelse return error.InvalidGraph;
+    const root_index = std.math.cast(usize, root_node) orelse return error.InvalidGraph;
+    if (root_index >= graph.nodes.len) return error.InvalidGraph;
+
+    const terms = beam.allocator.alloc(beam.term, graph.nodes.len) catch
+        return error.OutOfMemory;
+    defer beam.allocator.free(terms);
+
+    var index = graph.nodes.len;
+    while (index > 0) {
+        index -= 1;
+        const node = graph.nodes[index];
+        terms[index] = switch (node.tag) {
+            c.SIMD_JSON_DECODE_NODE_SIGNED_INTEGER =>
+            beam.make(node.value.signed_integer, .{ .env = env }),
+            c.SIMD_JSON_DECODE_NODE_UNSIGNED_INTEGER =>
+            beam.make(node.value.unsigned_integer, .{ .env = env }),
+            c.SIMD_JSON_DECODE_NODE_DOUBLE =>
+            beam.make(node.value.floating_point, .{ .env = env }),
+            c.SIMD_JSON_DECODE_NODE_TRUE => beam.make(true, .{ .env = env }),
+            c.SIMD_JSON_DECODE_NODE_FALSE => beam.make(false, .{ .env = env }),
+            c.SIMD_JSON_DECODE_NODE_NULL => beam.make(null, .{ .env = env }),
+            c.SIMD_JSON_DECODE_NODE_STRING => blk: {
+                const bytes = try decodeByteSlice(
+                    graph,
+                    node.value.bytes.offset,
+                    node.value.bytes.length,
+                );
+                break :blk beam.make(bytes, .{ .env = env });
+            },
+            c.SIMD_JSON_DECODE_NODE_ARRAY => blk: {
+                const edge_start = std.math.cast(usize, node.edge_offset) orelse
+                    return error.InvalidGraph;
+                const edge_count = std.math.cast(usize, node.edge_count) orelse
+                    return error.InvalidGraph;
+                if (edge_start > graph.edges.len or edge_count > graph.edges.len - edge_start)
+                    return error.InvalidGraph;
+                var list = beam.term{ .v = e.enif_make_list(env, 0) };
+                var edge_index = edge_start + edge_count;
+                while (edge_index > edge_start) {
+                    edge_index -= 1;
+                    const child = std.math.cast(usize, graph.edges[edge_index].value_node) orelse
+                        return error.InvalidGraph;
+                    if (child <= index or child >= graph.nodes.len) return error.InvalidGraph;
+                    list = .{ .v = e.enif_make_list_cell(env, terms[child].v, list.v) };
+                }
+                break :blk list;
+            },
+            c.SIMD_JSON_DECODE_NODE_OBJECT => blk: {
+                const edge_start = std.math.cast(usize, node.edge_offset) orelse
+                    return error.InvalidGraph;
+                const edge_count = std.math.cast(usize, node.edge_count) orelse
+                    return error.InvalidGraph;
+                if (edge_start > graph.edges.len or edge_count > graph.edges.len - edge_start)
+                    return error.InvalidGraph;
+                var map = beam.term{ .v = e.enif_make_new_map(env) };
+                for (graph.edges[edge_start .. edge_start + edge_count]) |edge| {
+                    const child = std.math.cast(usize, edge.value_node) orelse
+                        return error.InvalidGraph;
+                    if (child <= index or child >= graph.nodes.len) return error.InvalidGraph;
+                    const key = try decodeByteSlice(graph, edge.key_offset, edge.key_length);
+                    const key_term = beam.make(key, .{ .env = env });
+                    var next: e.ErlNifTerm = undefined;
+                    if (e.enif_make_map_put(env, map.v, key_term.v, terms[child].v, &next) == 0)
+                        return error.OutOfMemory;
+                    map = .{ .v = next };
+                }
+                break :blk map;
+            },
+            else => return error.InvalidGraph,
+        };
+    }
+    return terms[root_index];
+}
+
+fn decodeErrorTerm(env: beam.env, err: anyerror) beam.term {
+    const reason = beam.make_into_atom(switch (err) {
+        error.InvalidArgument => "invalid_argument",
+        error.OutOfMemory => "out_of_memory",
+        error.Cancelled => "cancelled",
+        error.Consumed => "consumed",
+        error.InvalidGraph => "invalid_graph",
+        error.MaxDepthExceeded => "max_depth_exceeded",
+        error.MaxContainerEntriesExceeded => "max_container_entries_exceeded",
+        error.MaxStringBytesExceeded => "max_string_bytes_exceeded",
+        error.MaxOutputBytesExceeded => "max_output_bytes_exceeded",
+        else => "native_failure",
+    }, .{ .env = env });
+    const parts = [_]e.ErlNifTerm{ e.enif_make_atom(env, "error"), reason.v };
+    return .{ .v = e.enif_make_tuple_from_array(env, &parts, parts.len) };
+}
+
+pub fn threaded_decode_fixture(input: []const u8) beam.term {
+    const env = beam.context.env;
+    var document = document_resource.DocumentState.empty();
+    defer std.debug.assert(document.closeAndDestroy());
+
+    const opened = document.openOwned(beam.allocator, input);
+    if (opened != .ok) return decodeErrorTerm(env, error.NativeFailure);
+    const native_document = document.ownedOperationDocument() orelse
+        return decodeErrorTerm(env, error.InvalidArgument);
+    var materializer = decode_materializer.OwnedMaterializer.init(
+        native_document,
+        decode_limits,
+    ) catch |err| return decodeErrorTerm(env, err);
+    defer materializer.deinit();
+    var result = materializer.execute() catch |err| return decodeErrorTerm(env, err);
+    defer result.deinit();
+    const graph = result.graph() catch |err| return decodeErrorTerm(env, err);
+    const value = constructDecodeTerm(env, graph) catch |err| return decodeErrorTerm(env, err);
+    const parts = [_]e.ErlNifTerm{ e.enif_make_atom(env, "ok"), value.v };
+    return .{ .v = e.enif_make_tuple_from_array(env, &parts, parts.len) };
+}
+
+fn decodePoolResult(
+    env: beam.env,
+    record: *OperationRecord,
+    status: []const u8,
+    value: ?beam.term,
+) beam.term {
+    return beam.make(.{
+        .status = beam.make_into_atom(status, .{ .env = env }),
+        .kind = record.kind,
+        .generation = record.generation,
+        .worker_context = executionContext(),
+        .result = value,
+        .ready_for_delivery = record.markReadyForDelivery(),
+    }, .{ .env = env });
+}
+
+fn decodePoolCancelled(env: beam.env, record: *OperationRecord) beam.term {
+    return beam.make(.{
+        .status = beam.make_into_atom("cancelled", .{ .env = env }),
+        .kind = record.kind,
+        .generation = record.generation,
+        .worker_context = executionContext(),
+        .result = @as(?beam.term, null),
+        .ready_for_delivery = false,
+    }, .{ .env = env });
+}
+
+fn decodeFailureName(err: anyerror) []const u8 {
+    return switch (err) {
+        error.InvalidArgument => "invalid_argument",
+        error.OutOfMemory => "out_of_memory",
+        error.Cancelled => "cancelled",
+        error.MaxDepthExceeded => "max_depth_exceeded",
+        error.MaxContainerEntriesExceeded => "max_container_entries_exceeded",
+        error.MaxStringBytesExceeded => "max_string_bytes_exceeded",
+        error.MaxOutputBytesExceeded => "max_output_bytes_exceeded",
+        error.InvalidGraph => "invalid_graph",
+        else => "native_failure",
+    };
+}
+
+/// Pool-only eager decode executor. The operation owns the input environment;
+/// the pool owns the result environment and publishes only the finished map.
+pub fn threaded_decode_execute(operation: OperationResource) beam.term {
+    const env = beam.context.env;
+    const record = operation.unpack();
+    if (record.kind != .decode or !record.beginRunning())
+        return decodePoolCancelled(env, record);
+    var worker_finished = false;
+    defer if (!worker_finished) record.abortRunning();
+
+    var document = document_resource.DocumentState.empty();
+    defer std.debug.assert(document.closeAndDestroy());
+    const cancellation = document_resource.CancellationProbe{
+        .context = @ptrCast(record),
+        .is_cancelled = operationCancelled,
+        .at_boundary = operationBoundary,
+    };
+    const input = record.inputBytes() catch {
+        worker_finished = true;
+        return decodePoolResult(env, record, "invalid_argument", null);
+    };
+    const opened = document.openOwnedCancellable(beam.allocator, input, cancellation);
+    if (opened != .ok) {
+        const status: []const u8 = switch (opened) {
+            .ok => unreachable,
+            .invalid_json => "invalid_json",
+            .invalid_utf8 => "invalid_utf8",
+            .unexpected_eof => "unexpected_eof",
+            .out_of_memory => "out_of_memory",
+            .invalid_argument => "invalid_argument",
+            .internal_failure => if (record.cancelled.load(.acquire)) "cancelled" else "native_failure",
+        };
+        worker_finished = true;
+        return decodePoolResult(env, record, status, null);
+    }
+    const native_document = document.ownedOperationDocument() orelse {
+        worker_finished = true;
+        return decodePoolResult(env, record, "native_failure", null);
+    };
+    var materializer = decode_materializer.OwnedMaterializer.init(native_document, decode_limits) catch |err| {
+        worker_finished = true;
+        return decodePoolResult(env, record, decodeFailureName(err), null);
+    };
+    defer materializer.deinit();
+    var native_cancellation = c.simd_json_cancellation_probe{
+        .context = @ptrCast(record),
+        .check = projectionCancellation,
+    };
+    var result = materializer.executeCancellable(&native_cancellation) catch |err| {
+        worker_finished = true;
+        return decodePoolResult(env, record, decodeFailureName(err), null);
+    };
+    defer result.deinit();
+    const graph = result.graph() catch |err| {
+        worker_finished = true;
+        return decodePoolResult(env, record, decodeFailureName(err), null);
+    };
+    const value = constructDecodeTerm(env, graph) catch |err| {
+        worker_finished = true;
+        return decodePoolResult(env, record, decodeFailureName(err), null);
+    };
+    worker_finished = true;
+    return decodePoolResult(env, record, "ok", value);
+}
 
 fn scalarTerm(
     env: beam.env,

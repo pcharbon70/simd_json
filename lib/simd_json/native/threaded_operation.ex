@@ -58,6 +58,7 @@ defmodule SimdJson.Native.ThreadedOperation do
             | :document_cleanup
             | :threaded_smoke
             | :projection
+            | :decode
             | :stream_setup
             | :stream_batch,
           generation: pos_integer(),
@@ -260,6 +261,14 @@ defmodule SimdJson.Native.ThreadedOperation do
     |> OperationCoordinator.cleanup(document)
   end
 
+  if @test_hooks do
+    @doc false
+    def decode_fixture(input) when is_binary(input) do
+      operation = admit(input, :decode)
+      OperationCoordinator.decode_fixture(operation)
+    end
+  end
+
   def stream_setup(source_kind, source, projection, target, rows, bytes) do
     generation = BuildSmoke.execution_generation()
 
@@ -318,6 +327,9 @@ defmodule SimdJson.Native.ThreadedOperation do
 
         {:projection, nil} ->
           BuildSmoke.native_pool_submit_projection(operation.resource)
+
+        {:decode, nil} ->
+          BuildSmoke.native_pool_submit_decode(operation.resource)
 
         {:stream_setup, {:binary, _source, projection, target, rows, bytes}} ->
           BuildSmoke.native_pool_submit_stream_binary_setup(

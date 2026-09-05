@@ -32,6 +32,12 @@ null. No BEAM term enters this phase.
 
 ## Consequences
 
+Phase 4 realizes the worker boundary: Zig validates the complete flat graph,
+constructs leaf-to-root BEAM terms in the pool job's private environment, and
+publishes only the finished root. Temporary documents, materializers, result
+owners, graph-term storage, and the environment retain one terminal cleanup
+path; source-order map insertion gives duplicate keys last-value semantics.
+
 Phase 3 can add value traversal without changing ownership or layout. Zig can
 validate and convert the graph iteratively, and cancellation or allocation
 failure has one deterministic rollback path. The flat graph uses indices and

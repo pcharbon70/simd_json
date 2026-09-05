@@ -51,6 +51,10 @@ typedef int32_t simd_json_status_code;
 #define SIMD_JSON_STATUS_CANCELLED INT32_C(12)
 #define SIMD_JSON_STATUS_BATCH_TOO_LARGE INT32_C(13)
 #define SIMD_JSON_STATUS_CURSOR_STATE INT32_C(14)
+#define SIMD_JSON_STATUS_MAX_DEPTH_EXCEEDED INT32_C(15)
+#define SIMD_JSON_STATUS_MAX_CONTAINER_ENTRIES_EXCEEDED INT32_C(16)
+#define SIMD_JSON_STATUS_MAX_STRING_BYTES_EXCEEDED INT32_C(17)
+#define SIMD_JSON_STATUS_MAX_OUTPUT_BYTES_EXCEEDED INT32_C(18)
 
 typedef struct simd_json_parser simd_json_parser;
 typedef struct simd_json_document simd_json_document;

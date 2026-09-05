@@ -12,6 +12,10 @@ const Fixture = struct {
 
     fn init() !Fixture {
         const source = "{\"a\":[],\"b\":[{},null],\"s\":\"x\\u0000\\u96ea\",\"t\":true,\"f\":false,\"d\":null,\"d\":[],\"i\":-9223372036854775808,\"u\":18446744073709551615,\"n\":1.25e2}";
+        return initSource(source);
+    }
+
+    fn initSource(source: []const u8) !Fixture {
         const capacity = source.len + @as(usize, @intCast(c.SIMD_JSON_REQUIRED_PADDING));
         const storage = try std.testing.allocator.alloc(u8, capacity);
         errdefer std.testing.allocator.free(storage);
@@ -77,4 +81,29 @@ test "invalid limits never acquire a native owner" {
         error.InvalidArgument,
         decode.OwnedMaterializer.init(null, limits),
     );
+}
+
+test "depth container string and total output limits remain distinct" {
+    const Case = struct { source: []const u8, limits: decode.Limits, expected: decode.Error };
+    var depth_limits = limits;
+    depth_limits.depth = 2;
+    var container_limits = limits;
+    container_limits.container_entries = 1;
+    var string_limits = limits;
+    string_limits.string_bytes = 3;
+    var output_limits = limits;
+    output_limits.output_bytes = 79;
+    const cases = [_]Case{
+        .{ .source = "[[null]]", .limits = depth_limits, .expected = error.MaxDepthExceeded },
+        .{ .source = "[null,null]", .limits = container_limits, .expected = error.MaxContainerEntriesExceeded },
+        .{ .source = "\"abcd\"", .limits = string_limits, .expected = error.MaxStringBytesExceeded },
+        .{ .source = "[null]", .limits = output_limits, .expected = error.MaxOutputBytesExceeded },
+    };
+    for (cases) |case| {
+        var fixture = try Fixture.initSource(case.source);
+        defer fixture.deinit();
+        var materializer = try decode.OwnedMaterializer.init(fixture.document, case.limits);
+        defer materializer.deinit();
+        try std.testing.expectError(case.expected, materializer.execute());
+    }
 }

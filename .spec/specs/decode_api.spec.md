@@ -1,8 +1,9 @@
 # Compatible Decode API
 
 Planned current-truth contract for Milestone 5 eager JSON materialization and
-the safe Jason 1.4.5 compatibility subset. Phase 3 fills the private ABI v4
-graph for every JSON value type; public functions remain planned.
+the safe Jason 1.4.5 compatibility subset. Phase 4 converts complete ABI v4
+graphs in private worker environments and routes test-only decode operations
+through the bounded pool; public functions remain planned.
 
 ## Intent
 

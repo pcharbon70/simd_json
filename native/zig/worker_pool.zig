@@ -6,6 +6,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             document_open,
             document_cleanup,
             projection,
+            decode,
             stream_binary_setup,
             stream_document_setup,
             stream_batch,
@@ -356,8 +357,15 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             }
 
             fn isCancelled(self: *Job) bool {
-                return self.cancelled.load(.acquire) or
-                    if (self.request) |request| request.cancelled.load(.acquire) else false;
+                const operation_cancelled = if (self.operation) |operation|
+                    ops.pool_operation_cancelled(operation)
+                else
+                    false;
+                const request_cancelled = if (self.request) |request|
+                    request.cancelled.load(.acquire)
+                else
+                    false;
+                return self.cancelled.load(.acquire) or operation_cancelled or request_cancelled;
             }
 
             fn attachSerialization(self: *Job, resource: SerializationResource) void {
@@ -723,6 +731,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                             .document_open => if (ops.threaded_document_open(job.?.operation.?)) |result| encodeResult(job.?.env.?, result) else |_| null,
                             .document_cleanup => encodeResult(job.?.env.?, ops.threaded_document_cleanup(job.?.operation.?, job.?.document.?)),
                             .projection => ops.pool_encode_projection_result(job.?.env.?, ops.threaded_projection_execute(job.?.operation.?)),
+                            .decode => ops.threaded_decode_execute(job.?.operation.?),
                             .stream_binary_setup => encodeResult(job.?.env.?, ops.threaded_stream_binary_setup_fixture(job.?.operation.?, job.?.projection.?, job.?.target.?, job.?.row_limit, job.?.byte_limit)),
                             .stream_document_setup => encodeResult(job.?.env.?, ops.threaded_stream_setup_fixture(job.?.operation.?, job.?.document.?, job.?.projection.?, job.?.target.?, job.?.row_limit, job.?.byte_limit)),
                             .stream_batch => encodeResult(job.?.env.?, ops.threaded_stream_batch_fixture(job.?.operation.?, job.?.cursor.?, job.?.projection.?, job.?.sequence)),
