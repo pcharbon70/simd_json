@@ -1,8 +1,8 @@
 defmodule SimdJson do
   # covers: simd_json.package.mix_library simd_json.native_build_and_abi.layered_boundary simd_json.document_api.open_contract simd_json.document_api.binary_only simd_json.document_api.close_contract simd_json.document_api.document_argument_validation simd_json.projection_api.select_contract simd_json.projection_api.source_argument_validation simd_json.projection_api.output_key_identity simd_json.projection_api.scalar_results simd_json.projection_api.atomic_result
   @moduledoc """
-  Opens opaque JSON documents, selects scalar values, and lazily streams
-  projected array rows using SIMD-accelerated parsing.
+  Decodes complete JSON values, opens opaque documents, selects scalar values,
+  and lazily streams projected array rows using SIMD-accelerated parsing.
 
   `select/2` extracts several named scalar paths from either a JSON binary or
   a caller-owned document. Results use the exact atom or binary keys supplied
@@ -21,18 +21,32 @@ defmodule SimdJson do
   return `{:error, %SimdJson.Error{}}` without a partial result. Selected
   strings are fresh binaries independent of their source.
 
-  The API intentionally has no bang variant, eager decode, JSONPath, wildcard,
-  default-field policy, container materialization, public compiled plan, raw
+  Decode accepts binaries and an empty option list only. Its bang wrapper is
+  Elixir-only and raises the same structured error returned by `decode/2`.
+  Eager decode allocates the complete value; prefer projection or streaming for
+  large inputs when only a subset is needed.
+
+  The API intentionally has no projection bang variant, JSONPath, wildcard,
+  default-field policy, public compiled plan, raw
   cursor/batch operation, ownership transfer, or native-handle operation.
 
-  Threaded execution in this milestone is a qualification runtime. Production
-  admission control and its bounded worker pool arrive in Milestone 4.
+  All native execution uses the fixed bounded worker pool established in
+  Milestone 4. Queue saturation returns a redacted `:busy` error.
 
   Milestone 2 is active on the qualified Ubuntu 24.04 x86-64 target. Its
   package, sanitizer, scheduler, lifecycle, and sparse-allocation evidence are
   indexed in the Milestone 2 acceptance record.
 
   ## Examples
+
+      iex> SimdJson.decode(~s({"ready":true}))
+      {:ok, %{"ready" => true}}
+      iex> SimdJson.decode("[1,2,3]", [])
+      {:ok, [1, 2, 3]}
+      iex> SimdJson.decode!(~s("hello"))
+      "hello"
+      iex> SimdJson.decode!("null", [])
+      nil
 
       iex> {:ok, document} = SimdJson.open(~s({"ready": true}))
       iex> inspect(document)
@@ -101,6 +115,7 @@ defmodule SimdJson do
   """
 
   alias SimdJson.Document
+  alias SimdJson.DecodeOptions
   alias SimdJson.Error
   alias SimdJson.Native.BuildSmoke
   alias SimdJson.Native.ProjectionOperation
@@ -153,6 +168,52 @@ defmodule SimdJson do
 
   @typedoc "One scalar-only projected row."
   @type stream_row :: %{optional(output_key()) => scalar_result()}
+
+  @doc """
+  Decodes one complete JSON binary into Elixir maps, lists, binaries, numbers,
+  booleans, and nil.
+
+  The first compatibility release accepts only an empty option list. Decode
+  executes through the bounded native worker pool and returns copied binary
+  keys and strings.
+  """
+  @spec decode(binary()) :: {:ok, term()} | {:error, Error.t()}
+  def decode(input), do: decode(input, [])
+
+  @spec decode(binary(), keyword()) :: {:ok, term()} | {:error, Error.t()}
+  def decode(input, options) do
+    normalized = DecodeOptions.new(input, options)
+    source = DecodeOptions.input(normalized)
+
+    result =
+      try do
+        ThreadedOperation.decode(source)
+      rescue
+        ErlangError -> native_failure_result()
+      catch
+        :exit, _reason -> native_failure_result()
+      end
+
+    case result do
+      {:ok, value} -> {:ok, value}
+      {:error, native_error} -> {:error, translate_decode_error(native_error, byte_size(source))}
+    end
+  end
+
+  @doc """
+  Decodes one complete JSON binary, returning its value or raising the same
+  `SimdJson.Error` returned by `decode/2`.
+  """
+  @spec decode!(binary()) :: term()
+  def decode!(input), do: decode!(input, [])
+
+  @spec decode!(binary(), keyword()) :: term()
+  def decode!(input, options) do
+    case decode(input, options) do
+      {:ok, value} -> value
+      {:error, error} -> raise error
+    end
+  end
 
   @doc """
   Constructs a lazy, owner-bound Enumerable over projected JSON array rows.
@@ -276,6 +337,17 @@ defmodule SimdJson do
     }
   end
 
+  defp translate_decode_error(native_error, logical_length) do
+    reason = decode_reason(Map.get(native_error, :reason))
+
+    %Error{
+      reason: reason,
+      byte_offset: safe_offset(Map.get(native_error, :byte_offset), logical_length),
+      native_code: safe_native_code(Map.get(native_error, :native_code)),
+      message: message(reason)
+    }
+  end
+
   defp stable_reason(reason)
        when reason in [:invalid_json, :invalid_utf8, :unexpected_eof, :out_of_memory],
        do: reason
@@ -284,6 +356,24 @@ defmodule SimdJson do
   defp stable_reason(:closed), do: :closed
   defp stable_reason(:busy), do: :busy
   defp stable_reason(_reason), do: :native_failure
+
+  defp decode_reason(reason)
+       when reason in [
+              :invalid_json,
+              :invalid_utf8,
+              :unexpected_eof,
+              :out_of_memory,
+              :busy,
+              :cancelled,
+              :number_out_of_range,
+              :max_depth_exceeded
+            ],
+       do: reason
+
+  defp decode_reason(:max_container_entries_exceeded), do: :container_too_large
+  defp decode_reason(:max_string_bytes_exceeded), do: :string_too_large
+  defp decode_reason(:max_output_bytes_exceeded), do: :output_too_large
+  defp decode_reason(_reason), do: :native_failure
 
   defp safe_offset(offset, logical_length)
        when is_integer(offset) and offset >= 0 and offset <= logical_length,
@@ -305,6 +395,12 @@ defmodule SimdJson do
   defp message(:closed), do: "document is closed"
   defp message(:not_owner), do: "document belongs to another process"
   defp message(:busy), do: "native execution capacity is busy"
+  defp message(:cancelled), do: "native JSON operation was cancelled"
+  defp message(:number_out_of_range), do: "JSON number is outside the supported exact range"
+  defp message(:max_depth_exceeded), do: "JSON nesting depth exceeds the configured limit"
+  defp message(:container_too_large), do: "JSON container exceeds the configured entry limit"
+  defp message(:string_too_large), do: "decoded JSON string exceeds the configured byte limit"
+  defp message(:output_too_large), do: "decoded JSON output exceeds the configured byte limit"
   defp message(:native_failure), do: "native JSON operation failed"
 
   defp native_failure_result do

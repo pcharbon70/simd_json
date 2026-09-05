@@ -4,6 +4,9 @@ Milestone 5 Phase 4 adds decode as a typed bounded-pool job with monitored
 cancellation and private-environment delivery. No synchronous or dirty-NIF
 fallback exists, and the public decode API remains deferred to Phase 5.
 
+Milestone 5 Phase 5 exposes that same job through tagged and raising Elixir
+wrappers without adding another native execution route.
+
 Milestone 5 Phase 1 decode preflight performs no admission or native work; the
 bounded pool remains unchanged until decode execution is implemented later.
 

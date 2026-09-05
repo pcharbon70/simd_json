@@ -24,14 +24,14 @@ defmodule SimdJson.Native.DecodeMaterializationTest do
 
   test "routes eager decode through the bounded native pool" do
     assert {:ok, %{"value" => [1, 2, 3]}} =
-             ThreadedOperation.decode_fixture(~S({"value":[1,2,3]}))
+             ThreadedOperation.decode(~S({"value":[1,2,3]}))
 
     assert {:error, %{reason: :unexpected_eof}} =
-             ThreadedOperation.decode_fixture(~S({"value":))
+             ThreadedOperation.decode(~S({"value":))
   end
 
-  test "does not expose eager decode through the public API before phase 5" do
-    refute function_exported?(SimdJson, :decode, 1)
-    refute function_exported?(SimdJson, :decode, 2)
+  test "publishes tagged and raising decode wrappers over the same operation" do
+    assert {:ok, %{"value" => [1, true, nil]}} = SimdJson.decode(~S({"value":[1,true,null]}))
+    assert %{"value" => [1, true, nil]} = SimdJson.decode!(~S({"value":[1,true,null]}), [])
   end
 end

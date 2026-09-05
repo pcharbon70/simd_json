@@ -3,6 +3,9 @@
 Milestone 5 Phase 4 shares fixed-worker dispatch and cancellation accounting
 with decode while leaving projection reservations and conversion unchanged.
 
+Milestone 5 Phase 5 exposes decode without changing projection job ownership,
+document consumption, private result conversion, or cleanup.
+
 Projection admission, cancellation, conversion, and lifecycle behavior remain
 regression-locked under cumulative ABI v4.
 

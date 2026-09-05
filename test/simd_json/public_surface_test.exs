@@ -8,11 +8,18 @@ defmodule SimdJson.PublicSurfaceTest do
   alias SimdJson.StreamOptions
   alias SimdJson.Stream
 
-  @root_functions [close: 1, open: 1, select: 2, stream: 2]
+  @root_functions [
+    close: 1,
+    decode: 1,
+    decode: 2,
+    decode!: 1,
+    decode!: 2,
+    open: 1,
+    select: 2,
+    stream: 2
+  ]
   @struct_functions [__struct__: 0, __struct__: 1]
   @forbidden_functions [
-    :decode,
-    :decode!,
     :select!,
     :project,
     :project!,
@@ -114,7 +121,7 @@ defmodule SimdJson.PublicSurfaceTest do
   end
 
   # covers: simd_json.decode_api.binary_input simd_json.decode_api.closed_options
-  test "keeps decode preflight internal and the eager API unpublished" do
+  test "publishes only the four decode arities over internal preflight" do
     assert DecodeOptions.__info__(:functions) == [
              __struct__: 0,
              __struct__: 1,
@@ -124,10 +131,10 @@ defmodule SimdJson.PublicSurfaceTest do
            ]
 
     refute documented?(DecodeOptions)
-    refute {:decode, 1} in SimdJson.__info__(:functions)
-    refute {:decode, 2} in SimdJson.__info__(:functions)
-    refute {:decode!, 1} in SimdJson.__info__(:functions)
-    refute {:decode!, 2} in SimdJson.__info__(:functions)
+    assert {:decode, 1} in SimdJson.__info__(:functions)
+    assert {:decode, 2} in SimdJson.__info__(:functions)
+    assert {:decode!, 1} in SimdJson.__info__(:functions)
+    assert {:decode!, 2} in SimdJson.__info__(:functions)
   end
 
   # covers: simd_json.document_api.milestone_scope simd_json.document_api.no_future_surface simd_json.native_execution.preproduction_boundary simd_json.projection_api.milestone_scope
@@ -234,7 +241,7 @@ defmodule SimdJson.PublicSurfaceTest do
     assert readme =~ "no transparent rewind"
     assert milestone =~ "No compiled projection is public"
     assert milestone =~ "does not rewind"
-    assert root_doc =~ "no bang variant"
+    assert root_doc =~ "no projection bang variant"
     assert root_doc =~ "public compiled plan"
   end
 

@@ -4,6 +4,9 @@ Milestone 5 Phase 4 adds decode to the existing typed FIFO job set without
 changing worker count or queue capacity. Busy rejection, caller monitoring,
 cancellation, redacted telemetry, and shutdown cleanup reuse pool invariants.
 
+Milestone 5 Phase 5 routes every public decode arity through this job and maps
+saturation to the shared redacted `:busy` error.
+
 Milestone 5 Phase 1 hardens the existing early-stream-halt qualification to
 await asynchronous pool cleanup before asserting quiescence; runtime behavior
 and capacity are unchanged.

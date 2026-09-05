@@ -4,6 +4,9 @@ Milestone 5 Phase 4 uses worker-owned temporary documents for private eager
 decode and destroys them before delivery; public document operations remain
 unchanged.
 
+Milestone 5 Phase 5 publishes decode as a separate binary-only operation;
+document ownership, open, close, and error behavior remain unchanged.
+
 ABI v4 preserves document open, ownership, and close unchanged; decode
 materializers borrow a document and cannot replace its owning resource.
 

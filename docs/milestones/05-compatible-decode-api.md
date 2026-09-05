@@ -4,6 +4,12 @@
 
 ## Outcome
 
+Phase 5 publishes this API over the Phase 4 bounded-pool materializer. The
+supported compatibility surface is binary input with `[]` options; iodata,
+atomized keys, structs, custom decoders, and decimal modes remain unsupported.
+Eager decoding allocates the complete BEAM value, so projection and streaming
+remain preferable for large inputs that do not need every field.
+
 This milestone adds familiar eager decoding for applications that need a complete Elixir representation of a JSON value:
 
 ```elixir

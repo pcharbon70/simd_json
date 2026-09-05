@@ -1,9 +1,9 @@
 # Compatible Decode API
 
-Planned current-truth contract for Milestone 5 eager JSON materialization and
-the safe Jason 1.4.5 compatibility subset. Phase 4 converts complete ABI v4
-graphs in private worker environments and routes test-only decode operations
-through the bounded pool; public functions remain planned.
+Current-truth contract for Milestone 5 eager JSON materialization and the safe
+Jason 1.4.5 compatibility subset. Phase 5 publishes `decode/1,2` and
+`decode!/1,2` over the Phase 4 bounded-pool materializer; Phase 6 owns final
+differential qualification and milestone activation.
 
 ## Intent
 
@@ -26,7 +26,7 @@ decisions:
   - simd_json.safe_decode_compatibility_contract
   - simd_json.flat_owned_decode_result_abi
 bootstrap:
-  reason: Phase 1 establishes contract and preflight only; materialization begins in Phase 2 and public decode functions arrive in Phase 5.
+  reason: Phase 5 implements the public surface; Phase 6 differential qualification and milestone activation remain pending.
   requirements:
     - simd_json.decode_api.binary_input
     - simd_json.decode_api.closed_options
