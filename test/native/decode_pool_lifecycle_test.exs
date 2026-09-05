@@ -33,7 +33,7 @@ defmodule SimdJson.Native.DecodePoolLifecycleTest do
     {caller, monitor} =
       spawn_monitor(fn ->
         send(parent, :decode_started)
-        ThreadedOperation.decode_fixture(Jason.encode!(Enum.to_list(1..20_000)))
+        ThreadedOperation.decode(Jason.encode!(Enum.to_list(1..20_000)))
       end)
 
     assert_receive :decode_started
@@ -57,12 +57,12 @@ defmodule SimdJson.Native.DecodePoolLifecycleTest do
   # covers: simd_json.decode.saturation simd_json.decode.no_fallback
   test "decode rejects immediately when its bounded queue is saturated" do
     assert BuildSmoke.native_pool_pause_workers(true)
-    first = Task.async(fn -> ThreadedOperation.decode_fixture("[1]") end)
+    first = Task.async(fn -> ThreadedOperation.decode("[1]") end)
     await(fn -> BuildSmoke.native_pool_snapshot().running_jobs == 1 end)
-    second = Task.async(fn -> ThreadedOperation.decode_fixture("[2]") end)
+    second = Task.async(fn -> ThreadedOperation.decode("[2]") end)
     await(fn -> BuildSmoke.native_pool_snapshot().queued_jobs == 1 end)
 
-    assert {:error, %{reason: :busy}} = ThreadedOperation.decode_fixture("[3]")
+    assert {:error, %{reason: :busy}} = ThreadedOperation.decode("[3]")
     assert BuildSmoke.native_pool_pause_workers(false)
     assert {:ok, [1]} = Task.await(first)
     assert {:ok, [2]} = Task.await(second)

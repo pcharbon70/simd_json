@@ -19,7 +19,7 @@ contracts established by Milestones 1–4.
 2. [Phase 2 — ABI v4 and Iterative Materializer Ownership](./phase-02-abi-v4-and-iterative-materializer-ownership.md)
 3. [Phase 3 — Scalar, Container, Number, and String Materialization](./phase-03-value-materialization.md)
 4. [Phase 4 — Bounded Pool Execution, Cancellation, and Limits](./phase-04-bounded-execution-and-limits.md)
-5. Phase 5 — Public Decode API, Raising Wrapper, and Stable Errors
+5. [Phase 5 — Public Decode API, Raising Wrapper, and Stable Errors](./phase-05-public-decode-api-and-stable-errors.md)
 6. Phase 6 — Differential Qualification, Benchmarks, and Activation
 
 ## Contract Ownership by Phase

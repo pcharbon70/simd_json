@@ -89,14 +89,14 @@ defmodule SimdJson.Native.OperationCoordinator do
     )
   end
 
+  def decode(operation) do
+    GenServer.call(__MODULE__, {:submit, :decode, operation, nil}, :infinity)
+  end
+
   if @test_hooks do
     @doc false
     def stream_probe(operation) do
       GenServer.call(__MODULE__, {:stream_probe, operation}, :infinity)
-    end
-
-    def decode_fixture(operation) do
-      GenServer.call(__MODULE__, {:submit, :decode, operation, nil}, :infinity)
     end
 
     def stream_setup_fixture(operation, document, row_limit, byte_limit) do

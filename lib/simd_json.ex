@@ -101,6 +101,7 @@ defmodule SimdJson do
   """
 
   alias SimdJson.Document
+  alias SimdJson.DecodeOptions
   alias SimdJson.Error
   alias SimdJson.Native.BuildSmoke
   alias SimdJson.Native.ProjectionOperation
@@ -153,6 +154,46 @@ defmodule SimdJson do
 
   @typedoc "One scalar-only projected row."
   @type stream_row :: %{optional(output_key()) => scalar_result()}
+
+  @doc """
+  Decodes one complete JSON binary into Elixir maps, lists, binaries, numbers,
+  booleans, and nil.
+
+  The first compatibility release accepts only an empty option list. Decode
+  executes through the bounded native worker pool and returns copied binary
+  keys and strings.
+  """
+  @spec decode(binary(), keyword()) :: {:ok, term()} | {:error, Error.t()}
+  def decode(input, options \\ []) do
+    normalized = DecodeOptions.new(input, options)
+    source = DecodeOptions.input(normalized)
+
+    result =
+      try do
+        ThreadedOperation.decode(source)
+      rescue
+        ErlangError -> native_failure_result()
+      catch
+        :exit, _reason -> native_failure_result()
+      end
+
+    case result do
+      {:ok, value} -> {:ok, value}
+      {:error, native_error} -> {:error, translate_error(native_error, byte_size(source))}
+    end
+  end
+
+  @doc """
+  Decodes one complete JSON binary, returning its value or raising the same
+  `SimdJson.Error` returned by `decode/2`.
+  """
+  @spec decode!(binary(), keyword()) :: term()
+  def decode!(input, options \\ []) do
+    case decode(input, options) do
+      {:ok, value} -> value
+      {:error, error} -> raise error
+    end
+  end
 
   @doc """
   Constructs a lazy, owner-bound Enumerable over projected JSON array rows.

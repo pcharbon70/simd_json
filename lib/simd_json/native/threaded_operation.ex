@@ -261,12 +261,9 @@ defmodule SimdJson.Native.ThreadedOperation do
     |> OperationCoordinator.cleanup(document)
   end
 
-  if @test_hooks do
-    @doc false
-    def decode_fixture(input) when is_binary(input) do
-      operation = admit(input, :decode)
-      OperationCoordinator.decode_fixture(operation)
-    end
+  def decode(input) when is_binary(input) do
+    operation = admit(input, :decode)
+    OperationCoordinator.decode(operation)
   end
 
   def stream_setup(source_kind, source, projection, target, rows, bytes) do
