@@ -1,9 +1,25 @@
 # SimdJson
 
-An Elixir library for extracting selected JSON scalars with SIMD-accelerated
-parsing.
+An Elixir library for decoding JSON and extracting selected values with
+SIMD-accelerated parsing.
 
 ## Public API
+
+Decode a complete JSON binary with the Jason 1.4.5-compatible empty-option
+contract:
+
+```elixir
+SimdJson.decode(~s({"ready":true,"items":[1,2,3]}))
+# => {:ok, %{"ready" => true, "items" => [1, 2, 3]}}
+
+SimdJson.decode!("null", [])
+# => nil
+```
+
+Object keys and strings are copied binaries, duplicate keys use the last
+value, arrays preserve order, and input never creates atoms. Only binary input
+and `[]` options are accepted. Eager decode constructs the entire BEAM value;
+for large payloads, prefer `select/2` or `stream/2` when practical.
 
 Select several nested scalar values from a binary in one operation:
 
@@ -61,10 +77,10 @@ document reservation. A source that is neither a binary nor a genuine
 JSON content, caller path contents, native identity, timing, generation, and
 exception text.
 
-The public root operations are `open/1`, `select/2`, `stream/2`, and `close/1`. There is no
-bang variant, eager decode, JSONPath, wildcard/filter/default policy,
-container materialization, streaming cursor, ownership transfer, raw native
-handle, or public diagnostic API. The active Milestone 4 runtime routes native work
+The public root operations are `decode/1,2`, `decode!/1,2`, `open/1`,
+`select/2`, `stream/2`, and `close/1`. There is no projection bang variant,
+JSONPath, wildcard/filter/default policy, streaming cursor, ownership transfer,
+raw native handle, or public diagnostic API. The active Milestone 4 runtime routes native work
 through a bounded worker pool and non-blocking queue configured at application
 startup. Saturation
 returns the existing redacted `:busy` error.
@@ -75,10 +91,10 @@ Operational telemetry uses the standard `:telemetry` events
 measurements contain bounded capacity, size, and duration values and never JSON
 content, paths, PIDs, request references, or native addresses.
 
-Milestone 5 Phase 1 defines a safe Jason 1.4.5 compatibility subset and an
-internal binary-plus-empty-options preflight. Eager `decode` functions are not
-public until their iterative native materializer and bounded-pool execution are
-implemented and qualified in later phases.
+Milestone 5 implements its safe Jason 1.4.5 compatibility subset through an
+iterative native materializer and bounded-pool execution. The compatibility
+surface intentionally excludes iodata, key atomization, structs, custom
+decoders, decimal modes, and every non-empty option list.
 
 Stream a root or nested array lazily with a scalar projection:
 

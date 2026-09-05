@@ -1,8 +1,8 @@
 defmodule SimdJson do
   # covers: simd_json.package.mix_library simd_json.native_build_and_abi.layered_boundary simd_json.document_api.open_contract simd_json.document_api.binary_only simd_json.document_api.close_contract simd_json.document_api.document_argument_validation simd_json.projection_api.select_contract simd_json.projection_api.source_argument_validation simd_json.projection_api.output_key_identity simd_json.projection_api.scalar_results simd_json.projection_api.atomic_result
   @moduledoc """
-  Opens opaque JSON documents, selects scalar values, and lazily streams
-  projected array rows using SIMD-accelerated parsing.
+  Decodes complete JSON values, opens opaque documents, selects scalar values,
+  and lazily streams projected array rows using SIMD-accelerated parsing.
 
   `select/2` extracts several named scalar paths from either a JSON binary or
   a caller-owned document. Results use the exact atom or binary keys supplied
@@ -21,18 +21,32 @@ defmodule SimdJson do
   return `{:error, %SimdJson.Error{}}` without a partial result. Selected
   strings are fresh binaries independent of their source.
 
-  The API intentionally has no bang variant, eager decode, JSONPath, wildcard,
-  default-field policy, container materialization, public compiled plan, raw
+  Decode accepts binaries and an empty option list only. Its bang wrapper is
+  Elixir-only and raises the same structured error returned by `decode/2`.
+  Eager decode allocates the complete value; prefer projection or streaming for
+  large inputs when only a subset is needed.
+
+  The API intentionally has no projection bang variant, JSONPath, wildcard,
+  default-field policy, public compiled plan, raw
   cursor/batch operation, ownership transfer, or native-handle operation.
 
-  Threaded execution in this milestone is a qualification runtime. Production
-  admission control and its bounded worker pool arrive in Milestone 4.
+  All native execution uses the fixed bounded worker pool established in
+  Milestone 4. Queue saturation returns a redacted `:busy` error.
 
   Milestone 2 is active on the qualified Ubuntu 24.04 x86-64 target. Its
   package, sanitizer, scheduler, lifecycle, and sparse-allocation evidence are
   indexed in the Milestone 2 acceptance record.
 
   ## Examples
+
+      iex> SimdJson.decode(~s({"ready":true}))
+      {:ok, %{"ready" => true}}
+      iex> SimdJson.decode("[1,2,3]", [])
+      {:ok, [1, 2, 3]}
+      iex> SimdJson.decode!(~s("hello"))
+      "hello"
+      iex> SimdJson.decode!("null", [])
+      nil
 
       iex> {:ok, document} = SimdJson.open(~s({"ready": true}))
       iex> inspect(document)
@@ -163,8 +177,11 @@ defmodule SimdJson do
   executes through the bounded native worker pool and returns copied binary
   keys and strings.
   """
+  @spec decode(binary()) :: {:ok, term()} | {:error, Error.t()}
+  def decode(input), do: decode(input, [])
+
   @spec decode(binary(), keyword()) :: {:ok, term()} | {:error, Error.t()}
-  def decode(input, options \\ []) do
+  def decode(input, options) do
     normalized = DecodeOptions.new(input, options)
     source = DecodeOptions.input(normalized)
 
@@ -187,8 +204,11 @@ defmodule SimdJson do
   Decodes one complete JSON binary, returning its value or raising the same
   `SimdJson.Error` returned by `decode/2`.
   """
+  @spec decode!(binary()) :: term()
+  def decode!(input), do: decode!(input, [])
+
   @spec decode!(binary(), keyword()) :: term()
-  def decode!(input, options \\ []) do
+  def decode!(input, options) do
     case decode(input, options) do
       {:ok, value} -> value
       {:error, error} -> raise error

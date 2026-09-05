@@ -21,10 +21,10 @@ Back to plan: [README](./README.md)
 
 ## 5.3 Section — Documentation and Public Surface
 
-- [ ] 5.3 Section - Document compatibility, eager-allocation tradeoffs,
+- [x] 5.3 Section - Document compatibility, eager-allocation tradeoffs,
   unsupported options, and the locked public surface.
-  - [ ] 5.3.1 Task - Add doctests for every public arity and top-level value.
-  - [ ] 5.3.2 Task - Keep native fixtures and pool controls private.
+  - [x] 5.3.1 Task - Add doctests for every public arity and top-level value.
+  - [x] 5.3.2 Task - Keep native fixtures and pool controls private.
 
 ## 5.4 Section — Phase 5 Integration and Qualification
 
