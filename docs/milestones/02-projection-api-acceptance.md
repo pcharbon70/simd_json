@@ -116,6 +116,23 @@ individual sample. The allocation estimate is GC-reclaimed caller words plus
 the post-fullsweep retained live-word delta. Separate peak and native metrics
 make that deliberately scoped estimate reviewable.
 
+## Million-row projection supplement
+
+The cumulative projection runtime gate also selects the first, middle, and
+last scalar values from the exact Milestone 3 million-row fixture. That source
+is 45,666,793 bytes with SHA-256
+`2171d30d6e247aede4318ba732e60e41af513be04b3d148cd26b92f218042ea7`.
+Reaching index 999,999 and completing successfully verifies full forward
+traversal and complete-source validation rather than an early prefix result.
+
+The development-host qualification selected the three values in 211.557 ms,
+recorded a 3.078 ms heartbeat p99/maximum, and returned every projection-native
+gauge to baseline. Its isolated worker-process peak was 8,864 bytes versus
+389,351,784 bytes for Jason full decode plus equivalent lookups. This scoped
+process-heap comparison deliberately excludes the already-loaded source binary
+and native allocations; it demonstrates avoidance of a full BEAM result tree,
+not file/socket streaming or zero total-memory input handling.
+
 ## Scheduler and lifetime criteria
 
 The formal projection profile uses a 4 MiB sparse source, public binary and

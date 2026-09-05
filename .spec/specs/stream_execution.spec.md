@@ -1,5 +1,8 @@
 # Stream Execution and Lifecycle
 
+The million-row stream fixture is now shared with projection qualification;
+its stream execution contract and measurements remain unchanged.
+
 Milestone 5 Phase 6 includes stream execution in cumulative regression and
 sanitizer qualification while accepting the separate eager decode path.
 

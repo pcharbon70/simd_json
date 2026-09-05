@@ -10,6 +10,9 @@ affects:
 
 # Prefix-Sharing Native Projection Engine
 
+The post-acceptance million-row qualification reuses the frozen engine and
+shared streaming fixture without changing its ABI or traversal policy.
+
 ## Context
 
 simdjson's On-Demand document is forward-moving. Performing one independent

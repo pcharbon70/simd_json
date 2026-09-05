@@ -1,5 +1,9 @@
 # Projection Execution and Lifecycle
 
+Post-acceptance qualification applies `select/2` to the exact 45,666,793-byte,
+one-million-row streaming fixture, selecting its first, middle, and final rows
+while enforcing scheduler, scoped BEAM-memory, and native-baseline thresholds.
+
 Milestone 5 Phase 6 includes projection execution in cumulative regression and
 sanitizer qualification while accepting the separate decode operation.
 

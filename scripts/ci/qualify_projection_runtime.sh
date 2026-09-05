@@ -40,12 +40,15 @@ run_step runtime_policy mix test \
 run_step scheduler env SIMD_JSON_QUALIFICATION_DIR="${evidence_root}" \
   mix test test/qualification/projection_scheduler_qualification_test.exs --seed 0
 
+run_step million_row env SIMD_JSON_QUALIFICATION_DIR="${evidence_root}" \
+  mix test test/qualification/projection_million_row_qualification_test.exs --seed 0
+
 run_step lifecycle env \
   SIMD_JSON_QUALIFICATION_DIR="${evidence_root}" \
   SIMD_JSON_LIFECYCLE_SEED="${seed}" \
   mix test test/qualification/projection_lifecycle_qualification_test.exs --seed 0
 
-for evidence in projection-scheduler.json projection-lifecycle.json; do
+for evidence in projection-scheduler.json projection-million-row.json projection-lifecycle.json; do
   if [[ ! -s "${evidence_root}/${evidence}" ]]; then
     printf 'projection qualification did not create %s\n' "${evidence}" >&2
     exit 1
