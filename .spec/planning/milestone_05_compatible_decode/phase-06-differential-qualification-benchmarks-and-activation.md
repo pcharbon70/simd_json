@@ -14,11 +14,11 @@ Back to plan: [README](./README.md)
 
 ## 6.2 Section — Performance, Memory, and Scheduler Evidence
 
-- [ ] 6.2 Section - Record end-to-end decode latency, throughput, reductions,
+- [x] 6.2 Section - Record end-to-end decode latency, throughput, reductions,
   memory, garbage collection, and scheduler responsiveness against Jason.
-  - [ ] 6.2.1 Task - Add deterministic small, medium, array, nested, string,
+  - [x] 6.2.1 Task - Add deterministic small, medium, array, nested, string,
     number, success, and malformed benchmark profiles.
-  - [ ] 6.2.2 Task - Retain machine-readable measurements and cleanup gauges.
+  - [x] 6.2.2 Task - Retain machine-readable measurements and cleanup gauges.
 
 ## 6.3 Section — Sanitizer and Qualification Aggregation
 
