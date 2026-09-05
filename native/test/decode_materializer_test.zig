@@ -11,7 +11,7 @@ const Fixture = struct {
     document: ?*c.simd_json_document,
 
     fn init() !Fixture {
-        const source = "null";
+        const source = "{\"a\":[],\"b\":[{},null]}";
         const capacity = source.len + @as(usize, @intCast(c.SIMD_JSON_REQUIRED_PADDING));
         const storage = try std.testing.allocator.alloc(u8, capacity);
         errdefer std.testing.allocator.free(storage);
@@ -50,10 +50,10 @@ test "opaque materializer transfers one result and deinitializes idempotently" {
     var result = try materializer.execute();
     defer result.deinit();
     const graph = try result.graph();
-    try std.testing.expectEqual(@as(usize, 0), graph.nodes.len);
-    try std.testing.expectEqual(@as(usize, 0), graph.edges.len);
-    try std.testing.expectEqual(@as(usize, 0), graph.copied_bytes.len);
-    try std.testing.expect(graph.root_node == null);
+    try std.testing.expectEqual(@as(usize, 5), graph.nodes.len);
+    try std.testing.expectEqual(@as(usize, 4), graph.edges.len);
+    try std.testing.expectEqualStrings("ab", graph.copied_bytes);
+    try std.testing.expectEqual(@as(?u64, 0), graph.root_node);
     try std.testing.expectError(error.Consumed, materializer.execute());
     result.deinit();
     result.deinit();
