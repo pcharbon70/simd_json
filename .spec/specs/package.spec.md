@@ -4,6 +4,9 @@ Milestone 5 Phase 4 packages private graph-to-BEAM conversion, typed decode
 pool routing, lifecycle regressions, and updated qualification evidence while
 still exporting no public `decode` function.
 
+Milestone 5 Phase 5 packages four documented public decode arities, shared
+tagged/raising errors, compatibility guidance, and public integration tests.
+
 Milestone 5 Phase 2 packages the ABI v4 materializer C++ source, Zig owner,
 independent C/Zig harnesses, phase plan, and ownership decision as source.
 Phase 3 adds its value-materialization plan and keeps the same source-only

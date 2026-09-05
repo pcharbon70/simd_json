@@ -3,6 +3,26 @@ defmodule SimdJson.DecodeApiTest do
 
   alias SimdJson.Error
 
+  # covers: simd_json.decode_api.complete_values simd_json.decode_api.binary_keys simd_json.decode_api.exact_numbers
+  test "materializes every top-level JSON value through the public API" do
+    cases = [
+      {~S({"a":1,"a":2}), %{"a" => 2}},
+      {"[]", []},
+      {~S("snow: \u96ea"), "snow: 雪"},
+      {"-9223372036854775808", -9_223_372_036_854_775_808},
+      {"18446744073709551615", 18_446_744_073_709_551_615},
+      {"1.25e2", 125.0},
+      {"true", true},
+      {"false", false},
+      {"null", nil}
+    ]
+
+    for {input, expected} <- cases do
+      assert {:ok, ^expected} = SimdJson.decode(input)
+      assert SimdJson.decode!(input, []) == expected
+    end
+  end
+
   # covers: simd_json.decode_api.complete_values simd_json.decode_api.shared_errors
   test "tagged and raising forms share the same structured parse error" do
     assert {:error, %Error{} = tagged} = SimdJson.decode(~S({"value":))

@@ -196,7 +196,7 @@ defmodule SimdJson do
 
     case result do
       {:ok, value} -> {:ok, value}
-      {:error, native_error} -> {:error, translate_error(native_error, byte_size(source))}
+      {:error, native_error} -> {:error, translate_decode_error(native_error, byte_size(source))}
     end
   end
 
@@ -337,6 +337,17 @@ defmodule SimdJson do
     }
   end
 
+  defp translate_decode_error(native_error, logical_length) do
+    reason = decode_reason(Map.get(native_error, :reason))
+
+    %Error{
+      reason: reason,
+      byte_offset: safe_offset(Map.get(native_error, :byte_offset), logical_length),
+      native_code: safe_native_code(Map.get(native_error, :native_code)),
+      message: message(reason)
+    }
+  end
+
   defp stable_reason(reason)
        when reason in [:invalid_json, :invalid_utf8, :unexpected_eof, :out_of_memory],
        do: reason
@@ -344,13 +355,25 @@ defmodule SimdJson do
   defp stable_reason(:not_owner), do: :not_owner
   defp stable_reason(:closed), do: :closed
   defp stable_reason(:busy), do: :busy
-  defp stable_reason(:cancelled), do: :cancelled
-  defp stable_reason(:number_out_of_range), do: :number_out_of_range
-  defp stable_reason(:max_depth_exceeded), do: :max_depth_exceeded
-  defp stable_reason(:max_container_entries_exceeded), do: :container_too_large
-  defp stable_reason(:max_string_bytes_exceeded), do: :string_too_large
-  defp stable_reason(:max_output_bytes_exceeded), do: :output_too_large
   defp stable_reason(_reason), do: :native_failure
+
+  defp decode_reason(reason)
+       when reason in [
+              :invalid_json,
+              :invalid_utf8,
+              :unexpected_eof,
+              :out_of_memory,
+              :busy,
+              :cancelled,
+              :number_out_of_range,
+              :max_depth_exceeded
+            ],
+       do: reason
+
+  defp decode_reason(:max_container_entries_exceeded), do: :container_too_large
+  defp decode_reason(:max_string_bytes_exceeded), do: :string_too_large
+  defp decode_reason(:max_output_bytes_exceeded), do: :output_too_large
+  defp decode_reason(_reason), do: :native_failure
 
   defp safe_offset(offset, logical_length)
        when is_integer(offset) and offset >= 0 and offset <= logical_length,

@@ -35,6 +35,10 @@ preflight and reserves the stable redacted error vocabulary needed later.
 
 ## Consequences
 
+Phase 5 publishes the four decode arities over one bounded-pool operation.
+The raising functions are Elixir wrappers over tagged decode and raise the same
+redacted `SimdJson.Error`; the closed binary-plus-empty-options contract is
+validated before admission.
+
 Compatibility is measurable and safe rather than universal. Future option or
 iodata support requires a separate decision, public contract, and evidence.
-

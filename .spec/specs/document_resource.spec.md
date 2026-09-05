@@ -3,6 +3,9 @@
 Milestone 5 Phase 4 confines eager decode documents, materializers, results,
 and graph frames to one pool job and releases them on every terminal path.
 
+Milestone 5 Phase 5 exposes only decoded values and shared errors; no temporary
+decode document or owner is added to the public resource surface.
+
 ABI v4 adds no document ownership transfer: an opaque decode materializer is
 operation-scoped and its caller retains the document through destruction.
 

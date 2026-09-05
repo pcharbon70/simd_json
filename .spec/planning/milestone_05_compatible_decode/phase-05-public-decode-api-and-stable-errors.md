@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 5 Phase - Publish the safe eager decode compatibility surface while
+- [x] 5 Phase - Publish the safe eager decode compatibility surface while
   preserving bounded native execution and redacted failures.
 
 ## 5.1 Section — Tagged and Raising Public API
@@ -28,9 +28,9 @@ Back to plan: [README](./README.md)
 
 ## 5.4 Section — Phase 5 Integration and Qualification
 
-- [ ] 5.4 Section - Reconcile API, runtime, package, specs, regressions, and
+- [x] 5.4 Section - Reconcile API, runtime, package, specs, regressions, and
   qualification state for the public decode release.
-  - [ ] 5.4.1 Task - Cover success, malformed input, options, bang parity,
+  - [x] 5.4.1 Task - Cover success, malformed input, options, bang parity,
     saturation, telemetry, and cleanup through the public API.
-  - [ ] 5.4.2 Task - Reconcile formatting, release symbols, traceability,
+  - [x] 5.4.2 Task - Reconcile formatting, release symbols, traceability,
     fingerprint, and SpecLed state.

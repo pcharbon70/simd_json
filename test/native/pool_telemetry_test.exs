@@ -61,7 +61,7 @@ defmodule SimdJson.Native.PoolTelemetryTest do
     input = Jason.encode!(%{secret => [1, 2, 3]})
 
     assert {:ok, %{^secret => [1, 2, 3]}} =
-             SimdJson.Native.ThreadedOperation.decode(input)
+             SimdJson.decode(input)
 
     assert_receive {:telemetry, [:simd_json, :job, :start], start, %{operation: :decode}}
 
