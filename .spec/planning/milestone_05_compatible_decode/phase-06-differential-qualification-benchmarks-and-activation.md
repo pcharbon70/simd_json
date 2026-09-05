@@ -22,10 +22,10 @@ Back to plan: [README](./README.md)
 
 ## 6.3 Section — Sanitizer and Qualification Aggregation
 
-- [ ] 6.3 Section - Aggregate compatibility, runtime, benchmark, native,
+- [x] 6.3 Section - Aggregate compatibility, runtime, benchmark, native,
   sanitizer, symbol, package, and regression gates in one command.
-  - [ ] 6.3.1 Task - Run cancellation and failure cleanup with fixed seeds.
-  - [ ] 6.3.2 Task - Bind the evidence bundle to revision, tree, environment,
+  - [x] 6.3.1 Task - Run cancellation and failure cleanup with fixed seeds.
+  - [x] 6.3.2 Task - Bind the evidence bundle to revision, tree, environment,
     fingerprint, and checksums.
 
 ## 6.4 Section — Acceptance and Spec Activation
