@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 3 Phase - Populate the ABI v4 result graph with every JSON value while
+- [x] 3 Phase - Populate the ABI v4 result graph with every JSON value while
   preserving exact values, source order, copied bytes, and bounded depth.
 
 ## 3.1 Section — Iterative Container Graph
@@ -33,9 +33,9 @@ Back to plan: [README](./README.md)
 
 ## 3.4 Section — Phase 3 Integration and Qualification
 
-- [ ] 3.4 Section - Validate complete graphs in Zig and reconcile native builds,
+- [x] 3.4 Section - Validate complete graphs in Zig and reconcile native builds,
   package inputs, sanitizer coverage, specs, and qualification evidence.
-  - [ ] 3.4.1 Task - Prove graph range/index invariants and all value tags in C
+  - [x] 3.4.1 Task - Prove graph range/index invariants and all value tags in C
     and Zig ordinary/sanitizer matrices.
-  - [ ] 3.4.2 Task - Reconcile manifest, fingerprint, formatting, regressions,
+  - [x] 3.4.2 Task - Reconcile manifest, fingerprint, formatting, regressions,
     traceability, and SpecLed state.

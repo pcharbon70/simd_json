@@ -1,14 +1,15 @@
 # Compatible Decode API
 
 Planned current-truth contract for Milestone 5 eager JSON materialization and
-the safe Jason 1.4.5 compatibility subset.
+the safe Jason 1.4.5 compatibility subset. Phase 3 fills the private ABI v4
+graph for every JSON value type; public functions remain planned.
 
 ## Intent
 
 This subject adds a familiar complete-value decoder without creating atoms,
 silently rounding numbers, recursively overflowing native stacks, bypassing
-bounded admission, or exposing partially materialized results. Phase 1 owns
-only the contract and native-free preflight; public functions arrive in Phase 5.
+bounded admission, or exposing partially materialized results. Phases 1–3 own
+the contract, preflight, and native graph; public functions arrive in Phase 5.
 
 ```spec-meta
 id: simd_json.decode_api
