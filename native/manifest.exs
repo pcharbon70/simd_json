@@ -158,6 +158,7 @@
     ".spec/decisions/0015-native-pool-qualification-and-activation.md",
     ".spec/decisions/0016-safe-decode-compatibility-contract.md",
     ".spec/decisions/0017-flat-owned-decode-result-abi.md",
+    ".spec/decisions/0018-public-hex-release-contract.md",
     ".spec/planning/milestone_02_projection_api/README.md",
     ".spec/planning/milestone_02_projection_api/phase-01-projection-contract-and-preflight-validation.md",
     ".spec/planning/milestone_02_projection_api/phase-02-abi-v2-and-native-projection-plan.md",

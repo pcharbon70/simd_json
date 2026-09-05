@@ -7,15 +7,15 @@ Back to plan: [README](./README.md)
 
 ## 1.1 Section — Distribution and Package Identity
 
-- [ ] 1.1 Section - Decide exactly what and where the first release publishes.
-  - [ ] 1.1.1 Task - Freeze the public package identity.
-    - [ ] 1.1.1.1 Subtask - Confirm public Hex rather than a private organization repository.
-    - [ ] 1.1.1.2 Subtask - Recheck that `simd_json` is unclaimed immediately before reserving or publishing it.
-    - [ ] 1.1.1.3 Subtask - Keep OTP application `:simd_json`, Hex package `simd_json`, and `SimdJson.*` module ownership aligned.
-  - [ ] 1.1.2 Task - Freeze the first-version policy.
-    - [ ] 1.1.2.1 Subtask - Confirm `0.1.0` as the first public version or record an owner-selected alternative.
-    - [ ] 1.1.2.2 Subtask - Require semantic versioning and minor-version increments for breaking changes while major version is zero.
-    - [ ] 1.1.2.3 Subtask - Define whether release candidates use Git tags only or a separate prerelease version.
+- [x] 1.1 Section - Decide exactly what and where the first release publishes.
+  - [x] 1.1.1 Task - Freeze the public package identity.
+    - [x] 1.1.1.1 Subtask - Confirm public Hex rather than a private organization repository.
+    - [x] 1.1.1.2 Subtask - Recheck that `simd_json` is unclaimed immediately before reserving or publishing it.
+    - [x] 1.1.1.3 Subtask - Keep OTP application `:simd_json`, Hex package `simd_json`, and `SimdJson.*` module ownership aligned.
+  - [x] 1.1.2 Task - Freeze the first-version policy.
+    - [x] 1.1.2.1 Subtask - Confirm `0.1.0` as the first public version or record an owner-selected alternative.
+    - [x] 1.1.2.2 Subtask - Require semantic versioning and minor-version increments for breaking changes while major version is zero.
+    - [x] 1.1.2.3 Subtask - Define whether release candidates use Git tags only or a separate prerelease version.
 
 ## 1.2 Section — Project License and Third-Party Notices
 

@@ -1,5 +1,8 @@
 # SimdJson Package
 
+Milestone 6 Phase 1 targets public Hex package `simd_json` version `0.1.0`
+with matching `:simd_json` application and `SimdJson.*` module ownership.
+
 Milestone 6 planning defines the legal, CI, metadata, documentation, archive,
 provenance, consumer-install, authorization, publication, verification, and
 recovery work required before the first public Hex release.
