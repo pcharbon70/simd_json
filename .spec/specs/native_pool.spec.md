@@ -1,5 +1,11 @@
 # Native Worker Pool and Admission
 
+Milestone 6 Phase 2 Section 2.2 serializes every public shared-pool lookup with
+pool stop, worker join, and mutex retirement. Concurrent NIF callers can now
+observe either a live pool or a stopped pool, never freed synchronization
+state; deterministic stop/start readers and the recorded sanitizer seed prove
+the boundary.
+
 Milestone 5 Phase 4 adds decode to the existing typed FIFO job set without
 changing worker count or queue capacity. Busy rejection, caller monitoring,
 cancellation, redacted telemetry, and shutdown cleanup reuse pool invariants.
@@ -140,6 +146,7 @@ decisions:
   then:
     - One terminal owner wins without double-send or double-free
     - Conflicting resource work never overlaps
+    - Concurrent snapshots never outlive pool mutex retirement
     - Workers join and every retained gauge returns to baseline
 
 - id: simd_json.native_pool.operational_visibility
@@ -172,6 +179,7 @@ decisions:
   covers:
     - simd_json.native_pool.fixed_workers
     - simd_json.native_pool.shutdown
+    - simd_json.native_pool.cancel_close_shutdown_races
 
 - kind: command
   target: MIX_ENV=test mix test test/native/pool_queue_test.exs

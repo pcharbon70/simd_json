@@ -5,8 +5,17 @@ repository_root="$(git rev-parse --show-toplevel)"
 spec_base="${SIMD_JSON_SPEC_BASE:-origin/main}"
 qualification_root="${repository_root}/_build/qualification"
 evidence_root="${qualification_root}/acceptance"
+release_mix_env="${SIMD_JSON_RELEASE_MIX_ENV:-test}"
+active_mix_env="${MIX_ENV:-${release_mix_env}}"
 
 cd "${repository_root}"
+
+if [[ "${active_mix_env}" != "${release_mix_env}" ]]; then
+  printf 'Milestone 5 qualification requires MIX_ENV=%s; received MIX_ENV=%s\n' \
+    "${release_mix_env}" "${active_mix_env}" >&2
+  exit 1
+fi
+export MIX_ENV="${release_mix_env}"
 
 if [[ -n "$(git status --porcelain=v1 --untracked-files=all)" ]]; then
   printf 'Milestone 5 qualification requires a clean committed worktree\n' >&2
@@ -50,6 +59,7 @@ SIMD_JSON_QUALIFICATION_DIR="${qualification_root}/native-pool" \
 SIMD_JSON_QUALIFICATION_DIR="${qualification_root}/decode" \
   run_step decode bash scripts/ci/qualify_decode.sh
 
+run_step release_tool_bootstrap bash scripts/ci/bootstrap_release_tools.sh
 run_step formatting mix format --check-formatted
 run_step documentation mix docs --warnings-as-errors
 run_step full_test_suite env MIX_ENV=test mix test --seed 0

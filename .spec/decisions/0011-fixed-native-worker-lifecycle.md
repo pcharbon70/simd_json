@@ -33,8 +33,17 @@ state. Shutdown stops acceptance, wakes and joins every worker, then releases
 the condition, mutex, handles, and runtime. Phase 2 workers accept no jobs and
 do not replace or modify the qualified threaded execution and resource paths.
 
+Milestone 6 qualification exposed a race between loading the shared pool
+pointer and retiring the pool's mutexes. A NIF-lifetime mutex now serializes
+all public shared-pool access with stop, join, and destruction. Callers observe
+either a live pool or the stopped result; no caller may retain the pointer
+across mutex retirement. Lifecycle tests also wait for zero coordinator and
+native operation gauges before recording a baseline.
+
 ## Consequences
 
 The process has fixed native capacity and deterministic rollback/join
 primitives before jobs exist. Production admission, cancellation, delivery,
-and the `:bounded_native_pool` executor marker remain deferred.
+and the `:bounded_native_pool` executor marker remain deferred. The added
+lifecycle mutex is held only around bounded pool entry operations and shutdown;
+it does not make input-dependent work execute on a BEAM scheduler.

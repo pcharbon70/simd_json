@@ -27,15 +27,19 @@ release-readiness waiver.
 
 ## 2.2 Section — Deterministic Tool Bootstrap
 
-- [ ] 2.2 Section - Fix qualification ordering and eliminate hidden cache dependencies.
-  - [ ] 2.2.1 Task - Bootstrap exact build tools.
-    - [ ] 2.2.1.1 Subtask - Compile the pinned Zigler dependency before `mix format --check-formatted`.
-    - [ ] 2.2.1.2 Subtask - Pin or record Hex/Rebar versions used by qualification when their behavior affects archives.
-    - [ ] 2.2.1.3 Subtask - Verify Zig 0.16.0 from the intended cache/download path before native compilation.
-  - [ ] 2.2.2 Task - Preserve deterministic environments.
-    - [ ] 2.2.2.1 Subtask - Make MIX_ENV transitions explicit and prevent one phase from invalidating another phase's plugin paths.
-    - [ ] 2.2.2.2 Subtask - Ensure temporary sanitizer, symbol, and offline builds cannot mutate canonical build inputs.
-    - [ ] 2.2.2.3 Subtask - Fail with a concise diagnostic identifying the missing tool and recovery command.
+- [x] 2.2 Section - Fix qualification ordering and eliminate hidden cache dependencies.
+  - [x] 2.2.1 Task - Bootstrap exact build tools.
+    - [x] 2.2.1.1 Subtask - Compile the pinned Zigler dependency before `mix format --check-formatted`.
+    - [x] 2.2.1.2 Subtask - Pin or record Hex/Rebar versions used by qualification when their behavior affects archives.
+    - [x] 2.2.1.3 Subtask - Verify Zig 0.16.0 from the intended cache/download path before native compilation.
+  - [x] 2.2.2 Task - Preserve deterministic environments.
+    - [x] 2.2.2.1 Subtask - Make MIX_ENV transitions explicit and prevent one phase from invalidating another phase's plugin paths.
+    - [x] 2.2.2.2 Subtask - Ensure temporary sanitizer, symbol, and offline builds cannot mutate canonical build inputs.
+    - [x] 2.2.2.3 Subtask - Fail with a concise diagnostic identifying the missing tool and recovery command.
+  - [x] 2.2.3 Task - Eliminate native lifecycle ordering failures.
+    - [x] 2.2.3.1 Subtask - Serialize shared pool lookup with stop, join, and mutex retirement.
+    - [x] 2.2.3.2 Subtask - Await zero native gauges before capturing decode lifecycle baselines.
+    - [x] 2.2.3.3 Subtask - Pass the recorded sanitizer seed without trace-induced scheduling changes.
 
 ## 2.3 Section — Workflow Safety and Evidence Retention
 

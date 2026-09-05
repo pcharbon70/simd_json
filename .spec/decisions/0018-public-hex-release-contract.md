@@ -29,6 +29,12 @@ package name and version must be rechecked immediately before publication.
 Only a clean, qualified, explicitly approved release commit may be tagged or
 submitted to Hex.
 
+Release qualification must bootstrap in one explicit Mix environment, verify
+the pinned Zig executable before native compilation, rebuild Zigler before a
+strict formatting gate, and record the active Hex archive and Rebar version.
+Sanitizer, symbol, and offline builds use isolated temporary build and Zig
+cache roots so their order cannot alter canonical inputs.
+
 The repository owner selected the MIT License for SimdJson wrapper code, with
 copyright recorded as `Copyright (c) 2026 pcharbon70`. Vendored simdjson keeps
 its separate upstream Apache-2.0-or-MIT license choice and attribution. Hex

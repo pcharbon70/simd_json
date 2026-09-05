@@ -1,5 +1,9 @@
 # Compatible Decode API
 
+Milestone 6 Phase 2 Section 2.2 makes decode lifecycle baselines wait for both
+the coordinator and native operation graph to become quiescent. This removes a
+test-order race without changing decode values, options, errors, or admission.
+
 Current-truth contract for Milestone 5 eager JSON materialization and the safe
 Jason 1.4.5 compatibility subset. Phase 5 publishes `decode/1,2` and
 `decode!/1,2` over the Phase 4 bounded-pool materializer; Phase 6 owns final

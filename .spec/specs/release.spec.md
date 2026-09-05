@@ -4,6 +4,10 @@ Current-truth contract for preparing and publishing the first public release.
 Milestone 6 Phase 1 freezes identity, licensing, and support; Phases 2–6 own CI
 repair, public package documentation, release tooling, exact-candidate
 qualification, explicit authorization, publication, and external verification.
+Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
+test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
+closes the reproduced pool-retirement and stale-baseline failures; workflow
+safety and cold/restored GitHub proof remain in Sections 2.3 and 2.4.
 
 ```spec-meta
 id: simd_json.release
@@ -160,6 +164,21 @@ bootstrap:
     - simd_json.release.project_license
     - simd_json.release.qualified_support
     - simd_json.release.publication_gate
+
+- kind: command
+  target: MIX_ENV=test mix test test/release/ci_reliability_contract_test.exs test/native/pool_worker_lifecycle_test.exs test/native/decode_pool_lifecycle_test.exs
+  execute: true
+  covers:
+    - simd_json.release.green_ci
+    - simd_json.release.ci_cache_equivalence
+    - simd_json.release.ci_native_reliability
+
+- kind: command
+  target: SIMD_JSON_NIF_SANITIZER_SEED=935088 bash scripts/native/run_nif_sanitizer_tests.sh
+  execute: true
+  covers:
+    - simd_json.release.green_ci
+    - simd_json.release.ci_native_reliability
 
 - kind: command
   target: bash scripts/ci/qualify_release_candidate.sh

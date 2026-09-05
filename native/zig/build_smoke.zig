@@ -353,10 +353,28 @@ const Runtime = struct {
 
 var runtime_ref = std.atomic.Value(?*Runtime).init(null);
 var pool_ref = std.atomic.Value(?*worker_pool.Runtime).init(null);
+var pool_lifecycle_mutex = std.atomic.Value(?*e.ErlNifMutex).init(null);
+
+const PoolLifecycleGuard = struct {
+    mutex: *e.ErlNifMutex,
+
+    fn acquire() ?PoolLifecycleGuard {
+        const mutex = pool_lifecycle_mutex.load(.acquire) orelse return null;
+        e.enif_mutex_lock(mutex);
+        return .{ .mutex = mutex };
+    }
+
+    fn release(self: PoolLifecycleGuard) void {
+        e.enif_mutex_unlock(self.mutex);
+    }
+};
 
 pub const PoolStartStatus = enum(u8) { ok, already_started, conflicting_configuration, startup_failed };
 
 pub fn native_pool_start(workers: usize, queue_capacity: usize) PoolStartStatus {
+    const guard = PoolLifecycleGuard.acquire() orelse return .startup_failed;
+    defer guard.release();
+
     if (pool_ref.load(.acquire)) |pool| {
         const current = pool.snapshot();
         return if (current.worker_count == workers and current.queue_capacity == queue_capacity)
@@ -373,17 +391,26 @@ pub fn native_pool_start(workers: usize, queue_capacity: usize) PoolStartStatus 
 }
 
 pub fn native_pool_snapshot() ?worker_pool.Snapshot {
+    const guard = PoolLifecycleGuard.acquire() orelse return null;
+    defer guard.release();
+
     const pool = pool_ref.load(.acquire) orelse return null;
     return pool.snapshot();
 }
 
 pub fn native_pool_stop() bool {
+    const guard = PoolLifecycleGuard.acquire() orelse return false;
+    defer guard.release();
+
     const pool = pool_ref.swap(null, .acq_rel) orelse return false;
     pool.destroy();
     return true;
 }
 
 pub fn native_pool_start_with_failure(workers: usize, queue_capacity: usize, fail_after: usize) PoolStartStatus {
+    const guard = PoolLifecycleGuard.acquire() orelse return .startup_failed;
+    defer guard.release();
+
     if (pool_ref.load(.acquire) != null) return .conflicting_configuration;
     const pool = worker_pool.Runtime.createWithFailure(beam.allocator, workers, queue_capacity, fail_after) catch return .startup_failed;
     pool_ref.store(pool, .release);
@@ -391,16 +418,25 @@ pub fn native_pool_start_with_failure(workers: usize, queue_capacity: usize, fai
 }
 
 pub fn native_pool_submit_fixture(input: []const u8) worker_pool.SubmitResult {
+    const guard = PoolLifecycleGuard.acquire() orelse return .{ .status = .stopped, .request_id = 0 };
+    defer guard.release();
+
     const pool = pool_ref.load(.acquire) orelse return .{ .status = .stopped, .request_id = 0 };
     return pool.submit(input);
 }
 
 pub fn native_pool_submit_monitored_fixture(input: []const u8) !worker_pool.MonitoredSubmission {
+    const guard = PoolLifecycleGuard.acquire() orelse return error.pool_stopped;
+    defer guard.release();
+
     const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
     return pool.submitMonitored(input);
 }
 
 pub fn native_pool_cancel_fixture(request: PoolRequestResource) bool {
+    const guard = PoolLifecycleGuard.acquire() orelse return false;
+    defer guard.release();
+
     const pool = pool_ref.load(.acquire) orelse return false;
     return pool.cancelRequest(request);
 }
@@ -410,6 +446,9 @@ pub fn native_pool_request_state_fixture(request: PoolRequestResource) worker_po
 }
 
 pub fn native_pool_abandon_monitor_fixture(request: PoolRequestResource) bool {
+    const guard = PoolLifecycleGuard.acquire() orelse return false;
+    defer guard.release();
+
     const pool = pool_ref.load(.acquire) orelse return false;
     pool.abandonMonitor(request);
     return true;
@@ -423,11 +462,17 @@ pub fn native_pool_submit_serialized_fixture(
     input: []const u8,
     resource: PoolSerializationResource,
 ) !worker_pool.MonitoredSubmission {
+    const guard = PoolLifecycleGuard.acquire() orelse return error.pool_stopped;
+    defer guard.release();
+
     const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
     return pool.submitSerialized(input, resource);
 }
 
 pub fn native_pool_submit_open(operation: OperationResource) !worker_pool.MonitoredSubmission {
+    const guard = PoolLifecycleGuard.acquire() orelse return error.pool_stopped;
+    defer guard.release();
+
     const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
     return pool.submitOperation(.document_open, operation, null, null, null, null, 0, 0, 0);
 }
@@ -436,16 +481,25 @@ pub fn native_pool_submit_cleanup(
     operation: OperationResource,
     document: DocumentResource,
 ) !worker_pool.MonitoredSubmission {
+    const guard = PoolLifecycleGuard.acquire() orelse return error.pool_stopped;
+    defer guard.release();
+
     const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
     return pool.submitOperation(.document_cleanup, operation, document, null, null, null, 0, 0, 0);
 }
 
 pub fn native_pool_submit_projection(operation: OperationResource) !worker_pool.MonitoredSubmission {
+    const guard = PoolLifecycleGuard.acquire() orelse return error.pool_stopped;
+    defer guard.release();
+
     const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
     return pool.submitOperation(.projection, operation, null, null, null, null, 0, 0, 0);
 }
 
 pub fn native_pool_submit_decode(operation: OperationResource) !worker_pool.MonitoredSubmission {
+    const guard = PoolLifecycleGuard.acquire() orelse return error.pool_stopped;
+    defer guard.release();
+
     const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
     return pool.submitOperation(.decode, operation, null, null, null, null, 0, 0, 0);
 }
@@ -457,6 +511,9 @@ pub fn native_pool_submit_stream_binary_setup(
     row_limit: u64,
     byte_limit: u64,
 ) !worker_pool.MonitoredSubmission {
+    const guard = PoolLifecycleGuard.acquire() orelse return error.pool_stopped;
+    defer guard.release();
+
     const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
     return pool.submitOperation(.stream_binary_setup, operation, null, null, projection, target, row_limit, byte_limit, 0);
 }
@@ -469,6 +526,9 @@ pub fn native_pool_submit_stream_document_setup(
     row_limit: u64,
     byte_limit: u64,
 ) !worker_pool.MonitoredSubmission {
+    const guard = PoolLifecycleGuard.acquire() orelse return error.pool_stopped;
+    defer guard.release();
+
     const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
     return pool.submitOperation(.stream_document_setup, operation, document, null, projection, target, row_limit, byte_limit, 0);
 }
@@ -479,6 +539,9 @@ pub fn native_pool_submit_stream_batch(
     projection: beam.term,
     sequence: u64,
 ) !worker_pool.MonitoredSubmission {
+    const guard = PoolLifecycleGuard.acquire() orelse return error.pool_stopped;
+    defer guard.release();
+
     const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
     return pool.submitOperation(.stream_batch, operation, null, cursor, projection, null, 0, 0, sequence);
 }
@@ -492,6 +555,9 @@ pub fn native_pool_serialization_state_fixture(resource: PoolSerializationResour
 }
 
 pub fn native_pool_pause_workers(paused: bool) bool {
+    const guard = PoolLifecycleGuard.acquire() orelse return false;
+    defer guard.release();
+
     const pool = pool_ref.load(.acquire) orelse return false;
     pool.setPaused(paused);
     return true;
@@ -3292,7 +3358,12 @@ pub fn resource_on_load(
     _ = load_info;
 
     const slot = private_data orelse return -1;
-    const runtime = Runtime.create(beam.allocator, 1) catch return -1;
+    const lifecycle_mutex = e.enif_mutex_create(@constCast("simd_json_pool_lifecycle_mutex")) orelse return -1;
+    const runtime = Runtime.create(beam.allocator, 1) catch {
+        e.enif_mutex_destroy(lifecycle_mutex);
+        return -1;
+    };
+    pool_lifecycle_mutex.store(lifecycle_mutex, .release);
     slot.* = @ptrCast(runtime);
     runtime_ref.store(runtime, .release);
     module_loaded.store(true, .release);
@@ -3323,7 +3394,12 @@ pub fn resource_on_upgrade(
 
     const generation = module_generation.load(.acquire) + 1;
 
-    const runtime = Runtime.create(beam.allocator, generation) catch return -1;
+    const lifecycle_mutex = e.enif_mutex_create(@constCast("simd_json_pool_lifecycle_mutex")) orelse return -1;
+    const runtime = Runtime.create(beam.allocator, generation) catch {
+        e.enif_mutex_destroy(lifecycle_mutex);
+        return -1;
+    };
+    pool_lifecycle_mutex.store(lifecycle_mutex, .release);
     slot.* = @ptrCast(runtime);
     runtime_ref.store(runtime, .release);
     module_generation.store(generation, .release);
@@ -3341,6 +3417,9 @@ pub fn resource_on_unload(env: beam.env, private_data: ?*anyopaque) callconv(.c)
     runtime_ref.store(null, .release);
     _ = native_pool_stop();
     runtime.requestShutdownAndJoin();
+    if (pool_lifecycle_mutex.swap(null, .acq_rel)) |lifecycle_mutex| {
+        e.enif_mutex_destroy(lifecycle_mutex);
+    }
 }
 
 // covers: simd_json.document_resource.opaque_handle simd_json.document_resource.complete_ownership simd_json.document_resource.lifecycle simd_json.document_resource.reverse_destruction simd_json.document_resource.parent_retention

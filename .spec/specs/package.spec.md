@@ -1,5 +1,11 @@
 # SimdJson Package
 
+Milestone 6 Phase 2 Section 2.2 packages the deterministic Zig/Hex/Rebar
+bootstrap, explicit qualification environment, shared-pool retirement guard,
+and the regression proofs that removed the recorded sanitizer and stale
+lifecycle-baseline failures. Alternate native builds remain isolated under
+temporary build and Zig cache roots.
+
 Milestone 6 Phase 2 Section 2.1 packages deterministic CI failure seeds,
 failure provenance, and executable release-reliability contracts without
 changing the public API or Hex archive identity.

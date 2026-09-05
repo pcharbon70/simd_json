@@ -51,4 +51,32 @@ defmodule SimdJson.Native.PoolWorkerLifecycleTest do
       assert %{worker_count: ^workers, live_workers: ^workers} = BuildSmoke.native_pool_snapshot()
     end
   end
+
+  # covers: simd_json.native_pool.shutdown simd_json.release.ci_native_reliability
+  test "concurrent snapshots cannot observe a pool after its mutexes are retired", %{
+    configured: configured
+  } do
+    readers =
+      for _ <- 1..4 do
+        Task.async(fn ->
+          for _ <- 1..300 do
+            case BuildSmoke.native_pool_snapshot() do
+              nil -> :ok
+              %{accepting: accepting} when is_boolean(accepting) -> :ok
+            end
+          end
+        end)
+      end
+
+    for _ <- 1..30 do
+      _ = BuildSmoke.native_pool_stop()
+
+      assert BuildSmoke.native_pool_start(
+               configured.worker_count,
+               configured.queue_capacity
+             ) == :ok
+    end
+
+    Enum.each(readers, &Task.await(&1, 10_000))
+  end
 end
