@@ -1,5 +1,9 @@
 # SimdJson Package
 
+Milestone 6 planning defines the legal, CI, metadata, documentation, archive,
+provenance, consumer-install, authorization, publication, verification, and
+recovery work required before the first public Hex release.
+
 The package qualification reuses the frozen compressed million-row stream
 fixture for a cross-API sparse projection regression and evidence record.
 
