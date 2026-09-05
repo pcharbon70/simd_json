@@ -182,6 +182,7 @@
     ".spec/planning/milestone_05_compatible_decode/README.md",
     ".spec/planning/milestone_05_compatible_decode/phase-01-compatibility-contract-and-preflight.md",
     ".spec/planning/milestone_05_compatible_decode/phase-02-abi-v4-and-iterative-materializer-ownership.md",
+    ".spec/planning/milestone_05_compatible_decode/phase-03-value-materialization.md",
     ".spec/research/jason_parser_architecture_analysis.md",
     ".spec/research/milestone_2_projection_runtime_qualification.md",
     ".spec/research/phase_4_scheduler_qualification.md",

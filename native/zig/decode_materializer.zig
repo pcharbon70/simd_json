@@ -77,10 +77,52 @@ pub fn Implementation(comptime c: type) type {
                 if (node_count != 0 and view.root_node >= view.node_count)
                     return error.InvalidGraph;
 
+                const nodes = if (view.nodes) |ptr| ptr[0..node_count] else &.{};
+                const edges = if (view.edges) |ptr| ptr[0..edge_count] else &.{};
+                const copied_bytes = if (view.copied_bytes) |ptr| ptr[0..byte_count] else &.{};
+                for (nodes) |node| {
+                    if (node.reserved != 0) return error.InvalidGraph;
+                    switch (node.tag) {
+                        c.SIMD_JSON_DECODE_NODE_OBJECT,
+                        c.SIMD_JSON_DECODE_NODE_ARRAY,
+                        => if (node.edge_offset > view.edge_count or
+                            node.edge_count > view.edge_count - node.edge_offset)
+                            return error.InvalidGraph,
+                        c.SIMD_JSON_DECODE_NODE_STRING => {
+                            if (node.edge_count != 0 or
+                                node.value.bytes.offset > view.copied_byte_count or
+                                node.value.bytes.length > view.copied_byte_count - node.value.bytes.offset)
+                                return error.InvalidGraph;
+                        },
+                        c.SIMD_JSON_DECODE_NODE_SIGNED_INTEGER,
+                        c.SIMD_JSON_DECODE_NODE_UNSIGNED_INTEGER,
+                        c.SIMD_JSON_DECODE_NODE_DOUBLE,
+                        c.SIMD_JSON_DECODE_NODE_TRUE,
+                        c.SIMD_JSON_DECODE_NODE_FALSE,
+                        c.SIMD_JSON_DECODE_NODE_NULL,
+                        => if (node.edge_count != 0) return error.InvalidGraph,
+                        else => return error.InvalidGraph,
+                    }
+                }
+                for (edges) |edge| {
+                    if (edge.reserved != 0 or edge.value_node >= view.node_count)
+                        return error.InvalidGraph;
+                    const unavailable = edge.key_offset == c.SIMD_JSON_DECODE_BYTE_RANGE_UNAVAILABLE and
+                        edge.key_length == c.SIMD_JSON_DECODE_BYTE_RANGE_UNAVAILABLE;
+                    if (!unavailable and
+                        (edge.key_offset > view.copied_byte_count or
+                            edge.key_length > view.copied_byte_count - edge.key_offset))
+                        return error.InvalidGraph;
+                    if (!unavailable and
+                        (edge.key_offset == c.SIMD_JSON_DECODE_BYTE_RANGE_UNAVAILABLE or
+                            edge.key_length == c.SIMD_JSON_DECODE_BYTE_RANGE_UNAVAILABLE))
+                        return error.InvalidGraph;
+                }
+
                 return .{
-                    .nodes = if (view.nodes) |ptr| ptr[0..node_count] else &.{},
-                    .edges = if (view.edges) |ptr| ptr[0..edge_count] else &.{},
-                    .copied_bytes = if (view.copied_bytes) |ptr| ptr[0..byte_count] else &.{},
+                    .nodes = nodes,
+                    .edges = edges,
+                    .copied_bytes = copied_bytes,
                     .root_node = if (node_count == 0) null else view.root_node,
                 };
             }

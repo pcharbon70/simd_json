@@ -186,6 +186,11 @@ pointers. The materializer reserves an explicit bounded frame vector and
 publishes no partial graph; Phase 3 adds JSON value population to this frozen
 ownership boundary.
 
+Milestone 5 Phase 3 populates that flat graph with iterative object and array
+frames, source-ordered edges, copied decoded keys and strings, boolean/null
+tags, distinct signed/unsigned/double nodes, and explicit rejection of values
+that cannot be represented exactly by the current 64-bit numeric boundary.
+
 [`src/simd_json_abi.cpp`](./src/simd_json_abi.cpp) validates every object,
 array, and scalar through the official On-Demand API and rewinds a successful
 document before publishing it. [`src/simd_json_projection.cpp`](./src/simd_json_projection.cpp)

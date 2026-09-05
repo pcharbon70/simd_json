@@ -2,6 +2,8 @@
 
 Milestone 5 Phase 2 advances the cumulative private contract to ABI v4 with
 five versioned decode ownership symbols while preserving ABI v1-v3 layouts.
+Phase 3 populates the frozen layouts without adding or changing exported
+symbols, and validates all borrowed graph indices and ranges in Zig.
 
 Milestone 5 Phase 1 packages authored decode planning and BEAM preflight inputs
 without changing the native ABI, compiler inputs, or release symbols.

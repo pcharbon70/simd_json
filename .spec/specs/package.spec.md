@@ -2,6 +2,8 @@
 
 Milestone 5 Phase 2 packages the ABI v4 materializer C++ source, Zig owner,
 independent C/Zig harnesses, phase plan, and ownership decision as source.
+Phase 3 adds its value-materialization plan and keeps the same source-only
+private decode surface.
 
 Milestone 5 Phase 1 packages the accepted safe decode compatibility decision,
 planned decode subject, six-phase plan, and undocumented native-free preflight.
