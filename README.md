@@ -120,9 +120,12 @@ and early halt closes the cursor without scanning the remaining array. Runtime
 failures raise a redacted `SimdJson.Error`; no row from a failing batch is
 published. The opaque Enumerable exposes no public cursor or batch API.
 
-Milestones 1, 2, and 3 are active on the qualified Ubuntu 24.04 x86-64 target.
+Milestones 1–5 are active on the qualified Ubuntu 24.04 x86-64 target.
 Other platforms remain experimental or unsupported until they pass the same
 package, ABI, sanitizer, scheduler, lifecycle, benchmark, and shutdown gates.
+The exact toolchain, native source-build requirements, input-memory boundary,
+and promotion criteria are in the
+[support policy](docs/releases/support.md).
 
 ## License
 

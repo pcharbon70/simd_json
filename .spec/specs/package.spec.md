@@ -4,6 +4,8 @@ Milestone 6 Phase 1 targets public Hex package `simd_json` version `0.1.0`
 with matching `:simd_json` application and `SimdJson.*` module ownership.
 Section 1.2 licenses wrapper code under MIT and packages separate, unmodified
 simdjson Apache-2.0 and MIT notices with provenance.
+Section 1.3 publishes the single qualified Ubuntu 24.04 x86-64 toolchain and
+distinguishes complete-binary residency from avoided decoded-tree allocation.
 
 Milestone 6 planning defines the legal, CI, metadata, documentation, archive,
 provenance, consumer-install, authorization, publication, verification, and

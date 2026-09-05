@@ -73,6 +73,7 @@ required_package_files=(
   docs/milestones/03-batched-array-streaming.md
   docs/milestones/05-compatible-decode-api.md
   docs/milestones/05-compatible-decode-api-acceptance.md
+  docs/releases/support.md
   lib/simd_json.ex
   lib/simd_json/decode_options.ex
   lib/simd_json/document.ex

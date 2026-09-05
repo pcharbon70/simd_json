@@ -34,6 +34,14 @@ its separate upstream Apache-2.0-or-MIT license choice and attribution. Hex
 package metadata names MIT for this wrapper and the archive ships all three
 license texts plus a third-party notice.
 
+The sole supported first-release target is Ubuntu 24.04 x86-64 with glibc
+2.39, OTP 27.3, Elixir 1.18.4, Zig/Zigler 0.16.0, and vendored simdjson 4.6.9.
+Every other target is experimental or unsupported until it passes the same
+archive, ABI, sanitizer, lifecycle, scheduler, large-input, documentation, and
+consumer-install matrix. Public operations receive a complete resident binary;
+projection and streaming avoid a full decoded BEAM tree but do not provide
+incremental file/socket input or zero total-memory handling.
+
 ## Consequences
 
 Phase 1 will extend this decision with the owner-selected license, supported
