@@ -16,11 +16,11 @@ Back to plan: [README](./README.md)
 
 ## 3.2 Section — Strings, Keys, Booleans, and Null
 
-- [ ] 3.2 Section - Copy decoded strings and object keys into result-owned byte
+- [x] 3.2 Section - Copy decoded strings and object keys into result-owned byte
   storage and materialize existing boolean/null values.
-  - [ ] 3.2.1 Task - Cover escapes, Unicode, embedded nulls, empty values, and
+  - [x] 3.2.1 Task - Cover escapes, Unicode, embedded nulls, empty values, and
     malformed UTF-8/surrogates.
-  - [ ] 3.2.2 Task - Preserve duplicate object edges in source order so the
+  - [x] 3.2.2 Task - Preserve duplicate object edges in source order so the
     BEAM conversion can deterministically apply last-key-wins semantics.
 
 ## 3.3 Section — Exact Numeric Materialization

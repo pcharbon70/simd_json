@@ -165,6 +165,28 @@ simd_json_status open_value(simd_json_decode_materializer &materializer,
     node.tag = SIMD_JSON_DECODE_NODE_NULL;
     return append_node(result, node, materializer.config, out_node);
   }
+  if (type == simdjson::ondemand::json_type::boolean) {
+    bool boolean = false;
+    error = value.get_bool().get(boolean);
+    if (error != simdjson::SUCCESS) return status_from_simdjson(error);
+    node.tag = boolean ? SIMD_JSON_DECODE_NODE_TRUE : SIMD_JSON_DECODE_NODE_FALSE;
+    return append_node(result, node, materializer.config, out_node);
+  }
+  if (type == simdjson::ondemand::json_type::string) {
+    std::string_view string;
+    error = value.get_string().get(string);
+    if (error != simdjson::SUCCESS) return status_from_simdjson(error);
+    if (string.size() > materializer.config.max_string_bytes ||
+        string.size() > materializer.config.max_output_bytes ||
+        result.copied_bytes.size() > materializer.config.max_output_bytes -
+                                         string.size())
+      return make_status(SIMD_JSON_STATUS_OUT_OF_MEMORY);
+    node.tag = SIMD_JSON_DECODE_NODE_STRING;
+    node.value.bytes.offset = static_cast<uint64_t>(result.copied_bytes.size());
+    node.value.bytes.length = static_cast<uint64_t>(string.size());
+    result.copied_bytes.insert(result.copied_bytes.end(), string.begin(), string.end());
+    return append_node(result, node, materializer.config, out_node);
+  }
   return make_status(SIMD_JSON_STATUS_INCORRECT_TYPE);
 }
 
@@ -221,6 +243,10 @@ simd_json_status traverse(simd_json_decode_materializer &materializer,
       std::string_view key;
       if ((error = field.unescaped_key().get(key)) != simdjson::SUCCESS)
         return status_from_simdjson(error);
+      if (key.size() > materializer.config.max_string_bytes ||
+          key.size() > materializer.config.max_output_bytes ||
+          result.copied_bytes.size() > materializer.config.max_output_bytes - key.size())
+        return make_status(SIMD_JSON_STATUS_OUT_OF_MEMORY);
       const uint64_t key_offset = static_cast<uint64_t>(result.copied_bytes.size());
       result.copied_bytes.insert(result.copied_bytes.end(), key.begin(), key.end());
       const uint64_t depth = parent->depth + 1;

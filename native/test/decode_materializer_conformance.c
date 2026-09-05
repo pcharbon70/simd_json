@@ -12,7 +12,9 @@
 static uint32_t cancel(void *context) { return *(uint32_t *)context; }
 
 int main(void) {
-  static const uint8_t source[] = "{\"a\":[],\"b\":[{},null]}";
+  static const uint8_t source[] =
+      "{\"a\":[],\"b\":[{},null],\"s\":\"x\\u0000\\u96ea\","
+      "\"t\":true,\"f\":false,\"d\":null,\"d\":[]}";
   const uint64_t length = sizeof(source) - 1;
   uint8_t *storage = calloc((size_t)(length + SIMD_JSON_REQUIRED_PADDING), 1);
   simd_json_parser *parser = NULL;
@@ -38,20 +40,31 @@ int main(void) {
   CHECK(status.code == SIMD_JSON_STATUS_OK && result != NULL);
   memset(&view, 0xff, sizeof(view));
   CHECK(simd_json_decode_result_read(result, &view).code == SIMD_JSON_STATUS_OK);
-  CHECK(view.nodes != NULL && view.node_count == 5 && view.edges != NULL &&
-        view.edge_count == 4 && view.copied_bytes != NULL &&
-        view.copied_byte_count == 2 && view.root_node == 0 && view.reserved == 0);
+  CHECK(view.nodes != NULL && view.node_count == 10 && view.edges != NULL &&
+        view.edge_count == 9 && view.copied_bytes != NULL &&
+        view.copied_byte_count == 12 && view.root_node == 0 && view.reserved == 0);
   CHECK(view.nodes[0].tag == SIMD_JSON_DECODE_NODE_OBJECT &&
-        view.nodes[0].edge_offset == 2 && view.nodes[0].edge_count == 2);
+        view.nodes[0].edge_offset == 2 && view.nodes[0].edge_count == 7);
   CHECK(view.nodes[1].tag == SIMD_JSON_DECODE_NODE_ARRAY &&
         view.nodes[1].edge_count == 0);
   CHECK(view.nodes[2].tag == SIMD_JSON_DECODE_NODE_ARRAY &&
         view.nodes[2].edge_offset == 0 && view.nodes[2].edge_count == 2);
   CHECK(view.nodes[3].tag == SIMD_JSON_DECODE_NODE_OBJECT &&
         view.nodes[4].tag == SIMD_JSON_DECODE_NODE_NULL);
+  CHECK(view.nodes[5].tag == SIMD_JSON_DECODE_NODE_STRING &&
+        view.nodes[5].value.bytes.length == 5);
+  CHECK(view.nodes[6].tag == SIMD_JSON_DECODE_NODE_TRUE &&
+        view.nodes[7].tag == SIMD_JSON_DECODE_NODE_FALSE &&
+        view.nodes[8].tag == SIMD_JSON_DECODE_NODE_NULL &&
+        view.nodes[9].tag == SIMD_JSON_DECODE_NODE_ARRAY);
   CHECK(view.edges[0].value_node == 3 && view.edges[1].value_node == 4 &&
         view.edges[2].value_node == 1 && view.edges[3].value_node == 2);
-  CHECK(view.copied_bytes[0] == 'a' && view.copied_bytes[1] == 'b');
+  CHECK(view.copied_bytes[3] == 'x' && view.copied_bytes[4] == 0 &&
+        view.copied_bytes[5] == 0xe9 && view.copied_bytes[6] == 0x9b &&
+        view.copied_bytes[7] == 0xaa);
+  CHECK(view.edges[7].key_length == 1 && view.edges[8].key_length == 1 &&
+        view.copied_bytes[view.edges[7].key_offset] == 'd' &&
+        view.copied_bytes[view.edges[8].key_offset] == 'd');
   simd_json_decode_result_destroy(result);
   result = (simd_json_decode_result *)(uintptr_t)UINTPTR_MAX;
   CHECK(simd_json_decode_materializer_execute(materializer, NULL, &result).code ==
