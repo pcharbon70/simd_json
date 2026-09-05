@@ -1,5 +1,8 @@
 # Projection API
 
+The cumulative public contract is exercised against first, middle, and final
+array paths in the shared million-row fixture without expanding the API.
+
 Milestone 5 Phase 6 activates decode while retaining the independently active
 projection surface and its cumulative qualification coverage unchanged.
 

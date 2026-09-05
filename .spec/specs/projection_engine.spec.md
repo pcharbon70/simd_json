@@ -1,5 +1,8 @@
 # Projection Engine
 
+The frozen projection engine traverses and validates the shared million-row
+array while returning only three requested scalar slots.
+
 Active current-truth contract for the Milestone 2 prefix-sharing projection
 plan, exception-safe private ABI, single guided traversal, and transactional
 native result slots.

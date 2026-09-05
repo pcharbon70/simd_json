@@ -1,5 +1,8 @@
 # SimdJson Package
 
+The package qualification reuses the frozen compressed million-row stream
+fixture for a cross-API sparse projection regression and evidence record.
+
 Milestone 5 Phase 6 packages differential, benchmark, scheduler, sanitizer,
 and aggregate qualification gates; publishes the decode acceptance record;
 and activates the completed compatibility contract.

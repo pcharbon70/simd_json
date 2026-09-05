@@ -341,6 +341,7 @@
     "test/qualification/lifecycle_memory_qualification_test.exs",
     "test/qualification/native_release_qualification_test.exs",
     "test/qualification/projection_lifecycle_qualification_test.exs",
+    "test/qualification/projection_million_row_qualification_test.exs",
     "test/qualification/projection_scheduler_qualification_test.exs",
     "test/qualification/scheduler_qualification_test.exs",
     "test/qualification/stream_runtime_qualification_test.exs",
