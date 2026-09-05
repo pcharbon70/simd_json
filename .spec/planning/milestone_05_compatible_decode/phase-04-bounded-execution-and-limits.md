@@ -16,11 +16,11 @@ Back to plan: [README](./README.md)
 
 ## 4.2 Section — Private Graph-to-BEAM Execution
 
-- [ ] 4.2 Section - Convert a complete validated graph into private worker-env
+- [x] 4.2 Section - Convert a complete validated graph into private worker-env
   BEAM terms without publishing partial values.
-  - [ ] 4.2.1 Task - Build lists and maps iteratively with copied binaries,
+  - [x] 4.2.1 Task - Build lists and maps iteratively with copied binaries,
     exact scalars, source order, and last duplicate key wins.
-  - [ ] 4.2.2 Task - Release document, materializer, result, graph frames, and
+  - [x] 4.2.2 Task - Release document, materializer, result, graph frames, and
     the private environment on every success and failure path.
 
 ## 4.3 Section — Typed Pool Job and Telemetry
