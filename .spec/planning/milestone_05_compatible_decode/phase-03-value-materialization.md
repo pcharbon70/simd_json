@@ -25,10 +25,10 @@ Back to plan: [README](./README.md)
 
 ## 3.3 Section — Exact Numeric Materialization
 
-- [ ] 3.3 Section - Distinguish signed, unsigned, floating, and unsupported
+- [x] 3.3 Section - Distinguish signed, unsigned, floating, and unsupported
   integer tokens without silent rounding.
-  - [ ] 3.3.1 Task - Preserve native 64-bit integers and finite IEEE-754 values.
-  - [ ] 3.3.2 Task - Reject big integers and non-finite float results with the
+  - [x] 3.3.1 Task - Preserve native 64-bit integers and finite IEEE-754 values.
+  - [x] 3.3.2 Task - Reject big integers and non-finite float results with the
     stable number-out-of-range status until arbitrary precision conversion.
 
 ## 3.4 Section — Phase 3 Integration and Qualification

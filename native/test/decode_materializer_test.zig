@@ -11,7 +11,7 @@ const Fixture = struct {
     document: ?*c.simd_json_document,
 
     fn init() !Fixture {
-        const source = "{\"a\":[],\"b\":[{},null],\"s\":\"x\\u0000\\u96ea\",\"t\":true,\"f\":false,\"d\":null,\"d\":[]}";
+        const source = "{\"a\":[],\"b\":[{},null],\"s\":\"x\\u0000\\u96ea\",\"t\":true,\"f\":false,\"d\":null,\"d\":[],\"i\":-9223372036854775808,\"u\":18446744073709551615,\"n\":1.25e2}";
         const capacity = source.len + @as(usize, @intCast(c.SIMD_JSON_REQUIRED_PADDING));
         const storage = try std.testing.allocator.alloc(u8, capacity);
         errdefer std.testing.allocator.free(storage);
@@ -50,9 +50,12 @@ test "opaque materializer transfers one result and deinitializes idempotently" {
     var result = try materializer.execute();
     defer result.deinit();
     const graph = try result.graph();
-    try std.testing.expectEqual(@as(usize, 10), graph.nodes.len);
-    try std.testing.expectEqual(@as(usize, 9), graph.edges.len);
-    try std.testing.expectEqual(@as(usize, 12), graph.copied_bytes.len);
+    try std.testing.expectEqual(@as(usize, 13), graph.nodes.len);
+    try std.testing.expectEqual(@as(usize, 12), graph.edges.len);
+    try std.testing.expectEqual(@as(usize, 15), graph.copied_bytes.len);
+    try std.testing.expectEqual(c.SIMD_JSON_DECODE_NODE_SIGNED_INTEGER, graph.nodes[10].tag);
+    try std.testing.expectEqual(c.SIMD_JSON_DECODE_NODE_UNSIGNED_INTEGER, graph.nodes[11].tag);
+    try std.testing.expectEqual(c.SIMD_JSON_DECODE_NODE_DOUBLE, graph.nodes[12].tag);
     try std.testing.expectEqual(@as(?u64, 0), graph.root_node);
     try std.testing.expectError(error.Consumed, materializer.execute());
     result.deinit();

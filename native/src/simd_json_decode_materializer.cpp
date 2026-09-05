@@ -5,6 +5,7 @@
 /* covers: simd_json.decode_api.complete_values simd_json.decode_api.iterative_limits simd_json.native_build_and_abi.exception_containment simd_json.native_build_and_abi.partial_failure_cleanup */
 
 #include <atomic>
+#include <cmath>
 #include <cstdint>
 #include <exception>
 #include <memory>
@@ -48,6 +49,7 @@ simd_json_status status_from_simdjson(simdjson::error_code error) noexcept {
       break;
     case simdjson::BIGINT_ERROR:
     case simdjson::NUMBER_OUT_OF_RANGE:
+    case simdjson::NUMBER_ERROR:
       code = SIMD_JSON_STATUS_NUMBER_OUT_OF_RANGE;
       break;
     default: break;
@@ -187,6 +189,30 @@ simd_json_status open_value(simd_json_decode_materializer &materializer,
     result.copied_bytes.insert(result.copied_bytes.end(), string.begin(), string.end());
     return append_node(result, node, materializer.config, out_node);
   }
+  if (type == simdjson::ondemand::json_type::number) {
+    simdjson::ondemand::number number;
+    error = value.get_number().get(number);
+    if (error != simdjson::SUCCESS) return status_from_simdjson(error);
+    switch (number.get_number_type()) {
+      case simdjson::ondemand::number_type::signed_integer:
+        node.tag = SIMD_JSON_DECODE_NODE_SIGNED_INTEGER;
+        node.value.signed_integer = number.get_int64();
+        break;
+      case simdjson::ondemand::number_type::unsigned_integer:
+        node.tag = SIMD_JSON_DECODE_NODE_UNSIGNED_INTEGER;
+        node.value.unsigned_integer = number.get_uint64();
+        break;
+      case simdjson::ondemand::number_type::floating_point_number:
+        if (!std::isfinite(number.get_double()))
+          return make_status(SIMD_JSON_STATUS_NUMBER_OUT_OF_RANGE);
+        node.tag = SIMD_JSON_DECODE_NODE_DOUBLE;
+        node.value.floating_point = number.get_double();
+        break;
+      case simdjson::ondemand::number_type::big_integer:
+        return make_status(SIMD_JSON_STATUS_NUMBER_OUT_OF_RANGE);
+    }
+    return append_node(result, node, materializer.config, out_node);
+  }
   return make_status(SIMD_JSON_STATUS_INCORRECT_TYPE);
 }
 
@@ -207,15 +233,77 @@ simd_json_status finalize_frame(simd_json_decode_result &result,
   }, frame);
 }
 
+simd_json_status open_document(simd_json_decode_materializer &materializer,
+                               simd_json_decode_result &result,
+                               simdjson::ondemand::document &document) {
+  simdjson::ondemand::json_type type;
+  simdjson::error_code error = document.type().get(type);
+  if (error != simdjson::SUCCESS) return status_from_simdjson(error);
+  if (type == simdjson::ondemand::json_type::object ||
+      type == simdjson::ondemand::json_type::array) {
+    simdjson::ondemand::value root;
+    error = document.get_value().get(root);
+    if (error != simdjson::SUCCESS) return status_from_simdjson(error);
+    return open_value(materializer, result, root, 1, result.root_node);
+  }
+
+  simd_json_decode_node node{};
+  if (type == simdjson::ondemand::json_type::number) {
+    simdjson::ondemand::number number;
+    error = document.get_number().get(number);
+    if (error != simdjson::SUCCESS) return status_from_simdjson(error);
+    switch (number.get_number_type()) {
+      case simdjson::ondemand::number_type::signed_integer:
+        node.tag = SIMD_JSON_DECODE_NODE_SIGNED_INTEGER;
+        node.value.signed_integer = number.get_int64();
+        break;
+      case simdjson::ondemand::number_type::unsigned_integer:
+        node.tag = SIMD_JSON_DECODE_NODE_UNSIGNED_INTEGER;
+        node.value.unsigned_integer = number.get_uint64();
+        break;
+      case simdjson::ondemand::number_type::floating_point_number:
+        if (!std::isfinite(number.get_double()))
+          return make_status(SIMD_JSON_STATUS_NUMBER_OUT_OF_RANGE);
+        node.tag = SIMD_JSON_DECODE_NODE_DOUBLE;
+        node.value.floating_point = number.get_double();
+        break;
+      case simdjson::ondemand::number_type::big_integer:
+        return make_status(SIMD_JSON_STATUS_NUMBER_OUT_OF_RANGE);
+    }
+  } else if (type == simdjson::ondemand::json_type::string) {
+    std::string_view string;
+    error = document.get_string().get(string);
+    if (error != simdjson::SUCCESS) return status_from_simdjson(error);
+    if (string.size() > materializer.config.max_string_bytes ||
+        string.size() > materializer.config.max_output_bytes)
+      return make_status(SIMD_JSON_STATUS_OUT_OF_MEMORY);
+    node.tag = SIMD_JSON_DECODE_NODE_STRING;
+    node.value.bytes = {0, static_cast<uint64_t>(string.size())};
+    result.copied_bytes.insert(result.copied_bytes.end(), string.begin(), string.end());
+  } else if (type == simdjson::ondemand::json_type::boolean) {
+    bool boolean = false;
+    error = document.get_bool().get(boolean);
+    if (error != simdjson::SUCCESS) return status_from_simdjson(error);
+    node.tag = boolean ? SIMD_JSON_DECODE_NODE_TRUE : SIMD_JSON_DECODE_NODE_FALSE;
+  } else if (type == simdjson::ondemand::json_type::null) {
+    bool is_null = false;
+    error = document.is_null().get(is_null);
+    if (error != simdjson::SUCCESS || !is_null)
+      return status_from_simdjson(error == simdjson::SUCCESS ? simdjson::TAPE_ERROR : error);
+    node.tag = SIMD_JSON_DECODE_NODE_NULL;
+  } else {
+    return make_status(SIMD_JSON_STATUS_INVALID_JSON);
+  }
+  return append_node(result, node, materializer.config, result.root_node);
+}
+
 simd_json_status traverse(simd_json_decode_materializer &materializer,
                           simd_json_decode_result &result,
                           const simd_json_cancellation_probe *cancellation) {
   simdjson::ondemand::document *document = simd_json_native::document_value(materializer.document);
   if (document == nullptr) return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
-  simdjson::ondemand::value root;
-  simdjson::error_code error = document->get_value().get(root);
-  if (error != simdjson::SUCCESS) return status_from_simdjson(error);
-  simd_json_status status = open_value(materializer, result, root, 1, result.root_node);
+  simdjson::error_code error = simdjson::SUCCESS;
+  simd_json_status status = open_document(materializer, result, *document);
   if (status.code != SIMD_JSON_STATUS_OK) return status;
 
   while (!materializer.frames.empty()) {
