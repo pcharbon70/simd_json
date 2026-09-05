@@ -1,5 +1,9 @@
 # Streaming API
 
+Milestone 6 Phase 2 strengthens the lifecycle-neutral construction proof by
+waiting for completed native operation resources before comparison. The
+public option grammar and lazy Enumerable API are unchanged.
+
 Milestone 5 Phase 6 activates eager decode without changing the independently
 active lazy streaming contract or its preference for partial large-data work.
 

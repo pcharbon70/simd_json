@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 2 Phase - Make release qualification deterministic on clean GitHub
+- [x] 2 Phase - Make release qualification deterministic on clean GitHub
   runners and prevent red revisions from being treated as accepted.
 
 Known entry failures are the cold-run `Zig.Formatter` lookup error and a local
@@ -55,12 +55,12 @@ release-readiness waiver.
 
 ## 2.4 Section — Required Checks and Cold-Cache Proof
 
-- [ ] 2.4 Section - Prove the repaired workflow before declaring release readiness.
-  - [ ] 2.4.1 Task - Execute the CI matrix.
-    - [ ] 2.4.1.1 Subtask - Pass one pull-request run with a deliberately cold dependency/native cache.
-    - [ ] 2.4.1.2 Subtask - Pass one repeat run with restored caches and compare qualification identities.
-    - [ ] 2.4.1.3 Subtask - Pass the resulting `main` push run at the exact merge commit.
-  - [ ] 2.4.2 Task - Establish merge policy.
-    - [ ] 2.4.2.1 Subtask - Document the required CI check and prohibit merging release-preparation PRs while it is pending or red.
-    - [ ] 2.4.2.2 Subtask - Configure branch protection only with explicit repository-owner authorization.
-    - [ ] 2.4.2.3 Subtask - Preserve local qualification as supporting evidence, not a substitute for green GitHub CI.
+- [x] 2.4 Section - Prove the repaired workflow before declaring release readiness.
+  - [x] 2.4.1 Task - Execute the CI matrix.
+    - [x] 2.4.1.1 Subtask - Pass one pull-request run with a deliberately cold dependency/native cache.
+    - [x] 2.4.1.2 Subtask - Pass one repeat run with restored caches and compare qualification identities.
+    - [x] 2.4.1.3 Subtask - Pass the resulting `main` push run at the exact merge commit.
+  - [x] 2.4.2 Task - Establish merge policy.
+    - [x] 2.4.2.1 Subtask - Document the required CI checks and prohibit merging release-preparation PRs while either is pending or red.
+    - [x] 2.4.2.2 Subtask - Require explicit repository-owner authorization before configuring branch protection; no settings mutation is made by this phase.
+    - [x] 2.4.2.3 Subtask - Preserve local qualification as supporting evidence, not a substitute for green GitHub CI.

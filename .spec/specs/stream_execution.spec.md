@@ -1,5 +1,9 @@
 # Stream Execution and Lifecycle
 
+Milestone 6 Phase 2 closes an order-sensitive test baseline by collecting the
+coordinator and awaiting zero operation/input gauges before stream-option
+construction. No stream job, cursor, or batching behavior changes.
+
 The million-row stream fixture is now shared with projection qualification;
 its stream execution contract and measurements remain unchanged.
 

@@ -1,5 +1,9 @@
 # Projection Engine
 
+Milestone 6 Phase 2 removes an order-sensitive qualification baseline by
+collecting completed coordinator references before asserting zero engine
+gauges. The guided traversal and allocation contract are unchanged.
+
 The frozen projection engine traverses and validates the shared million-row
 array while returning only three requested scalar slots.
 

@@ -9,7 +9,10 @@ test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
 closes the reproduced pool-retirement and stale-baseline failures; workflow
 safety in Section 2.3 now cancels only superseded pull requests, bounds the
 job, retains partial or checksummed evidence, and reports the failed gate with
-revision and tree. Cold/restored GitHub proof remains in Section 2.4.
+revision and tree. Section 2.4 makes cold and restored qualification separate
+required checks, records cache state and qualification identity, and prohibits
+merge while either check is not green. Branch-protection settings remain an
+explicitly authorized repository-owner action.
 
 ```spec-meta
 id: simd_json.release

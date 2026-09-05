@@ -1,5 +1,9 @@
 # Projection Execution and Lifecycle
 
+Milestone 6 Phase 2 makes million-row quiescence collect completed coordinator
+references and report the full native snapshot on timeout. This tightens the
+existing lifecycle proof without changing execution ownership.
+
 Post-acceptance qualification applies `select/2` to the exact 45,666,793-byte,
 one-million-row streaming fixture, selecting its first, middle, and final rows
 while enforcing scheduler, scoped BEAM-memory, and native-baseline thresholds.

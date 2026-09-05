@@ -1,5 +1,10 @@
 # Native Build and ABI
 
+Milestone 6 Phase 2 verifies the pinned Zig 0.16.0 path before compilation,
+rebuilds Zigler deterministically, and qualifies native inputs in separate
+cold and restored cache jobs. The CI policy is packaged documentation; it does
+not alter ABI v4, vendor sources, symbols, or the supported target.
+
 Milestone 6 Phase 1 adds the wrapper license, upstream notice index, and exact
 qualified-target support statement to the source package. These are release
 and qualification inputs, but they do not change native sources, ABI v4,

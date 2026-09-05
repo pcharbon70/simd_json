@@ -1,5 +1,10 @@
 # SimdJson Package
 
+Milestone 6 Phase 2 Section 2.4 packages the cold/restored CI matrix and its
+required-check policy. Both jobs bind cache mode and hit state to the same
+revision, tree, and qualification identity; branch-protection mutation remains
+explicitly owner-authorized and was not performed by this phase.
+
 Milestone 6 Phase 2 Section 2.3 packages cancellation-safe CI concurrency,
 bounded workflow durations, always-uploaded partial evidence, checksummed
 success evidence, and a compact revision/tree/gate summary. Qualification

@@ -189,10 +189,18 @@ defmodule SimdJson.Qualification.ProjectionMillionRowQualificationTest do
   end
 
   defp wait_for_quiescence(attempts \\ 2_000)
-  defp wait_for_quiescence(0), do: flunk("million-row projection did not return to baseline")
+
+  defp wait_for_quiescence(0) do
+    flunk(
+      "million-row projection did not return to baseline: " <>
+        "#{inspect(BuildSmoke.execution_snapshot())}; " <>
+        "coordinator=#{inspect(OperationCoordinator.snapshot())}"
+    )
+  end
 
   defp wait_for_quiescence(attempts) do
     :erlang.garbage_collect(self())
+    :erlang.garbage_collect(Process.whereis(OperationCoordinator))
     snapshot = BuildSmoke.execution_snapshot()
 
     if OperationCoordinator.snapshot().live_requests == 0 and

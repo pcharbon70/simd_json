@@ -8,6 +8,7 @@ defmodule SimdJson.CIReliabilityContractTest do
   @aggregate_script "scripts/ci/qualify_milestone_5.sh"
   @workflow ".github/workflows/ci.yml"
   @native_source "native/zig/build_smoke.zig"
+  @ci_policy "docs/releases/ci-policy.md"
 
   # covers: simd_json.release.green_ci simd_json.release.ci_native_reliability
   test "preserves a deterministic sanitizer failure seed and optional trace mode" do
@@ -116,7 +117,34 @@ defmodule SimdJson.CIReliabilityContractTest do
 
     assert workflow =~ "if: always()"
     assert workflow =~ "GITHUB_STEP_SUMMARY"
-    assert workflow =~ "milestone-6-release-qualification-${{ github.sha }}"
+    assert workflow =~ "milestone-6-release-qualification-${{ matrix.cache-mode }}-"
     assert workflow =~ "if-no-files-found: warn"
+  end
+
+  # covers: simd_json.release.green_ci simd_json.release.ci_cache_equivalence
+  test "runs exact cold and restored cache checks for the same qualification identity" do
+    workflow = File.read!(@workflow)
+    aggregate = File.read!(@aggregate_script)
+
+    assert workflow =~ "cache-mode: [cold, restored]"
+    assert workflow =~ "if: matrix.cache-mode == 'restored'"
+    assert workflow =~ "SIMD_JSON_CACHE_MODE: ${{ matrix.cache-mode }}"
+    assert workflow =~ "SIMD_JSON_CACHE_HIT:"
+    assert workflow =~ "qualification_identity="
+    assert workflow =~ "milestone-6-release-qualification-${{ matrix.cache-mode }}-"
+    assert aggregate =~ "cache_mode=%s"
+    assert aggregate =~ "cache_hit=%s"
+  end
+
+  # covers: simd_json.release.green_ci
+  test "defines the required release checks without claiming unauthorized protection" do
+    policy = File.read!(@ci_policy)
+
+    assert policy =~ "Native baseline (x86_64 Linux, cold)"
+    assert policy =~ "Native baseline (x86_64 Linux, restored)"
+    assert policy =~ ~r/pending,\s+failed, cancelled, skipped, or missing/
+    assert policy =~ "never substitutes for green GitHub CI"
+    assert policy =~ ~r/requires explicit\s+repository-owner authorization/
+    assert policy =~ ~r/does not change it without that\s+separate authorization/
   end
 end
