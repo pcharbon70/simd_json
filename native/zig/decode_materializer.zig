@@ -22,6 +22,10 @@ pub fn Implementation(comptime c: type) type {
             MaxContainerEntriesExceeded,
             MaxStringBytesExceeded,
             MaxOutputBytesExceeded,
+            NumberOutOfRange,
+            InvalidJson,
+            InvalidUtf8,
+            UnexpectedEof,
         };
 
         pub const Graph = struct {
@@ -41,6 +45,10 @@ pub fn Implementation(comptime c: type) type {
                 c.SIMD_JSON_STATUS_MAX_CONTAINER_ENTRIES_EXCEEDED => error.MaxContainerEntriesExceeded,
                 c.SIMD_JSON_STATUS_MAX_STRING_BYTES_EXCEEDED => error.MaxStringBytesExceeded,
                 c.SIMD_JSON_STATUS_MAX_OUTPUT_BYTES_EXCEEDED => error.MaxOutputBytesExceeded,
+                c.SIMD_JSON_STATUS_NUMBER_OUT_OF_RANGE => error.NumberOutOfRange,
+                c.SIMD_JSON_STATUS_INVALID_JSON => error.InvalidJson,
+                c.SIMD_JSON_STATUS_INVALID_UTF8 => error.InvalidUtf8,
+                c.SIMD_JSON_STATUS_UNEXPECTED_EOF => error.UnexpectedEof,
                 else => error.NativeFailure,
             };
         }

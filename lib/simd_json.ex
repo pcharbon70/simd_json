@@ -324,6 +324,12 @@ defmodule SimdJson do
   defp stable_reason(:not_owner), do: :not_owner
   defp stable_reason(:closed), do: :closed
   defp stable_reason(:busy), do: :busy
+  defp stable_reason(:cancelled), do: :cancelled
+  defp stable_reason(:number_out_of_range), do: :number_out_of_range
+  defp stable_reason(:max_depth_exceeded), do: :max_depth_exceeded
+  defp stable_reason(:max_container_entries_exceeded), do: :container_too_large
+  defp stable_reason(:max_string_bytes_exceeded), do: :string_too_large
+  defp stable_reason(:max_output_bytes_exceeded), do: :output_too_large
   defp stable_reason(_reason), do: :native_failure
 
   defp safe_offset(offset, logical_length)
@@ -346,6 +352,12 @@ defmodule SimdJson do
   defp message(:closed), do: "document is closed"
   defp message(:not_owner), do: "document belongs to another process"
   defp message(:busy), do: "native execution capacity is busy"
+  defp message(:cancelled), do: "native JSON operation was cancelled"
+  defp message(:number_out_of_range), do: "JSON number is outside the supported exact range"
+  defp message(:max_depth_exceeded), do: "JSON nesting depth exceeds the configured limit"
+  defp message(:container_too_large), do: "JSON container exceeds the configured entry limit"
+  defp message(:string_too_large), do: "decoded JSON string exceeds the configured byte limit"
+  defp message(:output_too_large), do: "decoded JSON output exceeds the configured byte limit"
   defp message(:native_failure), do: "native JSON operation failed"
 
   defp native_failure_result do

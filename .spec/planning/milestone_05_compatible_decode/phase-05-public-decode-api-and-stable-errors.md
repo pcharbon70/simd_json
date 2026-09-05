@@ -14,10 +14,10 @@ Back to plan: [README](./README.md)
 
 ## 5.2 Section — Stable Shared Errors
 
-- [ ] 5.2 Section - Translate parse, capacity, cancellation, number, and limit
+- [x] 5.2 Section - Translate parse, capacity, cancellation, number, and limit
   failures into one redacted `SimdJson.Error` representation.
-  - [ ] 5.2.1 Task - Preserve safe offsets and native codes where available.
-  - [ ] 5.2.2 Task - Raise the exact tagged error value from bang wrappers.
+  - [x] 5.2.1 Task - Preserve safe offsets and native codes where available.
+  - [x] 5.2.2 Task - Raise the exact tagged error value from bang wrappers.
 
 ## 5.3 Section — Documentation and Public Surface
 

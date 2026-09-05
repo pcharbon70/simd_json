@@ -1947,12 +1947,24 @@ fn decodePoolResult(
     status: []const u8,
     value: ?beam.term,
 ) beam.term {
+    return decodePoolResultWithDiagnostics(env, record, status, value, null);
+}
+
+fn decodePoolResultWithDiagnostics(
+    env: beam.env,
+    record: *OperationRecord,
+    status: []const u8,
+    value: ?beam.term,
+    diagnostics: ?document_resource.Diagnostics,
+) beam.term {
     return beam.make(.{
         .status = beam.make_into_atom(status, .{ .env = env }),
         .kind = record.kind,
         .generation = record.generation,
         .worker_context = executionContext(),
         .result = value,
+        .native_code = if (diagnostics) |item| item.native_code else null,
+        .byte_offset = if (diagnostics) |item| item.byte_offset else null,
         .ready_for_delivery = record.markReadyForDelivery(),
     }, .{ .env = env });
 }
@@ -1977,6 +1989,10 @@ fn decodeFailureName(err: anyerror) []const u8 {
         error.MaxContainerEntriesExceeded => "max_container_entries_exceeded",
         error.MaxStringBytesExceeded => "max_string_bytes_exceeded",
         error.MaxOutputBytesExceeded => "max_output_bytes_exceeded",
+        error.NumberOutOfRange => "number_out_of_range",
+        error.InvalidJson => "invalid_json",
+        error.InvalidUtf8 => "invalid_utf8",
+        error.UnexpectedEof => "unexpected_eof",
         error.InvalidGraph => "invalid_graph",
         else => "native_failure",
     };
@@ -2003,8 +2019,17 @@ pub fn threaded_decode_execute(operation: OperationResource) beam.term {
         worker_finished = true;
         return decodePoolResult(env, record, "invalid_argument", null);
     };
-    const opened = document.openOwnedCancellable(beam.allocator, input, cancellation);
+    const opened = document.openOwnedProjectionCancellable(beam.allocator, input, cancellation);
     if (opened != .ok) {
+        const diagnostics: ?document_resource.Diagnostics = switch (opened) {
+            .ok => null,
+            .invalid_json => |item| item,
+            .invalid_utf8 => |item| item,
+            .unexpected_eof => |item| item,
+            .out_of_memory => |item| item,
+            .invalid_argument => |item| item,
+            .internal_failure => |item| item,
+        };
         const status: []const u8 = switch (opened) {
             .ok => unreachable,
             .invalid_json => "invalid_json",
@@ -2015,7 +2040,7 @@ pub fn threaded_decode_execute(operation: OperationResource) beam.term {
             .internal_failure => if (record.cancelled.load(.acquire)) "cancelled" else "native_failure",
         };
         worker_finished = true;
-        return decodePoolResult(env, record, status, null);
+        return decodePoolResultWithDiagnostics(env, record, status, null, diagnostics);
     }
     const native_document = document.ownedOperationDocument() orelse {
         worker_finished = true;
