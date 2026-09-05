@@ -13,6 +13,8 @@ defmodule SimdJson.MixProject do
         main: "readme",
         extras: [
           "README.md",
+          "LICENSE",
+          "THIRD_PARTY_NOTICES.md",
           "docs/milestones/01-native-foundation.md",
           "docs/milestones/01-native-foundation-operations.md",
           "docs/milestones/01-native-foundation-acceptance.md",
@@ -23,7 +25,8 @@ defmodule SimdJson.MixProject do
           "docs/milestones/03-batched-array-streaming-operations.md",
           "docs/milestones/03-batched-array-streaming-acceptance.md",
           "docs/milestones/05-compatible-decode-api.md",
-          "docs/milestones/05-compatible-decode-api-acceptance.md"
+          "docs/milestones/05-compatible-decode-api-acceptance.md",
+          "docs/releases/support.md"
         ]
       ],
       package: package(),
@@ -55,13 +58,15 @@ defmodule SimdJson.MixProject do
     # The native directory deliberately includes the upstream source, its
     # provenance manifest, and both upstream license files in Hex artifacts.
     [
-      licenses: ["Apache-2.0", "MIT"],
+      licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/pcharbon70/simd_json"},
       exclude_patterns: [~r/\.Elixir\..*\.zig$/],
       files: [
         "lib",
         "native",
         "docs",
+        "LICENSE",
+        "THIRD_PARTY_NOTICES.md",
         ".formatter.exs",
         ".tool-versions",
         "mix.exs",

@@ -60,7 +60,9 @@ run_step package_build mix hex.build --unpack --output "${package_root}"
 
 required_package_files=(
   .tool-versions
+  LICENSE
   README.md
+  THIRD_PARTY_NOTICES.md
   docs/milestones/README.md
   docs/milestones/01-native-foundation.md
   docs/milestones/01-native-foundation-operations.md
@@ -71,6 +73,7 @@ required_package_files=(
   docs/milestones/03-batched-array-streaming.md
   docs/milestones/05-compatible-decode-api.md
   docs/milestones/05-compatible-decode-api-acceptance.md
+  docs/releases/support.md
   lib/simd_json.ex
   lib/simd_json/decode_options.ex
   lib/simd_json/document.ex

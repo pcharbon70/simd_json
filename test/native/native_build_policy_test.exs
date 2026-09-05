@@ -80,7 +80,16 @@ defmodule SimdJson.Native.BuildPolicyTest do
     package = Mix.Project.config() |> Keyword.fetch!(:package)
     package_files = Keyword.fetch!(package, :files)
 
-    for entry <- ["lib", "native", ".tool-versions", "mix.exs", "mix.lock"] do
+    for entry <- [
+          "lib",
+          "native",
+          "docs",
+          "LICENSE",
+          "THIRD_PARTY_NOTICES.md",
+          ".tool-versions",
+          "mix.exs",
+          "mix.lock"
+        ] do
       assert entry in package_files
     end
 
@@ -120,7 +129,7 @@ defmodule SimdJson.Native.BuildPolicyTest do
       assert File.regular?(path)
     end
 
-    assert Keyword.fetch!(package, :licenses) == ["Apache-2.0", "MIT"]
+    assert Keyword.fetch!(package, :licenses) == ["MIT"]
     assert Keyword.fetch!(package, :links)["GitHub"] == "https://github.com/pcharbon70/simd_json"
     assert ~r/\.Elixir\..*\.zig$/ in Keyword.fetch!(package, :exclude_patterns)
   end
