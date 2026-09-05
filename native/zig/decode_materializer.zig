@@ -18,6 +18,10 @@ pub fn Implementation(comptime c: type) type {
             Consumed,
             NativeFailure,
             InvalidGraph,
+            MaxDepthExceeded,
+            MaxContainerEntriesExceeded,
+            MaxStringBytesExceeded,
+            MaxOutputBytesExceeded,
         };
 
         pub const Graph = struct {
@@ -33,6 +37,10 @@ pub fn Implementation(comptime c: type) type {
                 c.SIMD_JSON_STATUS_OUT_OF_MEMORY => error.OutOfMemory,
                 c.SIMD_JSON_STATUS_CANCELLED => error.Cancelled,
                 c.SIMD_JSON_STATUS_CURSOR_CONSUMED => error.Consumed,
+                c.SIMD_JSON_STATUS_MAX_DEPTH_EXCEEDED => error.MaxDepthExceeded,
+                c.SIMD_JSON_STATUS_MAX_CONTAINER_ENTRIES_EXCEEDED => error.MaxContainerEntriesExceeded,
+                c.SIMD_JSON_STATUS_MAX_STRING_BYTES_EXCEEDED => error.MaxStringBytesExceeded,
+                c.SIMD_JSON_STATUS_MAX_OUTPUT_BYTES_EXCEEDED => error.MaxOutputBytesExceeded,
                 else => error.NativeFailure,
             };
         }

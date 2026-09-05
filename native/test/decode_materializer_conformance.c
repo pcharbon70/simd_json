@@ -103,7 +103,7 @@ int main(void) {
   CHECK(simd_json_decode_materializer_create(document, &config, &materializer).code ==
         SIMD_JSON_STATUS_OK);
   CHECK(simd_json_decode_materializer_execute(materializer, NULL, &result).code ==
-        SIMD_JSON_STATUS_INVALID_ARGUMENT);
+        SIMD_JSON_STATUS_MAX_DEPTH_EXCEEDED);
   CHECK(result == NULL);
   simd_json_decode_materializer_destroy(materializer);
 
