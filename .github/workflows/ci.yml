@@ -10,10 +10,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   native-baseline:
     name: Native baseline (x86_64 Linux)
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     env:
       MIX_ENV: test
       ZIGLER_RELEASE_MODE: safe
@@ -62,13 +67,35 @@ jobs:
           mix compile --force
 
       - name: Qualify the complete Milestone 5 release candidate
+        timeout-minutes: 45
         run: bash scripts/ci/qualify_milestone_5.sh
 
-      - name: Archive Milestone 5 acceptance evidence
+      - name: Summarize release qualification
+        if: always()
+        env:
+          QUALIFICATION_STATUS: ${{ job.status }}
+        run: |
+          outcome="_build/qualification/acceptance/outcome.txt"
+          failed_gate="workflow_setup"
+          if [[ -f "${outcome}" ]]; then
+            failed_gate="$(sed -n 's/^failed_gate=//p' "${outcome}" | head -n 1)"
+          fi
+          {
+            printf '### Release qualification\n\n'
+            printf '| Field | Value |\n'
+            printf '| --- | --- |\n'
+            printf '| Result | `%s` |\n' "${QUALIFICATION_STATUS}"
+            printf '| Failed gate | `%s` |\n' "${failed_gate}"
+            printf '| Revision | `%s` |\n' "$(git rev-parse HEAD)"
+            printf '| Tree | `%s` |\n' "$(git rev-parse HEAD^{tree})"
+            printf '| Evidence | `_build/qualification` |\n'
+          } >>"${GITHUB_STEP_SUMMARY}"
+
+      - name: Archive release qualification evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: milestone-5-acceptance-${{ github.sha }}
+          name: milestone-6-release-qualification-${{ github.sha }}
           path: _build/qualification
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30

@@ -1,5 +1,10 @@
 # SimdJson Package
 
+Milestone 6 Phase 2 Section 2.3 packages cancellation-safe CI concurrency,
+bounded workflow durations, always-uploaded partial evidence, checksummed
+success evidence, and a compact revision/tree/gate summary. Qualification
+restores generated SpecLed state and rejects source dirtiness.
+
 Milestone 6 Phase 2 Section 2.2 packages the deterministic Zig/Hex/Rebar
 bootstrap, explicit qualification environment, shared-pool retirement guard,
 and the regression proofs that removed the recorded sanitizer and stale

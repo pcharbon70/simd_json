@@ -10,6 +10,43 @@ active_mix_env="${MIX_ENV:-${release_mix_env}}"
 
 cd "${repository_root}"
 
+case "${qualification_root}" in
+  "${repository_root}/_build/qualification") ;;
+  *) printf 'refusing unexpected qualification directory\n' >&2; exit 1 ;;
+esac
+
+rm -rf -- "${qualification_root}"
+mkdir -p "${evidence_root}"
+
+source_revision="$(git rev-parse HEAD)"
+source_tree="$(git rev-parse HEAD^{tree})"
+current_gate="preflight"
+qualification_complete=false
+
+finalize_qualification() {
+  local original_status=$?
+
+  if ! git diff --quiet -- .spec/state.json; then
+    git restore --source=HEAD -- .spec/state.json
+  fi
+
+  if [[ "${qualification_complete}" != "true" ]]; then
+    git status --porcelain=v1 --untracked-files=all >"${evidence_root}/source-status.txt"
+    {
+      printf 'qualification_status=failed\n'
+      printf 'failed_gate=%s\n' "${current_gate}"
+      printf 'source_revision=%s\n' "${source_revision}"
+      printf 'source_tree=%s\n' "${source_tree}"
+      printf 'evidence_path=%s\n' "${qualification_root}"
+      printf 'exit_status=%s\n' "${original_status}"
+    } >"${evidence_root}/outcome.txt"
+  fi
+
+  return "${original_status}"
+}
+
+trap finalize_qualification EXIT
+
 if [[ "${active_mix_env}" != "${release_mix_env}" ]]; then
   printf 'Milestone 5 qualification requires MIX_ENV=%s; received MIX_ENV=%s\n' \
     "${release_mix_env}" "${active_mix_env}" >&2
@@ -23,24 +60,15 @@ if [[ -n "$(git status --porcelain=v1 --untracked-files=all)" ]]; then
   exit 1
 fi
 
-case "${qualification_root}" in
-  "${repository_root}/_build/qualification") ;;
-  *) printf 'refusing unexpected qualification directory\n' >&2; exit 1 ;;
-esac
-
-rm -rf -- "${qualification_root}"
-mkdir -p "${evidence_root}"
-
 run_step() {
   local name="$1"
   shift
+  current_gate="${name}"
   printf '%s\n' "$*" >"${evidence_root}/${name}.command"
   "$@" 2>&1 | tee "${evidence_root}/${name}.log"
 }
 
-source_revision="$(git rev-parse HEAD)"
-source_tree="$(git rev-parse HEAD^{tree})"
-
+current_gate="environment"
 {
   printf 'source_revision=%s\n' "${source_revision}"
   printf 'source_tree=%s\n' "${source_tree}"
@@ -103,9 +131,30 @@ fi
   printf 'decode_benchmark=pass\n'
 } | tee "${evidence_root}/summary.txt"
 
+current_gate="source_cleanliness"
+git status --porcelain=v1 --untracked-files=all >"${evidence_root}/source-status.txt"
+if [[ -s "${evidence_root}/source-status.txt" ]]; then
+  printf 'qualification dirtied source-controlled inputs\n' >&2
+  cat "${evidence_root}/source-status.txt" >&2
+  exit 1
+fi
+
+{
+  printf 'qualification_status=passed\n'
+  printf 'failed_gate=none\n'
+  printf 'source_revision=%s\n' "${source_revision}"
+  printf 'source_tree=%s\n' "${source_tree}"
+  printf 'evidence_path=%s\n' "${qualification_root}"
+  printf 'exit_status=0\n'
+} >"${evidence_root}/outcome.txt"
+
+current_gate="checksums"
 (
   cd "${qualification_root}"
   find . -type f ! -name SHA256SUMS -print0 \
     | LC_ALL=C sort -z \
     | xargs -0 sha256sum >SHA256SUMS
 )
+
+qualification_complete=true
+current_gate="complete"

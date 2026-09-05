@@ -7,7 +7,9 @@ qualification, explicit authorization, publication, and external verification.
 Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
 test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
 closes the reproduced pool-retirement and stale-baseline failures; workflow
-safety and cold/restored GitHub proof remain in Sections 2.3 and 2.4.
+safety in Section 2.3 now cancels only superseded pull requests, bounds the
+job, retains partial or checksummed evidence, and reports the failed gate with
+revision and tree. Cold/restored GitHub proof remains in Section 2.4.
 
 ```spec-meta
 id: simd_json.release

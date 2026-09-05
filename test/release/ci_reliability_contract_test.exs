@@ -81,4 +81,42 @@ defmodule SimdJson.CIReliabilityContractTest do
     assert source =~ "pool_lifecycle_mutex.swap(null, .acq_rel)"
     assert length(guarded_functions) == 17
   end
+
+  # covers: simd_json.release.green_ci simd_json.release.provenance
+  test "cancels only superseded pull requests and bounds qualification time" do
+    workflow = File.read!(@workflow)
+
+    assert workflow =~ "group: ci-${{ github.workflow }}-"
+    assert workflow =~ "cancel-in-progress: ${{ github.event_name == 'pull_request' }}"
+    assert workflow =~ "timeout-minutes: 60"
+    assert workflow =~ "timeout-minutes: 45"
+    assert workflow =~ "permissions:\n  contents: read"
+
+    action_references = Regex.scan(~r/^\s*uses:\s+[^@\s]+@([^\s]+)/m, workflow)
+    assert action_references != []
+
+    for [_, reference] <- action_references do
+      assert reference =~ ~r/^[0-9a-f]{40}$/
+    end
+  end
+
+  # covers: simd_json.release.green_ci simd_json.release.provenance
+  test "retains partial failure evidence and checksums complete evidence" do
+    aggregate = File.read!(@aggregate_script)
+    workflow = File.read!(@workflow)
+
+    assert aggregate =~ "trap finalize_qualification EXIT"
+    assert aggregate =~ "failed_gate=%s"
+    assert aggregate =~ "source_revision=%s"
+    assert aggregate =~ "source_tree=%s"
+    assert aggregate =~ "evidence_path=%s"
+    assert aggregate =~ "git restore --source=HEAD -- .spec/state.json"
+    assert aggregate =~ "qualification_status=passed"
+    assert aggregate =~ "xargs -0 sha256sum >SHA256SUMS"
+
+    assert workflow =~ "if: always()"
+    assert workflow =~ "GITHUB_STEP_SUMMARY"
+    assert workflow =~ "milestone-6-release-qualification-${{ github.sha }}"
+    assert workflow =~ "if-no-files-found: warn"
+  end
 end

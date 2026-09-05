@@ -43,15 +43,15 @@ release-readiness waiver.
 
 ## 2.3 Section — Workflow Safety and Evidence Retention
 
-- [ ] 2.3 Section - Make CI suitable as a release gate.
-  - [ ] 2.3.1 Task - Harden workflow behavior.
-    - [ ] 2.3.1.1 Subtask - Add workflow concurrency cancellation for superseded PR revisions without cancelling `main` qualification.
-    - [ ] 2.3.1.2 Subtask - Add job and expensive-step timeouts above measured clean-run duration.
-    - [ ] 2.3.1.3 Subtask - Keep actions commit-pinned and permissions read-only outside the future protected release job.
-  - [ ] 2.3.2 Task - Retain actionable failure evidence.
-    - [ ] 2.3.2.1 Subtask - Upload partial evidence on every failure and complete checksummed evidence on success.
-    - [ ] 2.3.2.2 Subtask - Add a compact summary naming the failed gate, revision, tree, and evidence path.
-    - [ ] 2.3.2.3 Subtask - Prevent generated SpecLed state, build products, and qualification evidence from dirtying source.
+- [x] 2.3 Section - Make CI suitable as a release gate.
+  - [x] 2.3.1 Task - Harden workflow behavior.
+    - [x] 2.3.1.1 Subtask - Add workflow concurrency cancellation for superseded PR revisions without cancelling `main` qualification.
+    - [x] 2.3.1.2 Subtask - Add job and expensive-step timeouts above measured clean-run duration.
+    - [x] 2.3.1.3 Subtask - Keep actions commit-pinned and permissions read-only outside the future protected release job.
+  - [x] 2.3.2 Task - Retain actionable failure evidence.
+    - [x] 2.3.2.1 Subtask - Upload partial evidence on every failure and complete checksummed evidence on success.
+    - [x] 2.3.2.2 Subtask - Add a compact summary naming the failed gate, revision, tree, and evidence path.
+    - [x] 2.3.2.3 Subtask - Prevent generated SpecLed state, build products, and qualification evidence from dirtying source.
 
 ## 2.4 Section — Required Checks and Cold-Cache Proof
 
