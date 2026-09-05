@@ -185,6 +185,14 @@ defmodule SimdJson do
     normalized = DecodeOptions.new(input, options)
     source = DecodeOptions.input(normalized)
 
+    if byte_order_mark?(source) do
+      {:error, error(:invalid_json)}
+    else
+      decode_native(source)
+    end
+  end
+
+  defp decode_native(source) do
     result =
       try do
         ThreadedOperation.decode(source)
@@ -199,6 +207,9 @@ defmodule SimdJson do
       {:error, native_error} -> {:error, translate_decode_error(native_error, byte_size(source))}
     end
   end
+
+  defp byte_order_mark?(<<0xEF, 0xBB, 0xBF, _rest::binary>>), do: true
+  defp byte_order_mark?(_source), do: false
 
   @doc """
   Decodes one complete JSON binary, returning its value or raising the same

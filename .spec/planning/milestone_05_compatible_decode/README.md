@@ -20,7 +20,7 @@ contracts established by Milestones 1–4.
 3. [Phase 3 — Scalar, Container, Number, and String Materialization](./phase-03-value-materialization.md)
 4. [Phase 4 — Bounded Pool Execution, Cancellation, and Limits](./phase-04-bounded-execution-and-limits.md)
 5. [Phase 5 — Public Decode API, Raising Wrapper, and Stable Errors](./phase-05-public-decode-api-and-stable-errors.md)
-6. Phase 6 — Differential Qualification, Benchmarks, and Activation
+6. [Phase 6 — Differential Qualification, Benchmarks, and Activation](./phase-06-differential-qualification-benchmarks-and-activation.md)
 
 ## Contract Ownership by Phase
 
