@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 1 Phase - Freeze the legal, ownership, compatibility, and package
+- [x] 1 Phase - Freeze the legal, ownership, compatibility, and package
   identity contract before modifying publication tooling.
 
 ## 1.1 Section — Distribution and Package Identity
@@ -44,11 +44,11 @@ Back to plan: [README](./README.md)
 
 ## 1.4 Section — Release Decision and Specification Baseline
 
-- [ ] 1.4 Section - Add durable current-truth ownership for publication.
-  - [ ] 1.4.1 Task - Add a publication and versioning ADR.
-    - [ ] 1.4.1.1 Subtask - Record package destination, identity, licensing, support, credential boundary, and approval ownership.
-    - [ ] 1.4.1.2 Subtask - Record that publish, tag, revert, retire, and owner changes are explicit external actions.
-  - [ ] 1.4.2 Task - Add a planned release subject.
-    - [ ] 1.4.2.1 Subtask - Define package, docs, provenance, CI, authorization, publication, and verification requirements.
-    - [ ] 1.4.2.2 Subtask - Add a complete bootstrap exception until Phase 6 succeeds.
-    - [ ] 1.4.2.3 Subtask - Run format, SpecLed index/validate/impact, and qualification-fingerprint checks.
+- [x] 1.4 Section - Add durable current-truth ownership for publication.
+  - [x] 1.4.1 Task - Add a publication and versioning ADR.
+    - [x] 1.4.1.1 Subtask - Record package destination, identity, licensing, support, credential boundary, and approval ownership.
+    - [x] 1.4.1.2 Subtask - Record that publish, tag, revert, retire, and owner changes are explicit external actions.
+  - [x] 1.4.2 Task - Add a planned release subject.
+    - [x] 1.4.2.1 Subtask - Define package, docs, provenance, CI, authorization, publication, and verification requirements.
+    - [x] 1.4.2.2 Subtask - Add a complete bootstrap exception until Phase 6 succeeds.
+    - [x] 1.4.2.3 Subtask - Run format, SpecLed index/validate/impact, and qualification-fingerprint checks.

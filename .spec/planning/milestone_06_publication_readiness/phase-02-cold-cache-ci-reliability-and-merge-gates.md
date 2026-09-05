@@ -5,16 +5,25 @@ Back to plan: [README](./README.md)
 - [ ] 2 Phase - Make release qualification deterministic on clean GitHub
   runners and prevent red revisions from being treated as accepted.
 
-## 2.1 Section — Reproduce and Specify the Formatter Failure
+Known entry failures are the cold-run `Zig.Formatter` lookup error and a local
+randomized full-suite run with seed `215441` that aborted in
+`ethr_mutex_lock()` after lifecycle tests. The same Phase 1 tree passed all 15
+doctests and 197 tests with seed `287891`; Phase 2 must reproduce or eliminate
+the order-sensitive native runtime failure rather than treating that pass as a
+release-readiness waiver.
 
-- [ ] 2.1 Section - Turn the current red CI symptom into a deterministic test.
+## 2.1 Section — Reproduce and Specify CI Failures
+
+- [ ] 2.1 Section - Turn the current formatter and native-runtime symptoms into deterministic tests.
   - [ ] 2.1.1 Task - Reproduce without developer caches.
     - [ ] 2.1.1.1 Subtask - Run the aggregate qualifier in an isolated build directory after dependency retrieval.
     - [ ] 2.1.1.2 Subtask - Demonstrate that `mix format` cannot resolve `Zig.Formatter` after the preceding clean native steps.
     - [ ] 2.1.1.3 Subtask - Record Mix environment, code paths, cache key, and command order without leaking runner state.
+    - [ ] 2.1.1.4 Subtask - Reproduce the seed `215441` lifecycle abort under tracing and isolate the responsible test-order interaction.
   - [ ] 2.1.2 Task - Add a regression contract.
     - [ ] 2.1.2.1 Subtask - Require formatter-plugin compilation before every strict formatting gate.
     - [ ] 2.1.2.2 Subtask - Require success with both an empty cache and a restored cache.
+    - [ ] 2.1.2.3 Subtask - Require repeated randomized full-suite runs to complete without a native VM abort or leaked lifecycle state.
 
 ## 2.2 Section — Deterministic Tool Bootstrap
 

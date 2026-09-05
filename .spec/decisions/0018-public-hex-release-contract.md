@@ -4,6 +4,7 @@ status: accepted
 date: 2026-09-05
 affects:
   - simd_json.package
+  - simd_json.release
 ---
 
 # Public Hex Release Contract
@@ -44,7 +45,11 @@ incremental file/socket input or zero total-memory handling.
 
 ## Consequences
 
-Phase 1 will extend this decision with the owner-selected license, supported
-target, credential boundary, and external-action rules. Later phases must keep
+Tag creation, Hex publication, revert, republish, retirement, and package-owner
+changes are separate external mutations requiring explicit authorization for
+an exact version and state. Publication credentials must never be committed,
+logged, archived, echoed, or exposed to untrusted pull-request execution.
+
+Later phases must keep
 Mix, Hex, module, changelog, documentation, Git tag, and artifact identities
 consistent. Any change after approval invalidates the candidate.

@@ -1,5 +1,10 @@
 # Native Build and ABI
 
+Milestone 6 Phase 1 adds the wrapper license, upstream notice index, and exact
+qualified-target support statement to the source package. These are release
+and qualification inputs, but they do not change native sources, ABI v4,
+symbol allowlists, build profiles, or the source-built NIF boundary.
+
 Milestone 5 Phase 6 binds ABI v4 package, symbol, C/Zig, sanitizer, and release
 evidence to the accepted qualification fingerprint.
 
