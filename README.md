@@ -124,6 +124,12 @@ Milestones 1, 2, and 3 are active on the qualified Ubuntu 24.04 x86-64 target.
 Other platforms remain experimental or unsupported until they pass the same
 package, ABI, sanitizer, scheduler, lifecycle, benchmark, and shutdown gates.
 
+## License
+
+SimdJson wrapper code is available under the [MIT License](LICENSE).
+The vendored simdjson source retains its upstream license choices and
+attribution, described in [Third-Party Notices](THIRD_PARTY_NOTICES.md).
+
 ## Development
 
 Install dependencies and run the test suite:

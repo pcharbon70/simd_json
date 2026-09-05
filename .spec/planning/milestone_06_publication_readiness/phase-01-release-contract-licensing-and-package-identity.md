@@ -19,16 +19,16 @@ Back to plan: [README](./README.md)
 
 ## 1.2 Section — Project License and Third-Party Notices
 
-- [ ] 1.2 Section - Establish an explicit license for wrapper code without
+- [x] 1.2 Section - Establish an explicit license for wrapper code without
   conflating it with vendored dependency licenses.
-  - [ ] 1.2.1 Task - Obtain and record the repository owner's license choice.
-    - [ ] 1.2.1.1 Subtask - Choose Apache-2.0, MIT, or an explicitly reviewed dual-license expression.
-    - [ ] 1.2.1.2 Subtask - Add the complete root `LICENSE` file or files and copyright holder/year.
-    - [ ] 1.2.1.3 Subtask - Make `mix.exs`, README, Hex metadata, and SPDX wording match the chosen grant exactly.
-  - [ ] 1.2.2 Task - Preserve third-party attribution.
-    - [ ] 1.2.2.1 Subtask - Retain both vendored simdjson license files and source provenance.
-    - [ ] 1.2.2.2 Subtask - Add a `NOTICE` or third-party section when required by the chosen license review.
-    - [ ] 1.2.2.3 Subtask - Test that project and third-party licenses are present in the unpacked Hex archive.
+  - [x] 1.2.1 Task - Obtain and record the repository owner's license choice.
+    - [x] 1.2.1.1 Subtask - Choose Apache-2.0, MIT, or an explicitly reviewed dual-license expression.
+    - [x] 1.2.1.2 Subtask - Add the complete root `LICENSE` file or files and copyright holder/year.
+    - [x] 1.2.1.3 Subtask - Make `mix.exs`, README, Hex metadata, and SPDX wording match the chosen grant exactly.
+  - [x] 1.2.2 Task - Preserve third-party attribution.
+    - [x] 1.2.2.1 Subtask - Retain both vendored simdjson license files and source provenance.
+    - [x] 1.2.2.2 Subtask - Add a `NOTICE` or third-party section when required by the chosen license review.
+    - [x] 1.2.2.3 Subtask - Test that project and third-party licenses are present in the unpacked Hex archive.
 
 ## 1.3 Section — Supported Target and Compatibility Promise
 

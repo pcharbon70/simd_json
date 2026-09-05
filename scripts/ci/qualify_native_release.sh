@@ -60,7 +60,9 @@ run_step package_build mix hex.build --unpack --output "${package_root}"
 
 required_package_files=(
   .tool-versions
+  LICENSE
   README.md
+  THIRD_PARTY_NOTICES.md
   docs/milestones/README.md
   docs/milestones/01-native-foundation.md
   docs/milestones/01-native-foundation-operations.md

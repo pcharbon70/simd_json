@@ -28,6 +28,12 @@ package name and version must be rechecked immediately before publication.
 Only a clean, qualified, explicitly approved release commit may be tagged or
 submitted to Hex.
 
+The repository owner selected the MIT License for SimdJson wrapper code, with
+copyright recorded as `Copyright (c) 2026 pcharbon70`. Vendored simdjson keeps
+its separate upstream Apache-2.0-or-MIT license choice and attribution. Hex
+package metadata names MIT for this wrapper and the archive ships all three
+license texts plus a third-party notice.
+
 ## Consequences
 
 Phase 1 will extend this decision with the owner-selected license, supported
