@@ -146,7 +146,12 @@ defmodule SimdJson.Native.OperationCoordinator do
     end
 
     @spec set_submission_rejection_for_test(
-            :document_open | :document_cleanup | :projection | :stream_setup | :stream_batch,
+            :document_open
+            | :document_cleanup
+            | :projection
+            | :decode
+            | :stream_setup
+            | :stream_batch,
             boolean()
           ) :: :ok
     def set_submission_rejection_for_test(kind, reject?)
@@ -154,6 +159,7 @@ defmodule SimdJson.Native.OperationCoordinator do
                :document_open,
                :document_cleanup,
                :projection,
+               :decode,
                :stream_setup,
                :stream_batch
              ] and
@@ -194,7 +200,7 @@ defmodule SimdJson.Native.OperationCoordinator do
 
   def handle_call(:begin_shutdown, _from, state) do
     Enum.each(state.requests, fn {_request_ref, request} ->
-      if request.kind in [:document_open, :projection] do
+      if request.kind in [:document_open, :projection, :decode] do
         _ = BuildSmoke.operation_cancel(request.operation.resource)
       end
     end)
@@ -492,18 +498,22 @@ defmodule SimdJson.Native.OperationCoordinator do
       request_ref = state.caller_monitors[monitor] ->
         request = Map.fetch!(state.requests, request_ref)
 
-        if request.kind in [:document_open, :projection, :stream_setup, :stream_batch] do
+        if request.kind in [:document_open, :projection, :decode, :stream_setup, :stream_batch] do
           _ = BuildSmoke.operation_cancel(request.operation.resource)
         end
 
-        request = %{request | orphaned?: true, caller: nil, caller_monitor: nil, from: nil}
+        if request.kind == :decode do
+          {:noreply, remove_request(state, request_ref, request)}
+        else
+          request = %{request | orphaned?: true, caller: nil, caller_monitor: nil, from: nil}
 
-        {:noreply,
-         %{
-           state
-           | requests: Map.put(state.requests, request_ref, request),
-             caller_monitors: Map.delete(state.caller_monitors, monitor)
-         }}
+          {:noreply,
+           %{
+             state
+             | requests: Map.put(state.requests, request_ref, request),
+               caller_monitors: Map.delete(state.caller_monitors, monitor)
+           }}
+        end
 
       request_ref = state.worker_monitors[monitor] ->
         # A normal worker sends completion before it exits, so reaching this

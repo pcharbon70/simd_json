@@ -1,5 +1,8 @@
 # Stream Execution and Lifecycle
 
+Milestone 5 Phase 4 adds an independent decode job variant; stream cursor
+serialization, demand, batching, cancellation, and cleanup remain unchanged.
+
 Stream setup and batch execution retain ABI v3 semantics under cumulative ABI
 v4; decode owners neither share nor consume stream cursor state.
 

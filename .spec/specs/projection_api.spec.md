@@ -1,5 +1,8 @@
 # Projection API
 
+Milestone 5 Phase 4 adds a separate decode pool-job discriminator while
+preserving projection admission, normalization, results, and public behavior.
+
 ABI v4 preserves projection normalization, execution, typed values, and public
 surface while adding separately owned private decode descriptors.
 

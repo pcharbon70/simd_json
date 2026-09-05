@@ -1,5 +1,8 @@
 # Projection Execution and Lifecycle
 
+Milestone 5 Phase 4 shares fixed-worker dispatch and cancellation accounting
+with decode while leaving projection reservations and conversion unchanged.
+
 Projection admission, cancellation, conversion, and lifecycle behavior remain
 regression-locked under cumulative ABI v4.
 

@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 4 Phase - Execute eager decode only as a typed bounded-pool job with
+- [x] 4 Phase - Execute eager decode only as a typed bounded-pool job with
   stable limits, cancellation, redacted telemetry, and exactly-once cleanup.
 
 ## 4.1 Section — Native Limits and Cancellation
@@ -34,9 +34,9 @@ Back to plan: [README](./README.md)
 
 ## 4.4 Section — Phase 4 Integration and Qualification
 
-- [ ] 4.4 Section - Reconcile native/runtime sources, package inputs, specs,
+- [x] 4.4 Section - Reconcile native/runtime sources, package inputs, specs,
   sanitizer evidence, saturation behavior, and qualification state.
-  - [ ] 4.4.1 Task - Cover success, malformed input, every limit, cancellation,
+  - [x] 4.4.1 Task - Cover success, malformed input, every limit, cancellation,
     saturation, caller death, and shutdown cleanup.
-  - [ ] 4.4.2 Task - Reconcile manifest, fingerprint, formatting, regressions,
+  - [x] 4.4.2 Task - Reconcile manifest, fingerprint, formatting, regressions,
     release symbols, traceability, and SpecLed state.

@@ -1626,6 +1626,10 @@ pub fn operation_cancel(operation: OperationResource) bool {
     return true;
 }
 
+pub fn pool_operation_cancelled(operation: OperationResource) bool {
+    return operation.unpack().cancelled.load(.acquire);
+}
+
 pub fn operation_finish(operation: OperationResource, outcome: OperationOutcome) bool {
     return operation.unpack().finish(outcome);
 }

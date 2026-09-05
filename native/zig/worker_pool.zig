@@ -357,8 +357,15 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             }
 
             fn isCancelled(self: *Job) bool {
-                return self.cancelled.load(.acquire) or
-                    if (self.request) |request| request.cancelled.load(.acquire) else false;
+                const operation_cancelled = if (self.operation) |operation|
+                    ops.pool_operation_cancelled(operation)
+                else
+                    false;
+                const request_cancelled = if (self.request) |request|
+                    request.cancelled.load(.acquire)
+                else
+                    false;
+                return self.cancelled.load(.acquire) or operation_cancelled or request_cancelled;
             }
 
             fn attachSerialization(self: *Job, resource: SerializationResource) void {
