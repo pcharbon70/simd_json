@@ -4,7 +4,9 @@ Milestone 6 Phase 2 Section 2.2 serializes every public shared-pool lookup with
 pool stop, worker join, and mutex retirement. Concurrent NIF callers can now
 observe either a live pool or a stopped pool, never freed synchronization
 state; deterministic stop/start readers and the recorded sanitizer seed prove
-the boundary.
+the boundary. Terminal workers retain and use the native request control block,
+but never demonitor through a BEAM request resource after its Elixir term can
+be collected. ERTS owns monitor removal when that resource is deallocated.
 
 Milestone 5 Phase 4 adds decode to the existing typed FIFO job set without
 changing worker count or queue capacity. Busy rejection, caller monitoring,
@@ -146,6 +148,7 @@ decisions:
   then:
     - One terminal owner wins without double-send or double-free
     - Conflicting resource work never overlaps
+    - Delivery remains safe after the monitored request term is collected
     - Concurrent snapshots never outlive pool mutex retirement
     - Workers join and every retained gauge returns to baseline
 

@@ -12,6 +12,13 @@ doctests and 197 tests with seed `287891`; Phase 2 must reproduce or eliminate
 the order-sensitive native runtime failure rather than treating that pass as a
 release-readiness waiver.
 
+The first merged-main run for PR 39 reproduced the mutex abort after the full
+suite had exercised hundreds of application generations. A focused local
+repeat then reproduced it at generation 548. The remaining fault was a native
+worker calling `enif_demonitor_process` with a request resource object after its
+last Elixir term could have been collected. Jobs already retained the separate
+native control block needed to finish delivery and terminal accounting.
+
 ## 2.1 Section — Reproduce and Specify CI Failures
 
 - [x] 2.1 Section - Turn the current formatter and native-runtime symptoms into deterministic tests.
@@ -40,6 +47,7 @@ release-readiness waiver.
     - [x] 2.2.3.1 Subtask - Serialize shared pool lookup with stop, join, and mutex retirement.
     - [x] 2.2.3.2 Subtask - Await zero native gauges before capturing decode lifecycle baselines.
     - [x] 2.2.3.3 Subtask - Pass the recorded sanitizer seed without trace-induced scheduling changes.
+    - [x] 2.2.3.4 Subtask - Keep terminal worker cleanup on the job-owned native control block and leave collected request-resource monitor removal to ERTS.
 
 ## 2.3 Section — Workflow Safety and Evidence Retention
 

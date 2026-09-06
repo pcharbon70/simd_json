@@ -756,7 +756,6 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                     cancelled = delivery.? == .cancelled;
                 }
                 job.?.state.store(@intFromEnum(if (cancelled) JobState.cancelled else JobState.completed), .release);
-                if (job.?.request) |request| request.demonitor();
                 job.?.destroy();
                 e.enif_mutex_lock(runtime.mutex);
                 runtime.running_jobs -= 1;
