@@ -1,5 +1,9 @@
 # Projection API
 
+Milestone 6 Phase 2 strengthens million-row proof cleanup by collecting the
+coordinator before comparing native gauges; projection grammar, results, and
+the public `select/2` contract are unchanged.
+
 The cumulative public contract is exercised against first, middle, and final
 array paths in the shared million-row fixture without expanding the API.
 

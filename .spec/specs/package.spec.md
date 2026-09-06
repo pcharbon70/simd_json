@@ -1,5 +1,25 @@
 # SimdJson Package
 
+Milestone 6 Phase 2 Section 2.4 packages the cold/restored CI matrix and its
+required-check policy. Both jobs bind cache mode and hit state to the same
+revision, tree, and qualification identity; branch-protection mutation remains
+explicitly owner-authorized and was not performed by this phase.
+
+Milestone 6 Phase 2 Section 2.3 packages cancellation-safe CI concurrency,
+bounded workflow durations, always-uploaded partial evidence, checksummed
+success evidence, and a compact revision/tree/gate summary. Qualification
+restores generated SpecLed state and rejects source dirtiness.
+
+Milestone 6 Phase 2 Section 2.2 packages the deterministic Zig/Hex/Rebar
+bootstrap, explicit qualification environment, shared-pool retirement guard,
+and the regression proofs that removed the recorded sanitizer and stale
+lifecycle-baseline failures. Alternate native builds remain isolated under
+temporary build and Zig cache roots.
+
+Milestone 6 Phase 2 Section 2.1 packages deterministic CI failure seeds,
+failure provenance, and executable release-reliability contracts without
+changing the public API or Hex archive identity.
+
 Milestone 6 Phase 1 targets public Hex package `simd_json` version `0.1.0`
 with matching `:simd_json` application and `SimdJson.*` module ownership.
 Section 1.2 licenses wrapper code under MIT and packages separate, unmodified

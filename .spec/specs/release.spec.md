@@ -4,6 +4,15 @@ Current-truth contract for preparing and publishing the first public release.
 Milestone 6 Phase 1 freezes identity, licensing, and support; Phases 2–6 own CI
 repair, public package documentation, release tooling, exact-candidate
 qualification, explicit authorization, publication, and external verification.
+Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
+test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
+closes the reproduced pool-retirement and stale-baseline failures; workflow
+safety in Section 2.3 now cancels only superseded pull requests, bounds the
+job, retains partial or checksummed evidence, and reports the failed gate with
+revision and tree. Section 2.4 makes cold and restored qualification separate
+required checks, records cache state and qualification identity, and prohibits
+merge while either check is not green. Branch-protection settings remain an
+explicitly authorized repository-owner action.
 
 ```spec-meta
 id: simd_json.release
@@ -124,6 +133,29 @@ bootstrap:
   then:
     - Matching public evidence activates the release subject
     - A material defect follows the pre-approved patch, revert, or retirement runbook
+
+- id: simd_json.release.ci_cache_equivalence
+  covers:
+    - simd_json.release.green_ci
+  given:
+    - One exact revision on the qualified GitHub runner
+  when:
+    - The required workflow runs once with empty dependency and native caches
+    - The same workflow runs again with restored caches
+  then:
+    - Both runs bootstrap the formatter and native toolchain in the same explicit Mix environment
+    - Both runs pass and report the same qualification input identity
+
+- id: simd_json.release.ci_native_reliability
+  covers:
+    - simd_json.release.green_ci
+  given:
+    - The recorded sanitizer and lifecycle failure seeds
+  when:
+    - Isolated sanitizer, repeated native, and full-suite regression runs execute
+  then:
+    - Every run exits normally without a VM abort
+    - Every run starts and finishes with quiescent native lifecycle gauges
 ```
 
 ## Verification
@@ -137,6 +169,21 @@ bootstrap:
     - simd_json.release.project_license
     - simd_json.release.qualified_support
     - simd_json.release.publication_gate
+
+- kind: command
+  target: MIX_ENV=test mix test test/release/ci_reliability_contract_test.exs test/native/pool_worker_lifecycle_test.exs test/native/decode_pool_lifecycle_test.exs
+  execute: true
+  covers:
+    - simd_json.release.green_ci
+    - simd_json.release.ci_cache_equivalence
+    - simd_json.release.ci_native_reliability
+
+- kind: command
+  target: SIMD_JSON_NIF_SANITIZER_SEED=935088 bash scripts/native/run_nif_sanitizer_tests.sh
+  execute: true
+  covers:
+    - simd_json.release.green_ci
+    - simd_json.release.ci_native_reliability
 
 - kind: command
   target: bash scripts/ci/qualify_release_candidate.sh

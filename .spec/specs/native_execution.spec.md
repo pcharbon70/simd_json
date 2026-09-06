@@ -1,5 +1,11 @@
 # Native Execution
 
+Milestone 6 Phase 2 gives concurrent decode scheduler qualification a
+120-second operation budget inside a 150-second ExUnit envelope. Constrained
+clean runners can therefore reach the declared operation bound without the
+test harness preempting it, while the existing heartbeat latency limits remain
+unchanged.
+
 Milestone 5 Phase 6 qualifies concurrent decode scheduler responsiveness,
 cancellation cleanup, and native gauges through the aggregate release gate.
 
@@ -426,6 +432,12 @@ decisions:
     - simd_json.native_execution.threaded_cleanup
     - simd_json.native_execution.scheduler_qualification
     - simd_json.native_execution.preproduction_boundary
+    - simd_json.native_execution.large_parse_responsiveness
+
+- kind: test_file
+  target: test/qualification/decode_scheduler_qualification_test.exs
+  covers:
+    - simd_json.native_execution.scheduler_qualification
     - simd_json.native_execution.large_parse_responsiveness
 
 - kind: test_file

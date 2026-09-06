@@ -29,6 +29,25 @@ package name and version must be rechecked immediately before publication.
 Only a clean, qualified, explicitly approved release commit may be tagged or
 submitted to Hex.
 
+Release qualification must bootstrap in one explicit Mix environment, verify
+the pinned Zig executable before native compilation, rebuild Zigler before a
+strict formatting gate, and record the active Hex archive and Rebar version.
+Sanitizer, symbol, and offline builds use isolated temporary build and Zig
+cache roots so their order cannot alter canonical inputs.
+
+Superseded pull-request revisions may be cancelled, but `main` qualification
+must never be cancelled by concurrency policy. CI keeps read-only repository
+permissions, commit-pinned actions, bounded timeouts, partial failure evidence,
+checksummed success evidence, and a summary naming status, gate, revision,
+tree, and artifact path.
+
+Release-preparation changes require separate cold-cache and restored-cache
+GitHub checks at the pull-request head and resulting `main` commit. Both checks
+must bind the same revision, tree, and qualification-input identity. Local
+qualification is supporting evidence only. Branch-protection changes remain a
+separate repository-owner mutation requiring explicit authorization naming
+the branch and exact required checks.
+
 The repository owner selected the MIT License for SimdJson wrapper code, with
 copyright recorded as `Copyright (c) 2026 pcharbon70`. Vendored simdjson keeps
 its separate upstream Apache-2.0-or-MIT license choice and attribution. Hex

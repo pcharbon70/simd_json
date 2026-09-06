@@ -8,6 +8,8 @@ defmodule SimdJson.Native.DecodePoolLifecycleTest do
     configured = OperationCoordinator.pool_snapshot()
     wait_for_quiescence()
     baseline = BuildSmoke.execution_snapshot()
+    assert baseline.live_operations == 0
+    assert baseline.retained_inputs == 0
     _ = BuildSmoke.native_pool_stop()
     assert BuildSmoke.native_pool_start(1, 1) == :ok
 
@@ -72,7 +74,13 @@ defmodule SimdJson.Native.DecodePoolLifecycleTest do
     :erlang.garbage_collect(Process.whereis(OperationCoordinator))
 
     await(fn ->
-      OperationCoordinator.snapshot().live_requests == 0
+      native = BuildSmoke.execution_snapshot()
+
+      OperationCoordinator.snapshot().live_requests == 0 and native.live_operations == 0 and
+        native.retained_inputs == 0 and native.queued_operations == 0 and
+        native.running_operations == 0 and native.live_documents == 0 and
+        native.live_document_controls == 0 and native.dispatcher_queued_cleanup == 0 and
+        native.dispatcher_active_cleanup == 0 and native.retained_failed_cleanup == 0
     end)
   end
 

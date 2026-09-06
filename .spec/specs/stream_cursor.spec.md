@@ -1,5 +1,9 @@
 # Stream Cursor and Batch Engine
 
+Milestone 6 Phase 2 makes native-free stream construction wait for operation
+resources and retained inputs, not only queued/running work, before recording
+its baseline. Cursor and batch behavior are unchanged.
+
 Milestone 5 Phase 1 makes the existing early-halt regression assertion wait
 for asynchronous cursor cleanup to reach its documented quiescent state.
 

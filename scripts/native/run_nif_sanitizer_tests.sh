@@ -8,6 +8,8 @@ scratch_root="$(mktemp -d "${TMPDIR:-/tmp}/simd-json-nif-sanitizer.XXXXXX")"
 build_root="${scratch_root}/build"
 zig_cache_root="${XDG_CACHE_HOME:-${HOME}/.cache}"
 zig_executable="${ZIG_EXECUTABLE_PATH:-${zig_cache_root}/zigler/zig-x86_64-linux-0.16.0/zig}"
+sanitizer_seed="${SIMD_JSON_NIF_SANITIZER_SEED:-935088}"
+sanitizer_trace="${SIMD_JSON_NIF_SANITIZER_TRACE:-0}"
 export ZIG_GLOBAL_CACHE_DIR="${ZIG_GLOBAL_CACHE_DIR:-${TMPDIR:-/tmp}/simd-json-zig-global-cache}"
 export ZIG_LOCAL_CACHE_DIR="${ZIG_LOCAL_CACHE_DIR:-${scratch_root}/zig-local-cache}"
 
@@ -25,6 +27,20 @@ if [[ ! -x "${zig_executable}" ]]; then
   printf 'qualified Zig executable is unavailable: %s\n' "${zig_executable}" >&2
   exit 1
 fi
+
+if [[ ! "${sanitizer_seed}" =~ ^[0-9]+$ ]]; then
+  printf 'SIMD_JSON_NIF_SANITIZER_SEED must be a non-negative integer\n' >&2
+  exit 1
+fi
+
+case "${sanitizer_trace}" in
+  0) test_options=(--seed "${sanitizer_seed}") ;;
+  1) test_options=(--seed "${sanitizer_seed}" --trace) ;;
+  *)
+    printf 'SIMD_JSON_NIF_SANITIZER_TRACE must be 0 or 1\n' >&2
+    exit 1
+    ;;
+esac
 
 asan_library="$("${zig_executable}" c++ -print-file-name=libasan.so)"
 ubsan_library="$("${zig_executable}" c++ -print-file-name=libubsan.so)"
@@ -65,7 +81,7 @@ env \
   ASAN_OPTIONS="detect_leaks=0:halt_on_error=1:strict_string_checks=1" \
   UBSAN_OPTIONS="halt_on_error=1:print_stacktrace=1" \
   ERL_FLAGS="+S 4:4 +SDcpu 4 +SDio 2" \
-  mix test --no-compile \
+  mix test --no-compile "${test_options[@]}" \
     test/native/threaded_document_open_test.exs \
     test/native/threaded_teardown_test.exs \
     test/native/threaded_projection_operation_test.exs \

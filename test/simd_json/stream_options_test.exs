@@ -309,9 +309,11 @@ defmodule SimdJson.StreamOptionsTest do
 
   defp wait_for_quiescence(attempts) do
     :erlang.garbage_collect(self())
+    :erlang.garbage_collect(Process.whereis(OperationCoordinator))
     native = BuildSmoke.execution_snapshot()
 
-    if OperationCoordinator.snapshot().live_requests == 0 and native.queued_operations == 0 and
+    if OperationCoordinator.snapshot().live_requests == 0 and native.live_operations == 0 and
+         native.retained_inputs == 0 and native.queued_operations == 0 and
          native.running_operations == 0 do
       :ok
     else

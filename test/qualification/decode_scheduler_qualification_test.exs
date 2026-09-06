@@ -2,8 +2,10 @@ defmodule SimdJson.DecodeSchedulerQualificationTest do
   use ExUnit.Case, async: false
 
   @heartbeat_ms 2
+  @decode_timeout_ms 120_000
 
   # covers: simd_json.decode_api.pool_execution simd_json.decode_api.bounded_failure
+  @tag timeout: @decode_timeout_ms + 30_000
   test "large concurrent decode keeps normal scheduler heartbeat bounded" do
     input = Jason.encode!(Enum.map(1..50_000, &%{"id" => &1, "name" => "item-#{&1}"}))
 
@@ -11,7 +13,7 @@ defmodule SimdJson.DecodeSchedulerQualificationTest do
       spawn_link(fn -> heartbeat_loop(self(), System.monotonic_time(:microsecond), []) end)
 
     tasks = for _ <- 1..4, do: Task.async(fn -> SimdJson.decode(input) end)
-    assert Enum.all?(Task.await_many(tasks, 120_000), &match?({:ok, [_ | _]}, &1))
+    assert Enum.all?(Task.await_many(tasks, @decode_timeout_ms), &match?({:ok, [_ | _]}, &1))
 
     reference = make_ref()
     send(heartbeat, {:stop, self(), reference})
