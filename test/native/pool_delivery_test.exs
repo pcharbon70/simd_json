@@ -63,6 +63,33 @@ defmodule SimdJson.Native.PoolDeliveryTest do
            } = BuildSmoke.native_pool_snapshot()
   end
 
+  # covers: simd_json.native_pool.owned_jobs simd_json.native_pool.cancellation simd_json.release.ci_native_reliability
+  test "delivery survives collection of the monitored request term" do
+    assert BuildSmoke.native_pool_start(1, 1) == :ok
+    assert BuildSmoke.native_pool_pause_workers(true)
+
+    request_ref = submit_without_retaining_request("retained")
+    await(fn -> BuildSmoke.native_pool_snapshot().running_jobs == 1 end)
+
+    Enum.each(1..4, fn _ -> :erlang.garbage_collect(self()) end)
+    assert BuildSmoke.native_pool_pause_workers(false)
+
+    assert_receive {SimdJson.Native, ^request_ref, {:ok, 844}}, 2_000
+    await(fn -> BuildSmoke.native_pool_snapshot().completed_jobs == 1 end)
+
+    assert %{
+             completed_jobs: 1,
+             delivered_jobs: 1,
+             discarded_jobs: 0,
+             retained_bytes: 0
+           } = BuildSmoke.native_pool_snapshot()
+  end
+
+  defp submit_without_retaining_request(input) do
+    %{request_ref: request_ref} = BuildSmoke.native_pool_submit_monitored_fixture(input)
+    request_ref
+  end
+
   defp await(predicate, attempts \\ 1_000)
 
   defp await(predicate, 0),

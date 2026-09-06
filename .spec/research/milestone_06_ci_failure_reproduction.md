@@ -69,3 +69,32 @@ Phase 2 closes these findings only when:
 3. formatter bootstrap passes with empty and restored build/cache paths; and
 4. pull-request and merged-main GitHub runs pass with the same qualification
    input identity.
+
+## Post-merge request-resource reproduction
+
+PR 39 passed its cold and restored checks, but the first merged-main run
+`34030167900` aborted its cold job after `phase6_scheduler` with the same
+`ethr_mutex_lock(): Invalid argument (22)` signature. Its restored job passed
+the identical source tree and qualification fingerprint.
+
+A focused `--repeat-until-failure 50` run over pool retirement, application
+stop/start, lifecycle, scheduler, projection, and selection tests reproduced
+exit 134 locally after roughly 35 iterations and 548 application generations.
+Review of the terminal-delivery path found that each job retained the native
+request control block while the corresponding monitored BEAM resource object
+could be garbage-collected. The worker subsequently passed that retired object
+to `enif_demonitor_process`.
+
+A core dump placed the failing worker in `enif_demonitor_process`, reached from
+`RequestControl.demonitor` after result delivery and before the pool recorded
+the terminal job counters. The repair removes resource-object demonitoring from
+the worker path. The job-owned control block still survives through delivery
+and terminal cleanup, while ERTS automatically removes the monitor when it
+deallocates the request resource. Explicit fixture demonitoring remains limited
+to a NIF invocation that receives the live request resource as an argument. A
+paused-worker regression deliberately drops the Elixir request term and forces
+garbage collection before allowing delivery to finish. With a forced test NIF
+rebuild, that regression passed 200 consecutive runs. The broader 27-test
+lifecycle, application restart, scheduler, projection, and selection corpus
+then passed 50 consecutive cycles (1,350 tests), reaching application
+generation 716 without another VM abort.

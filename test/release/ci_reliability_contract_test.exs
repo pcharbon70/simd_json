@@ -8,6 +8,7 @@ defmodule SimdJson.CIReliabilityContractTest do
   @aggregate_script "scripts/ci/qualify_milestone_5.sh"
   @workflow ".github/workflows/ci.yml"
   @native_source "native/zig/build_smoke.zig"
+  @pool_source "native/zig/worker_pool.zig"
   @ci_policy "docs/releases/ci-policy.md"
 
   # covers: simd_json.release.green_ci simd_json.release.ci_native_reliability
@@ -81,6 +82,15 @@ defmodule SimdJson.CIReliabilityContractTest do
     assert source =~ "enif_mutex_destroy(lifecycle_mutex)"
     assert source =~ "pool_lifecycle_mutex.swap(null, .acq_rel)"
     assert length(guarded_functions) == 17
+  end
+
+  # covers: simd_json.native_pool.owned_jobs simd_json.native_pool.cancellation simd_json.release.ci_native_reliability
+  test "workers never demonitor a request resource after its term can be collected" do
+    source = File.read!(@pool_source)
+
+    assert source =~ "request.retain()"
+    assert source =~ "if (self.request) |request| request.release()"
+    refute source =~ "if (job.?.request) |request| request.demonitor()"
   end
 
   # covers: simd_json.release.green_ci simd_json.release.provenance

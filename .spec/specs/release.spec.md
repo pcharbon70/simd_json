@@ -6,13 +6,15 @@ repair, public package documentation, release tooling, exact-candidate
 qualification, explicit authorization, publication, and external verification.
 Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
 test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
-closes the reproduced pool-retirement and stale-baseline failures; workflow
-safety in Section 2.3 now cancels only superseded pull requests, bounds the
-job, retains partial or checksummed evidence, and reports the failed gate with
-revision and tree. Section 2.4 makes cold and restored qualification separate
-required checks, records cache state and qualification identity, and prohibits
-merge while either check is not green. Branch-protection settings remain an
-explicitly authorized repository-owner action.
+closes the reproduced pool-retirement, stale-baseline, and collected-request
+demonitor failures. Terminal workers use only job-retained native controls and
+leave collected resource monitor removal to ERTS. Workflow safety in Section
+2.3 now cancels only superseded pull requests, bounds the job, retains partial
+or checksummed evidence, and reports the failed gate with revision and tree.
+Section 2.4 makes cold and restored qualification separate required checks,
+records cache state and qualification identity, and prohibits merge while
+either check is not green. Branch-protection settings remain an explicitly
+authorized repository-owner action.
 
 ```spec-meta
 id: simd_json.release
@@ -150,7 +152,7 @@ bootstrap:
   covers:
     - simd_json.release.green_ci
   given:
-    - The recorded sanitizer and lifecycle failure seeds
+    - The recorded sanitizer, lifecycle, and collected-request failure cases
   when:
     - Isolated sanitizer, repeated native, and full-suite regression runs execute
   then:
@@ -171,7 +173,7 @@ bootstrap:
     - simd_json.release.publication_gate
 
 - kind: command
-  target: MIX_ENV=test mix test test/release/ci_reliability_contract_test.exs test/native/pool_worker_lifecycle_test.exs test/native/decode_pool_lifecycle_test.exs
+  target: MIX_ENV=test mix test test/release/ci_reliability_contract_test.exs test/native/pool_delivery_test.exs test/native/pool_worker_lifecycle_test.exs test/native/decode_pool_lifecycle_test.exs
   execute: true
   covers:
     - simd_json.release.green_ci
