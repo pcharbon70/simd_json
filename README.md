@@ -3,6 +3,33 @@
 An Elixir library for decoding JSON and extracting selected values with
 SIMD-accelerated parsing.
 
+## Installation
+
+Add `simd_json` to the dependencies in `mix.exs`:
+
+```elixir
+def deps do
+  [
+    {:simd_json, "~> 0.1.0"}
+  ]
+end
+```
+
+Fetch the package and its pinned build dependency, install the qualified Zig
+toolchain, and compile the source-built NIF:
+
+```sh
+mix deps.get
+mix zig.get --version 0.16.0
+mix compile
+```
+
+The first release ships native source rather than a precompiled NIF and is
+supported only on the qualified Ubuntu 24.04 x86-64 environment. Read the
+[installation and native build guide](docs/releases/installation.md) before
+deploying; it includes prerequisites, smoke checks, cache behavior, and
+troubleshooting commands.
+
 ## Public API
 
 Decode a complete JSON binary with the Jason 1.4.5-compatible empty-option

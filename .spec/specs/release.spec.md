@@ -8,6 +8,11 @@ Phase 3 Section 3.1 adds explicit Hex identity, maintainer and public links,
 tag-bound ExDoc source metadata, documentation groups, and executable proof
 that only the two required production Hex dependencies enter consumer
 resolution under the qualified Elixir requirement.
+Section 3.2 adds a copyable dependency and compilation sequence, executable
+decode/select/stream smoke workflows, the exact supported versus experimental
+boundary, source-native prerequisite and offline-vendor behavior, cache and
+compile-time expectations, and diagnostic recovery commands. It states
+explicitly that the first release contains no precompiled NIF.
 Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
 test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
 closes the reproduced pool-retirement, stale-baseline, and collected-request

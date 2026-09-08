@@ -61,4 +61,43 @@ defmodule SimdJson.PackageDocumentationContractTest do
     assert is_binary(specled_options[:github])
     assert is_binary(specled_options[:ref])
   end
+
+  # covers: simd_json.release.consumer_documentation simd_json.release.qualified_support
+  test "documents a copyable source-build installation contract" do
+    readme = File.read!("README.md")
+    installation = File.read!("docs/releases/installation.md")
+
+    for document <- [readme, installation] do
+      assert document =~ ~s({:simd_json, "~> 0.1.0"})
+      assert document =~ "mix deps.get"
+      assert document =~ "mix zig.get --version 0.16.0"
+      assert document =~ "mix compile"
+    end
+
+    assert installation =~ "first release does not ship precompiled NIF artifacts"
+    assert installation =~ "Ubuntu 24.04 LTS"
+    assert installation =~ "glibc 2.39"
+    assert installation =~ "bundled Clang/LLVM 21.1.0 and libc++"
+    assert installation =~ ~r/never discovers a\s+system simdjson installation/
+    assert installation =~ "budget several minutes"
+    assert installation =~ "ZIG_GLOBAL_CACHE_DIR"
+    assert installation =~ "Unsupported native target"
+    assert installation =~ "experimental or unsupported"
+  end
+
+  # covers: simd_json.release.consumer_documentation
+  test "documented decode, select, and stream smoke workflows execute" do
+    assert {:ok, %{"ready" => true}} = SimdJson.decode(~s({"ready":true}))
+
+    assert {:ok, %{id: 7}} =
+             SimdJson.select(~s({"account":{"id":7}}), id: ["account", "id"])
+
+    assert [%{id: 1}, %{id: 2}] =
+             SimdJson.stream(~s({"rows":[{"id":1},{"id":2}]}),
+               path: ["rows"],
+               fields: [id: ["id"]],
+               batch_size: 1
+             )
+             |> Enum.to_list()
+  end
 end

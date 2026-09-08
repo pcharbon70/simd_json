@@ -27,7 +27,11 @@ defmodule SimdJson.MixProject do
     "docs/milestones/05-compatible-decode-api-acceptance.md"
   ]
 
-  @release_guides ["docs/releases/support.md", "docs/releases/ci-policy.md"]
+  @release_guides [
+    "docs/releases/installation.md",
+    "docs/releases/support.md",
+    "docs/releases/ci-policy.md"
+  ]
 
   def project do
     [

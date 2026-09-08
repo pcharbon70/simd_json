@@ -19,15 +19,15 @@ Back to plan: [README](./README.md)
 
 ## 3.2 Section — Installation and Native Build Guide
 
-- [ ] 3.2 Section - Add copyable installation and prerequisite instructions.
-  - [ ] 3.2.1 Task - Document Hex installation.
-    - [ ] 3.2.1.1 Subtask - Add the exact dependency tuple for the release version.
-    - [ ] 3.2.1.2 Subtask - Show dependency fetch, compilation, and one minimal decode/select/stream smoke test.
-    - [ ] 3.2.1.3 Subtask - Distinguish supported, experimental, and unsupported environments.
-  - [ ] 3.2.2 Task - Document source-native requirements.
-    - [ ] 3.2.2.1 Subtask - List Zig/Zigler, C++ runtime, libc, build tools, CPU dispatch, and offline vendored-source behavior.
-    - [ ] 3.2.2.2 Subtask - Explain expected compile time, cache location, common failures, and diagnostic commands.
-    - [ ] 3.2.2.3 Subtask - State clearly that no precompiled NIF artifacts are shipped in the first release.
+- [x] 3.2 Section - Add copyable installation and prerequisite instructions.
+  - [x] 3.2.1 Task - Document Hex installation.
+    - [x] 3.2.1.1 Subtask - Add the exact dependency tuple for the release version.
+    - [x] 3.2.1.2 Subtask - Show dependency fetch, compilation, and one minimal decode/select/stream smoke test.
+    - [x] 3.2.1.3 Subtask - Distinguish supported, experimental, and unsupported environments.
+  - [x] 3.2.2 Task - Document source-native requirements.
+    - [x] 3.2.2.1 Subtask - List Zig/Zigler, C++ runtime, libc, build tools, CPU dispatch, and offline vendored-source behavior.
+    - [x] 3.2.2.2 Subtask - Explain expected compile time, cache location, common failures, and diagnostic commands.
+    - [x] 3.2.2.3 Subtask - State clearly that no precompiled NIF artifacts are shipped in the first release.
 
 ## 3.3 Section — Public Contract, Limits, and Release Notes
 

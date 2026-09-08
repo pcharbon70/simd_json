@@ -4,6 +4,12 @@ Milestone 6 Phase 3 Section 3.1 adds release-tag source links and grouped
 native milestone documentation to ExDoc. The qualified toolchain, vendored
 source, ABI v4, build profiles, and release-symbol boundary are unchanged.
 
+Section 3.2 publishes copyable source-build instructions for the exact
+qualified BEAM, Zig/Zigler, bundled C++17 toolchain, glibc ABI, vendored
+simdjson, and CPU-dispatch boundary. It identifies build/cache recovery and
+states that no precompiled NIF or system-simdjson fallback is shipped; native
+sources, ABI v4, profiles, and runtime behavior remain unchanged.
+
 Milestone 6 Phase 2 verifies the pinned Zig 0.16.0 path before compilation,
 rebuilds Zigler deterministically, and qualifies native inputs in separate
 cold and restored cache jobs. The CI policy is packaged documentation; it does
