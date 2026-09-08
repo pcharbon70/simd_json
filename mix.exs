@@ -29,6 +29,7 @@ defmodule SimdJson.MixProject do
 
   @release_guides [
     "docs/releases/preflight.md",
+    "docs/releases/provenance.md",
     "docs/releases/installation.md",
     "docs/releases/support.md",
     "docs/releases/ci-policy.md"

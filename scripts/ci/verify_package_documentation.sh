@@ -4,10 +4,13 @@ set -euo pipefail
 # covers: simd_json.release.archive_integrity simd_json.release.consumer_documentation
 
 repository_root="$(git rev-parse --show-toplevel)"
-evidence_root="${SIMD_JSON_PACKAGE_EVIDENCE_DIR:-${repository_root}/_build/qualification/package-documentation}"
+default_evidence_root="${repository_root}/_build/qualification/package-documentation"
+evidence_root="${SIMD_JSON_PACKAGE_EVIDENCE_DIR:-${default_evidence_root}}"
 scratch_root="$(mktemp -d "${TMPDIR:-/tmp}/simd-json-package-docs.XXXXXX")"
-archive_path="${scratch_root}/simd_json-0.1.0.tar"
-package_root="${scratch_root}/simd_json-0.1.0"
+archive_path="${scratch_root}/first/simd_json-0.1.0.tar"
+repeated_archive_path="${scratch_root}/second/simd_json-0.1.0.tar"
+package_root="${scratch_root}/first/simd_json-0.1.0"
+repeated_package_root="${scratch_root}/second/simd_json-0.1.0"
 docs_root="${scratch_root}/docs"
 package_compressed_limit=$((8 * 1024 * 1024))
 package_uncompressed_limit=$((64 * 1024 * 1024))
@@ -23,7 +26,16 @@ cleanup() {
 }
 
 trap cleanup EXIT
+if [[ "${evidence_root}" == "${default_evidence_root}" ]]; then
+  rm -rf -- "${evidence_root}"
+elif [[ -e "${evidence_root}" ]] &&
+  [[ -n "$(find "${evidence_root}" -mindepth 1 -print -quit)" ]]; then
+  printf 'package evidence directory is not empty: %s\n' "${evidence_root}" >&2
+  exit 64
+fi
+
 mkdir -p "${evidence_root}"
+mkdir -p "$(dirname "${archive_path}")" "$(dirname "${repeated_archive_path}")"
 cd "${repository_root}"
 
 run_step() {
@@ -41,8 +53,10 @@ run_step hex_dry_run \
   env HEX_API_KEY=unused-dry-run-placeholder \
   mix hex.publish package --dry-run --yes
 
-run_step archive_build mix hex.build --output "${archive_path}"
-run_step archive_unpack mix hex.build --unpack --output "${package_root}"
+run_step archive_build_first mix hex.build --output "${archive_path}"
+run_step archive_unpack_first mix hex.build --unpack --output "${package_root}"
+run_step archive_build_second mix hex.build --output "${repeated_archive_path}"
+run_step archive_unpack_second mix hex.build --unpack --output "${repeated_package_root}"
 run_step exdoc mix docs --warnings-as-errors --formatter html --output "${docs_root}"
 run_step exdoc_links elixir scripts/ci/validate_exdoc_links.exs "${docs_root}"
 
@@ -70,6 +84,7 @@ required_package_files=(
   docs/releases/ci-policy.md
   docs/releases/installation.md
   docs/releases/preflight.md
+  docs/releases/provenance.md
   docs/releases/support.md
   lib/simd_json.ex
   lib/simd_json/application.ex
@@ -177,6 +192,10 @@ for forbidden_dependency in jason spec_led_ex; do
   fi
 done
 
+run_step dependency_inventory \
+  elixir scripts/ci/generate_dependency_inventory.exs \
+  "${metadata_path}" "${evidence_root}/dependency-licenses.tsv" deps
+
 secret_pattern_names=(
   private_key
   aws_access_key
@@ -255,8 +274,53 @@ fi
   printf 'docs_uncompressed_bytes=%s\n' "${docs_uncompressed_bytes}"
 } >"${evidence_root}/sizes.txt"
 
-sha256sum "${archive_path}" | sed "s#${archive_path}#simd_json-0.1.0.tar#" \
+write_normalized_manifest() {
+  local root="$1"
+  local output="$2"
+
+  (
+    cd "${root}"
+    while IFS= read -r -d '' relative_path; do
+      printf '%s\t%s\t%s\t%s\n' \
+        "${relative_path#./}" \
+        "$(stat -c '%a' "${relative_path}")" \
+        "$(stat -c '%s' "${relative_path}")" \
+        "$(sha256sum "${relative_path}" | cut -d ' ' -f 1)"
+    done < <(find . -type f -print0 | LC_ALL=C sort -z)
+  ) >"${output}"
+}
+
+write_normalized_manifest \
+  "${package_root}" "${evidence_root}/package-files.normalized.tsv"
+write_normalized_manifest \
+  "${repeated_package_root}" "${evidence_root}/package-files-second.normalized.tsv"
+
+if ! cmp -s \
+  "${evidence_root}/package-files.normalized.tsv" \
+  "${evidence_root}/package-files-second.normalized.tsv"; then
+  diff -u \
+    "${evidence_root}/package-files.normalized.tsv" \
+    "${evidence_root}/package-files-second.normalized.tsv" \
+    >"${evidence_root}/package-reproducibility.diff" || true
+  printf 'two isolated package builds produced different normalized contents\n' >&2
+  exit 1
+fi
+
+archive_sha256="$(sha256sum "${archive_path}" | cut -d ' ' -f 1)"
+repeated_archive_sha256="$(sha256sum "${repeated_archive_path}" | cut -d ' ' -f 1)"
+
+if [[ "${archive_sha256}" != "${repeated_archive_sha256}" ]]; then
+  printf 'two isolated package builds produced different archive checksums\n' >&2
+  exit 1
+fi
+
+cp "${archive_path}" "${evidence_root}/simd_json-0.1.0.tar"
+printf '%s  simd_json-0.1.0.tar\n' "${archive_sha256}" \
   >"${evidence_root}/package.sha256"
+printf '%s  first/simd_json-0.1.0.tar\n' "${archive_sha256}" \
+  >"${evidence_root}/package-builds.sha256"
+printf '%s  second/simd_json-0.1.0.tar\n' "${repeated_archive_sha256}" \
+  >>"${evidence_root}/package-builds.sha256"
 
 (
   cd "${package_root}"
@@ -268,5 +332,52 @@ find "${package_root}" -type f -printf '%P\n' | LC_ALL=C sort \
 find "${docs_root}" -type f -printf '%P\n' | LC_ALL=C sort \
   >"${evidence_root}/documentation-contents.txt"
 
-printf 'Package archive and documentation verification passed\n' \
+source_state="dirty"
+if [[ -z "$(git status --porcelain=v1 --untracked-files=all)" ]]; then
+  source_state="clean"
+fi
+
+if [[ "${SIMD_JSON_REQUIRE_CLEAN_CANDIDATE:-0}" == "1" && "${source_state}" != "clean" ]]; then
+  printf 'candidate provenance requires a clean committed worktree\n' >&2
+  exit 1
+fi
+
+qualification_input_sha256="$(
+  mix run --no-start -e 'IO.write(SimdJson.Native.BuildGuard.qualification_fingerprint())' |
+    tail -n 1
+)"
+
+{
+  printf 'schema_version=1\n'
+  printf 'package=simd_json\n'
+  printf 'version=0.1.0\n'
+  printf 'tag=v0.1.0\n'
+  printf 'source_revision=%s\n' "$(git rev-parse HEAD)"
+  printf 'source_tree=%s\n' "$(git rev-parse 'HEAD^{tree}')"
+  printf 'source_state=%s\n' "${source_state}"
+  printf 'mix_lock_sha256=%s\n' "$(sha256sum mix.lock | cut -d ' ' -f 1)"
+  printf 'toolchain_sha256=%s\n' "$(sha256sum .tool-versions | cut -d ' ' -f 1)"
+  printf 'target=%s\n' "$(mix run --no-start -e 'IO.write(SimdJson.Native.BuildGuard.detected_target())' | tail -n 1)"
+  printf 'qualification_input_sha256=%s\n' "${qualification_input_sha256}"
+  printf 'package_sha256=%s\n' "${archive_sha256}"
+  printf 'source_manifest_sha256=%s\n' "$(sha256sum "${evidence_root}/package-files.normalized.tsv" | cut -d ' ' -f 1)"
+  printf 'dependency_inventory_sha256=%s\n' "$(sha256sum "${evidence_root}/dependency-licenses.tsv" | cut -d ' ' -f 1)"
+  printf 'archive_reproducible=true\n'
+  printf 'normalized_contents_equal=true\n'
+} >"${evidence_root}/provenance.env"
+
+printf 'Package archive, documentation, and reproducibility verification passed\n' \
   | tee "${evidence_root}/summary.txt"
+
+{
+  printf 'archive_reproducible=true\n'
+  printf 'normalized_contents_equal=true\n'
+  printf 'nondeterministic_fields=none\n'
+} >"${evidence_root}/reproducibility.env"
+
+(
+  cd "${evidence_root}"
+  find . -type f ! -name SHA256SUMS -print0 \
+    | LC_ALL=C sort -z \
+    | xargs -0 sha256sum >SHA256SUMS
+)

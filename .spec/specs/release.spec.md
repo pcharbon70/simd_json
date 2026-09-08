@@ -30,6 +30,11 @@ exact Mix/changelog/ExDoc/tag identity, and absent local, remote, and public Hex
 versions. It composes formatter, strict docs, package inventory, native
 qualification freshness, and structural SpecLed gates into a bounded,
 checksummed report without creating Git, GitHub, or Hex state.
+Section 4.2 builds the source archive twice in isolated directories and
+requires both normalized contents and exact archive bytes to match. It retains
+the exact candidate with commit, tree, lock, toolchain, target, native
+fingerprint, source-manifest, dependency/license-inventory, and archive
+checksums in the fixed-retention CI evidence artifact.
 Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
 test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
 closes the reproduced pool-retirement, stale-baseline, and collected-request
@@ -58,6 +63,7 @@ surface:
   - docs/releases/*.md
   - .github/workflows/*.yml
   - scripts/ci/validate_exdoc_links.exs
+  - scripts/ci/generate_dependency_inventory.exs
   - scripts/ci/verify_package_documentation.sh
   - scripts/release/preflight.sh
   - test/release/*.exs
@@ -112,7 +118,7 @@ bootstrap:
   stability: evolving
 
 - id: simd_json.release.provenance
-  statement: Release evidence shall bind version, commit, tree, tag, package checksum, dependency lock, toolchain, native fingerprint, target, tests, and qualification artifacts.
+  statement: Release evidence shall bind version, commit, tree, tag, package checksum, dependency lock, toolchain, native fingerprint, target, tests, source manifest, transitive dependency licenses, reproducibility proof, and qualification artifacts.
   priority: must
   stability: evolving
 
@@ -148,6 +154,19 @@ bootstrap:
     - Local, remote, and public Hex release identities are absent
     - Existing formatter, documentation, package, freshness, and SpecLed gates pass
     - A bounded checksummed report is written without mutating Git, GitHub, or Hex
+
+- id: simd_json.release.archive_is_reproducible
+  covers:
+    - simd_json.release.archive_integrity
+    - simd_json.release.provenance
+  given:
+    - One clean committed release-candidate source tree
+  when:
+    - The package gate builds the Hex archive twice in isolated directories
+  then:
+    - Both normalized source manifests and exact archive SHA-256 digests match
+    - Provenance binds the candidate to source, toolchain, native, dependency, and target identities
+    - Checksummed evidence retains the exact archive in the commit-qualified CI artifact for 30 days
 
 - id: simd_json.release.candidate_preflight
   covers:
@@ -220,6 +239,8 @@ bootstrap:
   execute: true
   covers:
     - simd_json.release.read_only_preflight
+    - simd_json.release.archive_integrity
+    - simd_json.release.provenance
 
 - kind: command
   target: MIX_ENV=test mix test test/release/release_contract_test.exs
@@ -245,6 +266,7 @@ bootstrap:
   covers:
     - simd_json.release.archive_integrity
     - simd_json.release.consumer_documentation
+    - simd_json.release.provenance
 
 - kind: command
   target: MIX_ENV=test mix test test/release/ci_reliability_contract_test.exs test/native/pool_delivery_test.exs test/native/pool_worker_lifecycle_test.exs test/native/decode_pool_lifecycle_test.exs

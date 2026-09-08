@@ -1,5 +1,11 @@
 # SimdJson Package
 
+Milestone 6 Phase 4 Section 4.2 adds the packaged archive-provenance guide and
+fingerprints the repository-only dependency-inventory generator. Package
+qualification now retains the exact archive, complete transitive license
+inventory, normalized source manifest, and reproducibility proof without
+adding runtime files or dependencies.
+
 Milestone 6 Phase 4 Section 4.1 adds repository-only read-only release
 preflight tooling and packages its consumer-visible operating guide. The
 command proves synchronized source and release identity, composes existing

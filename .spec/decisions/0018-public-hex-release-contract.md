@@ -37,6 +37,14 @@ tag. Its package, documentation, qualification-freshness, formatter, and
 SpecLed proof emits only bounded checksummed evidence; it cannot create Git,
 GitHub, ownership, or Hex release state.
 
+Package qualification builds the archive twice in isolated directories and
+requires both normalized file manifests and exact archive digests to match.
+No nondeterministic archive field is accepted silently. Checksummed evidence
+retains the exact archive, source commit and tree, dependency lock, toolchain,
+target, native qualification fingerprint, complete source manifest, and
+transitive dependency/license inventory in a commit-qualified CI artifact for
+30 days. That provenance identifies a candidate but never authorizes it.
+
 Release qualification must bootstrap in one explicit Mix environment, verify
 the pinned Zig executable before native compilation, rebuild Zigler before a
 strict formatting gate, and record the active Hex archive and Rebar version.

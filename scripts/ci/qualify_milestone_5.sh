@@ -101,6 +101,10 @@ run_step restore_canonical_state git restore --source=HEAD -- .spec/state.json
 run_step traceability mix simd_json.verify_traceability
 run_step canonical_state git diff --exit-code -- .spec/state.json
 
+SIMD_JSON_PACKAGE_EVIDENCE_DIR="${qualification_root}/release-candidate" \
+SIMD_JSON_REQUIRE_CLEAN_CANDIDATE=1 \
+  run_step package_provenance bash scripts/ci/verify_package_documentation.sh
+
 cp .spec/state.json "${evidence_root}/spec-state.json"
 
 for evidence in \
@@ -108,7 +112,10 @@ for evidence in \
   "${qualification_root}/native-pool/summary.txt" \
   "${qualification_root}/decode/decode-benchmark.json" \
   "${qualification_root}/decode/decode-scheduler.json" \
-  "${qualification_root}/decode/summary.txt"; do
+  "${qualification_root}/decode/summary.txt" \
+  "${qualification_root}/release-candidate/provenance.env" \
+  "${qualification_root}/release-candidate/simd_json-0.1.0.tar" \
+  "${qualification_root}/release-candidate/SHA256SUMS"; do
   test -s "${evidence}"
 done
 

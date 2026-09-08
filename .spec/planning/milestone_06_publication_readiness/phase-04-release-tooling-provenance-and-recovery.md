@@ -18,14 +18,14 @@ Back to plan: [README](./README.md)
 
 ## 4.2 Section — Release Archive and Provenance
 
-- [ ] 4.2 Section - Bind the exact candidate archive to reviewed source.
-  - [ ] 4.2.1 Task - Record immutable identity.
-    - [ ] 4.2.1.1 Subtask - Record version, commit, tree, dependency lock, toolchain, target, native fingerprint, and package checksum.
-    - [ ] 4.2.1.2 Subtask - Generate a dependency/license inventory and source-file manifest.
-    - [ ] 4.2.1.3 Subtask - Store checksummed candidate evidence as a CI artifact with fixed retention.
-  - [ ] 4.2.2 Task - Prove reproducibility.
-    - [ ] 4.2.2.1 Subtask - Build the package twice in isolated directories and compare normalized contents.
-    - [ ] 4.2.2.2 Subtask - Explain or eliminate any nondeterministic archive fields before approval.
+- [x] 4.2 Section - Bind the exact candidate archive to reviewed source.
+  - [x] 4.2.1 Task - Record immutable identity.
+    - [x] 4.2.1.1 Subtask - Record version, commit, tree, dependency lock, toolchain, target, native fingerprint, and package checksum.
+    - [x] 4.2.1.2 Subtask - Generate a dependency/license inventory and source-file manifest.
+    - [x] 4.2.1.3 Subtask - Store checksummed candidate evidence as a CI artifact with fixed retention.
+  - [x] 4.2.2 Task - Prove reproducibility.
+    - [x] 4.2.2.1 Subtask - Build the package twice in isolated directories and compare normalized contents.
+    - [x] 4.2.2.2 Subtask - Explain or eliminate any nondeterministic archive fields before approval.
 
 ## 4.3 Section — Publisher Authentication and Workflow Boundary
 
