@@ -1,5 +1,24 @@
 # SimdJson Package
 
+Milestone 6 Phase 4 Section 4.4 packages the release recovery guide and
+fingerprints the repository-only evidence verifier and rehearsal. The guide
+adds no release credential, runtime file, native binary, or dependency.
+
+Milestone 6 Phase 4 Section 4.3 packages the credential-free publishing guide
+while keeping the publisher policy and identity verifier repository-only. It
+adds no credential, publication task, runtime file, or runtime dependency.
+
+Milestone 6 Phase 4 Section 4.2 adds the packaged archive-provenance guide and
+fingerprints the repository-only dependency-inventory generator. Package
+qualification now retains the exact archive, complete transitive license
+inventory, normalized source manifest, and reproducibility proof without
+adding runtime files or dependencies.
+
+Milestone 6 Phase 4 Section 4.1 adds repository-only read-only release
+preflight tooling and packages its consumer-visible operating guide. The
+command proves synchronized source and release identity, composes existing
+gates, and emits bounded evidence without expanding the runtime archive.
+
 Milestone 6 Phase 3 Section 3.1 publishes explicit Hex package, maintainer,
 license, source, homepage, issue, and documentation identity. ExDoc source
 links target the matching version tag and separate milestone, operations,

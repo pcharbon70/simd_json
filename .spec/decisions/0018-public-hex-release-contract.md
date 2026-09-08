@@ -29,6 +29,41 @@ package name and version must be rechecked immediately before publication.
 Only a clean, qualified, explicitly approved release commit may be tagged or
 submitted to Hex.
 
+Release preflight is credential-free and non-publishing. It compares the clean
+main revision with both the local tracking ref and the live remote ref without
+fetching, rejects an existing local or remote tag and public Hex version, and
+requires exact version agreement across Mix, changelog, ExDoc, and the proposed
+tag. Its package, documentation, qualification-freshness, formatter, and
+SpecLed proof emits only bounded checksummed evidence; it cannot create Git,
+GitHub, ownership, or Hex release state.
+
+Package qualification builds the archive twice in isolated directories and
+requires both normalized file manifests and exact archive digests to match.
+No nondeterministic archive field is accepted silently. Checksummed evidence
+retains the exact archive, source commit and tree, dependency lock, toolchain,
+target, native qualification fingerprint, complete source manifest, and
+transitive dependency/license inventory in a commit-qualified CI artifact for
+30 days. That provenance identifies a candidate but never authorizes it.
+
+The intended first publisher and pre-publication recovery owner are the
+confirmed Hex account `pcharbon70`, with the private contact already published
+in `SECURITY.md`. A read-only identity check must refuse loaded publication
+credentials and record only non-secret identity. The first publication is an
+interactive reviewed maintainer action; CI publication is disabled. Automating
+it later requires a separate owner decision, manual exact-tag dispatch, a
+protected release environment, no pull-request secret access, and a
+short-lived key scoped only to this package. Preflight and publication remain
+separate commands.
+
+Recovery policy is prepared and rehearsed before publication. The owner must
+reverify current Hex time windows immediately before acting, then choose an
+exact-version revert while permitted, a newly qualified patch when the old
+release may remain, or retirement when users need a durable warning. Credential
+containment precedes release repair, suspected exposure uses a private security
+advisory, and GitHub release corrections require their own exact-state
+authorization. Local rehearsal uses synthetic evidence only and must never
+publish, replace, revert, retire, or delete a real release.
+
 Release qualification must bootstrap in one explicit Mix environment, verify
 the pinned Zig executable before native compilation, rebuild Zigler before a
 strict formatting gate, and record the active Hex archive and Rebar version.

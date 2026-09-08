@@ -24,6 +24,27 @@ gate runs Hex's no-publish checks, deterministic secret-pattern inventory,
 archive metadata/size/checksums, strict HTML generation, rendered-page markers,
 local links, and v0.1.0 API source links while rejecting development and
 generated files.
+Phase 4 Section 4.1 adds one credential-free preflight command. It requires a
+clean main branch whose HEAD matches both local and live remote origin/main,
+exact Mix/changelog/ExDoc/tag identity, and absent local, remote, and public Hex
+versions. It composes formatter, strict docs, package inventory, native
+qualification freshness, and structural SpecLed gates into a bounded,
+checksummed report without creating Git, GitHub, or Hex state.
+Section 4.2 builds the source archive twice in isolated directories and
+requires both normalized contents and exact archive bytes to match. It retains
+the exact candidate with commit, tree, lock, toolchain, target, native
+fingerprint, source-manifest, dependency/license-inventory, and archive
+checksums in the fixed-retention CI evidence artifact.
+Section 4.3 records `pcharbon70` as the read-only verified Hex publisher and
+pre-publication recovery owner, selects an interactive reviewed first release,
+and prohibits CI publication. Its identity check refuses loaded publication
+credentials; any later CI publisher requires a separate owner decision,
+manual protected dispatch, an exact tag, and a short-lived package-scoped key.
+Section 4.4 records current initial-package and later-version recovery windows,
+assigns revert, patch, retirement, credential, advisory, and GitHub correction
+decisions, and adds a non-mutating rehearsal. Synthetic evidence proves
+missing docs, broken native compilation, checksum corruption, and secret
+matches all fail closed before any external release action.
 Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
 test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
 closes the reproduced pool-retirement, stale-baseline, and collected-request
@@ -52,7 +73,13 @@ surface:
   - docs/releases/*.md
   - .github/workflows/*.yml
   - scripts/ci/validate_exdoc_links.exs
+  - scripts/ci/generate_dependency_inventory.exs
   - scripts/ci/verify_package_documentation.sh
+  - scripts/release/preflight.sh
+  - scripts/release/verify_publisher.sh
+  - scripts/release/verify_candidate_evidence.sh
+  - scripts/release/rehearse_recovery.sh
+  - release/publisher-policy.env
   - test/release/*.exs
 decisions:
   - simd_json.public_hex_release_contract
@@ -68,6 +95,9 @@ bootstrap:
     - simd_json.release.provenance
     - simd_json.release.explicit_authorization
     - simd_json.release.post_publish_verification
+    - simd_json.release.read_only_preflight
+    - simd_json.release.publisher_boundary
+    - simd_json.release.recovery_readiness
 ```
 
 ## Requirements
@@ -104,7 +134,7 @@ bootstrap:
   stability: evolving
 
 - id: simd_json.release.provenance
-  statement: Release evidence shall bind version, commit, tree, tag, package checksum, dependency lock, toolchain, native fingerprint, target, tests, and qualification artifacts.
+  statement: Release evidence shall bind version, commit, tree, tag, package checksum, dependency lock, toolchain, native fingerprint, target, tests, source manifest, transitive dependency licenses, reproducibility proof, and qualification artifacts.
   priority: must
   stability: evolving
 
@@ -117,11 +147,53 @@ bootstrap:
   statement: Acceptance shall require verification of public Hex metadata, HexDocs, tarball checksum, ownership, and a clean supported-target consumer installation during the current recovery window.
   priority: must
   stability: evolving
+
+- id: simd_json.release.read_only_preflight
+  statement: One non-publishing command shall require clean synchronized main, consistent version and tag identity, absent local, remote, and Hex release identity, and current formatting, documentation, package, qualification, and SpecLed proof while emitting only bounded non-secret evidence.
+  priority: must
+  stability: evolving
+
+- id: simd_json.release.publisher_boundary
+  statement: The intended Hex publisher and recovery owner shall be recorded and verified without loading a publication credential; the first release shall use an interactive reviewed session while CI publication remains disabled unless separately owner-approved with a protected manual workflow and short-lived package-scoped key.
+  priority: must
+  stability: stable
+
+- id: simd_json.release.recovery_readiness
+  statement: A dated runbook shall require current Hex-window reverification, assign authority for revert, patch, retirement, credential, advisory, and GitHub correction choices, and rehearse all evidence-failure paths without mutating a real release.
+  priority: must
+  stability: evolving
 ```
 
 ## Scenarios
 
 ```spec-scenarios
+- id: simd_json.release.preflight_is_read_only
+  covers:
+    - simd_json.release.read_only_preflight
+  given:
+    - A proposed semantic version and matching tag
+    - No publication credential in the process environment
+  when:
+    - Release preflight runs from a clean main checkout
+  then:
+    - HEAD matches local and live remote origin/main
+    - Local, remote, and public Hex release identities are absent
+    - Existing formatter, documentation, package, freshness, and SpecLed gates pass
+    - A bounded checksummed report is written without mutating Git, GitHub, or Hex
+
+- id: simd_json.release.archive_is_reproducible
+  covers:
+    - simd_json.release.archive_integrity
+    - simd_json.release.provenance
+  given:
+    - One clean committed release-candidate source tree
+  when:
+    - The package gate builds the Hex archive twice in isolated directories
+  then:
+    - Both normalized source manifests and exact archive SHA-256 digests match
+    - Provenance binds the candidate to source, toolchain, native, dependency, and target identities
+    - Checksummed evidence retains the exact archive in the commit-qualified CI artifact for 30 days
+
 - id: simd_json.release.candidate_preflight
   covers:
     - simd_json.release.green_ci
@@ -150,6 +222,19 @@ bootstrap:
     - Publication proceeds only after explicit approval
     - Any source or identity change invalidates approval and returns to qualification
 
+- id: simd_json.release.publisher_identity_is_read_only
+  covers:
+    - simd_json.release.publisher_boundary
+    - simd_json.release.explicit_authorization
+  given:
+    - The tracked publisher policy and no publication key in the process
+  when:
+    - Publisher identity verification runs
+  then:
+    - The authenticated Hex username matches the intended publisher
+    - A recovery owner and contact are present
+    - Only bounded non-secret evidence is written and no Hex state changes
+
 - id: simd_json.release.public_verification
   covers:
     - simd_json.release.post_publish_verification
@@ -160,6 +245,19 @@ bootstrap:
   then:
     - Matching public evidence activates the release subject
     - A material defect follows the pre-approved patch, revert, or retirement runbook
+
+- id: simd_json.release.recovery_rehearsal_is_non_mutating
+  covers:
+    - simd_json.release.recovery_readiness
+    - simd_json.release.explicit_authorization
+  given:
+    - Synthetic candidate evidence and the tracked recovery runbook
+  when:
+    - The local recovery rehearsal runs
+  then:
+    - Missing docs, failed native compilation, checksum mismatch, and a secret marker are detected
+    - Owner contact, key revocation, private advisory, and GitHub correction paths are present
+    - No Hex or GitHub release state is created, changed, or removed
 
 - id: simd_json.release.ci_cache_equivalence
   covers:
@@ -189,6 +287,16 @@ bootstrap:
 
 ```spec-verification
 - kind: command
+  target: MIX_ENV=test mix test test/release/release_tooling_contract_test.exs
+  execute: true
+  covers:
+    - simd_json.release.read_only_preflight
+    - simd_json.release.archive_integrity
+    - simd_json.release.provenance
+    - simd_json.release.publisher_boundary
+    - simd_json.release.recovery_readiness
+
+- kind: command
   target: MIX_ENV=test mix test test/release/release_contract_test.exs
   execute: true
   covers:
@@ -212,6 +320,14 @@ bootstrap:
   covers:
     - simd_json.release.archive_integrity
     - simd_json.release.consumer_documentation
+    - simd_json.release.provenance
+
+- kind: command
+  target: bash scripts/release/rehearse_recovery.sh
+  execute: true
+  covers:
+    - simd_json.release.recovery_readiness
+    - simd_json.release.explicit_authorization
 
 - kind: command
   target: MIX_ENV=test mix test test/release/ci_reliability_contract_test.exs test/native/pool_delivery_test.exs test/native/pool_worker_lifecycle_test.exs test/native/decode_pool_lifecycle_test.exs
