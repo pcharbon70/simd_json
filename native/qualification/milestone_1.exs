@@ -6,8 +6,8 @@
 # covers: simd_json.native_build_and_abi.pinned_toolchain simd_json.native_build_and_abi.target_qualification simd_json.native_build_and_abi.dependency_upgrade_gate
 [
   schema_version: 1,
-  qualified_on: ~D[2026-09-06],
-  input_sha256: "da0fc993cb584bae0c17c2421c2facb85434f755557a2c58ffa5ac2fde988e78",
+  qualified_on: ~D[2026-09-08],
+  input_sha256: "d516dfb3b66d12515d5fbf027e55f6fb9bf1fbba9302445a7a16a546f980bdac",
   randomized_seed: 260_831_006,
   supported_targets: [
     [
@@ -50,6 +50,7 @@
     "bash scripts/ci/qualify_milestone_3.sh",
     "bash scripts/ci/qualify_milestone_4.sh",
     "bash scripts/ci/qualify_decode.sh",
-    "bash scripts/ci/qualify_milestone_5.sh"
+    "bash scripts/ci/qualify_milestone_5.sh",
+    "bash scripts/ci/verify_package_documentation.sh"
   ]
 ]

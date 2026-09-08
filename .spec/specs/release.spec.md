@@ -18,6 +18,12 @@ telemetry, and acceptance links; publishes complete 0.1.0 release notes and
 known limits; selects private email reporting and newest-patch-only security
 support; and documents the contributor bootstrap, test, SpecLed, and native
 qualification workflow.
+Section 3.4 replaces broad package directories with an explicit runtime,
+native-source, provenance, license, and documentation allowlist. One executable
+gate runs Hex's no-publish checks, deterministic secret-pattern inventory,
+archive metadata/size/checksums, strict HTML generation, rendered-page markers,
+local links, and v0.1.0 API source links while rejecting development and
+generated files.
 Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
 test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
 closes the reproduced pool-retirement, stale-baseline, and collected-request
@@ -45,6 +51,8 @@ surface:
   - CONTRIBUTING.md
   - docs/releases/*.md
   - .github/workflows/*.yml
+  - scripts/ci/validate_exdoc_links.exs
+  - scripts/ci/verify_package_documentation.sh
   - test/release/*.exs
 decisions:
   - simd_json.public_hex_release_contract
@@ -195,6 +203,13 @@ bootstrap:
   covers:
     - simd_json.release.public_identity
     - simd_json.release.project_license
+    - simd_json.release.archive_integrity
+    - simd_json.release.consumer_documentation
+
+- kind: command
+  target: bash scripts/ci/verify_package_documentation.sh
+  execute: true
+  covers:
     - simd_json.release.archive_integrity
     - simd_json.release.consumer_documentation
 

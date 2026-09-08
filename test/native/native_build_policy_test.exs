@@ -81,11 +81,22 @@ defmodule SimdJson.Native.BuildPolicyTest do
     package_files = Keyword.fetch!(package, :files)
 
     for entry <- [
-          "lib",
-          "native",
+          "lib/simd_json.ex",
+          "lib/simd_json",
+          "native/README.md",
+          "native/manifest.exs",
+          "native/qualification/milestone_1.exs",
+          "native/include",
+          "native/src",
+          "native/symbols",
+          "native/vendor",
+          "native/zig",
           "docs",
           "LICENSE",
           "THIRD_PARTY_NOTICES.md",
+          "CHANGELOG.md",
+          "SECURITY.md",
+          "CONTRIBUTING.md",
           ".tool-versions",
           "mix.exs",
           "mix.lock"
@@ -93,10 +104,15 @@ defmodule SimdJson.Native.BuildPolicyTest do
       assert entry in package_files
     end
 
+    for excluded <- ["lib", "native", "test", "bench", "scripts", ".spec", ".github"] do
+      refute excluded in package_files
+    end
+
     for path <- [
           "native/manifest.exs",
           "native/include/simd_json_abi.h",
           "native/include/simd_json_build_smoke.h",
+          "native/include/simd_json_test_hooks.h",
           "native/src/build_smoke.cpp",
           "native/src/simd_json_abi.cpp",
           "native/src/simd_json_native_internal.hpp",
@@ -111,15 +127,6 @@ defmodule SimdJson.Native.BuildPolicyTest do
           "native/zig/projection_plan.zig",
           "native/zig/stream_cursor.zig",
           "native/zig/decode_materializer.zig",
-          "native/test/document_resource_test.zig",
-          "native/test/projection_engine_conformance.c",
-          "native/test/projection_plan_conformance.c",
-          "native/test/projection_plan_test.zig",
-          "native/test/stream_cursor_conformance.c",
-          "native/test/stream_cursor_test.zig",
-          "native/test/decode_materializer_conformance.c",
-          "native/test/decode_materializer_test.zig",
-          "native/test/include/simd_json_test_hooks.h",
           "native/vendor/simdjson/simdjson.cpp",
           "native/vendor/simdjson/simdjson.h",
           "native/vendor/simdjson/LICENSE",
@@ -131,7 +138,12 @@ defmodule SimdJson.Native.BuildPolicyTest do
 
     assert Keyword.fetch!(package, :licenses) == ["MIT"]
     assert Keyword.fetch!(package, :links)["GitHub"] == "https://github.com/pcharbon70/simd_json"
-    assert ~r/\.Elixir\..*\.zig$/ in Keyword.fetch!(package, :exclude_patterns)
+    exclude_patterns = Keyword.fetch!(package, :exclude_patterns)
+    assert Enum.any?(exclude_patterns, &Regex.match?(&1, "lib/x/.Elixir.Generated.zig"))
+    assert Enum.any?(exclude_patterns, &Regex.match?(&1, "native/test/example.zig"))
+    assert Enum.any?(exclude_patterns, &Regex.match?(&1, "bench/example.exs"))
+    assert Enum.any?(exclude_patterns, &Regex.match?(&1, ".spec/state.json"))
+    assert Enum.any?(exclude_patterns, &Regex.match?(&1, ".env.production"))
   end
 
   # covers: simd_json.native_build_and_abi.pinned_toolchain

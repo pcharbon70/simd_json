@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 3 Phase - Make the archive and documentation complete enough for a Hex
+- [x] 3 Phase - Make the archive and documentation complete enough for a Hex
   user to evaluate, install, compile, operate, and troubleshoot the library.
 
 ## 3.1 Section — Hex and ExDoc Metadata
@@ -43,12 +43,12 @@ Back to plan: [README](./README.md)
 
 ## 3.4 Section — Archive Inventory and Documentation Proof
 
-- [ ] 3.4 Section - Verify exactly what users receive.
-  - [ ] 3.4.1 Task - Tighten the package allowlist.
-    - [ ] 3.4.1.1 Subtask - Include root license, README, changelog, security guidance, runtime sources, native sources, provenance, and required docs.
-    - [ ] 3.4.1.2 Subtask - Exclude tests, benchmarks, qualification outputs, caches, generated Zigler intermediates, editor files, and credentials.
-    - [ ] 3.4.1.3 Subtask - Run Hex secret scanning and an additional deterministic secret-pattern inventory without suppressing genuine findings.
-  - [ ] 3.4.2 Task - Execute package/doc gates.
-    - [ ] 3.4.2.1 Subtask - Build and unpack the archive, assert required files, forbidden files, dependency metadata, size, and checksums.
-    - [ ] 3.4.2.2 Subtask - Run ExDoc with warnings as errors and validate all local/source links for the release ref.
-    - [ ] 3.4.2.3 Subtask - Render and inspect the README, API docs, changelog, license, and security pages as HexDocs will expose them.
+- [x] 3.4 Section - Verify exactly what users receive.
+  - [x] 3.4.1 Task - Tighten the package allowlist.
+    - [x] 3.4.1.1 Subtask - Include root license, README, changelog, security guidance, runtime sources, native sources, provenance, and required docs.
+    - [x] 3.4.1.2 Subtask - Exclude tests, benchmarks, qualification outputs, caches, generated Zigler intermediates, editor files, and credentials.
+    - [x] 3.4.1.3 Subtask - Run Hex secret scanning and an additional deterministic secret-pattern inventory without suppressing genuine findings.
+  - [x] 3.4.2 Task - Execute package/doc gates.
+    - [x] 3.4.2.1 Subtask - Build and unpack the archive, assert required files, forbidden files, dependency metadata, size, and checksums.
+    - [x] 3.4.2.2 Subtask - Run ExDoc with warnings as errors and validate all local/source links for the release ref.
+    - [x] 3.4.2.3 Subtask - Render and inspect the README, API docs, changelog, license, and security pages as HexDocs will expose them.

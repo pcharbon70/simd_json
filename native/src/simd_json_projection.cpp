@@ -18,7 +18,7 @@
 #include <vector>
 
 #ifdef SIMD_JSON_TESTING
-#include "../test/include/simd_json_test_hooks.h"
+#include "../include/simd_json_test_hooks.h"
 
 #include <atomic>
 #include <chrono>

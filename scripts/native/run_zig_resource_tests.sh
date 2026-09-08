@@ -98,7 +98,7 @@ common_cxx_flags=(
 
 test_command=("${zig_executable}" test \
   -I "${repository_root}/native/include" \
-  -I "${repository_root}/native/test/include" \
+  -I "${repository_root}/native/include" \
   --dep document_resource \
   -Mroot="${repository_root}/native/test/document_resource_test.zig" \
   -Mdocument_resource="${repository_root}/native/zig/document_resource.zig" \
@@ -125,7 +125,7 @@ env "${runtime_environment[@]}" "${test_command[@]}"
 
 projection_test_command=("${zig_executable}" test \
   -I "${repository_root}/native/include" \
-  -I "${repository_root}/native/test/include" \
+  -I "${repository_root}/native/include" \
   --dep projection_plan \
   -Mroot="${repository_root}/native/test/projection_plan_test.zig" \
   -Mprojection_plan="${repository_root}/native/zig/projection_plan.zig" \
@@ -152,7 +152,7 @@ env "${runtime_environment[@]}" "${projection_test_command[@]}"
 
 stream_test_command=("${zig_executable}" test \
   -I "${repository_root}/native/include" \
-  -I "${repository_root}/native/test/include" \
+  -I "${repository_root}/native/include" \
   --dep projection_plan \
   --dep stream_cursor \
   --dep document_resource \

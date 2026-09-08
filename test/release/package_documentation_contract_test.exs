@@ -132,4 +132,30 @@ defmodule SimdJson.PackageDocumentationContractTest do
     assert contributing =~ "mix spec.next"
     assert contributing =~ "mix spec.check --base origin/main"
   end
+
+  # covers: simd_json.release.archive_integrity simd_json.release.consumer_documentation
+  test "defines executable archive, secret, size, checksum, and rendered-doc gates" do
+    verifier = File.read!("scripts/ci/verify_package_documentation.sh")
+    link_validator = File.read!("scripts/ci/validate_exdoc_links.exs")
+
+    assert verifier =~ "mix hex.publish package --dry-run --yes"
+    assert verifier =~ "unused-dry-run-placeholder"
+    assert verifier =~ "required_package_files"
+    assert verifier =~ "forbidden_directory"
+    assert verifier =~ "secret_patterns"
+    assert verifier =~ "package_compressed_limit"
+    assert verifier =~ "docs_uncompressed_limit"
+    assert verifier =~ "package-files.sha256"
+    assert verifier =~ "mix docs --warnings-as-errors"
+    assert verifier =~ "validate_exdoc_links.exs"
+
+    assert link_validator =~ "@release_source_prefix"
+    assert link_validator =~ "required_page_failures"
+    assert link_validator =~ "local_link_failures"
+
+    assert {_output, 0} =
+             System.cmd("bash", ["-n", "scripts/ci/verify_package_documentation.sh"],
+               stderr_to_stdout: true
+             )
+  end
 end
