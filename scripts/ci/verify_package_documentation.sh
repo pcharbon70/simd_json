@@ -69,6 +69,7 @@ required_package_files=(
   docs/milestones/05-compatible-decode-api-acceptance.md
   docs/releases/ci-policy.md
   docs/releases/installation.md
+  docs/releases/preflight.md
   docs/releases/support.md
   lib/simd_json.ex
   lib/simd_json/application.ex

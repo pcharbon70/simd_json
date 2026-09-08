@@ -29,6 +29,14 @@ package name and version must be rechecked immediately before publication.
 Only a clean, qualified, explicitly approved release commit may be tagged or
 submitted to Hex.
 
+Release preflight is credential-free and non-publishing. It compares the clean
+main revision with both the local tracking ref and the live remote ref without
+fetching, rejects an existing local or remote tag and public Hex version, and
+requires exact version agreement across Mix, changelog, ExDoc, and the proposed
+tag. Its package, documentation, qualification-freshness, formatter, and
+SpecLed proof emits only bounded checksummed evidence; it cannot create Git,
+GitHub, ownership, or Hex release state.
+
 Release qualification must bootstrap in one explicit Mix environment, verify
 the pinned Zig executable before native compilation, rebuild Zigler before a
 strict formatting gate, and record the active Hex archive and Rebar version.

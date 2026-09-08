@@ -7,14 +7,14 @@ Back to plan: [README](./README.md)
 
 ## 4.1 Section — Read-Only Release Preflight
 
-- [ ] 4.1 Section - Add one non-publishing command that proves release inputs.
-  - [ ] 4.1.1 Task - Validate repository identity.
-    - [ ] 4.1.1.1 Subtask - Require clean `main`, exact synchronization with `origin/main`, and no untracked package files.
-    - [ ] 4.1.1.2 Subtask - Require semantic version agreement across Mix, changelog, docs source ref, and proposed tag.
-    - [ ] 4.1.1.3 Subtask - Reject an existing local/remote tag or an already-published Hex version.
-  - [ ] 4.1.2 Task - Compose existing gates.
-    - [ ] 4.1.2.1 Subtask - Run formatter bootstrap/check, strict docs, package inventory, qualification freshness, and SpecLed validation.
-    - [ ] 4.1.2.2 Subtask - Emit a bounded machine-readable preflight report without modifying Git, Hex, or GitHub state.
+- [x] 4.1 Section - Add one non-publishing command that proves release inputs.
+  - [x] 4.1.1 Task - Validate repository identity.
+    - [x] 4.1.1.1 Subtask - Require clean `main`, exact synchronization with `origin/main`, and no untracked package files.
+    - [x] 4.1.1.2 Subtask - Require semantic version agreement across Mix, changelog, docs source ref, and proposed tag.
+    - [x] 4.1.1.3 Subtask - Reject an existing local/remote tag or an already-published Hex version.
+  - [x] 4.1.2 Task - Compose existing gates.
+    - [x] 4.1.2.1 Subtask - Run formatter bootstrap/check, strict docs, package inventory, qualification freshness, and SpecLed validation.
+    - [x] 4.1.2.2 Subtask - Emit a bounded machine-readable preflight report without modifying Git, Hex, or GitHub state.
 
 ## 4.2 Section — Release Archive and Provenance
 

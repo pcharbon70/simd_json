@@ -1,5 +1,10 @@
 # SimdJson Package
 
+Milestone 6 Phase 4 Section 4.1 adds repository-only read-only release
+preflight tooling and packages its consumer-visible operating guide. The
+command proves synchronized source and release identity, composes existing
+gates, and emits bounded evidence without expanding the runtime archive.
+
 Milestone 6 Phase 3 Section 3.1 publishes explicit Hex package, maintainer,
 license, source, homepage, issue, and documentation identity. ExDoc source
 links target the matching version tag and separate milestone, operations,

@@ -24,6 +24,12 @@ gate runs Hex's no-publish checks, deterministic secret-pattern inventory,
 archive metadata/size/checksums, strict HTML generation, rendered-page markers,
 local links, and v0.1.0 API source links while rejecting development and
 generated files.
+Phase 4 Section 4.1 adds one credential-free preflight command. It requires a
+clean main branch whose HEAD matches both local and live remote origin/main,
+exact Mix/changelog/ExDoc/tag identity, and absent local, remote, and public Hex
+versions. It composes formatter, strict docs, package inventory, native
+qualification freshness, and structural SpecLed gates into a bounded,
+checksummed report without creating Git, GitHub, or Hex state.
 Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
 test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
 closes the reproduced pool-retirement, stale-baseline, and collected-request
@@ -53,6 +59,7 @@ surface:
   - .github/workflows/*.yml
   - scripts/ci/validate_exdoc_links.exs
   - scripts/ci/verify_package_documentation.sh
+  - scripts/release/preflight.sh
   - test/release/*.exs
 decisions:
   - simd_json.public_hex_release_contract
@@ -68,6 +75,7 @@ bootstrap:
     - simd_json.release.provenance
     - simd_json.release.explicit_authorization
     - simd_json.release.post_publish_verification
+    - simd_json.release.read_only_preflight
 ```
 
 ## Requirements
@@ -117,11 +125,30 @@ bootstrap:
   statement: Acceptance shall require verification of public Hex metadata, HexDocs, tarball checksum, ownership, and a clean supported-target consumer installation during the current recovery window.
   priority: must
   stability: evolving
+
+- id: simd_json.release.read_only_preflight
+  statement: One non-publishing command shall require clean synchronized main, consistent version and tag identity, absent local, remote, and Hex release identity, and current formatting, documentation, package, qualification, and SpecLed proof while emitting only bounded non-secret evidence.
+  priority: must
+  stability: evolving
 ```
 
 ## Scenarios
 
 ```spec-scenarios
+- id: simd_json.release.preflight_is_read_only
+  covers:
+    - simd_json.release.read_only_preflight
+  given:
+    - A proposed semantic version and matching tag
+    - No publication credential in the process environment
+  when:
+    - Release preflight runs from a clean main checkout
+  then:
+    - HEAD matches local and live remote origin/main
+    - Local, remote, and public Hex release identities are absent
+    - Existing formatter, documentation, package, freshness, and SpecLed gates pass
+    - A bounded checksummed report is written without mutating Git, GitHub, or Hex
+
 - id: simd_json.release.candidate_preflight
   covers:
     - simd_json.release.green_ci
@@ -188,6 +215,12 @@ bootstrap:
 ## Verification
 
 ```spec-verification
+- kind: command
+  target: MIX_ENV=test mix test test/release/release_tooling_contract_test.exs
+  execute: true
+  covers:
+    - simd_json.release.read_only_preflight
+
 - kind: command
   target: MIX_ENV=test mix test test/release/release_contract_test.exs
   execute: true

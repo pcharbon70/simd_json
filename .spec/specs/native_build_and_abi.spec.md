@@ -1,5 +1,11 @@
 # Native Build and ABI
 
+Milestone 6 Phase 4 Section 4.1 adds the read-only release preflight script,
+guide, and contract proof to the qualification-input fingerprint. The command
+verifies the existing checked-in native qualification record; it does not
+change consumer cache inputs, native sources, ABI v4, symbols, profiles, or the
+supported target.
+
 Milestone 6 Phase 3 Section 3.1 adds release-tag source links and grouped
 native milestone documentation to ExDoc. The qualified toolchain, vendored
 source, ABI v4, build profiles, and release-symbol boundary are unchanged.
