@@ -7,15 +7,15 @@ Back to plan: [README](./README.md)
 
 ## 3.1 Section — Hex and ExDoc Metadata
 
-- [ ] 3.1 Section - Complete consumer-visible package identity.
-  - [ ] 3.1.1 Task - Normalize Mix project metadata.
-    - [ ] 3.1.1.1 Subtask - Add explicit package name, maintainers, source URL, homepage, issue tracker, and documentation links.
-    - [ ] 3.1.1.2 Subtask - Make license metadata match the Phase 1 license files.
-    - [ ] 3.1.1.3 Subtask - Configure ExDoc source URL/ref and group milestone, operations, acceptance, changelog, and security pages.
-  - [ ] 3.1.2 Task - Verify dependency metadata.
-    - [ ] 3.1.2.1 Subtask - Ensure only production Hex dependencies appear in the published release.
-    - [ ] 3.1.2.2 Subtask - Ensure Git-only SpecLed and Jason test dependencies are excluded from consumer resolution.
-    - [ ] 3.1.2.3 Subtask - Review Elixir/OTP requirements for accuracy rather than broadening them without qualification.
+- [x] 3.1 Section - Complete consumer-visible package identity.
+  - [x] 3.1.1 Task - Normalize Mix project metadata.
+    - [x] 3.1.1.1 Subtask - Add explicit package name, maintainers, source URL, homepage, issue tracker, and documentation links.
+    - [x] 3.1.1.2 Subtask - Make license metadata match the Phase 1 license files.
+    - [x] 3.1.1.3 Subtask - Configure ExDoc source URL/ref and group milestone, operations, acceptance, changelog, and security pages.
+  - [x] 3.1.2 Task - Verify dependency metadata.
+    - [x] 3.1.2.1 Subtask - Ensure only production Hex dependencies appear in the published release.
+    - [x] 3.1.2.2 Subtask - Ensure Git-only SpecLed and Jason test dependencies are excluded from consumer resolution.
+    - [x] 3.1.2.3 Subtask - Review Elixir/OTP requirements for accuracy rather than broadening them without qualification.
 
 ## 3.2 Section — Installation and Native Build Guide
 

@@ -1,5 +1,9 @@
 # Document Resource
 
+Milestone 6 Phase 3 Section 3.1 exposes the existing ownership and acceptance
+guides through grouped, version-linked HexDocs. It changes no resource layout,
+input retention, owner check, lifecycle transition, or cleanup path.
+
 Milestone 5 Phase 4 confines eager decode documents, materializers, results,
 and graph frames to one pool job and releases them on every terminal path.
 

@@ -1,5 +1,12 @@
 # SimdJson Package
 
+Milestone 6 Phase 3 Section 3.1 publishes explicit Hex package, maintainer,
+license, source, homepage, issue, and documentation identity. ExDoc source
+links target the matching version tag and separate milestone, operations,
+acceptance, release-note, security, and release-policy pages. Package metadata
+continues to expose only Zigler and telemetry to consumer resolution; Jason and
+the commit-pinned SpecLed tooling remain development/test-only.
+
 Milestone 6 Phase 2 Section 2.4 packages the cold/restored CI matrix and its
 required-check policy. Both jobs bind cache mode and hit state to the same
 revision, tree, and qualification identity; branch-protection mutation remains

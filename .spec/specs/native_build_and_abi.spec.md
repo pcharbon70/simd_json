@@ -1,5 +1,9 @@
 # Native Build and ABI
 
+Milestone 6 Phase 3 Section 3.1 adds release-tag source links and grouped
+native milestone documentation to ExDoc. The qualified toolchain, vendored
+source, ABI v4, build profiles, and release-symbol boundary are unchanged.
+
 Milestone 6 Phase 2 verifies the pinned Zig 0.16.0 path before compilation,
 rebuilds Zigler deterministically, and qualifies native inputs in separate
 cold and restored cache jobs. The CI policy is packaged documentation; it does

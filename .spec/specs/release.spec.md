@@ -4,6 +4,10 @@ Current-truth contract for preparing and publishing the first public release.
 Milestone 6 Phase 1 freezes identity, licensing, and support; Phases 2–6 own CI
 repair, public package documentation, release tooling, exact-candidate
 qualification, explicit authorization, publication, and external verification.
+Phase 3 Section 3.1 adds explicit Hex identity, maintainer and public links,
+tag-bound ExDoc source metadata, documentation groups, and executable proof
+that only the two required production Hex dependencies enter consumer
+resolution under the qualified Elixir requirement.
 Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
 test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
 closes the reproduced pool-retirement, stale-baseline, and collected-request
@@ -171,6 +175,15 @@ bootstrap:
     - simd_json.release.project_license
     - simd_json.release.qualified_support
     - simd_json.release.publication_gate
+
+- kind: command
+  target: MIX_ENV=test mix test test/release/package_documentation_contract_test.exs
+  execute: true
+  covers:
+    - simd_json.release.public_identity
+    - simd_json.release.project_license
+    - simd_json.release.archive_integrity
+    - simd_json.release.consumer_documentation
 
 - kind: command
   target: MIX_ENV=test mix test test/release/ci_reliability_contract_test.exs test/native/pool_delivery_test.exs test/native/pool_worker_lifecycle_test.exs test/native/decode_pool_lifecycle_test.exs

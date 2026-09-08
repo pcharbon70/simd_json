@@ -1,35 +1,45 @@
 defmodule SimdJson.MixProject do
-  # covers: simd_json.package.mix_library simd_json.package.specled_tooling simd_json.package.native_build_tooling simd_json.package.native_source_distribution simd_json.native_build_and_abi.pinned_toolchain
+  # covers: simd_json.package.mix_library simd_json.package.specled_tooling simd_json.package.native_build_tooling simd_json.package.native_source_distribution simd_json.native_build_and_abi.pinned_toolchain simd_json.release.public_identity simd_json.release.project_license simd_json.release.consumer_documentation
   use Mix.Project
+
+  @version "0.1.0"
+  @source_url "https://github.com/pcharbon70/simd_json"
+
+  @milestone_guides [
+    "docs/milestones/README.md",
+    "docs/milestones/01-native-foundation.md",
+    "docs/milestones/02-projection-api.md",
+    "docs/milestones/03-batched-array-streaming.md",
+    "docs/milestones/04-worker-pool-and-operations.md",
+    "docs/milestones/05-compatible-decode-api.md"
+  ]
+
+  @operations_guides [
+    "docs/milestones/01-native-foundation-operations.md",
+    "docs/milestones/02-projection-api-operations.md",
+    "docs/milestones/03-batched-array-streaming-operations.md"
+  ]
+
+  @acceptance_records [
+    "docs/milestones/01-native-foundation-acceptance.md",
+    "docs/milestones/02-projection-api-acceptance.md",
+    "docs/milestones/03-batched-array-streaming-acceptance.md",
+    "docs/milestones/05-compatible-decode-api-acceptance.md"
+  ]
+
+  @release_guides ["docs/releases/support.md", "docs/releases/ci-policy.md"]
 
   def project do
     [
       app: :simd_json,
-      version: "0.1.0",
+      name: "SimdJson",
+      version: @version,
       elixir: "~> 1.18.4",
       start_permanent: Mix.env() == :prod,
       description: "An ownership-safe Elixir NIF wrapper for simdjson",
-      docs: [
-        main: "readme",
-        extras: [
-          "README.md",
-          "LICENSE",
-          "THIRD_PARTY_NOTICES.md",
-          "docs/milestones/01-native-foundation.md",
-          "docs/milestones/01-native-foundation-operations.md",
-          "docs/milestones/01-native-foundation-acceptance.md",
-          "docs/milestones/02-projection-api.md",
-          "docs/milestones/02-projection-api-operations.md",
-          "docs/milestones/02-projection-api-acceptance.md",
-          "docs/milestones/03-batched-array-streaming.md",
-          "docs/milestones/03-batched-array-streaming-operations.md",
-          "docs/milestones/03-batched-array-streaming-acceptance.md",
-          "docs/milestones/05-compatible-decode-api.md",
-          "docs/milestones/05-compatible-decode-api-acceptance.md",
-          "docs/releases/support.md",
-          "docs/releases/ci-policy.md"
-        ]
-      ],
+      source_url: @source_url,
+      homepage_url: @source_url,
+      docs: docs(),
       package: package(),
       deps: deps()
     ]
@@ -59,8 +69,15 @@ defmodule SimdJson.MixProject do
     # The native directory deliberately includes the upstream source, its
     # provenance manifest, and both upstream license files in Hex artifacts.
     [
+      name: "simd_json",
+      maintainers: ["Pascal Charbonneau"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/pcharbon70/simd_json"},
+      links: %{
+        "Documentation" => "https://hexdocs.pm/simd_json",
+        "GitHub" => @source_url,
+        "Homepage" => @source_url,
+        "Issues" => "#{@source_url}/issues"
+      },
       exclude_patterns: [~r/\.Elixir\..*\.zig$/],
       files: [
         "lib",
@@ -73,6 +90,32 @@ defmodule SimdJson.MixProject do
         "mix.exs",
         "mix.lock",
         "README.md"
+      ]
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      source_url: @source_url,
+      source_ref: "v#{@version}",
+      extras:
+        [
+          {"README.md", filename: "readme", title: "Overview"},
+          {"LICENSE", filename: "license", title: "License"},
+          {"THIRD_PARTY_NOTICES.md",
+           filename: "third-party-notices", title: "Third-Party Notices"},
+          {"docs/milestones/README.md", filename: "milestones", title: "Milestone Roadmap"}
+        ] ++
+          List.delete(@milestone_guides, "docs/milestones/README.md") ++
+          @operations_guides ++ @acceptance_records ++ @release_guides,
+      groups_for_extras: [
+        "Milestone guides": @milestone_guides,
+        "Operations guides": @operations_guides,
+        "Acceptance records": @acceptance_records,
+        "Release notes": ["CHANGELOG.md"],
+        Security: ["SECURITY.md"],
+        "Release policies": @release_guides
       ]
     ]
   end
