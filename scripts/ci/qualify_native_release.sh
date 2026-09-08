@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# This is the cumulative ABI v1/v2/v3 release gate. Streaming additions must
-# extend it; they must never replace the earlier document and projection proof.
+# This is the cumulative ABI v1/v2/v3/v4 release gate. Later additions must
+# extend it; they must never replace earlier document, projection, streaming,
+# pool, or decode proof.
 
 repository_root="$(git rev-parse --show-toplevel)"
 qualification_record="${repository_root}/native/qualification/milestone_1.exs"
@@ -60,8 +61,11 @@ run_step package_build mix hex.build --unpack --output "${package_root}"
 
 required_package_files=(
   .tool-versions
+  CHANGELOG.md
+  CONTRIBUTING.md
   LICENSE
   README.md
+  SECURITY.md
   THIRD_PARTY_NOTICES.md
   docs/milestones/README.md
   docs/milestones/01-native-foundation.md
@@ -73,6 +77,7 @@ required_package_files=(
   docs/milestones/03-batched-array-streaming.md
   docs/milestones/05-compatible-decode-api.md
   docs/milestones/05-compatible-decode-api-acceptance.md
+  docs/releases/installation.md
   docs/releases/support.md
   docs/releases/ci-policy.md
   lib/simd_json.ex
@@ -91,6 +96,7 @@ required_package_files=(
   native/qualification/milestone_1.exs
   native/include/simd_json_abi.h
   native/include/simd_json_nif_internal.h
+  native/include/simd_json_test_hooks.h
   native/src/simd_json_abi.cpp
   native/src/simd_json_native_internal.hpp
   native/src/simd_json_projection.cpp
@@ -99,14 +105,6 @@ required_package_files=(
   native/symbols/c_abi.allowlist
   native/symbols/c_abi.version
   native/symbols/nif.allowlist
-  native/test/include/simd_json_test_hooks.h
-  native/test/projection_engine_conformance.c
-  native/test/projection_plan_conformance.c
-  native/test/projection_plan_test.zig
-  native/test/stream_cursor_conformance.c
-  native/test/stream_cursor_test.zig
-  native/test/decode_materializer_conformance.c
-  native/test/decode_materializer_test.zig
   native/vendor/simdjson/simdjson.cpp
   native/vendor/simdjson/simdjson.h
   native/vendor/simdjson/README.md
@@ -132,6 +130,14 @@ if find "${package_root}" -type f \( -name '*.so' -o -name '.Elixir.*.zig' \) | 
   exit 1
 fi
 
+for forbidden_directory in test bench scripts .spec .github lib/mix native/test; do
+  if [[ -e "${package_root}/${forbidden_directory}" ]]; then
+    printf 'release package contains forbidden development directory: %s\n' \
+      "${forbidden_directory}" >&2
+    exit 1
+  fi
+done
+
 printf '%s\n' "${required_package_files[@]}" >"${evidence_root}/package-required-files.txt"
 find "${package_root}" -type f -printf '%P\n' | LC_ALL=C sort \
   >"${evidence_root}/package-contents.txt"
@@ -151,5 +157,5 @@ run_step offline_package_build \
   env SIMD_JSON_SOURCE_DIRECTORY="${package_root}" \
   bash scripts/ci/verify_offline_native_build.sh
 
-printf 'Cumulative ABI v1/v2/v3 release-native qualification passed\n' \
+printf 'Cumulative ABI v1/v2/v3/v4 release-native qualification passed\n' \
   | tee "${evidence_root}/summary.txt"

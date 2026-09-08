@@ -1,5 +1,34 @@
 # SimdJson Package
 
+Milestone 6 Phase 3 Section 3.1 publishes explicit Hex package, maintainer,
+license, source, homepage, issue, and documentation identity. ExDoc source
+links target the matching version tag and separate milestone, operations,
+acceptance, release-note, security, and release-policy pages. Package metadata
+continues to expose only Zigler and telemetry to consumer resolution; Jason and
+the commit-pinned SpecLed tooling remain development/test-only.
+
+Milestone 6 Phase 3 Section 3.2 packages the consumer installation and native
+build guide. It binds the `~> 0.1.0` dependency tuple and smoke workflows to the
+qualified BEAM, Zig/Zigler, C++17, glibc, simdjson, CPU-dispatch, cache,
+offline-source, troubleshooting, and no-precompiled-NIF contract.
+
+Milestone 6 Phase 3 Section 3.3 packages complete 0.1.0 release notes, private
+security reporting and supported-version policy, and contributor/test
+instructions. README now consolidates accepted memory semantics, compatibility,
+operations, saturation, telemetry, and qualification links without broadening
+the runtime surface.
+
+Milestone 6 Phase 3 Section 3.4 replaces broad package-directory inclusion
+with an explicit consumer runtime/native/provenance/documentation allowlist.
+Repository tests, benchmarks, SpecLed internals, CI scripts, native harnesses,
+generated outputs, caches, editor files, and credential paths are excluded.
+The checked-in native qualification record remains packaged provenance, while
+an executable archive-and-ExDoc gate records metadata, sizes, file checksums,
+secret scanning, rendered pages, local links, and release-ref source links. A
+test-only declaration header remains a packaged build input so dependency
+compilation also works in a consumer's test Mix environment; native harness
+implementations remain excluded.
+
 Milestone 6 Phase 2 Section 2.4 packages the cold/restored CI matrix and its
 required-check policy. Both jobs bind cache mode and hit state to the same
 revision, tree, and qualification identity; branch-protection mutation remains

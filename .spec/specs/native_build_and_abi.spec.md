@@ -1,5 +1,24 @@
 # Native Build and ABI
 
+Milestone 6 Phase 3 Section 3.1 adds release-tag source links and grouped
+native milestone documentation to ExDoc. The qualified toolchain, vendored
+source, ABI v4, build profiles, and release-symbol boundary are unchanged.
+
+Section 3.2 publishes copyable source-build instructions for the exact
+qualified BEAM, Zig/Zigler, bundled C++17 toolchain, glibc ABI, vendored
+simdjson, and CPU-dispatch boundary. It identifies build/cache recovery and
+states that no precompiled NIF or system-simdjson fallback is shipped; native
+sources, ABI v4, profiles, and runtime behavior remain unchanged.
+
+Section 3.4 packages only the native headers, runtime translations, Zig owners,
+vendored source, symbol policy, manifest, README, and checked-in qualification
+record required by a consumer and provenance review. Native test harnesses and
+generated qualification outputs remain repository-only; archive inspection and
+offline compilation prove the reduced source package remains complete. The
+test-only declaration header lives with required native headers because Mix
+dependencies can compile under the consumer's test environment; standalone
+harness sources remain outside both the archive and consumer cache identity.
+
 Milestone 6 Phase 2 verifies the pinned Zig 0.16.0 path before compilation,
 rebuilds Zigler deterministically, and qualifies native inputs in separate
 cold and restored cache jobs. The CI policy is packaged documentation; it does

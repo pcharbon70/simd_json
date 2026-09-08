@@ -53,7 +53,7 @@ common_c_flags=(
   -pedantic
   -DSIMD_JSON_TESTING=1
   -I "${repository_root}/native/include"
-  -I "${repository_root}/native/test/include"
+  -I "${repository_root}/native/include"
 )
 common_cxx_flags=(
   -std=c++17

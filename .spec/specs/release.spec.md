@@ -4,6 +4,26 @@ Current-truth contract for preparing and publishing the first public release.
 Milestone 6 Phase 1 freezes identity, licensing, and support; Phases 2–6 own CI
 repair, public package documentation, release tooling, exact-candidate
 qualification, explicit authorization, publication, and external verification.
+Phase 3 Section 3.1 adds explicit Hex identity, maintainer and public links,
+tag-bound ExDoc source metadata, documentation groups, and executable proof
+that only the two required production Hex dependencies enter consumer
+resolution under the qualified Elixir requirement.
+Section 3.2 adds a copyable dependency and compilation sequence, executable
+decode/select/stream smoke workflows, the exact supported versus experimental
+boundary, source-native prerequisite and offline-vendor behavior, cache and
+compile-time expectations, and diagnostic recovery commands. It states
+explicitly that the first release contains no precompiled NIF.
+Section 3.3 reconciles README memory, compatibility, operations, saturation,
+telemetry, and acceptance links; publishes complete 0.1.0 release notes and
+known limits; selects private email reporting and newest-patch-only security
+support; and documents the contributor bootstrap, test, SpecLed, and native
+qualification workflow.
+Section 3.4 replaces broad package directories with an explicit runtime,
+native-source, provenance, license, and documentation allowlist. One executable
+gate runs Hex's no-publish checks, deterministic secret-pattern inventory,
+archive metadata/size/checksums, strict HTML generation, rendered-page markers,
+local links, and v0.1.0 API source links while rejecting development and
+generated files.
 Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
 test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
 closes the reproduced pool-retirement, stale-baseline, and collected-request
@@ -26,8 +46,13 @@ surface:
   - LICENSE
   - THIRD_PARTY_NOTICES.md
   - README.md
+  - CHANGELOG.md
+  - SECURITY.md
+  - CONTRIBUTING.md
   - docs/releases/*.md
   - .github/workflows/*.yml
+  - scripts/ci/validate_exdoc_links.exs
+  - scripts/ci/verify_package_documentation.sh
   - test/release/*.exs
 decisions:
   - simd_json.public_hex_release_contract
@@ -171,6 +196,22 @@ bootstrap:
     - simd_json.release.project_license
     - simd_json.release.qualified_support
     - simd_json.release.publication_gate
+
+- kind: command
+  target: MIX_ENV=test mix test test/release/package_documentation_contract_test.exs
+  execute: true
+  covers:
+    - simd_json.release.public_identity
+    - simd_json.release.project_license
+    - simd_json.release.archive_integrity
+    - simd_json.release.consumer_documentation
+
+- kind: command
+  target: bash scripts/ci/verify_package_documentation.sh
+  execute: true
+  covers:
+    - simd_json.release.archive_integrity
+    - simd_json.release.consumer_documentation
 
 - kind: command
   target: MIX_ENV=test mix test test/release/ci_reliability_contract_test.exs test/native/pool_delivery_test.exs test/native/pool_worker_lifecycle_test.exs test/native/decode_pool_lifecycle_test.exs

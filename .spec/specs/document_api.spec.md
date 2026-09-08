@@ -1,5 +1,9 @@
 # Document API and Errors
 
+Milestone 6 Phase 3 Section 3.1 groups the existing public milestone and
+acceptance guides in HexDocs with version-tag source links. It changes no
+document operation, ownership rule, error translation, or public function.
+
 Milestone 5 Phase 6 differentially qualifies decode without changing document
 ownership or lifecycle behavior; cumulative regression gates remain active.
 

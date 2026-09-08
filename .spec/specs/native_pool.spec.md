@@ -1,5 +1,9 @@
 # Native Worker Pool and Admission
 
+Milestone 6 Phase 3 Section 3.1 publishes the existing worker-pool operations
+guide through grouped, release-tag-linked HexDocs. It changes no capacity,
+admission, cancellation, telemetry, delivery, or shutdown behavior.
+
 Milestone 6 Phase 2 Section 2.2 serializes every public shared-pool lookup with
 pool stop, worker join, and mutex retirement. Concurrent NIF callers can now
 observe either a live pool or a stopped pool, never freed synchronization

@@ -8,8 +8,8 @@ This document defines the milestones for building `SimdJson`, an Elixir wrapper 
 
 The roadmap is based on two research documents:
 
-- [Designing a simdjson On-Demand NIF for Elixir / BEAM](../../.spec/research/simdjson_beam_nif_architecture.md)
-- [Jason JSON Parser Architecture Analysis](../../.spec/research/jason_parser_architecture_analysis.md)
+- [Designing a simdjson On-Demand NIF for Elixir / BEAM](https://github.com/pcharbon70/simd_json/blob/v0.1.0/.spec/research/simdjson_beam_nif_architecture.md)
+- [Jason JSON Parser Architecture Analysis](https://github.com/pcharbon70/simd_json/blob/v0.1.0/.spec/research/jason_parser_architecture_analysis.md)
 
 Each milestone also has a separate detailed implementation reference linked from its section below.
 
