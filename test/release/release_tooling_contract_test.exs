@@ -4,6 +4,7 @@ defmodule SimdJson.ReleaseToolingContractTest do
   @preflight "scripts/release/preflight.sh"
   @preflight_guide "docs/releases/preflight.md"
   @provenance_guide "docs/releases/provenance.md"
+  @publishing_guide "docs/releases/publishing.md"
   @phase ".spec/planning/milestone_06_publication_readiness/phase-04-release-tooling-provenance-and-recovery.md"
 
   # covers: simd_json.release.read_only_preflight simd_json.release.candidate_preflight
@@ -119,5 +120,58 @@ defmodule SimdJson.ReleaseToolingContractTest do
 
     refute section =~ "- [ ]"
     assert section =~ "- [x] 4.2 Section"
+  end
+
+  # covers: simd_json.release.publisher_boundary simd_json.release.explicit_authorization
+  test "keeps first-publication authentication interactive and credential-free" do
+    policy = File.read!("release/publisher-policy.env")
+    verifier = File.read!("scripts/release/verify_publisher.sh")
+    guide = File.read!(@publishing_guide)
+    workflows = Path.wildcard(".github/workflows/*.yml") |> Enum.map_join(&File.read!/1)
+
+    assert policy =~ "publisher=pcharbon70"
+    assert policy =~ "recovery_owner=pcharbon70"
+    assert policy =~ "execution_model=interactive_reviewed"
+    assert policy =~ "ci_publication=disabled"
+
+    assert verifier =~ "mix hex.user whoami"
+    assert verifier =~ "refuses to run while HEX_API_KEY is set"
+    assert verifier =~ "credential_loaded=false"
+    refute verifier =~ "hex.user key"
+    refute verifier =~ "hex.publish"
+
+    assert guide =~ "interactive, reviewed maintainer"
+    assert guide =~ "CI publication is disabled"
+    assert guide =~ "manual dispatch with an exact"
+    assert guide =~ "no pull-request trigger or secret"
+    assert guide =~ "short-lived and limited"
+    assert guide =~ "credentials must never appear"
+
+    refute workflows =~ "HEX_API_KEY"
+    refute workflows =~ "mix hex.publish"
+
+    assert {_output, 0} =
+             System.cmd("bash", ["-n", "scripts/release/verify_publisher.sh"],
+               stderr_to_stdout: true
+             )
+
+    {credential_guard, 64} =
+      System.cmd("/bin/bash", ["scripts/release/verify_publisher.sh"],
+        env: [{"HEX_API_KEY", "must-not-be-printed"}],
+        stderr_to_stdout: true
+      )
+
+    assert credential_guard =~ "refuses to run while HEX_API_KEY is set"
+    refute credential_guard =~ "must-not-be-printed"
+  end
+
+  # covers: simd_json.release.publisher_boundary
+  test "closes every publisher boundary planning task" do
+    phase = File.read!(@phase)
+    [_, phase_sections] = String.split(phase, "## 4.3 Section", parts: 2)
+    section = phase_sections |> String.split("## 4.4 Section", parts: 2) |> hd()
+
+    refute section =~ "- [ ]"
+    assert section =~ "- [x] 4.3 Section"
   end
 end

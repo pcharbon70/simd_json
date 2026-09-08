@@ -35,6 +35,11 @@ requires both normalized contents and exact archive bytes to match. It retains
 the exact candidate with commit, tree, lock, toolchain, target, native
 fingerprint, source-manifest, dependency/license-inventory, and archive
 checksums in the fixed-retention CI evidence artifact.
+Section 4.3 records `pcharbon70` as the read-only verified Hex publisher and
+pre-publication recovery owner, selects an interactive reviewed first release,
+and prohibits CI publication. Its identity check refuses loaded publication
+credentials; any later CI publisher requires a separate owner decision,
+manual protected dispatch, an exact tag, and a short-lived package-scoped key.
 Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
 test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
 closes the reproduced pool-retirement, stale-baseline, and collected-request
@@ -66,6 +71,8 @@ surface:
   - scripts/ci/generate_dependency_inventory.exs
   - scripts/ci/verify_package_documentation.sh
   - scripts/release/preflight.sh
+  - scripts/release/verify_publisher.sh
+  - release/publisher-policy.env
   - test/release/*.exs
 decisions:
   - simd_json.public_hex_release_contract
@@ -136,6 +143,11 @@ bootstrap:
   statement: One non-publishing command shall require clean synchronized main, consistent version and tag identity, absent local, remote, and Hex release identity, and current formatting, documentation, package, qualification, and SpecLed proof while emitting only bounded non-secret evidence.
   priority: must
   stability: evolving
+
+- id: simd_json.release.publisher_boundary
+  statement: The intended Hex publisher and recovery owner shall be recorded and verified without loading a publication credential; the first release shall use an interactive reviewed session while CI publication remains disabled unless separately owner-approved with a protected manual workflow and short-lived package-scoped key.
+  priority: must
+  stability: stable
 ```
 
 ## Scenarios
@@ -196,6 +208,19 @@ bootstrap:
     - Publication proceeds only after explicit approval
     - Any source or identity change invalidates approval and returns to qualification
 
+- id: simd_json.release.publisher_identity_is_read_only
+  covers:
+    - simd_json.release.publisher_boundary
+    - simd_json.release.explicit_authorization
+  given:
+    - The tracked publisher policy and no publication key in the process
+  when:
+    - Publisher identity verification runs
+  then:
+    - The authenticated Hex username matches the intended publisher
+    - A recovery owner and contact are present
+    - Only bounded non-secret evidence is written and no Hex state changes
+
 - id: simd_json.release.public_verification
   covers:
     - simd_json.release.post_publish_verification
@@ -241,6 +266,7 @@ bootstrap:
     - simd_json.release.read_only_preflight
     - simd_json.release.archive_integrity
     - simd_json.release.provenance
+    - simd_json.release.publisher_boundary
 
 - kind: command
   target: MIX_ENV=test mix test test/release/release_contract_test.exs

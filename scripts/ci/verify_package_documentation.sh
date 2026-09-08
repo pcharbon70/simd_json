@@ -85,6 +85,7 @@ required_package_files=(
   docs/releases/installation.md
   docs/releases/preflight.md
   docs/releases/provenance.md
+  docs/releases/publishing.md
   docs/releases/support.md
   lib/simd_json.ex
   lib/simd_json/application.ex

@@ -45,6 +45,16 @@ target, native qualification fingerprint, complete source manifest, and
 transitive dependency/license inventory in a commit-qualified CI artifact for
 30 days. That provenance identifies a candidate but never authorizes it.
 
+The intended first publisher and pre-publication recovery owner are the
+confirmed Hex account `pcharbon70`, with the private contact already published
+in `SECURITY.md`. A read-only identity check must refuse loaded publication
+credentials and record only non-secret identity. The first publication is an
+interactive reviewed maintainer action; CI publication is disabled. Automating
+it later requires a separate owner decision, manual exact-tag dispatch, a
+protected release environment, no pull-request secret access, and a
+short-lived key scoped only to this package. Preflight and publication remain
+separate commands.
+
 Release qualification must bootstrap in one explicit Mix environment, verify
 the pinned Zig executable before native compilation, rebuild Zigler before a
 strict formatting gate, and record the active Hex archive and Rebar version.

@@ -1,5 +1,9 @@
 # SimdJson Package
 
+Milestone 6 Phase 4 Section 4.3 packages the credential-free publishing guide
+while keeping the publisher policy and identity verifier repository-only. It
+adds no credential, publication task, runtime file, or runtime dependency.
+
 Milestone 6 Phase 4 Section 4.2 adds the packaged archive-provenance guide and
 fingerprints the repository-only dependency-inventory generator. Package
 qualification now retains the exact archive, complete transitive license

@@ -29,15 +29,15 @@ Back to plan: [README](./README.md)
 
 ## 4.3 Section — Publisher Authentication and Workflow Boundary
 
-- [ ] 4.3 Section - Define publishing without weakening repository security.
-  - [ ] 4.3.1 Task - Establish publisher ownership.
-    - [ ] 4.3.1.1 Subtask - Verify the intended confirmed Hex account or organization and at least one recovery owner.
-    - [ ] 4.3.1.2 Subtask - Use a short-lived, least-privilege publication key only if CI publication is owner-approved.
-    - [ ] 4.3.1.3 Subtask - Keep credentials out of commands, logs, artifacts, shell history, repository files, and AI-visible output.
-  - [ ] 4.3.2 Task - Choose the first-release execution model.
-    - [ ] 4.3.2.1 Subtask - Prefer an interactive reviewed first publication unless the owner explicitly approves a protected CI release environment.
-    - [ ] 4.3.2.2 Subtask - If automated, require manual dispatch, exact tag input, protected environment approval, and no pull-request secret access.
-    - [ ] 4.3.2.3 Subtask - Separate preflight from the command that mutates Hex state.
+- [x] 4.3 Section - Define publishing without weakening repository security.
+  - [x] 4.3.1 Task - Establish publisher ownership.
+    - [x] 4.3.1.1 Subtask - Verify the intended confirmed Hex account or organization and at least one recovery owner.
+    - [x] 4.3.1.2 Subtask - Use a short-lived, least-privilege publication key only if CI publication is owner-approved.
+    - [x] 4.3.1.3 Subtask - Keep credentials out of commands, logs, artifacts, shell history, repository files, and AI-visible output.
+  - [x] 4.3.2 Task - Choose the first-release execution model.
+    - [x] 4.3.2.1 Subtask - Prefer an interactive reviewed first publication unless the owner explicitly approves a protected CI release environment.
+    - [x] 4.3.2.2 Subtask - If automated, require manual dispatch, exact tag input, protected environment approval, and no pull-request secret access.
+    - [x] 4.3.2.3 Subtask - Separate preflight from the command that mutates Hex state.
 
 ## 4.4 Section — Recovery and Retirement Runbook
 

@@ -1,5 +1,10 @@
 # Native Build and ABI
 
+Milestone 6 Phase 4 Section 4.3 fingerprints the publisher policy, publishing
+guide, and read-only identity verifier. These release controls do not change
+native sources, ABI v4, symbols, profiles, consumer cache inputs, or the
+supported target.
+
 Milestone 6 Phase 4 Section 4.2 fingerprints the release provenance guide and
 dependency-inventory generator. The archive evidence records the existing
 native qualification-input identity and target; native sources, ABI v4,
