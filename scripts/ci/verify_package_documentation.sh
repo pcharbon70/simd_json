@@ -86,6 +86,7 @@ required_package_files=(
   docs/releases/preflight.md
   docs/releases/provenance.md
   docs/releases/publishing.md
+  docs/releases/recovery.md
   docs/releases/support.md
   lib/simd_json.ex
   lib/simd_json/application.ex
@@ -219,7 +220,7 @@ printf 'hex_dry_run=passed\n' >"${evidence_root}/secret-scan.txt"
 
 for index in "${!secret_patterns[@]}"; do
   set +e
-  matches="$(rg -l -I --hidden --pcre2 --regexp "${secret_patterns[index]}" "${package_root}")"
+  matches="$(grep -rIlE -- "${secret_patterns[index]}" "${package_root}")"
   scan_status=$?
   set -e
 

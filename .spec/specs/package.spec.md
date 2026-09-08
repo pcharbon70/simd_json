@@ -1,5 +1,9 @@
 # SimdJson Package
 
+Milestone 6 Phase 4 Section 4.4 packages the release recovery guide and
+fingerprints the repository-only evidence verifier and rehearsal. The guide
+adds no release credential, runtime file, native binary, or dependency.
+
 Milestone 6 Phase 4 Section 4.3 packages the credential-free publishing guide
 while keeping the publisher policy and identity verifier repository-only. It
 adds no credential, publication task, runtime file, or runtime dependency.

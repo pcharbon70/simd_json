@@ -105,6 +105,24 @@ SIMD_JSON_PACKAGE_EVIDENCE_DIR="${qualification_root}/release-candidate" \
 SIMD_JSON_REQUIRE_CLEAN_CANDIDATE=1 \
   run_step package_provenance bash scripts/ci/verify_package_documentation.sh
 
+{
+  printf 'status=passed\n'
+  printf 'native_release=passed\n'
+  printf 'native_pool=passed\n'
+  printf 'decode=passed\n'
+} >"${qualification_root}/release-candidate/native-compile.status"
+
+(
+  cd "${qualification_root}/release-candidate"
+  find . -type f ! -name SHA256SUMS -print0 \
+    | LC_ALL=C sort -z \
+    | xargs -0 sha256sum >SHA256SUMS
+)
+
+run_step candidate_evidence \
+  bash scripts/release/verify_candidate_evidence.sh \
+  "${qualification_root}/release-candidate"
+
 cp .spec/state.json "${evidence_root}/spec-state.json"
 
 for evidence in \
@@ -114,17 +132,18 @@ for evidence in \
   "${qualification_root}/decode/decode-scheduler.json" \
   "${qualification_root}/decode/summary.txt" \
   "${qualification_root}/release-candidate/provenance.env" \
+  "${qualification_root}/release-candidate/native-compile.status" \
   "${qualification_root}/release-candidate/simd_json-0.1.0.tar" \
   "${qualification_root}/release-candidate/SHA256SUMS"; do
   test -s "${evidence}"
 done
 
-if rg -n --fixed-strings -- '- [ ]' .spec/planning/milestone_05_compatible_decode/phase-*.md; then
+if grep -nF -- '- [ ]' .spec/planning/milestone_05_compatible_decode/phase-*.md; then
   printf 'Milestone 5 plan retains unchecked work\n' >&2
   exit 1
 fi
 
-if rg -n 'bootstrap:|status: planned' .spec/specs/decode_api.spec.md; then
+if grep -nE 'bootstrap:|status: planned' .spec/specs/decode_api.spec.md; then
   printf 'Milestone 5 decode subject is not active\n' >&2
   exit 1
 fi

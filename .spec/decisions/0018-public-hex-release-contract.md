@@ -55,6 +55,15 @@ protected release environment, no pull-request secret access, and a
 short-lived key scoped only to this package. Preflight and publication remain
 separate commands.
 
+Recovery policy is prepared and rehearsed before publication. The owner must
+reverify current Hex time windows immediately before acting, then choose an
+exact-version revert while permitted, a newly qualified patch when the old
+release may remain, or retirement when users need a durable warning. Credential
+containment precedes release repair, suspected exposure uses a private security
+advisory, and GitHub release corrections require their own exact-state
+authorization. Local rehearsal uses synthetic evidence only and must never
+publish, replace, revert, retire, or delete a real release.
+
 Release qualification must bootstrap in one explicit Mix environment, verify
 the pinned Zig executable before native compilation, rebuild Zigler before a
 strict formatting gate, and record the active Hex archive and Rebar version.

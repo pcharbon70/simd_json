@@ -31,6 +31,7 @@ defmodule SimdJson.MixProject do
     "docs/releases/preflight.md",
     "docs/releases/provenance.md",
     "docs/releases/publishing.md",
+    "docs/releases/recovery.md",
     "docs/releases/installation.md",
     "docs/releases/support.md",
     "docs/releases/ci-policy.md"

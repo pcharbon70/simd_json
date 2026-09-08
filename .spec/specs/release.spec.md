@@ -40,6 +40,11 @@ pre-publication recovery owner, selects an interactive reviewed first release,
 and prohibits CI publication. Its identity check refuses loaded publication
 credentials; any later CI publisher requires a separate owner decision,
 manual protected dispatch, an exact tag, and a short-lived package-scoped key.
+Section 4.4 records current initial-package and later-version recovery windows,
+assigns revert, patch, retirement, credential, advisory, and GitHub correction
+decisions, and adds a non-mutating rehearsal. Synthetic evidence proves
+missing docs, broken native compilation, checksum corruption, and secret
+matches all fail closed before any external release action.
 Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
 test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
 closes the reproduced pool-retirement, stale-baseline, and collected-request
@@ -72,6 +77,8 @@ surface:
   - scripts/ci/verify_package_documentation.sh
   - scripts/release/preflight.sh
   - scripts/release/verify_publisher.sh
+  - scripts/release/verify_candidate_evidence.sh
+  - scripts/release/rehearse_recovery.sh
   - release/publisher-policy.env
   - test/release/*.exs
 decisions:
@@ -89,6 +96,8 @@ bootstrap:
     - simd_json.release.explicit_authorization
     - simd_json.release.post_publish_verification
     - simd_json.release.read_only_preflight
+    - simd_json.release.publisher_boundary
+    - simd_json.release.recovery_readiness
 ```
 
 ## Requirements
@@ -148,6 +157,11 @@ bootstrap:
   statement: The intended Hex publisher and recovery owner shall be recorded and verified without loading a publication credential; the first release shall use an interactive reviewed session while CI publication remains disabled unless separately owner-approved with a protected manual workflow and short-lived package-scoped key.
   priority: must
   stability: stable
+
+- id: simd_json.release.recovery_readiness
+  statement: A dated runbook shall require current Hex-window reverification, assign authority for revert, patch, retirement, credential, advisory, and GitHub correction choices, and rehearse all evidence-failure paths without mutating a real release.
+  priority: must
+  stability: evolving
 ```
 
 ## Scenarios
@@ -232,6 +246,19 @@ bootstrap:
     - Matching public evidence activates the release subject
     - A material defect follows the pre-approved patch, revert, or retirement runbook
 
+- id: simd_json.release.recovery_rehearsal_is_non_mutating
+  covers:
+    - simd_json.release.recovery_readiness
+    - simd_json.release.explicit_authorization
+  given:
+    - Synthetic candidate evidence and the tracked recovery runbook
+  when:
+    - The local recovery rehearsal runs
+  then:
+    - Missing docs, failed native compilation, checksum mismatch, and a secret marker are detected
+    - Owner contact, key revocation, private advisory, and GitHub correction paths are present
+    - No Hex or GitHub release state is created, changed, or removed
+
 - id: simd_json.release.ci_cache_equivalence
   covers:
     - simd_json.release.green_ci
@@ -267,6 +294,7 @@ bootstrap:
     - simd_json.release.archive_integrity
     - simd_json.release.provenance
     - simd_json.release.publisher_boundary
+    - simd_json.release.recovery_readiness
 
 - kind: command
   target: MIX_ENV=test mix test test/release/release_contract_test.exs
@@ -293,6 +321,13 @@ bootstrap:
     - simd_json.release.archive_integrity
     - simd_json.release.consumer_documentation
     - simd_json.release.provenance
+
+- kind: command
+  target: bash scripts/release/rehearse_recovery.sh
+  execute: true
+  covers:
+    - simd_json.release.recovery_readiness
+    - simd_json.release.explicit_authorization
 
 - kind: command
   target: MIX_ENV=test mix test test/release/ci_reliability_contract_test.exs test/native/pool_delivery_test.exs test/native/pool_worker_lifecycle_test.exs test/native/decode_pool_lifecycle_test.exs

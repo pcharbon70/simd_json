@@ -5,6 +5,7 @@ defmodule SimdJson.ReleaseToolingContractTest do
   @preflight_guide "docs/releases/preflight.md"
   @provenance_guide "docs/releases/provenance.md"
   @publishing_guide "docs/releases/publishing.md"
+  @recovery_guide "docs/releases/recovery.md"
   @phase ".spec/planning/milestone_06_publication_readiness/phase-04-release-tooling-provenance-and-recovery.md"
 
   # covers: simd_json.release.read_only_preflight simd_json.release.candidate_preflight
@@ -173,5 +174,94 @@ defmodule SimdJson.ReleaseToolingContractTest do
 
     refute section =~ "- [ ]"
     assert section =~ "- [x] 4.3 Section"
+  end
+
+  # covers: simd_json.release.recovery_readiness simd_json.release.explicit_authorization
+  test "rehearses every recovery evidence failure without external mutation" do
+    verifier = File.read!("scripts/release/verify_candidate_evidence.sh")
+    rehearsal = File.read!("scripts/release/rehearse_recovery.sh")
+    package_verifier = File.read!("scripts/ci/verify_package_documentation.sh")
+    aggregate = File.read!("scripts/ci/qualify_milestone_5.sh")
+    guide = File.read!(@recovery_guide)
+
+    assert verifier =~ "candidate documentation does not contain index.html"
+    assert verifier =~ "candidate native compilation did not pass"
+    assert verifier =~ "candidate evidence checksum verification failed"
+    assert verifier =~ "candidate secret scan reports a possible credential"
+
+    for scenario <- [
+          "missing_docs",
+          "broken_native_compile",
+          "checksum_mismatch",
+          "leaked_secret"
+        ] do
+      assert rehearsal =~ "expect_failure #{scenario}"
+    end
+
+    assert rehearsal =~ "external_mutation=none"
+    refute rehearsal =~ "mix hex.publish"
+    refute rehearsal =~ "mix hex.retire"
+    refute rehearsal =~ ~r/^gh release/m
+
+    for portable_script <- [verifier, rehearsal, package_verifier, aggregate] do
+      refute portable_script =~ ~r/(^|[;&|]\s*|\s)rg\s/m
+    end
+
+    assert guide =~ "2026-09-08"
+    assert guide =~ "24 hours"
+    assert guide =~ "one\n  hour"
+    assert guide =~ "Revert removes"
+    assert guide =~ "A patch preserves"
+    assert guide =~ "Retirement is the"
+    assert guide =~ "explicit confirmation for the exact version"
+    assert guide =~ "mix hex.publish --revert \"$VERSION\""
+    assert guide =~ "mix hex.user key revoke KEY_NAME"
+    assert guide =~ "GitHub Security Advisory"
+    assert guide =~ "gh release edit \"$TAG\""
+    assert guide =~ "never contacts Hex or GitHub"
+
+    assert {_output, 0} =
+             System.cmd("bash", ["-n", "scripts/release/verify_candidate_evidence.sh"],
+               stderr_to_stdout: true
+             )
+
+    assert {_output, 0} =
+             System.cmd("bash", ["-n", "scripts/release/rehearse_recovery.sh"],
+               stderr_to_stdout: true
+             )
+
+    evidence_root =
+      Path.join(System.tmp_dir!(), "simd-json-recovery-#{System.unique_integer([:positive])}")
+
+    assert {output, 0} =
+             System.cmd("bash", ["scripts/release/rehearse_recovery.sh"],
+               env: [{"SIMD_JSON_RECOVERY_EVIDENCE_DIR", evidence_root}],
+               stderr_to_stdout: true
+             )
+
+    assert output =~ "Recovery rehearsal passed without mutating Hex or GitHub"
+    evidence = File.read!(Path.join(evidence_root, "rehearsal.env"))
+
+    for scenario <- [
+          "missing_docs",
+          "broken_native_compile",
+          "checksum_mismatch",
+          "leaked_secret"
+        ] do
+      assert evidence =~ "#{scenario}=detected"
+    end
+
+    assert evidence =~ "external_mutation=none"
+    File.rm_rf!(evidence_root)
+  end
+
+  # covers: simd_json.release.recovery_readiness
+  test "closes every recovery task and Phase 4" do
+    phase = File.read!(@phase)
+    [_, section] = String.split(phase, "## 4.4 Section", parts: 2)
+
+    refute section =~ "- [ ]"
+    assert section =~ "- [x] 4.4 Section"
+    assert phase =~ "- [x] 4 Phase"
   end
 end

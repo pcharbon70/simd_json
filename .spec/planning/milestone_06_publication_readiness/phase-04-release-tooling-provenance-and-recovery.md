@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 4 Phase - Build a repeatable release procedure with a narrow credential
+- [x] 4 Phase - Build a repeatable release procedure with a narrow credential
   boundary, immutable provenance, and a rehearsed recovery path.
 
 ## 4.1 Section — Read-Only Release Preflight
@@ -41,12 +41,12 @@ Back to plan: [README](./README.md)
 
 ## 4.4 Section — Recovery and Retirement Runbook
 
-- [ ] 4.4 Section - Rehearse what happens when publication is wrong.
-  - [ ] 4.4.1 Task - Document response windows and choices.
-    - [ ] 4.4.1.1 Subtask - Reverify Hex's current revert windows immediately before release.
-    - [ ] 4.4.1.2 Subtask - Define when to revert, publish a patch, or retire a release and who decides.
-    - [ ] 4.4.1.3 Subtask - Record commands as examples that still require explicit confirmation and exact version input.
-  - [ ] 4.4.2 Task - Rehearse without mutating Hex.
-    - [ ] 4.4.2.1 Subtask - Simulate missing docs, broken native compile, checksum mismatch, and leaked-secret responses.
-    - [ ] 4.4.2.2 Subtask - Verify owner contact, credential revocation, advisory, and GitHub release correction paths.
-    - [ ] 4.4.2.3 Subtask - Never test recovery by publishing or reverting a real version before approval.
+- [x] 4.4 Section - Rehearse what happens when publication is wrong.
+  - [x] 4.4.1 Task - Document response windows and choices.
+    - [x] 4.4.1.1 Subtask - Reverify Hex's current revert windows immediately before release.
+    - [x] 4.4.1.2 Subtask - Define when to revert, publish a patch, or retire a release and who decides.
+    - [x] 4.4.1.3 Subtask - Record commands as examples that still require explicit confirmation and exact version input.
+  - [x] 4.4.2 Task - Rehearse without mutating Hex.
+    - [x] 4.4.2.1 Subtask - Simulate missing docs, broken native compile, checksum mismatch, and leaked-secret responses.
+    - [x] 4.4.2.2 Subtask - Verify owner contact, credential revocation, advisory, and GitHub release correction paths.
+    - [x] 4.4.2.3 Subtask - Never test recovery by publishing or reverting a real version before approval.

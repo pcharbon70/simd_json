@@ -1,5 +1,10 @@
 # Native Build and ABI
 
+Milestone 6 Phase 4 Section 4.4 fingerprints the recovery guide, fail-closed
+candidate-evidence verifier, and synthetic recovery rehearsal. The aggregate
+candidate records the already-qualified native gate result; native sources,
+ABI v4, symbols, profiles, consumer cache inputs, and target are unchanged.
+
 Milestone 6 Phase 4 Section 4.3 fingerprints the publisher policy, publishing
 guide, and read-only identity verifier. These release controls do not change
 native sources, ABI v4, symbols, profiles, consumer cache inputs, or the
