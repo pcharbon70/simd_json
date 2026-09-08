@@ -107,16 +107,18 @@ exception text.
 The public root operations are `decode/1,2`, `decode!/1,2`, `open/1`,
 `select/2`, `stream/2`, and `close/1`. There is no projection bang variant,
 JSONPath, wildcard/filter/default policy, streaming cursor, ownership transfer,
-raw native handle, or public diagnostic API. The active Milestone 4 runtime routes native work
-through a bounded worker pool and non-blocking queue configured at application
-startup. Saturation
-returns the existing redacted `:busy` error.
+raw native handle, or public diagnostic API. The active Milestone 4 runtime
+routes native work through a bounded worker pool and non-blocking queue
+configured at application startup. Saturation returns the existing redacted
+`:busy` error; see the [pool operations guide](docs/milestones/04-worker-pool-and-operations.md#production-runbook).
 
 Operational telemetry uses the standard `:telemetry` events
 `[:simd_json, :job, :start | :stop | :exception | :cancelled]` and
 `[:simd_json, :queue, :rejected]`. Metadata is limited to operation and outcome;
 measurements contain bounded capacity, size, and duration values and never JSON
-content, paths, PIDs, request references, or native addresses.
+content, paths, PIDs, request references, or native addresses. Event fields and
+capacity-planning guidance are documented in the
+[telemetry runbook](docs/milestones/04-worker-pool-and-operations.md#telemetry).
 
 Milestone 5 implements its safe Jason 1.4.5 compatibility subset through an
 iterative native materializer and bounded-pool execution. The compatibility
@@ -128,6 +130,8 @@ behavior, qualification boundary, and evidence contract are recorded in the
 Stream a root or nested array lazily with a scalar projection:
 
 ```elixir
+json = ~s({"orders":[{"sku":"ABC-123","total":19.95}]})
+
 rows =
   SimdJson.stream(json,
     path: ["orders"],
@@ -147,12 +151,32 @@ and early halt closes the cursor without scanning the remaining array. Runtime
 failures raise a redacted `SimdJson.Error`; no row from a failing batch is
 published. The opaque Enumerable exposes no public cursor or batch API.
 
-Milestones 1–5 are active on the qualified Ubuntu 24.04 x86-64 target.
-Other platforms remain experimental or unsupported until they pass the same
-package, ABI, sanitizer, scheduler, lifecycle, benchmark, and shutdown gates.
-The exact toolchain, native source-build requirements, input-memory boundary,
-and promotion criteria are in the
+## Support and operational limits
+
+Milestones 1–5 are active on the qualified Ubuntu 24.04 x86-64 target. Other
+platforms remain experimental or unsupported until they pass the same package,
+ABI, sanitizer, scheduler, lifecycle, benchmark, and shutdown gates. The exact
+toolchain, native source-build requirements, compatibility differences,
+saturation behavior, and promotion criteria are in the
 [support policy](docs/releases/support.md).
+
+Every API receives a complete JSON binary, so the encoded document is already
+resident in memory. This package does not incrementally read JSON from a file,
+socket, or device. `select/2` avoids materializing an entire decoded BEAM tree
+and `stream/2` limits returned rows to one bounded batch at a time, but native
+parsing still retains or copies input and bounded operation state. `decode/1,2`
+materializes the complete result. The 45,666,793-byte million-row fixture is
+qualified through both sparse selection and streaming; see the
+[projection acceptance record](docs/milestones/02-projection-api-acceptance.md)
+and [streaming acceptance record](docs/milestones/03-batched-array-streaming-acceptance.md).
+
+Operations and accepted behavior are indexed in the
+[milestone roadmap](docs/milestones/README.md). Compatibility details are in the
+[decode guide](docs/milestones/05-compatible-decode-api.md) and
+[decode acceptance record](docs/milestones/05-compatible-decode-api-acceptance.md).
+Release changes and known limitations are recorded in the
+[changelog](CHANGELOG.md). Report vulnerabilities privately according to the
+[security policy](SECURITY.md).
 
 ## License
 
@@ -160,12 +184,15 @@ SimdJson wrapper code is available under the [MIT License](LICENSE).
 The vendored simdjson source retains its upstream license choices and
 attribution, described in [Third-Party Notices](THIRD_PARTY_NOTICES.md).
 
-## Development
+## Contributing
 
-Install dependencies and run the test suite:
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the supported development toolchain,
+test tiers, SpecLed workflow, and native qualification commands. The ordinary
+setup is:
 
 ```sh
 mix deps.get
+mix zig.get --version 0.16.0
 mix test
 ```
 

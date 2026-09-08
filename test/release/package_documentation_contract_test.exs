@@ -33,6 +33,7 @@ defmodule SimdJson.PackageDocumentationContractTest do
     assert groups[:"Acceptance records"]
     assert groups[:"Release notes"] == ["CHANGELOG.md"]
     assert groups[:Security] == ["SECURITY.md"]
+    assert groups[:Contributing] == ["CONTRIBUTING.md"]
   end
 
   # covers: simd_json.package.specled_tooling simd_json.release.archive_integrity
@@ -99,5 +100,36 @@ defmodule SimdJson.PackageDocumentationContractTest do
                batch_size: 1
              )
              |> Enum.to_list()
+  end
+
+  # covers: simd_json.release.consumer_documentation simd_json.release.qualified_support
+  test "publishes the accepted contract, release notes, and private security policy" do
+    readme = File.read!("README.md")
+    changelog = File.read!("CHANGELOG.md")
+    security = File.read!("SECURITY.md")
+    contributing = File.read!("CONTRIBUTING.md")
+
+    assert readme =~ "Milestones 1–5 are active"
+    assert readme =~ ~r/complete JSON binary.*encoded document is already\s+resident in memory/s
+    assert readme =~ "does not incrementally read JSON from a file"
+    assert readme =~ "45,666,793-byte million-row fixture"
+    assert readme =~ "pool operations guide"
+    assert readme =~ "telemetry runbook"
+    assert readme =~ "decode acceptance record"
+
+    assert changelog =~ "## 0.1.0"
+    assert changelog =~ "### Known limitations"
+    assert changelog =~ "no precompiled native artifacts"
+    assert changelog =~ "one-million-row fixture"
+    assert changelog =~ "A full queue returns `:busy`"
+
+    assert security =~ "Only the newest published patch in the `0.1.x` series"
+    assert security =~ "pcharbon70@gmail.com"
+    assert security =~ "Do not open a public issue"
+
+    assert contributing =~ "mix format --check-formatted"
+    assert contributing =~ "mix test"
+    assert contributing =~ "mix spec.next"
+    assert contributing =~ "mix spec.check --base origin/main"
   end
 end

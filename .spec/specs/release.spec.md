@@ -13,6 +13,11 @@ decode/select/stream smoke workflows, the exact supported versus experimental
 boundary, source-native prerequisite and offline-vendor behavior, cache and
 compile-time expectations, and diagnostic recovery commands. It states
 explicitly that the first release contains no precompiled NIF.
+Section 3.3 reconciles README memory, compatibility, operations, saturation,
+telemetry, and acceptance links; publishes complete 0.1.0 release notes and
+known limits; selects private email reporting and newest-patch-only security
+support; and documents the contributor bootstrap, test, SpecLed, and native
+qualification workflow.
 Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
 test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
 closes the reproduced pool-retirement, stale-baseline, and collected-request
@@ -35,6 +40,9 @@ surface:
   - LICENSE
   - THIRD_PARTY_NOTICES.md
   - README.md
+  - CHANGELOG.md
+  - SECURITY.md
+  - CONTRIBUTING.md
   - docs/releases/*.md
   - .github/workflows/*.yml
   - test/release/*.exs

@@ -81,3 +81,10 @@ Only Zigler and telemetry enter consumer dependency resolution; Jason and the
 commit-pinned SpecLed tool remain development/test-only. The declared Elixir
 requirement stays within the qualified 1.18 release line until another runtime
 matrix is accepted.
+
+Private vulnerability reports go to `pcharbon70@gmail.com`; suspected security
+issues must not be disclosed first through a public issue or pull request. Only
+the newest published patch in the 0.1 series receives security fixes, so a fix
+may require upgrading. Public release notes enumerate the first version's
+supported surface, qualification, and known limitations rather than implying
+compatibility beyond the accepted target and APIs.

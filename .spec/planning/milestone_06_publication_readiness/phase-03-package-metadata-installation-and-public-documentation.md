@@ -31,15 +31,15 @@ Back to plan: [README](./README.md)
 
 ## 3.3 Section — Public Contract, Limits, and Release Notes
 
-- [ ] 3.3 Section - Reconcile every public-facing claim with accepted behavior.
-  - [ ] 3.3.1 Task - Correct and consolidate README guidance.
-    - [ ] 3.3.1.1 Subtask - Mark Milestones 1–5 active on the qualified target.
-    - [ ] 3.3.1.2 Subtask - Explain encoded-input retention versus avoided decoded-tree materialization.
-    - [ ] 3.3.1.3 Subtask - Link operations, compatibility, saturation, telemetry, and acceptance records.
-  - [ ] 3.3.2 Task - Add release communication files.
-    - [ ] 3.3.2.1 Subtask - Add `CHANGELOG.md` with a complete `0.1.0` entry and explicit known limitations.
-    - [ ] 3.3.2.2 Subtask - Add `SECURITY.md` with private reporting and supported-version policy chosen by the owner.
-    - [ ] 3.3.2.3 Subtask - Add concise contributing/test instructions or link an existing authoritative guide.
+- [x] 3.3 Section - Reconcile every public-facing claim with accepted behavior.
+  - [x] 3.3.1 Task - Correct and consolidate README guidance.
+    - [x] 3.3.1.1 Subtask - Mark Milestones 1–5 active on the qualified target.
+    - [x] 3.3.1.2 Subtask - Explain encoded-input retention versus avoided decoded-tree materialization.
+    - [x] 3.3.1.3 Subtask - Link operations, compatibility, saturation, telemetry, and acceptance records.
+  - [x] 3.3.2 Task - Add release communication files.
+    - [x] 3.3.2.1 Subtask - Add `CHANGELOG.md` with a complete `0.1.0` entry and explicit known limitations.
+    - [x] 3.3.2.2 Subtask - Add `SECURITY.md` with private reporting and supported-version policy chosen by the owner.
+    - [x] 3.3.2.3 Subtask - Add concise contributing/test instructions or link an existing authoritative guide.
 
 ## 3.4 Section — Archive Inventory and Documentation Proof
 

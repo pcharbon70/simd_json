@@ -106,6 +106,9 @@ defmodule SimdJson.MixProject do
       extras:
         [
           {"README.md", filename: "readme", title: "Overview"},
+          {"CHANGELOG.md", filename: "changelog", title: "Changelog"},
+          {"SECURITY.md", filename: "security", title: "Security"},
+          {"CONTRIBUTING.md", filename: "contributing", title: "Contributing"},
           {"LICENSE", filename: "license", title: "License"},
           {"THIRD_PARTY_NOTICES.md",
            filename: "third-party-notices", title: "Third-Party Notices"},
@@ -119,6 +122,7 @@ defmodule SimdJson.MixProject do
         "Acceptance records": @acceptance_records,
         "Release notes": ["CHANGELOG.md"],
         Security: ["SECURITY.md"],
+        Contributing: ["CONTRIBUTING.md"],
         "Release policies": @release_guides
       ]
     ]

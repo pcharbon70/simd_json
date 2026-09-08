@@ -12,6 +12,12 @@ build guide. It binds the `~> 0.1.0` dependency tuple and smoke workflows to the
 qualified BEAM, Zig/Zigler, C++17, glibc, simdjson, CPU-dispatch, cache,
 offline-source, troubleshooting, and no-precompiled-NIF contract.
 
+Milestone 6 Phase 3 Section 3.3 packages complete 0.1.0 release notes, private
+security reporting and supported-version policy, and contributor/test
+instructions. README now consolidates accepted memory semantics, compatibility,
+operations, saturation, telemetry, and qualification links without broadening
+the runtime surface.
+
 Milestone 6 Phase 2 Section 2.4 packages the cold/restored CI matrix and its
 required-check policy. Both jobs bind cache mode and hit state to the same
 revision, tree, and qualification identity; branch-protection mutation remains
