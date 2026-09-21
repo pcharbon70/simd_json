@@ -37,7 +37,9 @@ permit republishing unreviewed bytes.
 | Incident | Inside current revert window | Outside the window |
 | --- | --- | --- |
 | Missing or broken docs only | Correct and republish docs after verifying the package archive is unchanged. | Republish docs; their correction is not constrained by the package revert window. |
-| Native compilation failure on the supported target | Revert the exact version unless a fully qualified replacement is ready and explicitly approved. | Publish a qualified patch; retire the broken version as `invalid` when users must be warned. |
+| Precompiled NIF asset missing or download unavailable | Stop Hex publication if it has not happened. If Hex is public, restore only the originally approved bytes and digest when possible; otherwise revert the exact Hex version. | Publish a newly qualified patch and retire the broken version as `invalid` when users must be warned. |
+| Precompiled NIF asset replaced or checksum mismatch | Preserve both observed bytes and metadata, stop promotion, and treat replacement as a release-integrity incident. Never change the package checksum to bless replacement bytes. | Retire the version, publish a newly qualified patch, and investigate as a security incident. |
+| Explicit source-build failure on the supported target | Do not use it as an automatic consumer fallback; repair and requalify the artifact pipeline. | Publish a qualified patch if the documented audit path must be restored. |
 | Public checksum differs from the approved archive | Stop promotion, preserve evidence, and revert the exact version while investigating. | Retire the version, publish a newly qualified patch, and treat unexplained alteration as a security incident. |
 | Publication credential or packaged secret exposed | Revoke/rotate the credential first, preserve evidence, assess access, and revert if the package is affected. | Revoke/rotate first, open a private advisory, retire as `security` when needed, and publish a qualified patch. |
 | Compatible non-critical defect | Prefer a qualified patch if leaving the version available is safe. | Publish a qualified patch; retire only when continued use should be discouraged. |
@@ -70,7 +72,8 @@ mix hex.retire simd_json "$VERSION" invalid --message '<reviewed message>'
 # Revoke a specifically identified compromised key before other remediation.
 mix hex.user key revoke KEY_NAME
 
-# Correct the matching GitHub release metadata or remove the release object.
+# Correct release metadata, or remove an unpublished/broken release object.
+# Never replace an asset in place after Hex references its committed digest.
 gh release edit "$TAG" --notes-file '<reviewed-notes-file>'
 gh release delete "$TAG"
 ```
@@ -95,7 +98,9 @@ bash scripts/release/rehearse_recovery.sh
 
 The rehearsal creates only temporary synthetic evidence. It proves that the
 candidate verifier rejects missing documentation, a failed native compilation,
-an archive checksum mismatch, and a secret-scan match. It also verifies that
-the owner contact, credential-revocation, private-advisory, and GitHub release
-correction paths are recorded. It never contacts Hex or GitHub and never
-publishes, replaces, reverts, retires, or deletes a real release.
+an archive checksum mismatch, a secret-scan match, a missing precompiled asset,
+replacement bytes, a mismatched recorded asset digest, and a simulated download
+failure. It also verifies that the owner contact, credential-revocation,
+private-advisory, and GitHub release correction paths are recorded. It never
+contacts Hex or GitHub and never publishes, replaces, reverts, retires, or
+deletes a real release.

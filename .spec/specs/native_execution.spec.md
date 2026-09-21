@@ -1,5 +1,10 @@
 # Native Execution
 
+Milestone 6 Phase 5 makes the qualified native execution path available to
+supported consumers through a checksummed precompiled NIF. It introduces no
+fallback executor: verification or loading failure stops compilation, while an
+explicit source build retains the existing Zigler qualification route.
+
 Milestone 6 Phase 2 gives concurrent decode scheduler qualification a
 120-second operation budget inside a 150-second ExUnit envelope. Constrained
 clean runners can therefore reach the declared operation bound without the

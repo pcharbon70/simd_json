@@ -6,13 +6,13 @@ repair, public package documentation, release tooling, exact-candidate
 qualification, explicit authorization, publication, and external verification.
 Phase 3 Section 3.1 adds explicit Hex identity, maintainer and public links,
 tag-bound ExDoc source metadata, documentation groups, and executable proof
-that only the two required production Hex dependencies enter consumer
-resolution under the qualified Elixir requirement.
+that telemetry is the required runtime dependency while Zigler is an optional
+source-build dependency under the qualified Elixir requirement.
 Section 3.2 adds a copyable dependency and compilation sequence, executable
 decode/select/stream smoke workflows, the exact supported versus experimental
-boundary, source-native prerequisite and offline-vendor behavior, cache and
-compile-time expectations, and diagnostic recovery commands. It states
-explicitly that the first release contains no precompiled NIF.
+boundary, precompiled and optional source-native behavior, cache and download
+expectations, and diagnostic recovery commands. Phase 5 supersedes its earlier
+source-only delivery decision.
 Section 3.3 reconciles README memory, compatibility, operations, saturation,
 telemetry, and acceptance links; publishes complete 0.1.0 release notes and
 known limits; selects private email reporting and newest-patch-only security
@@ -50,6 +50,10 @@ consumers. It keeps Zigler as an optional audit/source-build dependency, binds
 one release asset to version, target, and SHA-256, and loads the existing NIF
 entry table without Zig or generated native files in the Hex archive. Missing,
 unsupported, corrupt, or replaced artifacts fail before native loading.
+The release-safe artifact is reproduced from two isolated builds, its runtime
+dependencies and sole exported symbol are checked, and a packaged consumer
+executes without Zig. GitHub must serve those exact approved bytes before Hex
+publication because consumer compilation depends on the release asset.
 Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
 test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
 closes the reproduced pool-retirement, stale-baseline, and collected-request
@@ -89,7 +93,7 @@ surface:
 decisions:
   - simd_json.public_hex_release_contract
 bootstrap:
-  reason: Phase 1 freezes release identity, licensing, support, and authorization boundaries; CI repair, public documentation, tooling, candidate qualification, publication, and post-publish verification remain in Phases 2 through 6.
+  reason: Phase 1 freezes release identity, licensing, support, and authorization boundaries; CI repair, public documentation, tooling, precompiled delivery, candidate qualification, publication, and post-publish verification remain in Phases 2 through 7.
   requirements:
     - simd_json.release.public_identity
     - simd_json.release.project_license
@@ -135,7 +139,7 @@ bootstrap:
   stability: evolving
 
 - id: simd_json.release.consumer_documentation
-  statement: README and HexDocs shall provide accurate installation, source-build prerequisites, supported environments, public API behavior, limits, security contact, changelog, and troubleshooting guidance.
+  statement: README and HexDocs shall provide accurate precompiled installation, optional source-build prerequisites, supported environments, public API behavior, limits, security contact, changelog, and troubleshooting guidance.
   priority: must
   stability: evolving
 

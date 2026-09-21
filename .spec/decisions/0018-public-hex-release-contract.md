@@ -90,7 +90,9 @@ package metadata names MIT for this wrapper and the archive ships all three
 license texts plus a third-party notice.
 
 The sole supported first-release target is Ubuntu 24.04 x86-64 with glibc
-2.39, OTP 27.3, Elixir 1.18.4, Zig/Zigler 0.16.0, and vendored simdjson 4.6.9.
+2.39, OTP 27.3, Elixir 1.18.4, and vendored simdjson 4.6.9. Ordinary consumers
+receive a versioned, SHA-256-pinned GitHub release NIF and do not install Zig
+or Zigler. Reproducing that asset uses optional Zigler 0.16.0 and Zig 0.16.0.
 Every other target is experimental or unsupported until it passes the same
 archive, ABI, sanitizer, lifecycle, scheduler, large-input, documentation, and
 consumer-install matrix. Public operations receive a complete resident binary;
@@ -112,8 +114,9 @@ Hex metadata names Pascal Charbonneau as maintainer and links the public source,
 homepage, issue tracker, and HexDocs pages. ExDoc source links bind to the
 matching `v0.1.0` release tag and group milestone guides, operations guides,
 acceptance records, release notes, security guidance, and release policies.
-Only Zigler and telemetry enter consumer dependency resolution; Jason and the
-commit-pinned SpecLed tool remain development/test-only. The declared Elixir
+Telemetry enters ordinary consumer resolution; Zigler is optional and enters
+only the explicit source-build path. Jason and the commit-pinned SpecLed tool
+remain development/test-only. The declared Elixir
 requirement stays within the qualified 1.18 release line until another runtime
 matrix is accepted.
 

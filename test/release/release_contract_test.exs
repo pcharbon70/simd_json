@@ -44,8 +44,9 @@ defmodule SimdJson.ReleaseContractTest do
     assert support =~ "`x86_64-linux-gnu`"
     assert support =~ "OTP 27.3"
     assert support =~ "| Elixir | 1.18.4 |"
-    assert support =~ "| Zig | 0.16.0 |"
-    assert support =~ "not precompiled NIF binaries"
+    assert support =~ "| Source-build Zig | 0.16.0; maintainer/audit path only |"
+    assert support =~ "checksummed precompiled NIF"
+    assert support =~ "Ordinary consumers need neither Zig nor Zigler"
     assert support =~ ~r/encoded source is\s+therefore already resident in memory/
     assert support =~ "avoid constructing a complete decoded BEAM tree"
     assert support =~ "experimental or unsupported"

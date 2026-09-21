@@ -1,5 +1,10 @@
 # Stream Execution and Lifecycle
 
+Milestone 6 Phase 5 ships the qualified lazy streaming engine in the supported
+checksummed precompiled NIF. Consumer qualification exercises streaming
+without Zig or Zigler dependencies, while demand, bounds, cancellation,
+ownership, and cleanup continue through the single existing native path.
+
 Milestone 6 Phase 2 closes an order-sensitive test baseline by collecting the
 coordinator and awaiting zero operation/input gauges before stream-option
 construction. No stream job, cursor, or batching behavior changes.

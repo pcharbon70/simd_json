@@ -1,5 +1,10 @@
 # Native Worker Pool and Admission
 
+Milestone 6 Phase 5 packages the qualified pool implementation in the
+supported precompiled NIF. Artifact selection and checksum verification occur
+before loading and do not change capacity, admission, cancellation, telemetry,
+delivery, or shutdown behavior.
+
 Milestone 6 Phase 3 Section 3.1 publishes the existing worker-pool operations
 guide through grouped, release-tag-linked HexDocs. It changes no capacity,
 admission, cancellation, telemetry, delivery, or shutdown behavior.

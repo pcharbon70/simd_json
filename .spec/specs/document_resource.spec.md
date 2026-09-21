@@ -1,5 +1,10 @@
 # Document Resource
 
+Milestone 6 Phase 5 delivers the same qualified resource implementation in a
+checksummed precompiled NIF. The loader verifies the artifact before loading,
+so precompiled delivery adds no alternate ownership or cleanup path and fails
+closed before a document resource exists.
+
 Milestone 6 Phase 3 Section 3.1 exposes the existing ownership and acceptance
 guides through grouped, version-linked HexDocs. It changes no resource layout,
 input retention, owner check, lifecycle transition, or cleanup path.

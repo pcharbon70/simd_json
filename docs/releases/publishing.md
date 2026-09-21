@@ -11,7 +11,7 @@ the intended public `hexpm` repository, package name, confirmed publisher,
 recovery owner and private recovery contact, and selected execution model. On
 2026-09-08, the read-only `mix hex.user whoami` check confirmed the intended
 publisher as `pcharbon70`. The same account is the pre-publication recovery
-owner of record and its recovery contact matches `SECURITY.md`; Phase 6 must
+owner of record and its recovery contact matches `SECURITY.md`; Phase 7 must
 verify public package ownership immediately after the first publication.
 
 Run the read-only identity check without any publication key in the process:
@@ -31,7 +31,11 @@ keys and does not inspect shell history.
 The publishing maintainer must review one exact version, commit, tree, tag,
 candidate SHA-256 digest, destination (`hexpm`), and proposed publication
 command. Phase 6 requires a new explicit authorization naming all of those
-values. Authentication occurs through Hex's interactive credential handling;
+values, including the precompiled asset digest. Phase 7 first creates the exact
+tag and GitHub release, uploads the checksummed NIF asset, and verifies its
+public download. Hex publication is forbidden until that immutable dependency
+of consumer compilation is available. Authentication occurs through Hex's
+interactive credential handling;
 credentials must never appear in command arguments, terminal transcripts,
 logs, artifacts, shell history, repository files, pull-request data, or
 AI-visible output.

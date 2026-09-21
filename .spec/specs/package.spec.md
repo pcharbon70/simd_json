@@ -19,17 +19,23 @@ preflight tooling and packages its consumer-visible operating guide. The
 command proves synchronized source and release identity, composes existing
 gates, and emits bounded evidence without expanding the runtime archive.
 
+Milestone 6 Phase 5 delivers a checksum-pinned precompiled NIF for the one
+qualified target while retaining native sources and optional Zigler metadata
+for maintainer reproduction. Generated binaries remain outside the Hex archive.
+
 Milestone 6 Phase 3 Section 3.1 publishes explicit Hex package, maintainer,
 license, source, homepage, issue, and documentation identity. ExDoc source
 links target the matching version tag and separate milestone, operations,
 acceptance, release-note, security, and release-policy pages. Package metadata
-continues to expose only Zigler and telemetry to consumer resolution; Jason and
-the commit-pinned SpecLed tooling remain development/test-only.
+exposes telemetry as a runtime dependency and Zigler as an optional
+source-build dependency; Jason and the commit-pinned SpecLed tooling remain
+development/test-only.
 
 Milestone 6 Phase 3 Section 3.2 packages the consumer installation and native
 build guide. It binds the `~> 0.1.0` dependency tuple and smoke workflows to the
-qualified BEAM, Zig/Zigler, C++17, glibc, simdjson, CPU-dispatch, cache,
-offline-source, troubleshooting, and no-precompiled-NIF contract.
+qualified BEAM, precompiled NIF, optional Zig/Zigler source-build, C++17,
+glibc, simdjson, CPU-dispatch, cache, offline-asset, and troubleshooting
+contract.
 
 Milestone 6 Phase 3 Section 3.3 packages complete 0.1.0 release notes, private
 security reporting and supported-version policy, and contributor/test
@@ -215,7 +221,7 @@ surface:
   stability: evolving
 
 - id: simd_json.package.native_build_tooling
-  statement: The Mix project shall pin Zigler as a compile-time-only dependency and shall record compatible BEAM, Zig, C++, simdjson, build-profile, and target inputs in the repository native manifest.
+  statement: The Mix project shall pin Zigler as an optional compile-time-only source-build dependency and shall record compatible BEAM, Zig, C++, simdjson, build-profile, and target inputs in the repository native manifest.
   priority: must
   stability: evolving
 

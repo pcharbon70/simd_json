@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 5 Phase - Deliver the qualified production NIF without requiring Zig on
+- [x] 5 Phase - Deliver the qualified production NIF without requiring Zig on
   supported consumer machines while retaining an explicit source-build path.
 
 ## 5.1 Section — Artifact and Loader Contract
@@ -40,11 +40,11 @@ Back to plan: [README](./README.md)
 
 ## 5.4 Section — Publication Flow and Documentation Reconciliation
 
-- [ ] 5.4 Section - Make artifact ordering and user guidance accurate.
-  - [ ] 5.4.1 Task - Document supported installation and fallback behavior.
-    - [ ] 5.4.1.1 Subtask - Make ordinary supported-target installation require no Zig compiler while documenting network, cache, checksum, and source-build behavior.
-    - [ ] 5.4.1.2 Subtask - Keep unsupported targets experimental or rejected rather than silently compiling unqualified native code.
-  - [ ] 5.4.2 Task - Reconcile release ordering and recovery.
-    - [ ] 5.4.2.1 Subtask - Require the checksummed GitHub release asset to exist before Hex publication because consumer compilation downloads that immutable asset.
-    - [ ] 5.4.2.2 Subtask - Verify asset deletion, replacement, checksum mismatch, and download failure recovery paths without external mutation.
-    - [ ] 5.4.2.3 Subtask - Renumber candidate qualification and publication as Phases 6 and 7 and reconcile specifications, fingerprints, package inventory, and phase links.
+- [x] 5.4 Section - Make artifact ordering and user guidance accurate.
+  - [x] 5.4.1 Task - Document supported installation and fallback behavior.
+    - [x] 5.4.1.1 Subtask - Make ordinary supported-target installation require no Zig compiler while documenting network, cache, checksum, and source-build behavior.
+    - [x] 5.4.1.2 Subtask - Keep unsupported targets experimental or rejected rather than silently compiling unqualified native code.
+  - [x] 5.4.2 Task - Reconcile release ordering and recovery.
+    - [x] 5.4.2.1 Subtask - Require the checksummed GitHub release asset to exist before Hex publication because consumer compilation downloads that immutable asset.
+    - [x] 5.4.2.2 Subtask - Verify asset deletion, replacement, checksum mismatch, and download failure recovery paths without external mutation.
+    - [x] 5.4.2.3 Subtask - Renumber candidate qualification and publication as Phases 6 and 7 and reconcile specifications, fingerprints, package inventory, and phase links.

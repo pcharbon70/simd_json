@@ -82,4 +82,28 @@ defmodule SimdJson.PrecompiledDeliveryContractTest do
                stderr_to_stdout: true
              )
   end
+
+  # covers: simd_json.release.precompiled_delivery simd_json.release.recovery_readiness
+  test "documents asset-first publication and closes Phase 5" do
+    readme = File.read!("README.md")
+    installation = File.read!("docs/releases/installation.md")
+    publishing = File.read!("docs/releases/publishing.md")
+
+    phase_seven =
+      File.read!(
+        ".spec/planning/milestone_06_publication_readiness/phase-07-version-tag-publish-and-post-publish-verification.md"
+      )
+
+    phase = File.read!(@phase)
+    [_, section] = String.split(phase, "## 5.4 Section", parts: 2)
+
+    assert readme =~ "Ordinary package consumers do not need Zig"
+    assert installation =~ "SIMD_JSON_PRECOMPILED_PATH"
+    assert publishing =~ "Hex publication is forbidden until"
+    assert phase_seven =~ "GitHub Release and Precompiled Asset"
+    assert phase_seven =~ "before Hex"
+    refute section =~ "- [ ]"
+    assert section =~ "- [x] 5.4 Section"
+    assert phase =~ "- [x] 5 Phase"
+  end
 end

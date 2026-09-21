@@ -1,5 +1,10 @@
 # Document API and Errors
 
+Milestone 6 Phase 5 packages the qualified document implementation as a
+checksummed precompiled NIF for the supported target. Loading that artifact
+changes no `open/1`, `close/1`, ownership, opacity, or error behavior; a
+missing, mismatched, or unloadable artifact fails before the API can run.
+
 Milestone 6 Phase 3 Section 3.1 groups the existing public milestone and
 acceptance guides in HexDocs with version-tag source links. It changes no
 document operation, ownership rule, error translation, or public function.
