@@ -271,7 +271,7 @@ defmodule SimdJson.Native.BuildGuard do
   end
 
   defp zig_version! do
-    zig = Zig.Command.executable_path()
+    zig = zig_executable_path!()
 
     case System.cmd(zig, ["version"], stderr_to_stdout: true) do
       {version, 0} -> String.trim(version)
@@ -280,7 +280,7 @@ defmodule SimdJson.Native.BuildGuard do
   end
 
   defp cxx_version! do
-    zig = Zig.Command.executable_path()
+    zig = zig_executable_path!()
 
     case System.cmd(zig, ["c++", "--version"], stderr_to_stdout: true) do
       {output, 0} ->
@@ -292,6 +292,10 @@ defmodule SimdJson.Native.BuildGuard do
       {output, status} ->
         fail!("cannot query the Zig-bundled C++ compiler (#{status}): #{String.trim(output)}")
     end
+  end
+
+  defp zig_executable_path! do
+    apply(Module.concat([Zig, Command]), :executable_path, [])
   end
 
   defp otp_version do

@@ -1,5 +1,5 @@
 defmodule SimdJson.MixProject do
-  # covers: simd_json.package.mix_library simd_json.package.specled_tooling simd_json.package.native_build_tooling simd_json.package.native_source_distribution simd_json.native_build_and_abi.pinned_toolchain simd_json.release.public_identity simd_json.release.project_license simd_json.release.consumer_documentation
+  # covers: simd_json.package.mix_library simd_json.package.specled_tooling simd_json.package.native_build_tooling simd_json.package.native_source_distribution simd_json.native_build_and_abi.pinned_toolchain simd_json.release.public_identity simd_json.release.project_license simd_json.release.consumer_documentation simd_json.release.precompiled_delivery
   use Mix.Project
 
   @version "0.1.0"
@@ -56,13 +56,13 @@ defmodule SimdJson.MixProject do
   def application do
     [
       mod: {SimdJson.Application, []},
-      extra_applications: [:logger]
+      extra_applications: [:crypto, :inets, :logger, :public_key, :ssl]
     ]
   end
 
   defp deps do
     [
-      {:zigler, "== 0.16.0", runtime: false},
+      {:zigler, "== 0.16.0", runtime: false, optional: true},
       {:telemetry, "~> 1.3"},
       {:jason, "== 1.4.5", only: [:dev, :test], runtime: false},
       {:spec_led_ex,
@@ -99,6 +99,7 @@ defmodule SimdJson.MixProject do
         "native/README.md",
         "native/manifest.exs",
         "native/qualification/milestone_1.exs",
+        "native/precompiled",
         "native/include",
         "native/src",
         "native/symbols",

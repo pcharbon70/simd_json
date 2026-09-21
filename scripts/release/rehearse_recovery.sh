@@ -44,8 +44,19 @@ write_checksums() {
 baseline="${scratch_root}/baseline"
 mkdir -p "${baseline}"
 printf 'synthetic candidate archive\n' >"${baseline}/simd_json-0.1.0.tar"
+printf 'synthetic precompiled NIF\n' >"${baseline}/simd_json-v0.1.0-x86_64-linux-gnu.so"
 printf 'index.html\nSimdJson.html\n' >"${baseline}/documentation-contents.txt"
 printf 'status=passed\n' >"${baseline}/native-compile.status"
+{
+  printf 'asset=simd_json-v0.1.0-x86_64-linux-gnu.so\n'
+  printf 'asset_sha256=%s\n' \
+    "$(sha256sum "${baseline}/simd_json-v0.1.0-x86_64-linux-gnu.so" | cut -d ' ' -f 1)"
+} >"${baseline}/precompiled-provenance.env"
+{
+  printf 'status=passed\n'
+  printf 'zig_free_consumer=passed\n'
+  printf 'download_failure_handling=passed\n'
+} >"${baseline}/precompiled-consumer.status"
 printf 'hex_dry_run=passed\nprivate_key=clear\n' >"${baseline}/secret-scan.txt"
 {
   printf 'source_state=clean\n'
@@ -88,6 +99,33 @@ cp -a "${baseline}" "${leaked_secret}"
 printf 'private_key=matched\n' >>"${leaked_secret}/secret-scan.txt"
 write_checksums "${leaked_secret}"
 expect_failure leaked_secret "${leaked_secret}"
+
+missing_precompiled_asset="${scratch_root}/missing-precompiled-asset"
+cp -a "${baseline}" "${missing_precompiled_asset}"
+rm -f -- "${missing_precompiled_asset}/simd_json-v0.1.0-x86_64-linux-gnu.so"
+write_checksums "${missing_precompiled_asset}"
+expect_failure missing_precompiled_asset "${missing_precompiled_asset}"
+
+replaced_precompiled_asset="${scratch_root}/replaced-precompiled-asset"
+cp -a "${baseline}" "${replaced_precompiled_asset}"
+printf 'replacement bytes\n' \
+  >"${replaced_precompiled_asset}/simd_json-v0.1.0-x86_64-linux-gnu.so"
+write_checksums "${replaced_precompiled_asset}"
+expect_failure replaced_precompiled_asset "${replaced_precompiled_asset}"
+
+precompiled_checksum_mismatch="${scratch_root}/precompiled-checksum-mismatch"
+cp -a "${baseline}" "${precompiled_checksum_mismatch}"
+sed -i 's/^asset_sha256=.*/asset_sha256=0000000000000000000000000000000000000000000000000000000000000000/' \
+  "${precompiled_checksum_mismatch}/precompiled-provenance.env"
+write_checksums "${precompiled_checksum_mismatch}"
+expect_failure precompiled_checksum_mismatch "${precompiled_checksum_mismatch}"
+
+precompiled_download_failure="${scratch_root}/precompiled-download-failure"
+cp -a "${baseline}" "${precompiled_download_failure}"
+sed -i 's/^download_failure_handling=passed$/download_failure_handling=failed/' \
+  "${precompiled_download_failure}/precompiled-consumer.status"
+write_checksums "${precompiled_download_failure}"
+expect_failure precompiled_download_failure "${precompiled_download_failure}"
 
 grep -Fq 'recovery_owner=pcharbon70' release/publisher-policy.env
 grep -Fq 'pcharbon70@gmail.com' SECURITY.md

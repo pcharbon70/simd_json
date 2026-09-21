@@ -1,18 +1,18 @@
 # First Public Hex Release
 
 Current-truth contract for preparing and publishing the first public release.
-Milestone 6 Phase 1 freezes identity, licensing, and support; Phases 2–6 own CI
+Milestone 6 Phase 1 freezes identity, licensing, and support; Phases 2–7 own CI
 repair, public package documentation, release tooling, exact-candidate
 qualification, explicit authorization, publication, and external verification.
 Phase 3 Section 3.1 adds explicit Hex identity, maintainer and public links,
 tag-bound ExDoc source metadata, documentation groups, and executable proof
-that only the two required production Hex dependencies enter consumer
-resolution under the qualified Elixir requirement.
+that telemetry is the required runtime dependency while Zigler is an optional
+source-build dependency under the qualified Elixir requirement.
 Section 3.2 adds a copyable dependency and compilation sequence, executable
 decode/select/stream smoke workflows, the exact supported versus experimental
-boundary, source-native prerequisite and offline-vendor behavior, cache and
-compile-time expectations, and diagnostic recovery commands. It states
-explicitly that the first release contains no precompiled NIF.
+boundary, precompiled and optional source-native behavior, cache and download
+expectations, and diagnostic recovery commands. Phase 5 supersedes its earlier
+source-only delivery decision.
 Section 3.3 reconciles README memory, compatibility, operations, saturation,
 telemetry, and acceptance links; publishes complete 0.1.0 release notes and
 known limits; selects private email reporting and newest-patch-only security
@@ -45,6 +45,15 @@ assigns revert, patch, retirement, credential, advisory, and GitHub correction
 decisions, and adds a non-mutating rehearsal. Synthetic evidence proves
 missing docs, broken native compilation, checksum corruption, and secret
 matches all fail closed before any external release action.
+Phase 5 supersedes the earlier source-only installation decision for supported
+consumers. It keeps Zigler as an optional audit/source-build dependency, binds
+one release asset to version, target, and SHA-256, and loads the existing NIF
+entry table without Zig or generated native files in the Hex archive. Missing,
+unsupported, corrupt, or replaced artifacts fail before native loading.
+The release-safe artifact is reproduced from two isolated builds, its runtime
+dependencies and sole exported symbol are checked, and a packaged consumer
+executes without Zig. GitHub must serve those exact approved bytes before Hex
+publication because consumer compilation depends on the release asset.
 Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
 test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
 closes the reproduced pool-retirement, stale-baseline, and collected-request
@@ -84,7 +93,7 @@ surface:
 decisions:
   - simd_json.public_hex_release_contract
 bootstrap:
-  reason: Phase 1 freezes release identity, licensing, support, and authorization boundaries; CI repair, public documentation, tooling, candidate qualification, publication, and post-publish verification remain in Phases 2 through 6.
+  reason: Phase 1 freezes release identity, licensing, support, and authorization boundaries; CI repair, public documentation, tooling, precompiled delivery, candidate qualification, publication, and post-publish verification remain in Phases 2 through 7.
   requirements:
     - simd_json.release.public_identity
     - simd_json.release.project_license
@@ -98,6 +107,7 @@ bootstrap:
     - simd_json.release.read_only_preflight
     - simd_json.release.publisher_boundary
     - simd_json.release.recovery_readiness
+    - simd_json.release.precompiled_delivery
 ```
 
 ## Requirements
@@ -129,7 +139,7 @@ bootstrap:
   stability: evolving
 
 - id: simd_json.release.consumer_documentation
-  statement: README and HexDocs shall provide accurate installation, source-build prerequisites, supported environments, public API behavior, limits, security contact, changelog, and troubleshooting guidance.
+  statement: README and HexDocs shall provide accurate precompiled installation, optional source-build prerequisites, supported environments, public API behavior, limits, security contact, changelog, and troubleshooting guidance.
   priority: must
   stability: evolving
 
@@ -160,6 +170,11 @@ bootstrap:
 
 - id: simd_json.release.recovery_readiness
   statement: A dated runbook shall require current Hex-window reverification, assign authority for revert, patch, retirement, credential, advisory, and GitHub correction choices, and rehearse all evidence-failure paths without mutating a real release.
+  priority: must
+  stability: evolving
+
+- id: simd_json.release.precompiled_delivery
+  statement: Supported package consumers shall obtain one immutable target-specific production NIF whose SHA-256 digest is committed and verified before loading, without requiring Zig or Zigler, while maintainers retain an explicit qualified source-build path.
   priority: must
   stability: evolving
 ```
@@ -281,6 +296,19 @@ bootstrap:
   then:
     - Every run exits normally without a VM abort
     - Every run starts and finishes with quiescent native lifecycle gauges
+
+- id: simd_json.release.precompiled_loader_is_fail_closed
+  covers:
+    - simd_json.release.precompiled_delivery
+  given:
+    - A package version, normalized supported target, immutable release asset, and committed SHA-256 digest
+  when:
+    - A consumer compiles the dependency without Zig or Zigler
+  then:
+    - The exact artifact is verified before installation and NIF loading
+    - Decode, select, stream, lifecycle, telemetry, and diagnostics retain their source-built behavior
+    - Missing targets, downloads, digests, or artifacts fail without loading native code
+    - An explicit maintainer override may rebuild from the qualified source inputs
 ```
 
 ## Verification
@@ -356,4 +384,10 @@ bootstrap:
     - simd_json.release.post_publish_verification
     - simd_json.release.candidate_preflight
     - simd_json.release.public_verification
+
+- kind: command
+  target: bash scripts/ci/verify_precompiled_consumer.sh
+  execute: false
+  covers:
+    - simd_json.release.precompiled_delivery
 ```

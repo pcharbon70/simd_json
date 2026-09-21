@@ -1,8 +1,8 @@
 # Release Archive Provenance
 
-Milestone 6 Phase 4 binds the exact Hex archive reviewed for release to one
-committed source tree. This evidence is qualification input, not authorization
-to publish.
+Milestone 6 binds the exact Hex archive and precompiled NIF reviewed for
+release to one committed source tree. This evidence is qualification input,
+not authorization to publish.
 
 ## Build the candidate
 
@@ -36,6 +36,15 @@ the dependency metadata under `deps`. `package-contents.txt`,
 `package-files.normalized.tsv`, and `package-files.sha256` provide the source
 inventory. `SHA256SUMS` covers every retained evidence file, including the
 exact candidate archive.
+
+The precompiled artifact builder independently produces the release-safe NIF
+twice, strips non-runtime sections, and requires byte identity. Its
+`provenance.env` binds the asset name and digest to the source commit and tree,
+Zig and strip versions, target, native fingerprint, dynamic-dependency policy,
+and sole exported symbol. The committed checksum manifest must match that
+candidate. The Hex archive contains this checksum and all source inputs, but no
+generated `.so`; the binary is retained separately as a CI artifact and later
+uploaded unchanged to the matching GitHub release.
 
 The aggregate qualification command places this directory at
 `_build/qualification/release-candidate`. GitHub Actions uploads the enclosing

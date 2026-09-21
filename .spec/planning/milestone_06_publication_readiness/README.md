@@ -11,7 +11,7 @@ visible publish action.
 
 Planning this milestone does not authorize a Hex publication, tag, GitHub
 release, credential change, or branch-protection change. Those actions remain
-explicit gates in Phase 6.
+explicit gates in Phases 6 and 7.
 
 ## Source Authority
 
@@ -44,8 +44,9 @@ explicit gates in Phase 6.
 2. [Phase 2 — Cold-Cache CI Reliability and Merge Gates](./phase-02-cold-cache-ci-reliability-and-merge-gates.md)
 3. [Phase 3 — Package Metadata, Installation, and Public Documentation](./phase-03-package-metadata-installation-and-public-documentation.md)
 4. [Phase 4 — Release Tooling, Provenance, and Recovery](./phase-04-release-tooling-provenance-and-recovery.md)
-5. [Phase 5 — Release-Candidate Qualification and Go/No-Go](./phase-05-release-candidate-qualification-and-go-no-go.md)
-6. [Phase 6 — Version, Tag, Publish, and Post-Publish Verification](./phase-06-version-tag-publish-and-post-publish-verification.md)
+5. [Phase 5 — Precompiled NIF Delivery](./phase-05-precompiled-nif-delivery.md)
+6. [Phase 6 — Release-Candidate Qualification and Go/No-Go](./phase-06-release-candidate-qualification-and-go-no-go.md)
+7. [Phase 7 — Version, Tag, Publish, and Post-Publish Verification](./phase-07-version-tag-publish-and-post-publish-verification.md)
 
 ## Contract Ownership by Phase
 
@@ -55,8 +56,9 @@ explicit gates in Phase 6.
 | 2 | Deterministic clean-cache CI, formatter availability, merge protection, timeouts, and actionable evidence. |
 | 3 | Hex metadata, installation and native prerequisites, supported behavior, memory semantics, changelog, security, and package inventory. |
 | 4 | Read-only release checks, archive provenance, credential boundary, publication workflow, and recovery runbook. |
-| 5 | Exact-archive consumer testing, full target qualification, repeatable CI, release-candidate evidence, and explicit approval. |
-| 6 | Final version/release commit, tag, Hex publication, HexDocs and clean-consumer verification, monitoring, and acceptance. |
+| 5 | Checksummed precompiled NIF selection, reproducible artifacts, Zig-free consumer qualification, and artifact publication ordering. |
+| 6 | Exact-archive consumer testing, full target qualification, repeatable CI, release-candidate evidence, and explicit approval. |
+| 7 | Final version/release commit, tag, native release asset, Hex publication, HexDocs and clean-consumer verification, monitoring, and acceptance. |
 
 ## Shared Conventions
 
@@ -71,7 +73,7 @@ explicit gates in Phase 6.
   lifecycle, large-input, and consumer-install gates.
 - Source JSON is loaded as one binary; select/stream avoid a full decoded BEAM
   tree but do not claim file/socket streaming or zero total-memory input.
-- Publication requires explicit human approval after the Phase 5 go/no-go
+- Publication requires explicit human approval after the Phase 6 go/no-go
   record. A green local run alone is insufficient.
 
 ## Milestone Exit Criteria

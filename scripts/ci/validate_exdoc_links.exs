@@ -10,7 +10,7 @@ defmodule SimdJson.ValidateExDocLinks do
     "contributing.html" => "Before opening a pull request",
     "license.html" => "MIT License",
     "third-party-notices.html" => "simdjson 4.6.9",
-    "installation.html" => "Installation and Native Build",
+    "installation.html" => "Installation and Native Delivery",
     "support.html" => "Input and memory boundary"
   }
 

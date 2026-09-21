@@ -1,0 +1,51 @@
+name: Precompiled NIF candidate
+
+# covers: simd_json.release.precompiled_delivery simd_json.release.provenance
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  linux-x86_64:
+    name: Linux x86_64 artifact and Zig-free consumer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      MIX_ENV: test
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Install the qualified BEAM toolchain
+        uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1
+        with:
+          otp-version: "27.3"
+          elixir-version: "1.18.4"
+
+      - name: Install dependencies and the qualified Zig compiler
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+          mix deps.get
+          mix zig.get --version 0.16.0
+
+      - name: Reproduce and attest the candidate
+        run: bash scripts/release/build_precompiled_nif.sh
+
+      - name: Verify a packaged consumer without Zig
+        run: bash scripts/ci/verify_precompiled_consumer.sh
+
+      - name: Retain the non-publishing candidate and provenance
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: simd-json-precompiled-${{ github.sha }}-x86_64-linux-gnu
+          path: _build/precompiled
+          if-no-files-found: error
+          retention-days: 30

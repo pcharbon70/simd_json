@@ -13,8 +13,9 @@ large-input profiles, and the complete public test suite.
 | ABI and architecture | glibc 2.39, `x86_64-linux-gnu` |
 | BEAM | OTP 27.3 |
 | Elixir | 1.18.4 |
-| Zig | 0.16.0 |
-| Zigler | 0.16.0 |
+| Precompiled NIF | SHA-256-pinned `v0.1.0` GitHub release asset |
+| Source-build Zig | 0.16.0; maintainer/audit path only |
+| Source-build Zigler | 0.16.0; optional and not resolved for ordinary consumers |
 | simdjson | Vendored 4.6.9 |
 | Runtime dispatch | `haswell`, `westmere`, or `fallback` as selected by simdjson |
 
@@ -24,10 +25,10 @@ experimental or unsupported until they pass the same complete qualification.
 In particular, the first release does not claim support for macOS, Windows,
 musl, ARM, or cross-compilation.
 
-The first release ships native source, not precompiled NIF binaries. A consumer
-must satisfy the pinned Zig/Zigler and platform build requirements during Mix
-compilation. The package contains the verified simdjson source needed for an
-offline native build after dependencies and toolchains are available.
+The first release uses a checksummed precompiled NIF on this one target.
+Ordinary consumers need neither Zig nor Zigler. The Hex archive still contains
+the complete verified native and vendored simdjson sources so maintainers can
+reproduce the artifact through the explicit qualified source-build path.
 
 ## Input and memory boundary
 

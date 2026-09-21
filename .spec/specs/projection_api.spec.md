@@ -1,5 +1,10 @@
 # Projection API
 
+Milestone 6 Phase 5 ships the qualified `select/2` implementation in the
+supported checksummed precompiled NIF. Zig-free consumer qualification proves
+the packaged API while preserving its grammar, results, errors, and ownership
+rules; failed artifact verification exposes no partial projection API.
+
 Milestone 6 Phase 2 strengthens million-row proof cleanup by collecting the
 coordinator before comparing native gauges; projection grammar, results, and
 the public `select/2` contract are unchanged.
