@@ -312,6 +312,8 @@ defmodule SimdJson.Native.ProjectionDocumentLifecycleTest do
     snapshot = BuildSmoke.execution_snapshot()
 
     if OperationCoordinator.snapshot().live_requests == 0 and
+         snapshot.live_operations == 0 and snapshot.running_operations == 0 and
+         snapshot.queued_operations == 0 and snapshot.retained_inputs == 0 and
          snapshot.live_projection_operations == 0 and snapshot.live_projection_plans == 0 and
          snapshot.live_projection_slots == 0 and snapshot.live_projection_environments == 0 and
          snapshot.retained_projection_binaries == 0 and
