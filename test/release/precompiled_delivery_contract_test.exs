@@ -53,4 +53,33 @@ defmodule SimdJson.PrecompiledDeliveryContractTest do
                stderr_to_stdout: true
              )
   end
+
+  # covers: simd_json.release.precompiled_delivery simd_json.release.provenance
+  test "defines a Zig-free packaged consumer and non-publishing artifact workflow" do
+    consumer = File.read!("scripts/ci/verify_precompiled_consumer.sh")
+    workflow = File.read!(".github/workflows/precompiled-nif.yml")
+    qualification = File.read!("scripts/ci/qualify_milestone_5.sh")
+
+    assert consumer =~ "ZIG_EXECUTABLE_PATH=/definitely-unavailable/zig"
+    assert consumer =~ "deps.tree"
+    assert consumer =~ "precompiled NIF checksum mismatch"
+    assert consumer =~ "SimdJson.Native.Diagnostics.build()"
+    assert workflow =~ "workflow_dispatch"
+    assert workflow =~ "actions/upload-artifact@"
+    refute workflow =~ "gh release"
+    refute workflow =~ "mix hex.publish"
+    assert qualification =~ "verify_precompiled_consumer.sh"
+
+    phase = File.read!(@phase)
+    [_, rest] = String.split(phase, "## 5.3 Section", parts: 2)
+    section = rest |> String.split("## 5.4 Section", parts: 2) |> hd()
+
+    refute section =~ "- [ ]"
+    assert section =~ "- [x] 5.3 Section"
+
+    assert {_output, 0} =
+             System.cmd("bash", ["-n", "scripts/ci/verify_precompiled_consumer.sh"],
+               stderr_to_stdout: true
+             )
+  end
 end
