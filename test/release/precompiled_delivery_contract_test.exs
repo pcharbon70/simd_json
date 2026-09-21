@@ -40,6 +40,9 @@ defmodule SimdJson.PrecompiledDeliveryContractTest do
     assert builder =~ "build-one"
     assert builder =~ "build-two"
     assert builder =~ "cmp --silent"
+    assert builder =~ "TARGET_ARCH=x86_64"
+    assert builder =~ "TARGET_OS=linux"
+    assert builder =~ "TARGET_ABI=gnu"
     assert builder =~ "ldd"
     assert builder =~ "nm -D --defined-only"
     assert builder =~ "exported_symbols=nif_init"
@@ -61,6 +64,11 @@ defmodule SimdJson.PrecompiledDeliveryContractTest do
     qualification = File.read!("scripts/ci/qualify_milestone_5.sh")
 
     assert consumer =~ "ZIG_EXECUTABLE_PATH=/definitely-unavailable/zig"
+    assert consumer =~ "asdf which mix"
+    assert consumer =~ "asdf where elixir"
+    assert consumer =~ "default_mix_home=\"${HOME}/.mix\""
+    assert consumer =~ "MIX_HOME=\"${mix_home}\""
+    assert consumer =~ "MIX_ARCHIVES=\"${mix_archives}\""
     assert consumer =~ "deps.tree"
     assert consumer =~ "precompiled NIF checksum mismatch"
     assert consumer =~ "SimdJson.Native.Diagnostics.build()"

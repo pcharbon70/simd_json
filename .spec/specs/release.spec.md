@@ -1,5 +1,16 @@
 # First Public Hex Release
 
+Milestone 6 Phase 5 follow-up qualification pins the release builder to generic
+`x86_64-linux-gnu` so cold, restored, and publication runners attest the same
+portable NIF bytes rather than host-specific CPU output.
+The Zig-free consumer harness also selects the setup-beam or asdf Mix archive
+home before isolating PATH, ensuring it can use installed Hex without exposing
+Zig or changing the published package.
+The restored-cache release qualification receives a 60-minute step budget and
+the matrix job a 75-minute budget after the exact portable two-build proof
+reached the former 45-minute step ceiling; both limits remain bounded above
+the observed complete cold-cache duration.
+
 Current-truth contract for preparing and publishing the first public release.
 Milestone 6 Phase 1 freezes identity, licensing, and support; Phases 2–7 own CI
 repair, public package documentation, release tooling, exact-candidate

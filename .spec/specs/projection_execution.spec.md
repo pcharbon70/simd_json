@@ -1,5 +1,10 @@
 # Projection Execution and Lifecycle
 
+Milestone 6 Phase 5 follow-up qualification waits for the shared native
+operation and retained-input gauges as well as projection-specific gauges
+before recording a document projection baseline. This removes a test-only
+cleanup race without changing projection admission or execution behavior.
+
 Milestone 6 Phase 5 packages the same qualified projection engine and bounded
 execution path in a checksummed precompiled NIF. Precompiled loading adds no
 second execution route, and any unavailable, corrupt, or unloadable artifact

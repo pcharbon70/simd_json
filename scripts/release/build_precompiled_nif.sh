@@ -70,6 +70,9 @@ build_one() {
       ZIG_LOCAL_CACHE_DIR="${cache_root}/local" \
       ZIGLER_STAGING_ROOT="${cache_root}/zigler" \
       ZIGLER_RELEASE_MODE=safe \
+      TARGET_ARCH=x86_64 \
+      TARGET_OS=linux \
+      TARGET_ABI=gnu \
       SIMD_JSON_BUILD_FROM_SOURCE=1 \
       mix do deps.compile, compile --force
   )

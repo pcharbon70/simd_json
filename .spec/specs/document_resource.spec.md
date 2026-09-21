@@ -1,5 +1,10 @@
 # Document Resource
 
+Milestone 6 Phase 5 follow-up qualification records fresh-document projection
+baselines only after the opening operation releases its retained input. This
+hardens lifecycle evidence without changing document ownership, retention, or
+cleanup behavior.
+
 Milestone 6 Phase 5 delivers the same qualified resource implementation in a
 checksummed precompiled NIF. The loader verifies the artifact before loading,
 so precompiled delivery adds no alternate ownership or cleanup path and fails

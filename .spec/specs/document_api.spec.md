@@ -1,5 +1,10 @@
 # Document API and Errors
 
+Milestone 6 Phase 5 follow-up qualification waits for shared native operation
+and retained-input gauges before recording the fresh-document projection
+baseline. This is a test-only ordering guarantee and changes no document API,
+ownership, or error behavior.
+
 Milestone 6 Phase 5 packages the qualified document implementation as a
 checksummed precompiled NIF for the supported target. Loading that artifact
 changes no `open/1`, `close/1`, ownership, opacity, or error behavior; a

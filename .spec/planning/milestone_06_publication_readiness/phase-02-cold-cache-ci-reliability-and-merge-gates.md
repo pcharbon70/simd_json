@@ -54,7 +54,7 @@ native control block needed to finish delivery and terminal accounting.
 - [x] 2.3 Section - Make CI suitable as a release gate.
   - [x] 2.3.1 Task - Harden workflow behavior.
     - [x] 2.3.1.1 Subtask - Add workflow concurrency cancellation for superseded PR revisions without cancelling `main` qualification.
-    - [x] 2.3.1.2 Subtask - Add job and expensive-step timeouts above measured clean-run duration.
+    - [x] 2.3.1.2 Subtask - Add a 75-minute job timeout and 60-minute expensive-step timeout above the measured complete cold-run duration and restored-cache portable two-build path.
     - [x] 2.3.1.3 Subtask - Keep actions commit-pinned and permissions read-only outside the future protected release job.
   - [x] 2.3.2 Task - Retain actionable failure evidence.
     - [x] 2.3.2.1 Subtask - Upload partial evidence on every failure and complete checksummed evidence on success.

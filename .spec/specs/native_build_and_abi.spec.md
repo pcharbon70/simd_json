@@ -1,5 +1,10 @@
 # Native Build and ABI
 
+Milestone 6 Phase 5 follow-up qualification pins Zigler's release target to
+generic `x86_64-linux-gnu` instead of inheriting a GitHub runner's native CPU
+features. Independent builders therefore produce one portable checksum while
+preserving ABI v4, runtime dispatch, and the supported-target boundary.
+
 Milestone 6 Phase 5 adds deterministic selection and SHA-256 verification for
 one release-safe NIF on the qualified target. Supported consumers do not need
 Zig or Zigler; maintainers retain an explicit, pinned source-build path. The

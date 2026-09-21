@@ -1,5 +1,9 @@
 # Projection Engine
 
+Milestone 6 Phase 5 follow-up qualification records the document projection
+baseline only after shared native operation and retained-input gauges quiesce.
+The projection engine, traversal, slots, and cleanup ownership are unchanged.
+
 Milestone 6 Phase 2 removes an order-sensitive qualification baseline by
 collecting completed coordinator references before asserting zero engine
 gauges. The guided traversal and allocation contract are unchanged.
