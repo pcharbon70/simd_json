@@ -15,20 +15,20 @@ def deps do
 end
 ```
 
-Fetch the package and its pinned build dependency, install the qualified Zig
-toolchain, and compile the source-built NIF:
+Fetch dependencies and compile:
 
 ```sh
 mix deps.get
-mix zig.get --version 0.16.0
 mix compile
 ```
 
-The first release ships native source rather than a precompiled NIF and is
-supported only on the qualified Ubuntu 24.04 x86-64 environment. Read the
+On the qualified Ubuntu 24.04 x86-64 target, compilation downloads the exact
+versioned NIF from the matching GitHub release and verifies its committed
+SHA-256 digest before loading it. Ordinary package consumers do not need Zig,
+Zigler, a C++ compiler, or a system simdjson installation. Read the
 [installation and native build guide](docs/releases/installation.md) before
-deploying; it includes prerequisites, smoke checks, cache behavior, and
-troubleshooting commands.
+deploying; it covers network and cache behavior, the explicit maintainer
+source-build path, smoke checks, and troubleshooting.
 
 ## Public API
 
@@ -156,7 +156,7 @@ published. The opaque Enumerable exposes no public cursor or batch API.
 Milestones 1–5 are active on the qualified Ubuntu 24.04 x86-64 target. Other
 platforms remain experimental or unsupported until they pass the same package,
 ABI, sanitizer, scheduler, lifecycle, benchmark, and shutdown gates. The exact
-toolchain, native source-build requirements, compatibility differences,
+runtime, precompiled-NIF and optional source-build requirements, compatibility differences,
 saturation behavior, and promotion criteria are in the
 [support policy](docs/releases/support.md).
 

@@ -20,12 +20,12 @@ Back to plan: [README](./README.md)
 
 - [ ] 6.2 Section - Test what a user installs rather than the repository checkout.
   - [ ] 6.2.1 Task - Create isolated consumer projects.
-    - [ ] 6.2.1.1 Subtask - Install only the locally built Hex tarball plus production dependencies in a fresh Mix project.
-    - [ ] 6.2.1.2 Subtask - Compile with no network access after dependency/cache preparation and no repository-relative files.
+    - [ ] 6.2.1.1 Subtask - Install only the locally built Hex tarball, its checksummed NIF candidate, and production dependencies in a fresh Mix project.
+    - [ ] 6.2.1.2 Subtask - Compile with Zig unavailable, no network access after artifact/dependency preparation, and no repository-relative files.
     - [ ] 6.2.1.3 Subtask - Run decode, projection, streaming, ownership, saturation, and telemetry smoke tests against the installed archive.
   - [ ] 6.2.2 Task - Exercise installation failures.
     - [ ] 6.2.2.1 Subtask - Verify unsupported target/toolchain failures are early, bounded, and actionable.
-    - [ ] 6.2.2.2 Subtask - Verify missing compiler/Zig prerequisites do not leave partial generated artifacts or misleading success.
+    - [ ] 6.2.2.2 Subtask - Verify missing, unavailable, or checksum-invalid precompiled assets do not leave partial native artifacts or misleading success.
     - [ ] 6.2.2.3 Subtask - Confirm runtime applications exclude Jason, SpecLed, ExDoc, and other development-only dependencies.
 
 ## 6.3 Section — Release-Candidate Evidence Bundle

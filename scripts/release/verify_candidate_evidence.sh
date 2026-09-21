@@ -14,11 +14,46 @@ for required_file in \
   simd_json-0.1.0.tar \
   documentation-contents.txt \
   native-compile.status \
+  precompiled-provenance.env \
+  precompiled-consumer.status \
   secret-scan.txt \
   provenance.env \
   SHA256SUMS; do
   if [[ ! -s "${evidence_root}/${required_file}" ]]; then
     printf 'candidate evidence is missing %s\n' "${required_file}" >&2
+    exit 1
+  fi
+done
+
+precompiled_asset="$(sed -n 's/^asset=//p' "${evidence_root}/precompiled-provenance.env")"
+precompiled_sha256="$(sed -n 's/^asset_sha256=//p' "${evidence_root}/precompiled-provenance.env")"
+
+if [[ "${precompiled_asset}" != "simd_json-v0.1.0-x86_64-linux-gnu.so" ]] ||
+  [[ ! "${precompiled_sha256}" =~ ^[0-9a-f]{64}$ ]]; then
+  printf 'candidate precompiled provenance has an invalid asset identity\n' >&2
+  exit 1
+fi
+
+if [[ ! -s "${evidence_root}/${precompiled_asset}" ]]; then
+  printf 'candidate evidence is missing precompiled asset %s\n' \
+    "${precompiled_asset}" >&2
+  exit 1
+fi
+
+actual_precompiled_sha256="$(sha256sum "${evidence_root}/${precompiled_asset}" | cut -d ' ' -f 1)"
+if [[ "${actual_precompiled_sha256}" != "${precompiled_sha256}" ]]; then
+  printf 'candidate precompiled asset checksum does not match provenance\n' >&2
+  exit 1
+fi
+
+for expected_precompiled_status in \
+  'status=passed' \
+  'zig_free_consumer=passed' \
+  'download_failure_handling=passed'; do
+  if ! grep -Fxq "${expected_precompiled_status}" \
+    "${evidence_root}/precompiled-consumer.status"; then
+    printf 'candidate precompiled consumer status is missing %s\n' \
+      "${expected_precompiled_status}" >&2
     exit 1
   fi
 done

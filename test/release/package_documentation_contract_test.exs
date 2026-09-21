@@ -46,6 +46,7 @@ defmodule SimdJson.PackageDocumentationContractTest do
              Enum.find(project[:deps], &match?({:zigler, _, _}, &1))
 
     assert zigler_options[:runtime] == false
+    assert zigler_options[:optional] == true
     assert {:telemetry, "~> 1.3"} in project[:deps]
 
     assert {:jason, "== 1.4.5", jason_options} =
@@ -64,26 +65,30 @@ defmodule SimdJson.PackageDocumentationContractTest do
   end
 
   # covers: simd_json.release.consumer_documentation simd_json.release.qualified_support
-  test "documents a copyable source-build installation contract" do
+  test "documents a copyable precompiled installation and explicit source-build contract" do
     readme = File.read!("README.md")
     installation = File.read!("docs/releases/installation.md")
 
     for document <- [readme, installation] do
       assert document =~ ~s({:simd_json, "~> 0.1.0"})
       assert document =~ "mix deps.get"
-      assert document =~ "mix zig.get --version 0.16.0"
       assert document =~ "mix compile"
     end
 
-    assert installation =~ "first release does not ship precompiled NIF artifacts"
+    [installation_section | _rest] = String.split(readme, "## Public API", parts: 2)
+    refute installation_section =~ "mix zig.get --version 0.16.0"
+    assert installation =~ "Ordinary consumers do not need Zig"
+    assert installation =~ "SIMD_JSON_BUILD_FROM_SOURCE=1"
+    assert installation =~ "mix zig.get --version 0.16.0"
+    assert installation =~ "SIMD_JSON_PRECOMPILED_PATH"
+    assert installation =~ "native/precompiled/checksums.exs"
     assert installation =~ "Ubuntu 24.04 LTS"
     assert installation =~ "glibc 2.39"
     assert installation =~ "bundled Clang/LLVM 21.1.0 and libc++"
-    assert installation =~ ~r/never discovers a\s+system simdjson installation/
-    assert installation =~ "budget several minutes"
+    assert installation =~ "system simdjson package"
     assert installation =~ "ZIG_GLOBAL_CACHE_DIR"
     assert installation =~ "Unsupported native target"
-    assert installation =~ "experimental or unsupported"
+    assert installation =~ "experimental or\nunsupported"
   end
 
   # covers: simd_json.release.consumer_documentation
@@ -119,7 +124,7 @@ defmodule SimdJson.PackageDocumentationContractTest do
 
     assert changelog =~ "## 0.1.0"
     assert changelog =~ "### Known limitations"
-    assert changelog =~ "no precompiled native artifacts"
+    assert changelog =~ "consumers install without Zig or Zigler"
     assert changelog =~ "one-million-row fixture"
     assert changelog =~ "A full queue returns `:busy`"
 

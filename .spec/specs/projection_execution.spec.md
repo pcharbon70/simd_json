@@ -1,5 +1,10 @@
 # Projection Execution and Lifecycle
 
+Milestone 6 Phase 5 packages the same qualified projection engine and bounded
+execution path in a checksummed precompiled NIF. Precompiled loading adds no
+second execution route, and any unavailable, corrupt, or unloadable artifact
+fails closed before projection admission.
+
 Milestone 6 Phase 2 makes million-row quiescence collect completed coordinator
 references and report the full native snapshot on timeout. This tightens the
 existing lifecycle proof without changing execution ownership.

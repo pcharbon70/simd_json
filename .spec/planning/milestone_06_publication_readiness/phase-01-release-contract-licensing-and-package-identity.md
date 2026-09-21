@@ -50,5 +50,5 @@ Back to plan: [README](./README.md)
     - [x] 1.4.1.2 Subtask - Record that publish, tag, revert, retire, and owner changes are explicit external actions.
   - [x] 1.4.2 Task - Add a planned release subject.
     - [x] 1.4.2.1 Subtask - Define package, docs, provenance, CI, authorization, publication, and verification requirements.
-    - [x] 1.4.2.2 Subtask - Add a complete bootstrap exception until Phase 6 succeeds.
+    - [x] 1.4.2.2 Subtask - Add a complete bootstrap exception until Phase 7 succeeds.
     - [x] 1.4.2.3 Subtask - Run format, SpecLed index/validate/impact, and qualification-fingerprint checks.

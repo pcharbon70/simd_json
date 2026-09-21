@@ -22,8 +22,9 @@ First public release candidate.
 - A fixed native worker pool, finite non-blocking queue, cooperative
   cancellation, serialized stateful resources, and redacted `:telemetry`
   events.
-- Source distribution of the pinned simdjson 4.6.9 snapshot, provenance,
-  licenses, Zig/Zigler build inputs, and C ABI v4 implementation.
+- A SHA-256-pinned, versioned Linux x86-64 NIF release asset that supported
+  consumers install without Zig or Zigler, plus the complete pinned simdjson,
+  Zig/Zigler source-build inputs, provenance, licenses, and C ABI v4 sources.
 
 ### Safety and qualification
 
@@ -39,10 +40,12 @@ First public release candidate.
 
 ### Known limitations
 
-- Only Ubuntu 24.04 x86-64 with glibc 2.39, OTP 27.3, Elixir 1.18.4, Zig 0.16.0,
-  Zigler 0.16.0, and the recorded simdjson CPU-dispatch paths is supported.
-- The package ships source and compiles a NIF during installation; it provides
-  no precompiled native artifacts.
+- Only Ubuntu 24.04 x86-64 with glibc 2.39, OTP 27.3, Elixir 1.18.4, and the
+  recorded simdjson CPU-dispatch paths is supported. Maintainer source builds
+  additionally require Zig and Zigler 0.16.0.
+- Supported installation downloads the immutable NIF from the matching GitHub
+  release and therefore needs network access unless a checksummed local asset
+  is supplied.
 - Every operation receives a complete resident binary. There is no incremental
   file, socket, device, or iodata input API and no zero-total-memory claim.
 - `decode/2` accepts only `[]`; key atomization, structs, custom decoders,

@@ -36,7 +36,7 @@ defmodule SimdJson.ReleaseToolingContractTest do
     assert guide =~ ~r/deliberately does\s+not fetch/
     assert guide =~ "unset HEX_API_KEY"
     assert guide =~ "never reads Hex ownership or key data"
-    assert guide =~ "Full release-candidate qualification remains a separate Phase 5 gate"
+    assert guide =~ "Full release-candidate qualification remains a separate Phase 6 gate"
 
     assert {_output, 0} =
              System.cmd("bash", ["-n", @preflight], stderr_to_stdout: true)
@@ -193,7 +193,11 @@ defmodule SimdJson.ReleaseToolingContractTest do
           "missing_docs",
           "broken_native_compile",
           "checksum_mismatch",
-          "leaked_secret"
+          "leaked_secret",
+          "missing_precompiled_asset",
+          "replaced_precompiled_asset",
+          "precompiled_checksum_mismatch",
+          "precompiled_download_failure"
         ] do
       assert rehearsal =~ "expect_failure #{scenario}"
     end
@@ -218,7 +222,9 @@ defmodule SimdJson.ReleaseToolingContractTest do
     assert guide =~ "mix hex.user key revoke KEY_NAME"
     assert guide =~ "GitHub Security Advisory"
     assert guide =~ "gh release edit \"$TAG\""
-    assert guide =~ "never contacts Hex or GitHub"
+    assert guide =~ "Precompiled NIF asset missing"
+    assert guide =~ "Never change the package checksum"
+    assert guide =~ ~r/never\s+contacts Hex or GitHub/
 
     assert {_output, 0} =
              System.cmd("bash", ["-n", "scripts/release/verify_candidate_evidence.sh"],
@@ -246,7 +252,11 @@ defmodule SimdJson.ReleaseToolingContractTest do
           "missing_docs",
           "broken_native_compile",
           "checksum_mismatch",
-          "leaked_secret"
+          "leaked_secret",
+          "missing_precompiled_asset",
+          "replaced_precompiled_asset",
+          "precompiled_checksum_mismatch",
+          "precompiled_download_failure"
         ] do
       assert evidence =~ "#{scenario}=detected"
     end

@@ -27,7 +27,7 @@ Back to plan: [README](./README.md)
   - [x] 3.2.2 Task - Document source-native requirements.
     - [x] 3.2.2.1 Subtask - List Zig/Zigler, C++ runtime, libc, build tools, CPU dispatch, and offline vendored-source behavior.
     - [x] 3.2.2.2 Subtask - Explain expected compile time, cache location, common failures, and diagnostic commands.
-    - [x] 3.2.2.3 Subtask - State clearly that no precompiled NIF artifacts are shipped in the first release.
+    - [x] 3.2.2.3 Subtask - Record the original source-only decision, later superseded by Phase 5 precompiled delivery.
 
 ## 3.3 Section — Public Contract, Limits, and Release Notes
 

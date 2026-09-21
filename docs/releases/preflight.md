@@ -39,7 +39,7 @@ The preflight bootstraps the pinned release tools and then runs:
 
 The package verifier uses Hex's deliberately unauthenticated dry-run guard, but
 there is no command in this procedure that can create or replace a public
-release. Full release-candidate qualification remains a separate Phase 5 gate.
+release. Full release-candidate qualification remains a separate Phase 6 gate.
 
 ## Evidence
 

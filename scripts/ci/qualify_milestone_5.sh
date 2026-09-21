@@ -101,11 +101,22 @@ run_step restore_canonical_state git restore --source=HEAD -- .spec/state.json
 run_step traceability mix simd_json.verify_traceability
 run_step canonical_state git diff --exit-code -- .spec/state.json
 
+run_step precompiled_artifact bash scripts/release/build_precompiled_nif.sh
 run_step precompiled_consumer bash scripts/ci/verify_precompiled_consumer.sh
 
 SIMD_JSON_PACKAGE_EVIDENCE_DIR="${qualification_root}/release-candidate" \
 SIMD_JSON_REQUIRE_CLEAN_CANDIDATE=1 \
   run_step package_provenance bash scripts/ci/verify_package_documentation.sh
+
+cp _build/precompiled/simd_json-v0.1.0-x86_64-linux-gnu.so \
+  "${qualification_root}/release-candidate/"
+cp _build/precompiled/provenance.env \
+  "${qualification_root}/release-candidate/precompiled-provenance.env"
+{
+  printf 'status=passed\n'
+  printf 'zig_free_consumer=passed\n'
+  printf 'download_failure_handling=passed\n'
+} >"${qualification_root}/release-candidate/precompiled-consumer.status"
 
 {
   printf 'status=passed\n'
@@ -135,6 +146,9 @@ for evidence in \
   "${qualification_root}/decode/summary.txt" \
   "${qualification_root}/release-candidate/provenance.env" \
   "${qualification_root}/release-candidate/native-compile.status" \
+  "${qualification_root}/release-candidate/precompiled-provenance.env" \
+  "${qualification_root}/release-candidate/precompiled-consumer.status" \
+  "${qualification_root}/release-candidate/simd_json-v0.1.0-x86_64-linux-gnu.so" \
   "${qualification_root}/release-candidate/simd_json-0.1.0.tar" \
   "${qualification_root}/release-candidate/SHA256SUMS"; do
   test -s "${evidence}"

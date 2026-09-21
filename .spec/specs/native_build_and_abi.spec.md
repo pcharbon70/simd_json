@@ -1,5 +1,12 @@
 # Native Build and ABI
 
+Milestone 6 Phase 5 adds deterministic selection and SHA-256 verification for
+one release-safe NIF on the qualified target. Supported consumers do not need
+Zig or Zigler; maintainers retain an explicit, pinned source-build path. The
+artifact builder reproduces stripped bytes from isolated roots and verifies
+dynamic dependencies, exported symbols, runtime diagnostics, and a Zig-free
+packaged consumer without changing ABI v4.
+
 Milestone 6 Phase 4 Section 4.4 fingerprints the recovery guide, fail-closed
 candidate-evidence verifier, and synthetic recovery rehearsal. The aggregate
 candidate records the already-qualified native gate result; native sources,
@@ -25,11 +32,11 @@ Milestone 6 Phase 3 Section 3.1 adds release-tag source links and grouped
 native milestone documentation to ExDoc. The qualified toolchain, vendored
 source, ABI v4, build profiles, and release-symbol boundary are unchanged.
 
-Section 3.2 publishes copyable source-build instructions for the exact
-qualified BEAM, Zig/Zigler, bundled C++17 toolchain, glibc ABI, vendored
-simdjson, and CPU-dispatch boundary. It identifies build/cache recovery and
-states that no precompiled NIF or system-simdjson fallback is shipped; native
-sources, ABI v4, profiles, and runtime behavior remain unchanged.
+Section 3.2 originally published copyable source-build instructions for the
+exact qualified BEAM, Zig/Zigler, bundled C++17 toolchain, glibc ABI, vendored
+simdjson, and CPU-dispatch boundary. Phase 5 supersedes that delivery decision
+with a checksummed precompiled NIF while retaining the same source inputs for
+reproduction and no system-simdjson fallback.
 
 Section 3.4 packages only the native headers, runtime translations, Zig owners,
 vendored source, symbol policy, manifest, README, and checked-in qualification
