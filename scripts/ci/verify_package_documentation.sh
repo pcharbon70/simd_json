@@ -97,6 +97,7 @@ required_package_files=(
   lib/simd_json/native/build_smoke.ex
   lib/simd_json/native/diagnostics.ex
   lib/simd_json/native/operation_coordinator.ex
+  lib/simd_json/native/precompiled.ex
   lib/simd_json/native/pool_options.ex
   lib/simd_json/native/projection_operation.ex
   lib/simd_json/native/telemetry.ex
@@ -108,6 +109,7 @@ required_package_files=(
   mix.lock
   native/README.md
   native/manifest.exs
+  native/precompiled/checksums.exs
   native/qualification/milestone_1.exs
   native/include/simd_json_abi.h
   native/include/simd_json_build_smoke.h

@@ -31,4 +31,26 @@ defmodule SimdJson.PrecompiledDeliveryContractTest do
     refute section =~ "- [ ]"
     assert section =~ "- [x] 5.1 Section"
   end
+
+  # covers: simd_json.release.precompiled_delivery simd_json.release.provenance
+  test "defines reproducible artifact and checksum provenance gates" do
+    builder = File.read!("scripts/release/build_precompiled_nif.sh")
+    verifier = File.read!("scripts/release/verify_precompiled_checksum.exs")
+
+    assert builder =~ "build-one"
+    assert builder =~ "build-two"
+    assert builder =~ "cmp --silent"
+    assert builder =~ "ldd"
+    assert builder =~ "nm -D --defined-only"
+    assert builder =~ "exported_symbols=nif_init"
+    assert builder =~ "source_commit="
+    assert builder =~ "source_tree="
+    assert builder =~ "SHA256SUMS"
+    assert verifier =~ "precompiled checksum mismatch"
+
+    assert {_output, 0} =
+             System.cmd("bash", ["-n", "scripts/release/build_precompiled_nif.sh"],
+               stderr_to_stdout: true
+             )
+  end
 end
