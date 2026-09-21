@@ -28,6 +28,7 @@ jobs:
         with:
           otp-version: "27.3"
           elixir-version: "1.18.4"
+          version-type: strict
 
       - name: Install dependencies and the qualified Zig compiler
         run: |
