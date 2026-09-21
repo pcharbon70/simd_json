@@ -29,7 +29,7 @@ defmodule SimdJson.Native.BuildPolicyTest do
 
     assert build_configuration =~ "native/vendor/simdjson/simdjson.cpp"
     assert build_configuration =~ "link_libcpp: true"
-    assert build_configuration =~ "link_lib: @sanitizer_libraries"
+    assert build_configuration =~ "link_lib: sanitizer_libraries"
     refute build_configuration =~ ~s({:system, "simdjson"})
 
     nif =

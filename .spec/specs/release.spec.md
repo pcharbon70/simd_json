@@ -1,7 +1,7 @@
 # First Public Hex Release
 
 Current-truth contract for preparing and publishing the first public release.
-Milestone 6 Phase 1 freezes identity, licensing, and support; Phases 2–6 own CI
+Milestone 6 Phase 1 freezes identity, licensing, and support; Phases 2–7 own CI
 repair, public package documentation, release tooling, exact-candidate
 qualification, explicit authorization, publication, and external verification.
 Phase 3 Section 3.1 adds explicit Hex identity, maintainer and public links,
@@ -45,6 +45,11 @@ assigns revert, patch, retirement, credential, advisory, and GitHub correction
 decisions, and adds a non-mutating rehearsal. Synthetic evidence proves
 missing docs, broken native compilation, checksum corruption, and secret
 matches all fail closed before any external release action.
+Phase 5 supersedes the earlier source-only installation decision for supported
+consumers. It keeps Zigler as an optional audit/source-build dependency, binds
+one release asset to version, target, and SHA-256, and loads the existing NIF
+entry table without Zig or generated native files in the Hex archive. Missing,
+unsupported, corrupt, or replaced artifacts fail before native loading.
 Phase 2 Section 2.2 now rebuilds the pinned Zigler formatter in an explicit
 test environment after verifying Zig 0.16.0 and recording Hex/Rebar. It also
 closes the reproduced pool-retirement, stale-baseline, and collected-request
@@ -98,6 +103,7 @@ bootstrap:
     - simd_json.release.read_only_preflight
     - simd_json.release.publisher_boundary
     - simd_json.release.recovery_readiness
+    - simd_json.release.precompiled_delivery
 ```
 
 ## Requirements
@@ -160,6 +166,11 @@ bootstrap:
 
 - id: simd_json.release.recovery_readiness
   statement: A dated runbook shall require current Hex-window reverification, assign authority for revert, patch, retirement, credential, advisory, and GitHub correction choices, and rehearse all evidence-failure paths without mutating a real release.
+  priority: must
+  stability: evolving
+
+- id: simd_json.release.precompiled_delivery
+  statement: Supported package consumers shall obtain one immutable target-specific production NIF whose SHA-256 digest is committed and verified before loading, without requiring Zig or Zigler, while maintainers retain an explicit qualified source-build path.
   priority: must
   stability: evolving
 ```
@@ -281,6 +292,19 @@ bootstrap:
   then:
     - Every run exits normally without a VM abort
     - Every run starts and finishes with quiescent native lifecycle gauges
+
+- id: simd_json.release.precompiled_loader_is_fail_closed
+  covers:
+    - simd_json.release.precompiled_delivery
+  given:
+    - A package version, normalized supported target, immutable release asset, and committed SHA-256 digest
+  when:
+    - A consumer compiles the dependency without Zig or Zigler
+  then:
+    - The exact artifact is verified before installation and NIF loading
+    - Decode, select, stream, lifecycle, telemetry, and diagnostics retain their source-built behavior
+    - Missing targets, downloads, digests, or artifacts fail without loading native code
+    - An explicit maintainer override may rebuild from the qualified source inputs
 ```
 
 ## Verification
@@ -356,4 +380,10 @@ bootstrap:
     - simd_json.release.post_publish_verification
     - simd_json.release.candidate_preflight
     - simd_json.release.public_verification
+
+- kind: command
+  target: bash scripts/ci/verify_precompiled_consumer.sh
+  execute: false
+  covers:
+    - simd_json.release.precompiled_delivery
 ```
