@@ -101,6 +101,8 @@ run_step restore_canonical_state git restore --source=HEAD -- .spec/state.json
 run_step traceability mix simd_json.verify_traceability
 run_step canonical_state git diff --exit-code -- .spec/state.json
 
+run_step precompiled_consumer bash scripts/ci/verify_precompiled_consumer.sh
+
 SIMD_JSON_PACKAGE_EVIDENCE_DIR="${qualification_root}/release-candidate" \
 SIMD_JSON_REQUIRE_CLEAN_CANDIDATE=1 \
   run_step package_provenance bash scripts/ci/verify_package_documentation.sh

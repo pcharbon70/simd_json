@@ -29,14 +29,14 @@ Back to plan: [README](./README.md)
 
 ## 5.3 Section — Zig-Free Consumer and CI Gates
 
-- [ ] 5.3 Section - Prove supported consumers do not need Zig.
-  - [ ] 5.3.1 Task - Exercise a clean packaged consumer.
-    - [ ] 5.3.1.1 Subtask - Compile the unpacked Hex dependency with Zig unavailable and only the checksummed candidate artifact supplied.
-    - [ ] 5.3.1.2 Subtask - Run decode, select, stream, lifecycle, telemetry, and runtime-diagnostic smoke checks.
-    - [ ] 5.3.1.3 Subtask - Corrupt the artifact and checksum independently and prove both paths fail before NIF loading.
-  - [ ] 5.3.2 Task - Add non-publishing artifact CI.
-    - [ ] 5.3.2.1 Subtask - Build and retain the candidate NIF as an Actions artifact without creating a tag, GitHub release, or Hex publication.
-    - [ ] 5.3.2.2 Subtask - Add the Zig-free consumer gate to cumulative cold and restored qualification.
+- [x] 5.3 Section - Prove supported consumers do not need Zig.
+  - [x] 5.3.1 Task - Exercise a clean packaged consumer.
+    - [x] 5.3.1.1 Subtask - Compile the unpacked Hex dependency with Zig unavailable and only the checksummed candidate artifact supplied.
+    - [x] 5.3.1.2 Subtask - Run decode, select, stream, lifecycle, telemetry, and runtime-diagnostic smoke checks.
+    - [x] 5.3.1.3 Subtask - Corrupt the artifact and checksum independently and prove both paths fail before NIF loading.
+  - [x] 5.3.2 Task - Add non-publishing artifact CI.
+    - [x] 5.3.2.1 Subtask - Build and retain the candidate NIF as an Actions artifact without creating a tag, GitHub release, or Hex publication.
+    - [x] 5.3.2.2 Subtask - Add the Zig-free consumer gate to cumulative cold and restored qualification.
 
 ## 5.4 Section — Publication Flow and Documentation Reconciliation
 

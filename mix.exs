@@ -56,7 +56,7 @@ defmodule SimdJson.MixProject do
   def application do
     [
       mod: {SimdJson.Application, []},
-      extra_applications: [:logger]
+      extra_applications: [:crypto, :inets, :logger, :public_key, :ssl]
     ]
   end
 
