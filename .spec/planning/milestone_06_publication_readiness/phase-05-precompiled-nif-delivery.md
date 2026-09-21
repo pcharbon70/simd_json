@@ -18,14 +18,14 @@ Back to plan: [README](./README.md)
 
 ## 5.2 Section — Reproducible Artifact and Provenance
 
-- [ ] 5.2 Section - Build and attest the exact release artifact.
-  - [ ] 5.2.1 Task - Add a bounded supported-target artifact builder.
-    - [ ] 5.2.1.1 Subtask - Produce the release-safe NIF twice from isolated roots and require byte-identical SHA-256 digests.
-    - [ ] 5.2.1.2 Subtask - Verify target, dynamic dependencies, exported symbols, embedded Zigler semantic metadata, and native diagnostics.
-    - [ ] 5.2.1.3 Subtask - Emit a checksummed manifest binding asset, source commit/tree, native fingerprint, toolchain, and target.
-  - [ ] 5.2.2 Task - Integrate the artifact with release evidence.
-    - [ ] 5.2.2.1 Subtask - Require the committed checksum manifest to match the reproduced candidate artifact.
-    - [ ] 5.2.2.2 Subtask - Preserve source inputs in Hex while excluding generated native binaries from the Hex archive.
+- [x] 5.2 Section - Build and attest the exact release artifact.
+  - [x] 5.2.1 Task - Add a bounded supported-target artifact builder.
+    - [x] 5.2.1.1 Subtask - Produce the release-safe NIF twice from isolated roots and require byte-identical SHA-256 digests.
+    - [x] 5.2.1.2 Subtask - Verify target, dynamic dependencies, exported symbols, NIF entry compatibility, and native diagnostics.
+    - [x] 5.2.1.3 Subtask - Emit a checksummed manifest binding asset, source commit/tree, native fingerprint, toolchain, and target.
+  - [x] 5.2.2 Task - Integrate the artifact with release evidence.
+    - [x] 5.2.2.1 Subtask - Require the committed checksum manifest to match the reproduced candidate artifact.
+    - [x] 5.2.2.2 Subtask - Preserve source inputs in Hex while excluding generated native binaries from the Hex archive.
 
 ## 5.3 Section — Zig-Free Consumer and CI Gates
 
@@ -42,7 +42,7 @@ Back to plan: [README](./README.md)
 
 - [ ] 5.4 Section - Make artifact ordering and user guidance accurate.
   - [ ] 5.4.1 Task - Document supported installation and fallback behavior.
-    - [ ] 5.4.1.1 Subtask - Make ordinary supported-target installation require no Zig compiler while documenting `objcopy`, network, cache, checksum, and source-build behavior.
+    - [ ] 5.4.1.1 Subtask - Make ordinary supported-target installation require no Zig compiler while documenting network, cache, checksum, and source-build behavior.
     - [ ] 5.4.1.2 Subtask - Keep unsupported targets experimental or rejected rather than silently compiling unqualified native code.
   - [ ] 5.4.2 Task - Reconcile release ordering and recovery.
     - [ ] 5.4.2.1 Subtask - Require the checksummed GitHub release asset to exist before Hex publication because consumer compilation downloads that immutable asset.

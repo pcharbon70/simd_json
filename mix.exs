@@ -99,6 +99,7 @@ defmodule SimdJson.MixProject do
         "native/README.md",
         "native/manifest.exs",
         "native/qualification/milestone_1.exs",
+        "native/precompiled",
         "native/include",
         "native/src",
         "native/symbols",
