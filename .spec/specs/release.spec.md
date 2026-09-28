@@ -1,5 +1,11 @@
 # First Public Hex Release
 
+Milestone 6 Phase 6 Section 6.2 installs only the built Hex tarball, a copied
+production dependency, and the checksummed NIF into a fresh offline scratch
+project. The Zig-free smoke covers every public operation, ownership,
+capacity, telemetry, runtime dependency exclusions, and fail-closed artifact
+and target errors without repository-relative consumer inputs.
+
 Milestone 6 Phase 6 Section 6.1 adds the supported-target candidate gate. It
 binds the complete cumulative safety program, two isolated native and archive
 build roots, and the cold/restored pull-request and main checks to one commit,
