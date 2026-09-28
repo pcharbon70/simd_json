@@ -125,4 +125,54 @@ defmodule SimdJson.Phase6ReleaseCandidateContractTest do
     refute section =~ "- [ ]"
     assert section =~ "- [x] 6.3 Section"
   end
+
+  # covers: simd_json.release.explicit_authorization simd_json.release.publication_gate
+  test "fails closed through one exact non-publishing go/no-go review" do
+    review = File.read!("scripts/release/review_go_no_go.sh")
+    qualification = File.read!(@qualification)
+    guide = File.read!("docs/releases/candidate-review.md")
+
+    for exact_field <- [
+          "SIMD_JSON_APPROVED_VERSION",
+          "SIMD_JSON_APPROVED_COMMIT",
+          "SIMD_JSON_APPROVED_TAG",
+          "SIMD_JSON_APPROVED_PACKAGE_SHA256",
+          "SIMD_JSON_APPROVED_DESTINATION",
+          "SIMD_JSON_APPROVED_PUBLISH_COMMAND"
+        ] do
+      assert review =~ exact_field
+    end
+
+    assert review =~ ~s(requested_decision="${SIMD_JSON_RELEASE_DECISION:-SILENCE}")
+    assert review =~ "pull_request_ci_"
+    assert review =~ "main_ci_"
+    assert review =~ "publication_credential_missing"
+    assert review =~ "source_revision_changed"
+    assert review =~ "source_tree_changed"
+    assert review =~ "worktree_changed"
+    assert review =~ "source_change_invalidates_approval=true"
+    assert review =~ "publication_performed=false"
+    assert qualification =~ "SIMD_JSON_RELEASE_DECISION=NO_GO"
+    assert qualification =~ "decision=NO_GO"
+    assert guide =~ "default is `NO_GO`"
+    assert guide =~ "Any later source change"
+
+    refute review =~ "mix hex.publish --yes"
+    refute review =~ "git tag "
+    refute review =~ "gh release create"
+
+    assert {_output, 0} =
+             System.cmd("bash", ["-n", "scripts/release/review_go_no_go.sh"],
+               stderr_to_stdout: true
+             )
+  end
+
+  test "closes Phase 6 with a concrete fail-closed decision boundary" do
+    phase = File.read!(@phase)
+    [_, section] = String.split(phase, "## 6.4 Section", parts: 2)
+
+    refute section =~ "- [ ]"
+    assert section =~ "- [x] 6.4 Section"
+    assert phase =~ "- [x] 6 Phase"
+  end
 end

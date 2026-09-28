@@ -333,6 +333,7 @@
     "scripts/ci/verify_precompiled_consumer.sh",
     "scripts/release/build_precompiled_nif.sh",
     "scripts/release/assemble_candidate_evidence.sh",
+    "scripts/release/review_go_no_go.sh",
     "scripts/release/preflight.sh",
     "scripts/release/verify_publisher.sh",
     "scripts/release/verify_candidate_evidence.sh",

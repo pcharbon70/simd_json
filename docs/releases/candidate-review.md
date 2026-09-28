@@ -24,3 +24,14 @@ preflight, or absent explicit authorization keeps the candidate at no-go.
 
 This command never tags, creates a GitHub Release, uploads an asset, publishes
 to Hex, or changes package ownership.
+
+## Explicit go/no-go
+
+`scripts/release/review_go_no_go.sh` always writes the exact proposed version,
+commit, tree, tag, package checksum, destination, and publish command. Its
+default is `NO_GO`. A `GO` requires green pull-request and main run URLs, a
+passed final name/version preflight, a loaded interactive credential, and an
+unconditional owner decision whose six approved identity values exactly match
+the evidence. Silence, conditional approval, pending or red CI, a missing
+credential, or a changed source tree stays `NO_GO`. Any later source change
+invalidates a prior decision and requires the complete qualification again.

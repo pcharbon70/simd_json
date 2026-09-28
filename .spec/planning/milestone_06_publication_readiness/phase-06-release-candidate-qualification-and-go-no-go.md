@@ -2,7 +2,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 6 Phase - Qualify the exact archive and obtain an explicit release
+- [x] 6 Phase - Qualify the exact archive and obtain an explicit release
   decision before creating externally visible release state.
 
 ## 6.1 Section — Supported-Target Clean Qualification
@@ -41,12 +41,12 @@ Back to plan: [README](./README.md)
 
 ## 6.4 Section — Explicit Go/No-Go Review
 
-- [ ] 6.4 Section - Stop before publication and request owner authorization.
-  - [ ] 6.4.1 Task - Complete review signoffs.
-    - [ ] 6.4.1.1 Subtask - Confirm license/copyright authority and third-party notices.
-    - [ ] 6.4.1.2 Subtask - Confirm package/version/name, publisher/recovery owners, support promise, changelog, and recovery runbook.
-    - [ ] 6.4.1.3 Subtask - Confirm exact release commit has green required GitHub checks with no pending run.
-  - [ ] 6.4.2 Task - Obtain a concrete decision.
-    - [ ] 6.4.2.1 Subtask - Present the exact version, commit, tag, package checksum, destination, and publish command for approval.
-    - [ ] 6.4.2.2 Subtask - Treat silence, conditional approval, red/pending CI, changed source, or missing credentials as no-go.
-    - [ ] 6.4.2.3 Subtask - Any post-approval source change invalidates approval and returns to qualification.
+- [x] 6.4 Section - Stop before publication and request owner authorization.
+  - [x] 6.4.1 Task - Complete review signoffs.
+    - [x] 6.4.1.1 Subtask - Confirm license/copyright authority and third-party notices.
+    - [x] 6.4.1.2 Subtask - Confirm package/version/name, publisher/recovery owners, support promise, changelog, and recovery runbook.
+    - [x] 6.4.1.3 Subtask - Confirm exact release commit has green required GitHub checks with no pending run.
+  - [x] 6.4.2 Task - Obtain a concrete decision.
+    - [x] 6.4.2.1 Subtask - Present the exact version, commit, tag, package checksum, destination, and publish command for approval.
+    - [x] 6.4.2.2 Subtask - Treat silence, conditional approval, red/pending CI, changed source, or missing credentials as no-go.
+    - [x] 6.4.2.3 Subtask - Any post-approval source change invalidates approval and returns to qualification.

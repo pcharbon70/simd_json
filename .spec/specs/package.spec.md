@@ -1,5 +1,9 @@
 # SimdJson Package
 
+Milestone 6 Phase 6 Section 6.4 fingerprints the repository-only fail-closed
+go/no-go reviewer. It creates no tag, release, upload, publication, owner
+mutation, package file, runtime dependency, or credential evidence.
+
 Milestone 6 Phase 6 Section 6.3 packages the candidate-review guide and
 fingerprints the repository-only evidence assembler. The bounded checksummed
 review adds no runtime dependency, native binary, credential, or raw log.

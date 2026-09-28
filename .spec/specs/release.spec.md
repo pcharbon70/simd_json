@@ -1,5 +1,11 @@
 # First Public Hex Release
 
+Milestone 6 Phase 6 Section 6.4 adds the final non-publishing review. It
+presents the exact proposed identity, defaults to no-go, and permits GO only
+for an unconditional exact owner decision with green PR and main checks,
+passed availability preflight, a loaded interactive credential, and unchanged
+source. Any subsequent source change invalidates that decision.
+
 Milestone 6 Phase 6 Section 6.3 assembles one bounded checksummed internal
 review with source, package, native, toolchain, test, benchmark, legal,
 security, consumer, recovery, and CI identities. Every gate has an evidence
@@ -114,6 +120,7 @@ surface:
   - scripts/ci/verify_package_documentation.sh
   - scripts/ci/qualify_release_candidate.sh
   - scripts/release/assemble_candidate_evidence.sh
+  - scripts/release/review_go_no_go.sh
   - scripts/release/preflight.sh
   - scripts/release/verify_publisher.sh
   - scripts/release/verify_candidate_evidence.sh

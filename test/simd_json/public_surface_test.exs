@@ -262,7 +262,7 @@ defmodule SimdJson.PublicSurfaceTest do
     assert acceptance =~ "qualify_milestone_5.sh"
     assert decode_spec =~ "status: active"
     refute decode_spec =~ "bootstrap:"
-    assert workflow =~ "bash scripts/ci/qualify_milestone_5.sh"
+    assert workflow =~ "bash scripts/ci/qualify_release_candidate.sh"
 
     plans = Path.wildcard(".spec/planning/milestone_05_compatible_decode/phase-*.md")
     refute Enum.any?(plans, &(File.read!(&1) =~ "- [ ]"))

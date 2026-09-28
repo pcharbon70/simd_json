@@ -68,6 +68,9 @@ fi
 } >"${acceptance_root}/supported-target.env"
 
 bash scripts/release/assemble_candidate_evidence.sh "${qualification_root}"
+SIMD_JSON_RELEASE_DECISION=NO_GO \
+  bash scripts/release/review_go_no_go.sh "${qualification_root}"
+grep -Fxq 'decision=NO_GO' "${qualification_root}/candidate-review/go-no-go.env"
 
 (
   cd "${qualification_root}"
