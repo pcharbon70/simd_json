@@ -81,11 +81,11 @@ jobs:
           mix simd_json.verify_vendor
           mix compile --force
 
-      - name: Qualify the complete Milestone 5 release candidate
+      - name: Qualify the complete Milestone 6 release candidate
         timeout-minutes: 60
         env:
           SIMD_JSON_CACHE_HIT: ${{ steps.build-cache.outputs.cache-hit || 'false' }}
-        run: bash scripts/ci/qualify_milestone_5.sh
+        run: bash scripts/ci/qualify_release_candidate.sh
 
       - name: Summarize release qualification
         if: always()

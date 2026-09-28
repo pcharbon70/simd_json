@@ -1,5 +1,10 @@
 # SimdJson Package
 
+Milestone 6 Phase 6 Section 6.1 composes the cumulative native, runtime,
+benchmark, package, documentation, full-suite, and SpecLed gates at one source
+identity. Its two isolated native and archive build roots and CI cache matrix
+add qualification evidence without changing package contents or runtime APIs.
+
 Milestone 6 Phase 5 follow-up qualification builds the packaged native asset
 for an explicit generic `x86_64-linux-gnu` target, preventing runner CPU
 features from changing its bytes. Package contents, dependencies, and public

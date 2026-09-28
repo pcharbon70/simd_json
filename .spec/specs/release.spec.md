@@ -1,5 +1,10 @@
 # First Public Hex Release
 
+Milestone 6 Phase 6 Section 6.1 adds the supported-target candidate gate. It
+binds the complete cumulative safety program, two isolated native and archive
+build roots, and the cold/restored pull-request and main checks to one commit,
+tree, and qualification fingerprint without authorizing publication.
+
 Milestone 6 Phase 5 follow-up qualification pins the release builder to generic
 `x86_64-linux-gnu` so cold, restored, and publication runners attest the same
 portable NIF bytes rather than host-specific CPU output.
@@ -95,6 +100,7 @@ surface:
   - scripts/ci/validate_exdoc_links.exs
   - scripts/ci/generate_dependency_inventory.exs
   - scripts/ci/verify_package_documentation.sh
+  - scripts/ci/qualify_release_candidate.sh
   - scripts/release/preflight.sh
   - scripts/release/verify_publisher.sh
   - scripts/release/verify_candidate_evidence.sh

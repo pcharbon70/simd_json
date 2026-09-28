@@ -7,14 +7,14 @@ Back to plan: [README](./README.md)
 
 ## 6.1 Section — Supported-Target Clean Qualification
 
-- [ ] 6.1 Section - Rerun the complete safety program at release identity.
-  - [ ] 6.1.1 Task - Execute cumulative qualification.
-    - [ ] 6.1.1.1 Subtask - Run native ABI, ordinary, ASan/UBSan, race, symbols, lifecycle, cancellation, saturation, and shutdown gates.
-    - [ ] 6.1.1.2 Subtask - Run projection, stream, decode, Jason differential, scheduler, memory, and million-row qualification.
-    - [ ] 6.1.1.3 Subtask - Run strict formatting, docs, full tests, SpecLed validation/impact/traceability, and fingerprint freshness.
-  - [ ] 6.1.2 Task - Prove clean-cache repeatability.
-    - [ ] 6.1.2.1 Subtask - Pass two Ubuntu 24.04 x86-64 runs from independent clean build roots.
-    - [ ] 6.1.2.2 Subtask - Pass the same commit on GitHub pull-request and `main` workflows with matching source tree and fingerprint.
+- [x] 6.1 Section - Rerun the complete safety program at release identity.
+  - [x] 6.1.1 Task - Execute cumulative qualification.
+    - [x] 6.1.1.1 Subtask - Run native ABI, ordinary, ASan/UBSan, race, symbols, lifecycle, cancellation, saturation, and shutdown gates.
+    - [x] 6.1.1.2 Subtask - Run projection, stream, decode, Jason differential, scheduler, memory, and million-row qualification.
+    - [x] 6.1.1.3 Subtask - Run strict formatting, docs, full tests, SpecLed validation/impact/traceability, and fingerprint freshness.
+  - [x] 6.1.2 Task - Prove clean-cache repeatability.
+    - [x] 6.1.2.1 Subtask - Pass two Ubuntu 24.04 x86-64 runs from independent clean build roots.
+    - [x] 6.1.2.2 Subtask - Pass the same commit on GitHub pull-request and `main` workflows with matching source tree and fingerprint.
 
 ## 6.2 Section — Fresh Consumer Archive Tests
 

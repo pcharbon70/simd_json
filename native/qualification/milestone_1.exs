@@ -7,7 +7,7 @@
 [
   schema_version: 1,
   qualified_on: ~D[2026-09-21],
-  input_sha256: "1476a0ae425f44619897288764a37cd920f4d56b9ac3882fa1054ef26de473b8",
+  input_sha256: "2d6f318e0dfed73e9a6ab7e2c8b1814c972f92a42dd9cf74f285d62b8f341784",
   randomized_seed: 260_831_006,
   supported_targets: [
     [
@@ -51,6 +51,7 @@
     "bash scripts/ci/qualify_milestone_4.sh",
     "bash scripts/ci/qualify_decode.sh",
     "bash scripts/ci/qualify_milestone_5.sh",
+    "bash scripts/ci/qualify_release_candidate.sh",
     "bash scripts/ci/verify_package_documentation.sh",
     "bash scripts/release/build_precompiled_nif.sh",
     "bash scripts/ci/verify_precompiled_consumer.sh",
