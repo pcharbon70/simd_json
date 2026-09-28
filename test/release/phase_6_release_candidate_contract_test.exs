@@ -76,4 +76,53 @@ defmodule SimdJson.Phase6ReleaseCandidateContractTest do
     refute section =~ "- [ ]"
     assert section =~ "- [x] 6.2 Section"
   end
+
+  # covers: simd_json.release.provenance simd_json.release.candidate_preflight
+  test "assembles one bounded checksummed candidate review" do
+    assembler = File.read!("scripts/release/assemble_candidate_evidence.sh")
+    guide = File.read!("docs/releases/candidate-review.md")
+
+    for field <- [
+          "source_revision=",
+          "source_tree=",
+          "package_sha256=",
+          "precompiled_asset_sha256=",
+          "qualification_input_sha256=",
+          "full_test_count=",
+          "pull_request_ci_url=",
+          "main_ci_url=",
+          "license=MIT",
+          "publisher=pcharbon70",
+          "recovery_owner=pcharbon70",
+          "security_scan=passed",
+          "consumer_install=passed"
+        ] do
+      assert assembler =~ field
+    end
+
+    assert assembler =~ "gates.tsv"
+    assert assembler =~ "SHA256SUMS"
+    assert assembler =~ "authorization=pending"
+    assert assembler =~ "publication_performed=false"
+    assert assembler =~ "HEX_API_KEY"
+    assert guide =~ "not authorization"
+    assert guide =~ "excludes raw qualification logs"
+
+    refute assembler =~ "mix hex.publish"
+    refute assembler =~ "gh release create"
+
+    assert {_output, 0} =
+             System.cmd("bash", ["-n", "scripts/release/assemble_candidate_evidence.sh"],
+               stderr_to_stdout: true
+             )
+  end
+
+  test "closes release-candidate evidence bundling" do
+    phase = File.read!(@phase)
+    [_, rest] = String.split(phase, "## 6.3 Section", parts: 2)
+    section = rest |> String.split("## 6.4 Section", parts: 2) |> hd()
+
+    refute section =~ "- [ ]"
+    assert section =~ "- [x] 6.3 Section"
+  end
 end

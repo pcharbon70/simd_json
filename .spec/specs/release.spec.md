@@ -1,5 +1,11 @@
 # First Public Hex Release
 
+Milestone 6 Phase 6 Section 6.3 assembles one bounded checksummed internal
+review with source, package, native, toolchain, test, benchmark, legal,
+security, consumer, recovery, and CI identities. Every gate has an evidence
+path; credentials, source input, process identity, native addresses, and raw
+logs are excluded, and pending authorization remains explicit.
+
 Milestone 6 Phase 6 Section 6.2 installs only the built Hex tarball, a copied
 production dependency, and the checksummed NIF into a fresh offline scratch
 project. The Zig-free smoke covers every public operation, ownership,
@@ -107,6 +113,7 @@ surface:
   - scripts/ci/generate_dependency_inventory.exs
   - scripts/ci/verify_package_documentation.sh
   - scripts/ci/qualify_release_candidate.sh
+  - scripts/release/assemble_candidate_evidence.sh
   - scripts/release/preflight.sh
   - scripts/release/verify_publisher.sh
   - scripts/release/verify_candidate_evidence.sh

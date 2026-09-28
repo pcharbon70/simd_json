@@ -1,5 +1,9 @@
 # SimdJson Package
 
+Milestone 6 Phase 6 Section 6.3 packages the candidate-review guide and
+fingerprints the repository-only evidence assembler. The bounded checksummed
+review adds no runtime dependency, native binary, credential, or raw log.
+
 Milestone 6 Phase 6 Section 6.2 qualifies the locally built archive in an
 offline Zig-free scratch consumer using only copied production dependencies.
 It verifies the public API, ownership, bounded capacity, telemetry, runtime

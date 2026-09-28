@@ -67,6 +67,8 @@ fi
   printf 'publication_authorized=false\n'
 } >"${acceptance_root}/supported-target.env"
 
+bash scripts/release/assemble_candidate_evidence.sh "${qualification_root}"
+
 (
   cd "${qualification_root}"
   find . -type f ! -name SHA256SUMS -print0 \

@@ -30,14 +30,14 @@ Back to plan: [README](./README.md)
 
 ## 6.3 Section — Release-Candidate Evidence Bundle
 
-- [ ] 6.3 Section - Produce one reviewable, checksummed candidate record.
-  - [ ] 6.3.1 Task - Aggregate evidence.
-    - [ ] 6.3.1.1 Subtask - Include CI URLs, source identity, package checksum/inventory, docs result, test counts, target/toolchain, and benchmark acceptance.
-    - [ ] 6.3.1.2 Subtask - Include licensing, ownership, name/version availability, security scan, consumer install, and recovery readiness.
-    - [ ] 6.3.1.3 Subtask - Exclude credentials, source inputs, PIDs, native addresses, and unbounded logs from the summary.
-  - [ ] 6.3.2 Task - Publish an internal candidate summary.
-    - [ ] 6.3.2.1 Subtask - Mark each gate pass/fail with an evidence path rather than prose-only claims.
-    - [ ] 6.3.2.2 Subtask - Record remaining experimental platforms and deferred features as non-blocking only when public docs agree.
+- [x] 6.3 Section - Produce one reviewable, checksummed candidate record.
+  - [x] 6.3.1 Task - Aggregate evidence.
+    - [x] 6.3.1.1 Subtask - Include CI URLs, source identity, package checksum/inventory, docs result, test counts, target/toolchain, and benchmark acceptance.
+    - [x] 6.3.1.2 Subtask - Include licensing, ownership, name/version availability, security scan, consumer install, and recovery readiness.
+    - [x] 6.3.1.3 Subtask - Exclude credentials, source inputs, PIDs, native addresses, and unbounded logs from the summary.
+  - [x] 6.3.2 Task - Publish an internal candidate summary.
+    - [x] 6.3.2.1 Subtask - Mark each gate pass/fail with an evidence path rather than prose-only claims.
+    - [x] 6.3.2.2 Subtask - Record remaining experimental platforms and deferred features as non-blocking only when public docs agree.
 
 ## 6.4 Section — Explicit Go/No-Go Review
 
