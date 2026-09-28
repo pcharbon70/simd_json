@@ -11,11 +11,16 @@ candidate="${1:-${repository_root}/_build/precompiled/${asset_name}}"
 scratch_root="$(mktemp -d "${TMPDIR:-/tmp}/simd-json-consumer.XXXXXX")"
 package_root="${scratch_root}/package/simd_json-${version}"
 consumer_root="${scratch_root}/consumer"
-mix_executable="$(asdf which mix 2>/dev/null || command -v mix)"
+if asdf_mix="$(asdf which mix 2>/dev/null)"; then
+  mix_executable="${asdf_mix}"
+  default_mix_home="$(asdf where elixir)/.mix"
+else
+  mix_executable="$(command -v mix)"
+  default_mix_home="${HOME}/.mix"
+fi
 elixir_bin="$(dirname "$(asdf which elixir 2>/dev/null || command -v elixir)")"
 erl_bin="$(dirname "$(asdf which erl 2>/dev/null || command -v erl)")"
-elixir_install_root="$(dirname "${elixir_bin}")"
-mix_home="${MIX_HOME:-${elixir_install_root}/.mix}"
+mix_home="${MIX_HOME:-${default_mix_home}}"
 mix_archives="${MIX_ARCHIVES:-${mix_home}/archives}"
 zig_free_path="${elixir_bin}:${erl_bin}:/usr/local/bin:/usr/bin:/bin"
 

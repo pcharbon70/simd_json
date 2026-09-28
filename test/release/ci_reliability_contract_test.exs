@@ -99,8 +99,8 @@ defmodule SimdJson.CIReliabilityContractTest do
 
     assert workflow =~ "group: ci-${{ github.workflow }}-"
     assert workflow =~ "cancel-in-progress: ${{ github.event_name == 'pull_request' }}"
+    assert workflow =~ "timeout-minutes: 75"
     assert workflow =~ "timeout-minutes: 60"
-    assert workflow =~ "timeout-minutes: 45"
     assert workflow =~ "permissions:\n  contents: read"
 
     action_references = Regex.scan(~r/^\s*uses:\s+[^@\s]+@([^\s]+)/m, workflow)

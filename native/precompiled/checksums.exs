@@ -3,6 +3,6 @@
 # reproduced from the release candidate and before that candidate is approved.
 %{
   "0.1.0" => %{
-    "x86_64-linux-gnu" => "a11488037dec4619cd724eba0975cba9293a7e8dcdca2c43fa0c651c9c201b64"
+    "x86_64-linux-gnu" => "1cecfd1ba1d53cc39373ce1d5955b2ab6108810d067ef3810684ea6201a41abd"
   }
 }

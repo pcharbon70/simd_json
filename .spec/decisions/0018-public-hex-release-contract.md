@@ -93,6 +93,10 @@ The sole supported first-release target is Ubuntu 24.04 x86-64 with glibc
 2.39, OTP 27.3, Elixir 1.18.4, and vendored simdjson 4.6.9. Ordinary consumers
 receive a versioned, SHA-256-pinned GitHub release NIF and do not install Zig
 or Zigler. Reproducing that asset uses optional Zigler 0.16.0 and Zig 0.16.0.
+The release builder explicitly selects generic `x86_64-linux-gnu`; it must not
+inherit the build runner's native CPU model or feature set. Two isolated builds
+on one runner and cold/restored builds on independent runners must all produce
+the same stripped bytes before their checksum can be approved.
 Every other target is experimental or unsupported until it passes the same
 archive, ABI, sanitizer, lifecycle, scheduler, large-input, documentation, and
 consumer-install matrix. Public operations receive a complete resident binary;

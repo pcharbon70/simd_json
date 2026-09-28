@@ -1,5 +1,20 @@
 # SimdJson Package
 
+Milestone 6 Phase 5 follow-up qualification builds the packaged native asset
+for an explicit generic `x86_64-linux-gnu` target, preventing runner CPU
+features from changing its bytes. Package contents, dependencies, and public
+runtime surface are unchanged.
+
+The same follow-up resolves Mix and its archive home according to the active
+setup-beam or asdf layout before entering the Zig-free environment. This
+changes only the isolated qualification harness; consumer dependencies remain
+unchanged.
+
+Milestone 6 Phase 5 follow-up qualification waits for native operation and
+retained-input quiescence before a projection lifecycle baseline is captured.
+This affects only packaged test evidence and introduces no runtime package
+surface or dependency.
+
 Milestone 6 Phase 4 Section 4.4 packages the release recovery guide and
 fingerprints the repository-only evidence verifier and rehearsal. The guide
 adds no release credential, runtime file, native binary, or dependency.
