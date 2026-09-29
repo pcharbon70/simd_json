@@ -179,7 +179,12 @@ and adds fixed target, cursor-config, cancellation-probe, row, batch-storage,
 always receives caller-owned row and slot storage; no container crosses the C
 boundary.
 
-Milestone 5 Phase 2 advances the cumulative private surface to ABI v4. Opaque
+Milestone 6 Phase 7 advances the cumulative private surface to ABI v5 with an
+opaque simdjson `padded_memory_map` owner and read/verify/destroy operations.
+Mapped source bytes remain owned below the C boundary and outlive every parser
+and document borrowing them. ABI v1-v4 symbols and layouts remain unchanged.
+
+Milestone 5 Phase 2 advanced the cumulative private surface to ABI v4. Opaque
 decode materializer and result owners expose only a flat immutable graph view:
 checked node/edge indices and copied byte ranges, never C++ containers or input
 pointers. The materializer reserves an explicit bounded frame vector and

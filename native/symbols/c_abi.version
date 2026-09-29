@@ -30,3 +30,11 @@ SIMD_JSON_ABI_4 {
     simd_json_decode_result_destroy;
     simd_json_decode_result_read;
 } SIMD_JSON_ABI_3;
+
+SIMD_JSON_ABI_5 {
+  global:
+    simd_json_mapped_input_create;
+    simd_json_mapped_input_destroy;
+    simd_json_mapped_input_read;
+    simd_json_mapped_input_verify;
+} SIMD_JSON_ABI_4;

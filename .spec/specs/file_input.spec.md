@@ -175,4 +175,52 @@ symbol, precompiled artifact, and Zig-free fresh-consumer evidence.
     - simd_json.file_input.bounded_stream_memory
     - simd_json.file_input.early_halt
     - simd_json.file_input.pool_and_cleanup
+
+- kind: test_file
+  target: test/simd_json/file_input_test.exs
+  covers:
+    - simd_json.file_input.native_path_boundary
+    - simd_json.file_input.mapped_document
+    - simd_json.file_input.open_file_contract
+    - simd_json.file_input.no_complete_source_copy
+    - simd_json.file_input.immutable_source
+    - simd_json.file_input.pool_and_cleanup
+
+- kind: command
+  target: bash scripts/native/run_c_abi_conformance.sh ordinary
+  covers:
+    - simd_json.file_input.mapped_document
+    - simd_json.file_input.no_complete_source_copy
+    - simd_json.file_input.immutable_source
+
+- kind: command
+  target: bash scripts/native/run_c_abi_conformance.sh sanitizer
+  covers:
+    - simd_json.file_input.mapped_document
+    - simd_json.file_input.no_complete_source_copy
+    - simd_json.file_input.immutable_source
+
+- kind: command
+  target: bash scripts/native/run_zig_resource_tests.sh ordinary
+  covers:
+    - simd_json.file_input.mapped_document
+    - simd_json.file_input.no_complete_source_copy
+    - simd_json.file_input.pool_and_cleanup
+
+- kind: command
+  target: bash scripts/native/run_zig_resource_tests.sh sanitizer
+  covers:
+    - simd_json.file_input.mapped_document
+    - simd_json.file_input.no_complete_source_copy
+    - simd_json.file_input.pool_and_cleanup
+
+- kind: command
+  target: bash scripts/native/run_nif_sanitizer_tests.sh
+  covers:
+    - simd_json.file_input.native_path_boundary
+    - simd_json.file_input.mapped_document
+    - simd_json.file_input.open_file_contract
+    - simd_json.file_input.no_complete_source_copy
+    - simd_json.file_input.immutable_source
+    - simd_json.file_input.pool_and_cleanup
 ```

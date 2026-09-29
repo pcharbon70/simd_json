@@ -7,7 +7,7 @@ defmodule SimdJson.Native.ReleaseQualificationTest do
   @qualification Code.eval_file("native/qualification/milestone_1.exs") |> elem(0)
   @manifest Code.eval_file("native/manifest.exs") |> elem(0)
 
-  test "the cumulative symbol contract retains ABI v1 through v3 under ABI v4" do
+  test "the cumulative symbol contract retains ABI v1 through v4 under ABI v5" do
     version_script = File.read!("native/symbols/c_abi.version")
     allowlist = File.read!("native/symbols/c_abi.allowlist")
 
@@ -15,7 +15,8 @@ defmodule SimdJson.Native.ReleaseQualificationTest do
     assert version_script =~ "SIMD_JSON_ABI_2"
     assert version_script =~ "SIMD_JSON_ABI_3"
     assert version_script =~ "SIMD_JSON_ABI_4"
-    assert version_script =~ "} SIMD_JSON_ABI_2;"
+    assert version_script =~ "SIMD_JSON_ABI_5"
+    assert version_script =~ "} SIMD_JSON_ABI_4;"
 
     for symbol <- ~w(
           simd_json_document_open
@@ -24,6 +25,10 @@ defmodule SimdJson.Native.ReleaseQualificationTest do
           simd_json_stream_next_batch
           simd_json_decode_materializer_create
           simd_json_decode_result_read
+          simd_json_mapped_input_create
+          simd_json_mapped_input_read
+          simd_json_mapped_input_verify
+          simd_json_mapped_input_destroy
         ) do
       assert allowlist =~ symbol
     end

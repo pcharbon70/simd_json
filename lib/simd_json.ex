@@ -274,6 +274,37 @@ defmodule SimdJson do
   end
 
   @doc """
+  Opens one immutable regular-file JSON source through simdjson's native
+  memory-map owner.
+
+  The path crosses the BEAM boundary, but the JSON bytes do not become an
+  Elixir binary and are not copied into a padded native source allocation. The
+  file must remain unchanged until the returned document is closed.
+  """
+  @spec open_file(binary()) :: {:ok, Document.t()} | {:error, Error.t()}
+  def open_file(path) when is_binary(path) and byte_size(path) > 0 do
+    if :binary.match(path, <<0>>) != :nomatch do
+      invalid_file_path!()
+    end
+
+    result =
+      try do
+        ThreadedOperation.open_file(path)
+      rescue
+        ErlangError -> native_failure_result()
+      catch
+        :exit, _reason -> native_failure_result()
+      end
+
+    case result do
+      {:ok, resource} -> {:ok, %Document{__resource__: resource}}
+      {:error, native_error} -> {:error, translate_error(native_error, :unknown)}
+    end
+  end
+
+  def open_file(_path), do: invalid_file_path!()
+
+  @doc """
   Selects several scalar paths from a JSON binary or caller-owned document.
 
   The projection is completely validated before parsing or document
@@ -360,7 +391,16 @@ defmodule SimdJson do
   end
 
   defp stable_reason(reason)
-       when reason in [:invalid_json, :invalid_utf8, :unexpected_eof, :out_of_memory],
+       when reason in [
+              :invalid_json,
+              :invalid_utf8,
+              :unexpected_eof,
+              :out_of_memory,
+              :file_not_found,
+              :file_unreadable,
+              :not_regular_file,
+              :file_changed
+            ],
        do: reason
 
   defp stable_reason(:not_owner), do: :not_owner
@@ -386,6 +426,10 @@ defmodule SimdJson do
   defp decode_reason(:max_output_bytes_exceeded), do: :output_too_large
   defp decode_reason(_reason), do: :native_failure
 
+  defp safe_offset(offset, :unknown)
+       when is_integer(offset) and offset >= 0 and offset <= 18_446_744_073_709_551_615,
+       do: offset
+
   defp safe_offset(offset, logical_length)
        when is_integer(offset) and offset >= 0 and offset <= logical_length,
        do: offset
@@ -403,6 +447,10 @@ defmodule SimdJson do
   defp message(:invalid_utf8), do: "invalid UTF-8 in JSON input"
   defp message(:unexpected_eof), do: "unexpected end of JSON input"
   defp message(:out_of_memory), do: "native JSON allocation failed"
+  defp message(:file_not_found), do: "JSON file was not found"
+  defp message(:file_unreadable), do: "JSON file could not be read"
+  defp message(:not_regular_file), do: "JSON path is not a regular file"
+  defp message(:file_changed), do: "JSON file changed while mapped"
   defp message(:closed), do: "document is closed"
   defp message(:not_owner), do: "document belongs to another process"
   defp message(:busy), do: "native execution capacity is busy"
@@ -420,5 +468,9 @@ defmodule SimdJson do
 
   defp invalid_document! do
     raise ArgumentError, "expected a SimdJson.Document"
+  end
+
+  defp invalid_file_path! do
+    raise ArgumentError, "expected file path to be a non-empty binary without NUL bytes"
   end
 end

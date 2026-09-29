@@ -477,6 +477,14 @@ pub fn native_pool_submit_open(operation: OperationResource) !worker_pool.Monito
     return pool.submitOperation(.document_open, operation, null, null, null, null, 0, 0, 0);
 }
 
+pub fn native_pool_submit_open_file(operation: OperationResource) !worker_pool.MonitoredSubmission {
+    const guard = PoolLifecycleGuard.acquire() orelse return error.pool_stopped;
+    defer guard.release();
+
+    const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
+    return pool.submitOperation(.document_open_file, operation, null, null, null, null, 0, 0, 0);
+}
+
 pub fn native_pool_submit_cleanup(
     operation: OperationResource,
     document: DocumentResource,
@@ -1104,6 +1112,8 @@ const ExecutionSnapshot = struct {
     live_documents: usize,
     completed_document_cleanup: usize,
     live_document_controls: usize,
+    live_document_padded_buffers: usize,
+    live_document_mapped_inputs: usize,
     dispatcher_queued_cleanup: usize,
     dispatcher_active_cleanup: usize,
     dispatcher_completed_cleanup: usize,
@@ -1149,6 +1159,10 @@ pub const DocumentOpenStatus = enum(u8) {
     out_of_memory,
     invalid_argument,
     internal_failure,
+    file_not_found,
+    file_unreadable,
+    not_regular_file,
+    file_changed,
 };
 
 pub const DocumentOpenResult = struct {
@@ -1374,6 +1388,10 @@ fn failedDocumentOpen(
         .out_of_memory => |diagnostics| documentOpenResult(.out_of_memory, operation, diagnostics, null),
         .invalid_argument => |diagnostics| documentOpenResult(.invalid_argument, operation, diagnostics, null),
         .internal_failure => |diagnostics| documentOpenResult(.internal_failure, operation, diagnostics, null),
+        .file_not_found => |diagnostics| documentOpenResult(.file_not_found, operation, diagnostics, null),
+        .file_unreadable => |diagnostics| documentOpenResult(.file_unreadable, operation, diagnostics, null),
+        .not_regular_file => |diagnostics| documentOpenResult(.not_regular_file, operation, diagnostics, null),
+        .file_changed => |diagnostics| documentOpenResult(.file_changed, operation, diagnostics, null),
     };
 }
 
@@ -1861,6 +1879,10 @@ fn projectionOpenFailureResult(
             result.status = .internal_failure;
             break :blk value;
         },
+        .file_not_found, .file_unreadable, .not_regular_file, .file_changed => |value| blk: {
+            result.status = .internal_failure;
+            break :blk value;
+        },
     };
     if (diagnostics) |value| {
         result.native_code = value.native_code;
@@ -2092,6 +2114,10 @@ pub fn threaded_decode_execute(operation: OperationResource) beam.term {
             .out_of_memory => |item| item,
             .invalid_argument => |item| item,
             .internal_failure => |item| item,
+            .file_not_found => |item| item,
+            .file_unreadable => |item| item,
+            .not_regular_file => |item| item,
+            .file_changed => |item| item,
         };
         const status: []const u8 = switch (opened) {
             .ok => unreachable,
@@ -2101,6 +2127,7 @@ pub fn threaded_decode_execute(operation: OperationResource) beam.term {
             .out_of_memory => "out_of_memory",
             .invalid_argument => "invalid_argument",
             .internal_failure => if (record.cancelled.load(.acquire)) "cancelled" else "native_failure",
+            .file_not_found, .file_unreadable, .not_regular_file, .file_changed => "native_failure",
         };
         worker_finished = true;
         return decodePoolResultWithDiagnostics(env, record, status, null, diagnostics);
@@ -2427,6 +2454,8 @@ pub fn threaded_projection_execute(operation: OperationResource) ProjectionResul
 }
 
 pub fn execution_snapshot() ExecutionSnapshot {
+    const document_snapshot = document_resource.ownershipSnapshot();
+
     return .{
         .live_operations = ExecutionAccounting.live_operations.load(.acquire),
         .retained_inputs = ExecutionAccounting.retained_inputs.load(.acquire),
@@ -2439,6 +2468,8 @@ pub fn execution_snapshot() ExecutionSnapshot {
         .live_documents = ExecutionAccounting.live_documents.load(.acquire),
         .completed_document_cleanup = ExecutionAccounting.completed_document_cleanup.load(.acquire),
         .live_document_controls = ExecutionAccounting.live_document_controls.load(.acquire),
+        .live_document_padded_buffers = document_snapshot.live_padded_buffers,
+        .live_document_mapped_inputs = document_snapshot.live_mapped_inputs,
         .dispatcher_queued_cleanup = ExecutionAccounting.dispatcher_queued_cleanup.load(.acquire),
         .dispatcher_active_cleanup = ExecutionAccounting.dispatcher_active_cleanup.load(.acquire),
         .dispatcher_completed_cleanup = ExecutionAccounting.dispatcher_completed_cleanup.load(.acquire),
@@ -2540,6 +2571,89 @@ pub fn threaded_document_open(operation: OperationResource) !DocumentOpenResult 
 
     // Final cancellation/delivery claim occurs before the resource can be
     // encoded by the generated bounded join entry.
+    if (!record.markReadyForDelivery()) {
+        _ = control.native.closeAndDestroy();
+        worker_finished = true;
+        return documentOpenResult(.cancelled, record, null, null);
+    }
+
+    control.accounted.store(true, .release);
+    _ = ExecutionAccounting.live_documents.fetchAdd(1, .acq_rel);
+    publish_document = true;
+    worker_finished = true;
+    return documentOpenResult(.ok, record, null, document);
+}
+
+/// File-backed document construction passes only the retained path to the
+/// worker. C++/simdjson owns the mapping and no complete JSON binary or padded
+/// source allocation is created in the BEAM or Zig layer.
+pub fn threaded_document_open_file(operation: OperationResource) !DocumentOpenResult {
+    const record = operation.unpack();
+    if (!record.beginRunning())
+        return documentOpenResult(.cancelled, record, null, null);
+
+    var worker_finished = false;
+    defer if (!worker_finished) record.abortRunning();
+
+    if (!module_loaded.load(.acquire) or
+        record.generation != module_generation.load(.acquire))
+    {
+        const ready = record.markReadyForDelivery();
+        worker_finished = true;
+        return documentOpenResult(
+            if (ready) .execution_unavailable else .cancelled,
+            record,
+            null,
+            null,
+        );
+    }
+
+    const path = record.inputBytes() catch {
+        const ready = record.markReadyForDelivery();
+        worker_finished = true;
+        return documentOpenResult(
+            if (ready) .invalid_argument else .cancelled,
+            record,
+            null,
+            null,
+        );
+    };
+    if (record.cancelled.load(.acquire))
+        return documentOpenResult(.cancelled, record, null, null);
+
+    const control = try createDocumentControl(record.owner, record.generation);
+    const document = DocumentResource.create(.{ .control = control }, .{}) catch |err| {
+        destroyDocumentControl(control);
+        return err;
+    };
+    var publish_document = false;
+    defer if (!publish_document) document.release();
+
+    const native_status = control.native.openMappedCancellable(path, .{
+        .context = record,
+        .is_cancelled = operationCancelled,
+        .at_boundary = operationBoundary,
+    });
+
+    if (record.cancelled.load(.acquire)) {
+        _ = control.native.closeAndDestroy();
+        return documentOpenResult(.cancelled, record, null, null);
+    }
+    if (native_status != .ok) {
+        const ready = record.markReadyForDelivery();
+        worker_finished = true;
+        return if (ready)
+            failedDocumentOpen(native_status, record)
+        else
+            documentOpenResult(.cancelled, record, null, null);
+    }
+
+    if (beam.context.mode == .threaded) try beam.yield();
+    record.pauseAt(.before_delivery);
+    if (record.cancelled.load(.acquire)) {
+        _ = control.native.closeAndDestroy();
+        return documentOpenResult(.cancelled, record, null, null);
+    }
     if (!record.markReadyForDelivery()) {
         _ = control.native.closeAndDestroy();
         worker_finished = true;

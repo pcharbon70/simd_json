@@ -252,6 +252,13 @@ defmodule SimdJson.Native.ThreadedOperation do
     OperationCoordinator.open(operation)
   end
 
+  @spec open_file(binary()) :: {:ok, reference()} | {:error, map()}
+  def open_file(path) when is_binary(path) do
+    generation = BuildSmoke.execution_generation()
+    operation = admit(path, :document_open, generation)
+    OperationCoordinator.open_file(operation)
+  end
+
   @spec cleanup(reference()) :: :ok | {:error, map()}
   def cleanup(document) when is_reference(document) do
     generation = BuildSmoke.execution_generation()
@@ -318,6 +325,9 @@ defmodule SimdJson.Native.ThreadedOperation do
       case {operation.kind, payload} do
         {:document_open, nil} ->
           BuildSmoke.native_pool_submit_open(operation.resource)
+
+        {:document_open, :file} ->
+          BuildSmoke.native_pool_submit_open_file(operation.resource)
 
         {:document_cleanup, document} ->
           BuildSmoke.native_pool_submit_cleanup(operation.resource, document)

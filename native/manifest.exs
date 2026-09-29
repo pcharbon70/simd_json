@@ -188,7 +188,7 @@
     ".spec/planning/milestone_06_publication_readiness/phase-04-release-tooling-provenance-and-recovery.md",
     ".spec/planning/milestone_06_publication_readiness/phase-05-precompiled-nif-delivery.md",
     ".spec/planning/milestone_06_publication_readiness/phase-06-release-candidate-qualification-and-go-no-go.md",
-    ".spec/planning/milestone_06_publication_readiness/phase-07-version-tag-publish-and-post-publish-verification.md",
+    ".spec/planning/milestone_06_publication_readiness/phase-08-version-tag-publish-and-post-publish-verification.md",
     ".spec/research/jason_parser_architecture_analysis.md",
     ".spec/research/milestone_2_projection_runtime_qualification.md",
     ".spec/research/milestone_06_ci_failure_reproduction.md",

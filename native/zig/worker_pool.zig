@@ -4,6 +4,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
         pub const JobKind = enum(u8) {
             fixture,
             document_open,
+            document_open_file,
             document_cleanup,
             projection,
             decode,
@@ -729,6 +730,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                         };
                         native_result = switch (job.?.kind) {
                             .document_open => if (ops.threaded_document_open(job.?.operation.?)) |result| encodeResult(job.?.env.?, result) else |_| null,
+                            .document_open_file => if (ops.threaded_document_open_file(job.?.operation.?)) |result| encodeResult(job.?.env.?, result) else |_| null,
                             .document_cleanup => encodeResult(job.?.env.?, ops.threaded_document_cleanup(job.?.operation.?, job.?.document.?)),
                             .projection => ops.pool_encode_projection_result(job.?.env.?, ops.threaded_projection_execute(job.?.operation.?)),
                             .decode => ops.threaded_decode_execute(job.?.operation.?),

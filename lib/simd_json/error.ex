@@ -30,6 +30,10 @@ defmodule SimdJson.Error do
           | :invalid_utf8
           | :unexpected_eof
           | :out_of_memory
+          | :file_not_found
+          | :file_unreadable
+          | :not_regular_file
+          | :file_changed
           | :closed
           | :not_owner
           | :invalid_projection
@@ -68,6 +72,10 @@ defimpl Inspect, for: SimdJson.Error do
     :invalid_utf8,
     :unexpected_eof,
     :out_of_memory,
+    :file_not_found,
+    :file_unreadable,
+    :not_regular_file,
+    :file_changed,
     :closed,
     :not_owner,
     :invalid_projection,

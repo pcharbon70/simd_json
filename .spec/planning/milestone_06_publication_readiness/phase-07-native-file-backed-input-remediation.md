@@ -22,15 +22,15 @@ Back to plan: [README](./README.md)
 
 ## 7.2 Section — Native Memory-Mapped Document Ownership
 
-- [ ] 7.2 Section - Let simdjson own file access and mapped source lifetime.
-  - [ ] 7.2.1 Task - Extend the private ABI and native resource graph.
-    - [ ] 7.2.1.1 Subtask - Open a path through `simdjson::padded_memory_map` entirely on a pool worker with stable file errors.
-    - [ ] 7.2.1.2 Subtask - Retain mapping, parser, On-Demand document, owner, generation, and cleanup state in one opaque resource.
-    - [ ] 7.2.1.3 Subtask - Reject embedded NULs, non-regular inputs, unsupported targets, mutation/truncation evidence, and stale generations without exposing native identity.
-  - [ ] 7.2.2 Task - Publish and prove `open_file/1`.
-    - [ ] 7.2.2.1 Subtask - Keep owner-first, one-shot, idempotent-close, cancellation, and off-scheduler cleanup semantics.
-    - [ ] 7.2.2.2 Subtask - Prove the operation never constructs or retains a BEAM binary containing the JSON source.
-    - [ ] 7.2.2.3 Subtask - Cover empty, malformed, missing, permission-denied, replaced, truncated, explicit-close, GC, and sanitizer cases.
+- [x] 7.2 Section - Let simdjson own file access and mapped source lifetime.
+  - [x] 7.2.1 Task - Extend the private ABI and native resource graph.
+    - [x] 7.2.1.1 Subtask - Open a path through `simdjson::padded_memory_map` entirely on a pool worker with stable file errors.
+    - [x] 7.2.1.2 Subtask - Retain mapping, parser, On-Demand document, owner, generation, and cleanup state in one opaque resource.
+    - [x] 7.2.1.3 Subtask - Reject embedded NULs, non-regular inputs, unsupported targets, mutation/truncation evidence, and stale generations without exposing native identity.
+  - [x] 7.2.2 Task - Publish and prove `open_file/1`.
+    - [x] 7.2.2.1 Subtask - Keep owner-first, one-shot, idempotent-close, cancellation, and off-scheduler cleanup semantics.
+    - [x] 7.2.2.2 Subtask - Prove the operation never constructs or retains a BEAM binary containing the JSON source.
+    - [x] 7.2.2.3 Subtask - Cover empty, malformed, missing, permission-denied, replaced, truncated, explicit-close, GC, and sanitizer cases.
 
 ## 7.3 Section — File-Backed Selection
 

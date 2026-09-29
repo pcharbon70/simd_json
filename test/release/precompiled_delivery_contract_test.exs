@@ -99,7 +99,7 @@ defmodule SimdJson.PrecompiledDeliveryContractTest do
 
     phase_seven =
       File.read!(
-        ".spec/planning/milestone_06_publication_readiness/phase-07-version-tag-publish-and-post-publish-verification.md"
+        ".spec/planning/milestone_06_publication_readiness/phase-08-version-tag-publish-and-post-publish-verification.md"
       )
 
     phase = File.read!(@phase)
