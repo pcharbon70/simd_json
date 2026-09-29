@@ -20,7 +20,7 @@ extern "C" {
  * SIMD_JSON_REQUIRED_PADDING initialized bytes must follow the logical input.
  */
 
-#define SIMD_JSON_ABI_VERSION UINT32_C(5)
+#define SIMD_JSON_ABI_VERSION UINT32_C(6)
 #define SIMD_JSON_REQUIRED_PADDING UINT64_C(64)
 #define SIMD_JSON_MAX_DEPTH UINT64_C(1024)
 #define SIMD_JSON_BYTE_OFFSET_UNAVAILABLE UINT64_MAX
@@ -238,6 +238,14 @@ typedef uint32_t simd_json_stream_done;
 
 typedef uint32_t simd_json_stream_cursor_state;
 
+typedef uint32_t simd_json_file_stream_format;
+
+#define SIMD_JSON_FILE_STREAM_JSON_ARRAY UINT32_C(1)
+#define SIMD_JSON_FILE_STREAM_NDJSON UINT32_C(2)
+#define SIMD_JSON_FILE_STREAM_JSON_SEQUENCE UINT32_C(3)
+#define SIMD_JSON_FILE_STREAM_COMMA_DELIMITED UINT32_C(4)
+#define SIMD_JSON_FILE_STREAM_BATCH_BYTES UINT64_C(1048576)
+
 #define SIMD_JSON_STREAM_CURSOR_READY UINT32_C(0)
 #define SIMD_JSON_STREAM_CURSOR_RUNNING UINT32_C(1)
 #define SIMD_JSON_STREAM_CURSOR_DONE UINT32_C(2)
@@ -413,6 +421,19 @@ SIMD_JSON_ABI_EXPORT simd_json_stream_status simd_json_stream_cursor_create(
     simd_json_stream_cursor_config *config,
     simd_json_stream_cursor **out_cursor) SIMD_JSON_ABI_NOEXCEPT;
 
+/*
+ * Maps a regular file and creates a bounded multi-document cursor. The native
+ * owner retains the mapping, parser, document stream, and transferred plan.
+ * Each format is explicit; nested target paths are intentionally unsupported.
+ */
+SIMD_JSON_ABI_EXPORT simd_json_stream_status simd_json_file_stream_cursor_create(
+    const uint8_t *path,
+    uint64_t path_length,
+    simd_json_file_stream_format format,
+    uint64_t parser_batch_bytes,
+    simd_json_stream_cursor_config *config,
+    simd_json_stream_cursor **out_cursor) SIMD_JSON_ABI_NOEXCEPT;
+
 /* NULL is accepted. The owning layer must prevent destruction while running. */
 SIMD_JSON_ABI_EXPORT void simd_json_stream_cursor_destroy(
     simd_json_stream_cursor *cursor) SIMD_JSON_ABI_NOEXCEPT;
@@ -540,12 +561,12 @@ SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_result_slot, value) == 8,
                             "result slot value layout changed");
 SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_result_slot) == 24,
                             "result slot layout changed");
-SIMD_JSON_ABI_STATIC_ASSERT(SIMD_JSON_ABI_VERSION == UINT32_C(5),
+SIMD_JSON_ABI_STATIC_ASSERT(SIMD_JSON_ABI_VERSION == UINT32_C(6),
                             "private ABI version changed");
 SIMD_JSON_ABI_STATIC_ASSERT(sizeof(void *) == 8,
-                            "ABI v5 requires 64-bit data pointers");
+                            "ABI v6 requires 64-bit data pointers");
 SIMD_JSON_ABI_STATIC_ASSERT(sizeof(simd_json_cancellation_check) == 8,
-                            "ABI v5 requires 64-bit function pointers");
+                            "ABI v6 requires 64-bit function pointers");
 SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_input_view, data) == 0,
                             "mapped input data layout changed");
 SIMD_JSON_ABI_STATIC_ASSERT(offsetof(simd_json_input_view, logical_length) == 8,

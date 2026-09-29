@@ -8,7 +8,7 @@ defmodule SimdJson.Native.DocumentResourcePolicyTest do
 
   # covers: simd_json.document_resource.zero_copy_disabled simd_json.document_resource.padded_owned_copy simd_json.document_resource.input_lifetime simd_json.native_execution.bounded_nif_entry simd_json.document_api.milestone_scope
   test "has one owned parser-input path and no production parse NIF" do
-    assert length(Regex.scan(~r/c\.simd_json_document_open\(/, @resource_source)) == 1
+    assert length(Regex.scan(~r/c\.simd_json_document_open\(/, @resource_source)) == 2
     assert @resource_source =~ "owned.ptr"
     assert @resource_source =~ "@memcpy(owned[0..source.len], source)"
     assert @resource_source =~ "@memset(owned[source.len..capacity], 0)"

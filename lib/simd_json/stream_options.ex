@@ -19,9 +19,13 @@ defmodule SimdJson.StreamOptions do
   @invalid_batch_size_message "invalid stream batch_size"
   @invalid_max_batch_bytes_message "invalid stream max_batch_bytes"
   @test_hooks Mix.env() == :test
+  @accepted_file_options [:format, :fields, :batch_size, :max_batch_bytes]
+  @required_file_options [:format, :fields]
+  @invalid_file_path_message "expected file path to be a non-empty binary without NUL"
+  @invalid_format_message "invalid file stream format"
 
   @typedoc false
-  @type source_kind :: :binary | :document
+  @type source_kind :: :binary | :document | :file
 
   @typedoc false
   @type target_path :: [Projection.segment()]
@@ -72,6 +76,30 @@ defmodule SimdJson.StreamOptions do
       max_batch_bytes,
       explicit_options
     )
+  end
+
+  @doc false
+  @spec new_file(term(), term()) :: t()
+  def new_file(path, options) do
+    checked_path = validate_file_path(path)
+    parsed = parse_file_options(options)
+    fields = validate_fields(Map.fetch!(parsed, :fields))
+    format = validate_format(Map.fetch!(parsed, :format))
+    batch_size = validate_batch_size(Map.get(parsed, :batch_size, @default_batch_size))
+
+    max_batch_bytes =
+      validate_max_batch_bytes(Map.get(parsed, :max_batch_bytes, @default_max_batch_bytes))
+
+    payload = %{
+      source: checked_path,
+      owner: self(),
+      target_path: [],
+      fields: fields,
+      format: format
+    }
+
+    {@tag, :file, batch_size, max_batch_bytes,
+     Enum.filter(@accepted_file_options, &Map.has_key?(parsed, &1)), fn -> payload end}
   end
 
   @doc false
@@ -168,6 +196,27 @@ defmodule SimdJson.StreamOptions do
 
   defp parse_options(_options), do: invalid_options!()
 
+  defp parse_file_options(options) when is_list(options) do
+    parsed = parse_file_option_entries(options, MapSet.new(), %{})
+
+    if Enum.all?(@required_file_options, &Map.has_key?(parsed, &1)),
+      do: parsed,
+      else: invalid_options!()
+  end
+
+  defp parse_file_options(_options), do: invalid_options!()
+
+  defp parse_file_option_entries([], _seen, parsed), do: parsed
+
+  defp parse_file_option_entries([{key, value} | rest], seen, parsed)
+       when key in @accepted_file_options do
+    if MapSet.member?(seen, key),
+      do: invalid_options!(),
+      else: parse_file_option_entries(rest, MapSet.put(seen, key), Map.put(parsed, key, value))
+  end
+
+  defp parse_file_option_entries(_invalid, _seen, _parsed), do: invalid_options!()
+
   defp parse_option_entries([], _seen, parsed), do: parsed
 
   defp parse_option_entries([{key, value} | rest], seen, parsed)
@@ -219,6 +268,20 @@ defmodule SimdJson.StreamOptions do
 
   defp validate_max_batch_bytes(_max_batch_bytes),
     do: raise(ArgumentError, @invalid_max_batch_bytes_message)
+
+  defp validate_file_path(path) when is_binary(path) and byte_size(path) > 0 do
+    if :binary.match(path, <<0>>) == :nomatch,
+      do: path,
+      else: raise(ArgumentError, @invalid_file_path_message)
+  end
+
+  defp validate_file_path(_path), do: raise(ArgumentError, @invalid_file_path_message)
+
+  defp validate_format(:json_array), do: 0
+  defp validate_format(:ndjson), do: 1
+  defp validate_format(:json_sequence), do: 2
+  defp validate_format(:comma_delimited), do: 3
+  defp validate_format(_format), do: raise(ArgumentError, @invalid_format_message)
 
   defp invalid_source!, do: raise(ArgumentError, @invalid_source_message)
   defp invalid_options!, do: raise(ArgumentError, @invalid_options_message)

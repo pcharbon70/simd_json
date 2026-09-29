@@ -46,15 +46,15 @@ Back to plan: [README](./README.md)
 
 ## 7.4 Section — Batched File Streaming Through simdjson
 
-- [ ] 7.4 Section - Delegate large root-array and document-sequence streaming to simdjson batching.
-  - [ ] 7.4.1 Task - Add a file document-stream cursor.
-    - [ ] 7.4.1.1 Subtask - Use `ondemand::parser::iterate_many` over the memory map with explicit root-array, whitespace-delimited, JSON-sequence, and comma-delimited formats.
-    - [ ] 7.4.1.2 Subtask - Project each simdjson document through the existing compiled plan and preserve row, byte, ordering, transactional-batch, and copied-string bounds.
-    - [ ] 7.4.1.3 Subtask - Retain one native cursor across demand, use no NIF call per row or field, and stop native iteration immediately on early halt.
-  - [ ] 7.4.2 Task - Publish and prove `stream_file/2`.
-    - [ ] 7.4.2.1 Subtask - Require an explicit supported format and reject nested-array path claims that would require a whole-document structural scan.
-    - [ ] 7.4.2.2 Subtask - Release or advise away consumed mapped pages at safe batch boundaries where the supported OS contract permits it.
-    - [ ] 7.4.2.3 Subtask - Cover exact batches, malformed later documents, mutation/truncation, cancellation, early halt, owner death, GC, and sanitizer cleanup.
+- [x] 7.4 Section - Delegate large root-array and document-sequence streaming to simdjson batching.
+  - [x] 7.4.1 Task - Add a file document-stream cursor.
+    - [x] 7.4.1.1 Subtask - Use `ondemand::parser::iterate_many` over the memory map with explicit root-array, whitespace-delimited, JSON-sequence, and comma-delimited formats.
+    - [x] 7.4.1.2 Subtask - Project each simdjson document through the existing compiled plan and preserve row, byte, ordering, transactional-batch, and copied-string bounds.
+    - [x] 7.4.1.3 Subtask - Retain one native cursor across demand, use no NIF call per row or field, and stop native iteration immediately on early halt.
+  - [x] 7.4.2 Task - Publish and prove `stream_file/2`.
+    - [x] 7.4.2.1 Subtask - Require an explicit supported format and reject nested-array path claims that would require a whole-document structural scan.
+    - [x] 7.4.2.2 Subtask - Release or advise away consumed mapped pages at safe batch boundaries where the supported OS contract permits it.
+    - [x] 7.4.2.3 Subtask - Cover exact batches, malformed later documents, mutation/truncation, cancellation, early halt, owner death, GC, and sanitizer cleanup.
 
 ## 7.5 Section — Memory Qualification, Documentation, and Candidate Invalidation
 

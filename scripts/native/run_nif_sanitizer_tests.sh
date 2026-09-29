@@ -93,6 +93,7 @@ env \
     test/simd_json/document_api_test.exs \
     test/simd_json/error_test.exs \
     test/simd_json/file_input_test.exs \
+    test/simd_json/file_stream_test.exs \
     test/simd_json/phase_5_integration_test.exs \
     test/simd_json/select_test.exs \
     test/simd_json/stream_constructor_test.exs \

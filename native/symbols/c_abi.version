@@ -38,3 +38,8 @@ SIMD_JSON_ABI_5 {
     simd_json_mapped_input_read;
     simd_json_mapped_input_verify;
 } SIMD_JSON_ABI_4;
+
+SIMD_JSON_ABI_6 {
+  global:
+    simd_json_file_stream_cursor_create;
+} SIMD_JSON_ABI_5;

@@ -29,7 +29,7 @@ defmodule SimdJson.ReleaseContractTest do
     assert "THIRD_PARTY_NOTICES.md" in files
     assert license =~ "MIT License"
     assert license =~ "Copyright (c) 2026 pcharbon70"
-    assert notices =~ "simdjson 4.6.9"
+    assert notices =~ "simdjson 5.0.1"
     assert notices =~ "native/vendor/simdjson/LICENSE"
     assert notices =~ "native/vendor/simdjson/LICENSE-MIT"
     assert File.exists?("native/vendor/simdjson/LICENSE")

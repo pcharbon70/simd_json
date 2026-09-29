@@ -199,6 +199,16 @@ symbol, precompiled artifact, and Zig-free fresh-consumer evidence.
   covers:
     - simd_json.file_input.open_file_contract
     - simd_json.file_input.select_file_contract
+    - simd_json.file_input.stream_file_contract
+
+- kind: test_file
+  target: test/simd_json/file_stream_test.exs
+  covers:
+    - simd_json.file_input.stream_file_contract
+    - simd_json.file_input.batched_formats
+    - simd_json.file_input.immutable_source
+    - simd_json.file_input.early_halt
+    - simd_json.file_input.pool_and_cleanup
 
 - kind: command
   target: bash scripts/native/run_c_abi_conformance.sh ordinary

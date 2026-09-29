@@ -277,7 +277,11 @@ defmodule SimdJson.Native.ThreadedOperation do
     generation = BuildSmoke.execution_generation()
 
     operation =
-      admit(if(source_kind == :binary, do: source, else: <<>>), :stream_setup, generation)
+      admit(
+        if(source_kind in [:binary, :file], do: source, else: <<>>),
+        :stream_setup,
+        generation
+      )
 
     OperationCoordinator.stream_setup(
       operation,
@@ -353,6 +357,15 @@ defmodule SimdJson.Native.ThreadedOperation do
             document,
             projection,
             target,
+            rows,
+            bytes
+          )
+
+        {:stream_setup, {:file, _path, projection, format, rows, bytes}} ->
+          BuildSmoke.native_pool_submit_stream_file_setup(
+            operation.resource,
+            projection,
+            format,
             rows,
             bytes
           )

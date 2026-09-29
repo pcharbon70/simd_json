@@ -18,7 +18,7 @@ defmodule SimdJson.Native.BuildSmokeTest do
              :expected_simdjson_implementations
            )
 
-    assert diagnostic.simdjson_version == 4_006_009
+    assert diagnostic.simdjson_version == 5_000_001
     assert diagnostic.simdjson_padding == Keyword.fetch!(@simdjson, :padding_bytes)
     assert diagnostic.native_fingerprint =~ ~r/^[0-9a-f]{64}$/
   end

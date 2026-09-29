@@ -37,6 +37,10 @@ int main(void) {
       simd_json_document *, const simd_json_stream_target *,
       simd_json_stream_cursor_config *, simd_json_stream_cursor **) =
       simd_json_stream_cursor_create;
+  simd_json_stream_status (*file_cursor_create)(
+      const uint8_t *, uint64_t, simd_json_file_stream_format, uint64_t,
+      simd_json_stream_cursor_config *, simd_json_stream_cursor **) =
+      simd_json_file_stream_cursor_create;
   void (*cursor_destroy)(simd_json_stream_cursor *) =
       simd_json_stream_cursor_destroy;
   simd_json_stream_status (*next_batch)(
@@ -68,6 +72,7 @@ int main(void) {
   (void)plan_destroy;
   (void)projection_execute;
   (void)cursor_create;
+  (void)file_cursor_create;
   (void)cursor_destroy;
   (void)next_batch;
   (void)materializer_create;
@@ -76,7 +81,7 @@ int main(void) {
   (void)result_read;
   (void)result_destroy;
 
-  return (SIMD_JSON_ABI_VERSION == UINT32_C(5) &&
+  return (SIMD_JSON_ABI_VERSION == UINT32_C(6) &&
           SIMD_JSON_REQUIRED_PADDING == UINT64_C(64) &&
           SIMD_JSON_MAX_DEPTH == UINT64_C(1024) &&
           SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE == UINT32_MAX &&
@@ -88,6 +93,7 @@ int main(void) {
           SIMD_JSON_PROJECTION_SEGMENT_OBJECT_KEY == UINT32_C(1) &&
           SIMD_JSON_RESULT_STRING == UINT32_C(6) &&
           SIMD_JSON_STREAM_CURSOR_CLOSED == UINT32_C(4) &&
+          SIMD_JSON_FILE_STREAM_COMMA_DELIMITED == UINT32_C(4) &&
           SIMD_JSON_DECODE_NODE_OBJECT == UINT32_C(1) &&
           SIMD_JSON_DECODE_NODE_NULL == UINT32_C(9))
              ? 0

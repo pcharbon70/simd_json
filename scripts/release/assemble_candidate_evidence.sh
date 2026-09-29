@@ -117,7 +117,7 @@ operating_system=ubuntu-24.04
 otp=27.3
 elixir=1.18.4
 zig=0.16.0
-simdjson=4.6.9
+simdjson=5.0.1
 full_test_count=${test_count}
 benchmark_acceptance=passed
 security_scan=passed
@@ -147,7 +147,7 @@ This record is qualification evidence, not authorization to tag or publish.
 | Hex archive SHA-256 | \`${package_sha256}\` |
 | Precompiled NIF SHA-256 | \`${asset_sha256}\` |
 | Target | \`x86_64-linux-gnu\` on Ubuntu 24.04 |
-| Toolchain | OTP 27.3, Elixir 1.18.4, Zig 0.16.0, simdjson 4.6.9 |
+| Toolchain | OTP 27.3, Elixir 1.18.4, Zig 0.16.0, simdjson 5.0.1 |
 | Full-suite tests | \`${test_count}\` |
 | Destination | public Hex (\`hexpm\`) |
 | Authorization | **pending — no-go** |

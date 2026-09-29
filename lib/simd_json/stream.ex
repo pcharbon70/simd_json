@@ -56,12 +56,14 @@ defimpl Enumerable, for: SimdJson.Stream do
         binary -> binary
       end
 
+    target = if runtime.source_kind == :file, do: runtime.format, else: runtime.target_path
+
     setup =
       ThreadedOperation.stream_setup(
         runtime.source_kind,
         source,
         runtime.fields,
-        runtime.target_path,
+        target,
         runtime.batch_size,
         runtime.max_batch_bytes
       )
@@ -165,7 +167,11 @@ defimpl Enumerable, for: SimdJson.Stream do
               :incorrect_type,
               :number_out_of_range,
               :busy,
-              :batch_too_large
+              :batch_too_large,
+              :file_not_found,
+              :file_unreadable,
+              :not_regular_file,
+              :file_changed
             ],
        do: reason
 
@@ -191,6 +197,10 @@ defimpl Enumerable, for: SimdJson.Stream do
   defp message(:cursor_consumed), do: "stream source was already consumed"
   defp message(:cancelled), do: "stream operation was cancelled"
   defp message(:native_failure), do: "native JSON operation failed"
+  defp message(:file_not_found), do: "JSON file was not found"
+  defp message(:file_unreadable), do: "JSON file could not be read"
+  defp message(:not_regular_file), do: "JSON path is not a regular file"
+  defp message(:file_changed), do: "JSON file changed while it was open"
 
   defp error(reason)
        when reason in [:not_owner, :closed, :cursor_consumed, :cancelled, :out_of_memory, :busy],

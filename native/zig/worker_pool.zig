@@ -10,6 +10,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             decode,
             stream_binary_setup,
             stream_document_setup,
+            stream_file_setup,
             stream_batch,
         };
         pub const JobState = enum(u8) { queued, running, completed, cancelled };
@@ -736,6 +737,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                             .decode => ops.threaded_decode_execute(job.?.operation.?),
                             .stream_binary_setup => encodeResult(job.?.env.?, ops.threaded_stream_binary_setup_fixture(job.?.operation.?, job.?.projection.?, job.?.target.?, job.?.row_limit, job.?.byte_limit)),
                             .stream_document_setup => encodeResult(job.?.env.?, ops.threaded_stream_setup_fixture(job.?.operation.?, job.?.document.?, job.?.projection.?, job.?.target.?, job.?.row_limit, job.?.byte_limit)),
+                            .stream_file_setup => encodeResult(job.?.env.?, ops.threaded_stream_file_setup(job.?.operation.?, job.?.projection.?, job.?.target.?, job.?.row_limit, job.?.byte_limit)),
                             .stream_batch => encodeResult(job.?.env.?, ops.threaded_stream_batch_fixture(job.?.operation.?, job.?.cursor.?, job.?.projection.?, job.?.sequence)),
                             .fixture => unreachable,
                         };

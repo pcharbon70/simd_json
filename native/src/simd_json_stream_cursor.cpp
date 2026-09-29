@@ -12,11 +12,17 @@
 #include <limits>
 #include <memory>
 #include <new>
+#include <optional>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
+
+#if defined(__linux__)
+#include <sys/mman.h>
+#include <unistd.h>
+#endif
 
 #ifdef SIMD_JSON_TESTING
 #include "../include/simd_json_test_hooks.h"
@@ -294,6 +300,21 @@ using stream_parent_frame =
     std::variant<stream_object_frame, stream_array_frame>;
 
 struct simd_json_stream_cursor {
+  struct mapped_input_deleter {
+    void operator()(simd_json_mapped_input *input) const noexcept {
+      simd_json_mapped_input_destroy(input);
+    }
+  };
+
+  std::unique_ptr<simd_json_mapped_input, mapped_input_deleter> mapped_input;
+  std::unique_ptr<simdjson::ondemand::parser> file_parser;
+  simdjson::ondemand::document_stream file_documents;
+  std::optional<simdjson::ondemand::document_stream::iterator> file_position;
+  std::optional<simdjson::ondemand::document_stream::iterator> file_end;
+  simd_json_input_view file_view{};
+  bool file_mode = false;
+  bool check_truncated_tail = false;
+  uint64_t advised_file_bytes = 0;
   simd_json_document *document = nullptr;
   simd_json_projection_plan *projection_plan = nullptr;
   std::vector<simd_json_projection_segment> target_segments;
@@ -543,6 +564,97 @@ simd_json_stream_status project_current_row(simd_json_stream_cursor &cursor) {
   return make_status(SIMD_JSON_STATUS_OK);
 }
 
+simd_json_stream_status project_current_file_document(
+    simd_json_stream_cursor &cursor) {
+  stream_checkpoint();
+  cursor.projection_attempts.fetch_add(1, std::memory_order_acq_rel);
+  const uint64_t slot_count =
+      simd_json_native::projection_output_slots(cursor.projection_plan);
+  cursor.pending_slots.assign(static_cast<size_t>(slot_count),
+                              simd_json_result_slot{});
+  simdjson::ondemand::document_reference document;
+  simdjson::error_code error = (**cursor.file_position).get(document);
+  if (error != simdjson::SUCCESS) {
+    return status_from_simdjson(error, cursor.current_row_index.load());
+  }
+  simdjson::ondemand::value value;
+  error = document.get_value().get(value);
+  if (error != simdjson::SUCCESS) {
+    return status_from_simdjson(error, cursor.current_row_index.load());
+  }
+  const simd_json_projection_status projected =
+      simd_json_native::projection_execute_stream_value(
+          cursor.projection_plan, value, cursor.file_view.data,
+          cursor.file_view.logical_length, cursor.pending_slots.data(),
+          slot_count);
+  if (projected.code != SIMD_JSON_STATUS_OK) {
+    return make_status(projected.code, projected.native_code,
+                       projected.byte_offset, projected.output_slot,
+                       cursor.current_row_index.load());
+  }
+  cursor.pending_row_index = cursor.current_row_index.load();
+  cursor.pending_row = true;
+  return make_status(SIMD_JSON_STATUS_OK);
+}
+
+simd_json_stream_status verify_file_source(simd_json_stream_cursor &cursor) {
+  const simd_json_status status =
+      simd_json_mapped_input_verify(cursor.mapped_input.get());
+  return make_status(status.code, status.native_code, status.byte_offset);
+}
+
+simd_json_stream_status validate_source_completion(
+    simd_json_stream_cursor &cursor,
+    const simd_json_cancellation_probe *cancellation);
+
+bool stream_at_end(const simd_json_stream_cursor &cursor) noexcept {
+  return cursor.file_mode ? *cursor.file_position == *cursor.file_end
+                          : cursor.target_position == cursor.target_end;
+}
+
+simd_json_stream_status validate_stream_completion(
+    simd_json_stream_cursor &cursor,
+    const simd_json_cancellation_probe *cancellation) {
+  if (!cursor.file_mode) return validate_source_completion(cursor, cancellation);
+  const simd_json_stream_status verified = verify_file_source(cursor);
+  if (verified.code != SIMD_JSON_STATUS_OK) return verified;
+  if (cursor.check_truncated_tail && cursor.file_documents.truncated_bytes() != 0) {
+    return make_status(SIMD_JSON_STATUS_UNEXPECTED_EOF,
+                       SIMD_JSON_NATIVE_CODE_UNAVAILABLE,
+                       SIMD_JSON_BYTE_OFFSET_UNAVAILABLE,
+                       SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE,
+                       cursor.current_row_index.load());
+  }
+  return make_status(SIMD_JSON_STATUS_OK);
+}
+
+void advise_consumed_file_pages(simd_json_stream_cursor &cursor) noexcept {
+#if defined(__linux__)
+  if (!cursor.file_mode || cursor.file_view.data == nullptr) return;
+  const uint64_t consumed =
+      *cursor.file_position == *cursor.file_end
+          ? cursor.file_view.logical_length
+          : static_cast<uint64_t>(cursor.file_position->current_index());
+  if (consumed <= cursor.advised_file_bytes) return;
+  const long page_size_value = sysconf(_SC_PAGESIZE);
+  if (page_size_value <= 0) return;
+  const uintptr_t page_size = static_cast<uintptr_t>(page_size_value);
+  const uintptr_t base = reinterpret_cast<uintptr_t>(cursor.file_view.data);
+  const uintptr_t start = base + cursor.advised_file_bytes;
+  const uintptr_t end = base + consumed;
+  const uintptr_t aligned_start =
+      (start + page_size - 1) & ~(page_size - 1);
+  const uintptr_t aligned_end = end & ~(page_size - 1);
+  if (aligned_end > aligned_start &&
+      madvise(reinterpret_cast<void *>(aligned_start),
+              aligned_end - aligned_start, MADV_DONTNEED) == 0) {
+    cursor.advised_file_bytes = static_cast<uint64_t>(aligned_end - base);
+  }
+#else
+  (void)cursor;
+#endif
+}
+
 simd_json_stream_status append_pending_row(
     simd_json_stream_cursor &cursor,
     simd_json_stream_batch_storage &batch,
@@ -736,6 +848,90 @@ extern "C" simd_json_stream_status simd_json_stream_cursor_create(
   }
 }
 
+extern "C" simd_json_stream_status simd_json_file_stream_cursor_create(
+    const uint8_t *path,
+    uint64_t path_length,
+    simd_json_file_stream_format format,
+    uint64_t parser_batch_bytes,
+    simd_json_stream_cursor_config *config,
+    simd_json_stream_cursor **out_cursor) noexcept {
+  if (out_cursor == nullptr) {
+    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+  *out_cursor = nullptr;
+  if (path == nullptr || path_length == 0 || exceeds_size_t(path_length) ||
+      parser_batch_bytes == 0 || exceeds_size_t(parser_batch_bytes) ||
+      config == nullptr || !config_is_valid(*config)) {
+    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+
+  simdjson::stream_format native_format;
+  switch (format) {
+    case SIMD_JSON_FILE_STREAM_JSON_ARRAY:
+      native_format = simdjson::stream_format::comma_delimited_array;
+      break;
+    case SIMD_JSON_FILE_STREAM_NDJSON:
+      native_format = simdjson::stream_format::whitespace_delimited;
+      break;
+    case SIMD_JSON_FILE_STREAM_JSON_SEQUENCE:
+      native_format = simdjson::stream_format::json_sequence;
+      break;
+    case SIMD_JSON_FILE_STREAM_COMMA_DELIMITED:
+      native_format = simdjson::stream_format::comma_delimited;
+      break;
+    default:
+      return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+
+  try {
+    stream_checkpoint();
+    simd_json_mapped_input *mapped = nullptr;
+    const simd_json_status mapped_status =
+        simd_json_mapped_input_create(path, path_length, &mapped);
+    if (mapped_status.code != SIMD_JSON_STATUS_OK || mapped == nullptr) {
+      return make_status(mapped_status.code, mapped_status.native_code,
+                         mapped_status.byte_offset);
+    }
+    std::unique_ptr<simd_json_mapped_input,
+                    simd_json_stream_cursor::mapped_input_deleter>
+        mapped_owner(mapped);
+    auto cursor = std::make_unique<simd_json_stream_cursor>();
+    cursor->mapped_input = std::move(mapped_owner);
+    const simd_json_status view_status =
+        simd_json_mapped_input_read(cursor->mapped_input.get(),
+                                    &cursor->file_view);
+    if (view_status.code != SIMD_JSON_STATUS_OK) {
+      return make_status(view_status.code, view_status.native_code,
+                         view_status.byte_offset);
+    }
+    cursor->file_parser = std::make_unique<simdjson::ondemand::parser>();
+    simdjson::error_code error =
+        cursor->file_parser
+            ->iterate_many(cursor->file_view.data,
+                           static_cast<size_t>(cursor->file_view.logical_length),
+                           static_cast<size_t>(parser_batch_bytes), native_format)
+            .get(cursor->file_documents);
+    if (error != simdjson::SUCCESS) return status_from_simdjson(error);
+    cursor->file_position.emplace(cursor->file_documents.begin());
+    cursor->file_end.emplace(cursor->file_documents.end());
+    cursor->file_mode = true;
+    cursor->check_truncated_tail =
+        native_format == simdjson::stream_format::whitespace_delimited;
+    cursor->target_located = true;
+    cursor->row_limit = config->row_limit;
+    cursor->encoded_byte_limit = config->encoded_byte_limit;
+    cursor->parent_generation = config->parent_generation;
+    cursor->projection_plan = config->projection_plan;
+    config->projection_plan = nullptr;
+    cursor->plan_accounted = true;
+    account_plan_acquired();
+    *out_cursor = cursor.release();
+    return make_status(SIMD_JSON_STATUS_OK);
+  } catch (...) {
+    return status_from_current_exception();
+  }
+}
+
 extern "C" void simd_json_stream_cursor_destroy(
     simd_json_stream_cursor *cursor) noexcept {
   try {
@@ -788,6 +984,14 @@ extern "C" simd_json_stream_status simd_json_stream_next_batch(
 
   try {
     stream_checkpoint();
+    if (cursor->file_mode) {
+      const simd_json_stream_status verified = verify_file_source(*cursor);
+      if (verified.code != SIMD_JSON_STATUS_OK) {
+        cursor->state.store(SIMD_JSON_STREAM_CURSOR_CANCELLED,
+                            std::memory_order_release);
+        return verified;
+      }
+    }
     if (!cursor->target_located) {
       const simd_json_stream_status located = locate_target(*cursor);
       if (located.code != SIMD_JSON_STATUS_OK) {
@@ -820,9 +1024,9 @@ extern "C" simd_json_stream_status simd_json_stream_next_batch(
             std::memory_order_release);
         return cancelled_status;
       }
-      if (!cursor->pending_row && cursor->target_position == cursor->target_end) {
+      if (!cursor->pending_row && stream_at_end(*cursor)) {
         const simd_json_stream_status completion =
-            validate_source_completion(*cursor, cancellation);
+            validate_stream_completion(*cursor, cancellation);
         if (completion.code != SIMD_JSON_STATUS_OK) {
           clear_batch(*batch);
           cursor->state.store(SIMD_JSON_STREAM_CURSOR_CANCELLED,
@@ -830,13 +1034,16 @@ extern "C" simd_json_stream_status simd_json_stream_next_batch(
           return completion;
         }
         batch->done = SIMD_JSON_STREAM_DONE;
+        advise_consumed_file_pages(*cursor);
         cursor->state.store(SIMD_JSON_STREAM_CURSOR_DONE,
                             std::memory_order_release);
         cursor->batch_sequence.fetch_add(1, std::memory_order_acq_rel);
         return make_status(SIMD_JSON_STATUS_OK);
       }
       if (!cursor->pending_row) {
-        simd_json_stream_status status = project_current_row(*cursor);
+        simd_json_stream_status status =
+            cursor->file_mode ? project_current_file_document(*cursor)
+                              : project_current_row(*cursor);
         if (status.code != SIMD_JSON_STATUS_OK) {
           clear_batch(*batch);
           cursor->state.store(SIMD_JSON_STREAM_CURSOR_CANCELLED,
@@ -856,7 +1063,11 @@ extern "C" simd_json_stream_status simd_json_stream_next_batch(
       if (!fits) break;
       cursor->pending_row = false;
       cursor->pending_slots.clear();
-      ++cursor->target_position;
+      if (cursor->file_mode) {
+        ++(*cursor->file_position);
+      } else {
+        ++cursor->target_position;
+      }
       if (cursor->current_row_index.load() == UINT64_MAX) {
         clear_batch(*batch);
         cursor->state.store(SIMD_JSON_STREAM_CURSOR_CANCELLED,
@@ -866,9 +1077,9 @@ extern "C" simd_json_stream_status simd_json_stream_next_batch(
       cursor->current_row_index.fetch_add(1, std::memory_order_acq_rel);
       cursor->committed_rows.fetch_add(1, std::memory_order_acq_rel);
     }
-    if (!cursor->pending_row && cursor->target_position == cursor->target_end) {
+    if (!cursor->pending_row && stream_at_end(*cursor)) {
       const simd_json_stream_status completion =
-          validate_source_completion(*cursor, cancellation);
+          validate_stream_completion(*cursor, cancellation);
       if (completion.code != SIMD_JSON_STATUS_OK) {
         clear_batch(*batch);
         cursor->state.store(SIMD_JSON_STREAM_CURSOR_CANCELLED,
@@ -876,9 +1087,11 @@ extern "C" simd_json_stream_status simd_json_stream_next_batch(
         return completion;
       }
       batch->done = SIMD_JSON_STREAM_DONE;
+      advise_consumed_file_pages(*cursor);
       cursor->state.store(SIMD_JSON_STREAM_CURSOR_DONE,
                           std::memory_order_release);
     } else {
+      advise_consumed_file_pages(*cursor);
       cursor->state.store(SIMD_JSON_STREAM_CURSOR_READY,
                           std::memory_order_release);
     }

@@ -23,10 +23,23 @@ pub fn Implementation(comptime c: type, comptime projection: type) type {
             encoded_bytes: u64,
         };
 
+        pub const FileFormat = enum {
+            json_array,
+            ndjson,
+            json_sequence,
+            comma_delimited,
+        };
+
         pub const BuildError = error{
             OutOfMemory,
             InvalidTarget,
             InvalidPlan,
+            InvalidJson,
+            UnexpectedEof,
+            FileNotFound,
+            FileUnreadable,
+            NotRegularFile,
+            FileChanged,
             NativeFailure,
         };
 
@@ -45,6 +58,10 @@ pub fn Implementation(comptime c: type, comptime projection: type) type {
             cancelled,
             batch_too_large,
             cursor_state,
+            file_not_found,
+            file_unreadable,
+            not_regular_file,
+            file_changed,
         };
 
         pub const Failure = struct {
@@ -221,6 +238,73 @@ pub fn Implementation(comptime c: type, comptime projection: type) type {
                 };
             }
 
+            pub fn initFile(
+                path: []const u8,
+                format: FileFormat,
+                plan: *projection.OwnedPlan,
+                limits: Limits,
+                parent_generation: u64,
+            ) BuildError!OwnedCursor {
+                if (path.len == 0 or !plan.isAlive() or parent_generation == 0 or
+                    limits.rows == 0 or limits.rows > c.SIMD_JSON_STREAM_MAX_BATCH_SIZE or
+                    limits.encoded_bytes == 0 or
+                    limits.encoded_bytes > c.SIMD_JSON_STREAM_MAX_BATCH_BYTES)
+                    return error.InvalidTarget;
+                const native_format: c.simd_json_file_stream_format = switch (format) {
+                    .json_array => c.SIMD_JSON_FILE_STREAM_JSON_ARRAY,
+                    .ndjson => c.SIMD_JSON_FILE_STREAM_NDJSON,
+                    .json_sequence => c.SIMD_JSON_FILE_STREAM_JSON_SEQUENCE,
+                    .comma_delimited => c.SIMD_JSON_FILE_STREAM_COMMA_DELIMITED,
+                };
+                var config = c.simd_json_stream_cursor_config{
+                    .projection_plan = plan.handle,
+                    .row_limit = limits.rows,
+                    .encoded_byte_limit = limits.encoded_bytes,
+                    .parent_generation = parent_generation,
+                    .reserved = 0,
+                };
+                var handle: ?*c.simd_json_stream_cursor = null;
+                const output_slots = plan.output_slots;
+                const status = c.simd_json_file_stream_cursor_create(
+                    path.ptr,
+                    @intCast(path.len),
+                    native_format,
+                    c.SIMD_JSON_FILE_STREAM_BATCH_BYTES,
+                    &config,
+                    &handle,
+                );
+                if (config.projection_plan == null) {
+                    plan.handle = null;
+                    plan.output_slots = 0;
+                } else {
+                    plan.handle = config.projection_plan;
+                }
+                if (status.code != c.SIMD_JSON_STATUS_OK or handle == null) {
+                    if (handle) |unexpected| c.simd_json_stream_cursor_destroy(unexpected);
+                    return switch (status.code) {
+                        c.SIMD_JSON_STATUS_OUT_OF_MEMORY => error.OutOfMemory,
+                        c.SIMD_JSON_STATUS_INVALID_ARGUMENT => error.InvalidTarget,
+                        c.SIMD_JSON_STATUS_INVALID_JSON => error.InvalidJson,
+                        c.SIMD_JSON_STATUS_UNEXPECTED_EOF => error.UnexpectedEof,
+                        c.SIMD_JSON_STATUS_FILE_NOT_FOUND => error.FileNotFound,
+                        c.SIMD_JSON_STATUS_FILE_UNREADABLE => error.FileUnreadable,
+                        c.SIMD_JSON_STATUS_NOT_REGULAR_FILE => error.NotRegularFile,
+                        c.SIMD_JSON_STATUS_FILE_CHANGED => error.FileChanged,
+                        else => error.NativeFailure,
+                    };
+                }
+                if (config.projection_plan != null) {
+                    c.simd_json_stream_cursor_destroy(handle.?);
+                    return error.NativeFailure;
+                }
+                return .{
+                    .handle = handle,
+                    .parent_generation = parent_generation,
+                    .output_slots = output_slots,
+                    .limits = limits,
+                };
+            }
+
             pub fn deinit(self: *OwnedCursor) void {
                 const handle = self.handle orelse return;
                 self.handle = null;
@@ -356,6 +440,10 @@ pub fn Implementation(comptime c: type, comptime projection: type) type {
                 c.SIMD_JSON_STATUS_CANCELLED => .cancelled,
                 c.SIMD_JSON_STATUS_BATCH_TOO_LARGE => .batch_too_large,
                 c.SIMD_JSON_STATUS_CURSOR_STATE => .cursor_state,
+                c.SIMD_JSON_STATUS_FILE_NOT_FOUND => .file_not_found,
+                c.SIMD_JSON_STATUS_FILE_UNREADABLE => .file_unreadable,
+                c.SIMD_JSON_STATUS_NOT_REGULAR_FILE => .not_regular_file,
+                c.SIMD_JSON_STATUS_FILE_CHANGED => .file_changed,
                 else => .internal_failure,
             };
             return .{
@@ -457,8 +545,8 @@ pub fn Implementation(comptime c: type, comptime projection: type) type {
         } else struct {};
 
         comptime {
-            if (c.SIMD_JSON_ABI_VERSION != 5)
-                @compileError("stream cursor ownership requires private ABI version 3");
+            if (c.SIMD_JSON_ABI_VERSION != 6)
+                @compileError("stream cursor ownership requires private ABI version 6");
             if (c.SIMD_JSON_ARRAY_INDEX_UNAVAILABLE != std.math.maxInt(u64) or
                 c.SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE != std.math.maxInt(u32))
                 @compileError("ABI v3 stream sentinels changed");

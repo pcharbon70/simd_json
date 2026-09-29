@@ -18,7 +18,8 @@ defmodule SimdJson.PublicSurfaceTest do
     open_file: 1,
     select: 2,
     select_file: 2,
-    stream: 2
+    stream: 2,
+    stream_file: 2
   ]
   @struct_functions [__struct__: 0, __struct__: 1]
   @forbidden_functions [
@@ -38,6 +39,8 @@ defmodule SimdJson.PublicSurfaceTest do
   ]
   @root_types [
     {:array_index, :type},
+    {:file_stream_format, :type},
+    {:file_stream_option, :type},
     {:object_segment, :type},
     {:output_key, :type},
     {:path, :type},
@@ -98,6 +101,7 @@ defmodule SimdJson.PublicSurfaceTest do
     assert stream_option_functions == [
              inspect_metadata: 1,
              new: 2,
+             new_file: 2,
              runtime: 1,
              snapshot_for_test: 1
            ]

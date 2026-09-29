@@ -84,6 +84,10 @@ const StreamFixtureStatus = enum(u8) {
     incorrect_type,
     number_out_of_range,
     batch_too_large,
+    file_not_found,
+    file_unreadable,
+    not_regular_file,
+    file_changed,
 };
 
 const StreamSetupFixtureResult = struct {
@@ -539,6 +543,20 @@ pub fn native_pool_submit_stream_document_setup(
 
     const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
     return pool.submitOperation(.stream_document_setup, operation, document, null, projection, target, row_limit, byte_limit, 0);
+}
+
+pub fn native_pool_submit_stream_file_setup(
+    operation: OperationResource,
+    projection: beam.term,
+    format: beam.term,
+    row_limit: u64,
+    byte_limit: u64,
+) !worker_pool.MonitoredSubmission {
+    const guard = PoolLifecycleGuard.acquire() orelse return error.pool_stopped;
+    defer guard.release();
+
+    const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
+    return pool.submitOperation(.stream_file_setup, operation, null, null, projection, format, row_limit, byte_limit, 0);
 }
 
 pub fn native_pool_submit_stream_batch(
@@ -3044,6 +3062,7 @@ pub fn threaded_stream_binary_setup_fixture(
             switch (err) {
                 error.OutOfMemory => .out_of_memory,
                 error.InvalidTarget, error.InvalidPlan => .invalid_target,
+                error.InvalidJson, error.UnexpectedEof, error.FileNotFound, error.FileUnreadable, error.NotRegularFile, error.FileChanged => .native_failure,
                 error.NativeFailure => .native_failure,
             },
             record,
@@ -3075,6 +3094,98 @@ pub fn threaded_stream_binary_setup_fixture(
         return streamSetupFixtureResult(.out_of_memory, record, null, record.markReadyForDelivery());
     };
     transferred = true;
+    worker_finished = true;
+    return streamSetupFixtureResult(.ok, record, resource, record.markReadyForDelivery());
+}
+
+pub fn threaded_stream_file_setup(
+    operation: OperationResource,
+    projection: beam.term,
+    format_term: beam.term,
+    row_limit: u64,
+    byte_limit: u64,
+) StreamSetupFixtureResult {
+    const record = operation.unpack();
+    if (record.kind != .stream_setup or !record.beginRunning())
+        return streamSetupFixtureResult(.cancelled, record, null, false);
+    var worker_finished = false;
+    defer if (!worker_finished) record.abortRunning();
+
+    const path = record.inputBytes() catch {
+        worker_finished = true;
+        return streamSetupFixtureResult(.invalid_target, record, null, record.markReadyForDelivery());
+    };
+    var format_number: c_uint = 0;
+    if (e.enif_get_uint(beam.context.env, format_term.v, &format_number) == 0 or
+        format_number > @intFromEnum(stream_cursor.FileFormat.comma_delimited))
+    {
+        worker_finished = true;
+        return streamSetupFixtureResult(.invalid_target, record, null, record.markReadyForDelivery());
+    }
+    const format: stream_cursor.FileFormat = @enumFromInt(@as(u2, @intCast(format_number)));
+    var decoded = decodeProjectionTerm(beam.context.env, projection) catch |err| {
+        worker_finished = true;
+        return streamSetupFixtureResult(if (err == error.OutOfMemory) .out_of_memory else .invalid_target, record, null, record.markReadyForDelivery());
+    };
+    defer decoded.deinit();
+    var plan = projection_plan.OwnedPlan.init(beam.allocator, decoded.normalized()) catch |err| {
+        worker_finished = true;
+        return streamSetupFixtureResult(
+            if (err == error.OutOfMemory) .out_of_memory else .native_failure,
+            record,
+            null,
+            record.markReadyForDelivery(),
+        );
+    };
+    defer plan.deinit();
+    var cursor = stream_cursor.OwnedCursor.initFile(
+        path,
+        format,
+        &plan,
+        .{ .rows = row_limit, .encoded_bytes = byte_limit },
+        record.generation,
+    ) catch |err| {
+        worker_finished = true;
+        return streamSetupFixtureResult(
+            switch (err) {
+                error.OutOfMemory => .out_of_memory,
+                error.InvalidTarget, error.InvalidPlan => .invalid_target,
+                error.InvalidJson => .invalid_json,
+                error.UnexpectedEof => .unexpected_eof,
+                error.FileNotFound => .file_not_found,
+                error.FileUnreadable => .file_unreadable,
+                error.NotRegularFile => .not_regular_file,
+                error.FileChanged => .file_changed,
+                error.NativeFailure => .native_failure,
+            },
+            record,
+            null,
+            record.markReadyForDelivery(),
+        );
+    };
+    errdefer cursor.deinit();
+    const control = beam.allocator.create(StreamCursorControl) catch {
+        cursor.deinit();
+        worker_finished = true;
+        return streamSetupFixtureResult(.out_of_memory, record, null, record.markReadyForDelivery());
+    };
+    control.* = .{
+        .allocator = beam.allocator,
+        .native = cursor,
+        .parent = null,
+        .owner = record.owner,
+        .parent_generation = record.generation,
+        .demand_state = .init(@intFromEnum(StreamDemandState.ready)),
+        .next_sequence = .init(0),
+        .stream_reservation = null,
+        .owned_document = document_resource.DocumentState.empty(),
+    };
+    _ = ExecutionAccounting.live_stream_cursor_resources.fetchAdd(1, .acq_rel);
+    const resource = StreamCursorResource.create(.{ .control = control }, .{}) catch {
+        destroyStreamCursorControl(control);
+        worker_finished = true;
+        return streamSetupFixtureResult(.out_of_memory, record, null, record.markReadyForDelivery());
+    };
     worker_finished = true;
     return streamSetupFixtureResult(.ok, record, resource, record.markReadyForDelivery());
 }
@@ -3174,6 +3285,7 @@ pub fn threaded_stream_setup_fixture(
             switch (err) {
                 error.OutOfMemory => .out_of_memory,
                 error.InvalidTarget, error.InvalidPlan => .invalid_target,
+                error.InvalidJson, error.UnexpectedEof, error.FileNotFound, error.FileUnreadable, error.NotRegularFile, error.FileChanged => .native_failure,
                 error.NativeFailure => .native_failure,
             },
             record,
@@ -3282,6 +3394,10 @@ pub fn threaded_stream_batch_fixture(
             .cursor_consumed, .cursor_state => .cursor_state,
             .cancelled => .cancelled,
             .batch_too_large => .batch_too_large,
+            .file_not_found => .file_not_found,
+            .file_unreadable => .file_unreadable,
+            .not_regular_file => .not_regular_file,
+            .file_changed => .file_changed,
             .internal_failure => .native_failure,
         };
         result.native_code = failure.native_code;

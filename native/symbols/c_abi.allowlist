@@ -1,5 +1,6 @@
 simd_json_document_destroy
 simd_json_document_open
+simd_json_file_stream_cursor_create
 simd_json_mapped_input_create
 simd_json_mapped_input_destroy
 simd_json_mapped_input_read

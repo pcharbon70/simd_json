@@ -166,6 +166,16 @@ defmodule SimdJson do
           | {:batch_size, 1..10_000}
           | {:max_batch_bytes, 1..67_108_864}
 
+  @typedoc "An explicit top-level file format supported by native batching."
+  @type file_stream_format :: :json_array | :ndjson | :json_sequence | :comma_delimited
+
+  @typedoc "Options for native file-backed document streaming."
+  @type file_stream_option ::
+          {:format, file_stream_format()}
+          | {:fields, stream_fields()}
+          | {:batch_size, 1..10_000}
+          | {:max_batch_bytes, 1..67_108_864}
+
   @typedoc "One scalar-only projected row."
   @type stream_row :: %{optional(output_key()) => scalar_result()}
 
@@ -243,6 +253,21 @@ defmodule SimdJson do
   def stream(source, options) do
     source
     |> StreamOptions.new(options)
+    |> Stream.new()
+  end
+
+  @doc """
+  Constructs a lazy, owner-bound stream over top-level documents in a file.
+
+  `:format` and `:fields` are required. Supported formats are `:json_array`,
+  `:ndjson`, `:json_sequence`, and `:comma_delimited`. The JSON bytes remain
+  in a native memory map; simdjson parses bounded windows and returns only the
+  copied projected scalars for each demanded batch.
+  """
+  @spec stream_file(binary(), [file_stream_option()]) :: Stream.t()
+  def stream_file(path, options) do
+    path
+    |> StreamOptions.new_file(options)
     |> Stream.new()
   end
 

@@ -58,18 +58,18 @@
     ]
   ],
   simdjson: [
-    version: "4.6.9",
-    tag: "v4.6.9",
-    commit: "0a2e33f345f49cb6e24401d5b16dbdbc9650921a",
-    release_url: "https://github.com/simdjson/simdjson/releases/tag/v4.6.9",
-    archive_url: "https://github.com/simdjson/simdjson/releases/download/v4.6.9/singleheader.zip",
-    archive_sha256: "d406c794beece1ce6b9f9458914346560686c44a407f7e621299437bf38644ec",
+    version: "5.0.1",
+    tag: "v5.0.1",
+    commit: "8c512a3227ad322bfcb43c57c71fac67a83b5b8e",
+    release_url: "https://github.com/simdjson/simdjson/releases/tag/v5.0.1",
+    archive_url: "https://github.com/simdjson/simdjson/releases/download/v5.0.1/singleheader.zip",
+    archive_sha256: "94e642d7319687cbba72e2b0ff04b610ede74df1008966384a89b3d39178acc1",
     vendor_directory: "native/vendor/simdjson",
     patch_series: "native/vendor/simdjson/patches/series",
     archive_members: ["simdjson.cpp", "simdjson.h"],
     vendor_files: [
-      {"simdjson.cpp", "452f682d543d3476808b25b8d8df8d884f7b7f4b2fb5df51e5123fd03f1c5e00"},
-      {"simdjson.h", "0043db870ceb4c19756519ce9b8b8277ca1585d6222c39b9c022271b69884c4b"},
+      {"simdjson.cpp", "369d633ca839595cadda035feee0cf3a90614b6264ba3cdff2295ba0ce4a382a"},
+      {"simdjson.h", "5c736b99cae80fff22d2dc321e8d7fa6f6c15b5493f7a5d00dc2f24253206f8d"},
       {"LICENSE", "5fa8894e890bd77958f93b165433e0fb0dffa5bc982bfb147e4748e95bad24e5"},
       {"LICENSE-MIT", "9ed0a34979f22fc33fc13d942233f22d44906c236d876bd05fadf18cb5abf7da"}
     ],

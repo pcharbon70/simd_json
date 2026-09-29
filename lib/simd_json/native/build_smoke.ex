@@ -67,10 +67,12 @@ defmodule SimdJson.Native.BuildSmoke.Config do
     native_pool_submit_decode: [],
     native_pool_submit_stream_binary_setup: [],
     native_pool_submit_stream_document_setup: [],
+    native_pool_submit_stream_file_setup: [],
     native_pool_submit_stream_batch: [],
     stream_cursor_resource_close: [],
     threaded_stream_setup_fixture: [concurrency: :threaded],
     threaded_stream_binary_setup_fixture: [concurrency: :threaded],
+    threaded_stream_file_setup: [concurrency: :threaded],
     threaded_stream_batch_fixture: [concurrency: :threaded]
   ]
 
@@ -133,6 +135,7 @@ defmodule SimdJson.Native.BuildSmoke.Config do
     native_pool_submit_stream_batch: 4,
     native_pool_submit_stream_binary_setup: 5,
     native_pool_submit_stream_document_setup: 6,
+    native_pool_submit_stream_file_setup: 5,
     operation_admit: 4,
     operation_cancel: 1,
     operation_finish: 2,
@@ -151,6 +154,7 @@ defmodule SimdJson.Native.BuildSmoke.Config do
     threaded_projection_execute: 1,
     threaded_stream_batch_fixture: 4,
     threaded_stream_binary_setup_fixture: 5,
+    threaded_stream_file_setup: 5,
     threaded_stream_setup_fixture: 6
   ]
 

@@ -15,7 +15,7 @@ defmodule SimdJson.ReleaseDependencyInventory do
 
     rows = [
       row("simd_json", value!(package, "version"), licenses(package), "wrapper"),
-      row("simdjson", "4.6.9", "Apache-2.0 OR MIT", "vendored")
+      row("simdjson", "5.0.1", "Apache-2.0 OR MIT", "vendored")
       | Enum.map(dependencies, fn dependency ->
           row(
             dependency.name,
