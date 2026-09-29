@@ -11,7 +11,8 @@ visible publish action.
 
 Planning this milestone does not authorize a Hex publication, tag, GitHub
 release, credential change, or branch-protection change. Those actions remain
-explicit gates in Phases 6 and 7.
+explicit gates in Phases 6 and 8. Phase 7 is a release-blocking correction of
+the earlier complete-binary-only large-document design.
 
 ## Source Authority
 
@@ -46,7 +47,8 @@ explicit gates in Phases 6 and 7.
 4. [Phase 4 — Release Tooling, Provenance, and Recovery](./phase-04-release-tooling-provenance-and-recovery.md)
 5. [Phase 5 — Precompiled NIF Delivery](./phase-05-precompiled-nif-delivery.md)
 6. [Phase 6 — Release-Candidate Qualification and Go/No-Go](./phase-06-release-candidate-qualification-and-go-no-go.md)
-7. [Phase 7 — Version, Tag, Publish, and Post-Publish Verification](./phase-07-version-tag-publish-and-post-publish-verification.md)
+7. [Phase 7 — Native File-Backed Input Remediation](./phase-07-native-file-backed-input-remediation.md)
+8. [Phase 8 — Version, Tag, Publish, and Post-Publish Verification](./phase-08-version-tag-publish-and-post-publish-verification.md)
 
 ## Contract Ownership by Phase
 
@@ -58,7 +60,8 @@ explicit gates in Phases 6 and 7.
 | 4 | Read-only release checks, archive provenance, credential boundary, publication workflow, and recovery runbook. |
 | 5 | Checksummed precompiled NIF selection, reproducible artifacts, Zig-free consumer qualification, and artifact publication ordering. |
 | 6 | Exact-archive consumer testing, full target qualification, repeatable CI, release-candidate evidence, and explicit approval. |
-| 7 | Final version/release commit, tag, native release asset, Hex publication, HexDocs and clean-consumer verification, monitoring, and acceptance. |
+| 7 | Native memory-mapped document ownership, file-backed selection, simdjson-batched file streaming, measured memory scaling, and release-candidate invalidation. |
+| 8 | Final version/release commit, tag, native release asset, Hex publication, HexDocs and clean-consumer verification, monitoring, and acceptance. |
 
 ## Shared Conventions
 
@@ -71,8 +74,12 @@ explicit gates in Phases 6 and 7.
   cache state.
 - “Supported” means the exact target passed package, ABI, sanitizer, scheduler,
   lifecycle, large-input, and consumer-install gates.
-- Source JSON is loaded as one binary; select/stream avoid a full decoded BEAM
-  tree but do not claim file/socket streaming or zero total-memory input.
+- Binary operations remain explicit in-memory conveniences. Large-file claims
+  belong only to file-backed operations that let simdjson own the memory map,
+  parser, traversal, and batched document stream without a complete BEAM or
+  padded native source copy.
+- No Phase 8 release action may begin until Phase 7 replaces and requalifies
+  every invalidated candidate artifact and approval record.
 - Publication requires explicit human approval after the Phase 6 go/no-go
   record. A green local run alone is insufficient.
 

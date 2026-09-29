@@ -49,3 +49,14 @@ Use this folder for durable cross-cutting decisions that shape the current Spec 
 - [Owned Native Jobs and Bounded FIFO](./0012-owned-native-jobs-and-bounded-fifo.md)
 - [Monitored Delivery and Resource Serialization](./0013-monitored-delivery-and-resource-serialization.md)
 - [Production Native Pool Routing and Telemetry](./0014-production-native-pool-routing-and-telemetry.md)
+
+### Milestone 5 — Compatible Decode
+
+- [Native Pool Qualification and Activation](./0015-native-pool-qualification-and-activation.md)
+- [Safe Decode Compatibility Contract](./0016-safe-decode-compatibility-contract.md)
+- [Flat Owned Decode Result ABI](./0017-flat-owned-decode-result-abi.md)
+
+### Milestone 6 — Publication Readiness
+
+- [Public Hex Release Contract](./0018-public-hex-release-contract.md)
+- [Native File-Backed Input and Batched Streaming](./0019-native-file-backed-input-and-batched-streaming.md)

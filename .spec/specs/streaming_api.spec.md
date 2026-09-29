@@ -80,6 +80,7 @@ decisions:
   - simd_json.stream_ownership_backpressure_and_lifetime
   - simd_json.projection_api_and_validation
   - simd_json.document_resource_and_buffer_ownership
+  - simd_json.native_file_backed_input_and_batched_streaming
 ```
 
 ## Requirements

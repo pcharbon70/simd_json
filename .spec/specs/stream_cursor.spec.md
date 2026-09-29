@@ -77,6 +77,7 @@ surface:
 decisions:
   - simd_json.native_stack_and_c_abi
   - simd_json.document_resource_and_buffer_ownership
+  - simd_json.native_file_backed_input_and_batched_streaming
   - simd_json.projection_api_and_validation
   - simd_json.prefix_sharing_projection_engine
   - simd_json.forward_only_batched_array_cursor

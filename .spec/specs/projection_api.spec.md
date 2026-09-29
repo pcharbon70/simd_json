@@ -108,6 +108,7 @@ surface:
   - docs/milestones/02-projection-api.md
 decisions:
   - simd_json.projection_api_and_validation
+  - simd_json.native_file_backed_input_and_batched_streaming
   - simd_json.projection_admission_consumption_and_lifetime
   - simd_json.document_resource_and_buffer_ownership
   - simd_json.owned_native_jobs_and_bounded_fifo
