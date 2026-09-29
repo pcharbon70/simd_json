@@ -11,6 +11,7 @@ defmodule SimdJson.Native.PoolPublicOperationsTest do
     assert {:ok, %{"name" => "Ada"}} = SimdJson.select(document, [{"name", ["name"]}])
     assert :ok = SimdJson.close(document)
 
+    await_completion(before, 3)
     after_operations = BuildSmoke.native_pool_snapshot()
 
     assert after_operations.worker_count == before.worker_count
@@ -29,8 +30,27 @@ defmodule SimdJson.Native.PoolPublicOperationsTest do
     assert {:ok, %{"count" => 7}} =
              SimdJson.select(~s({"count":7}), [{"count", ["count"]}])
 
+    await_completion(before, 1)
     after_projection = BuildSmoke.native_pool_snapshot()
     assert after_projection.completed_jobs == before.completed_jobs + 1
     assert after_projection.delivered_jobs == before.delivered_jobs + 1
+  end
+
+  defp await_completion(before, count, attempts \\ 1_000)
+
+  defp await_completion(_before, _count, 0),
+    do: flunk("native pool did not publish the expected completed jobs")
+
+  defp await_completion(before, count, attempts) do
+    snapshot = BuildSmoke.native_pool_snapshot()
+
+    if snapshot.completed_jobs == before.completed_jobs + count and
+         snapshot.delivered_jobs == before.delivered_jobs + count and
+         snapshot.queued_jobs == 0 and snapshot.running_jobs == 0 do
+      :ok
+    else
+      Process.sleep(1)
+      await_completion(before, count, attempts - 1)
+    end
   end
 end

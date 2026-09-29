@@ -1,5 +1,11 @@
 # Native Build and ABI
 
+Milestone 6 Phase 6 binds the unchanged ABI v4 and generic supported-target
+artifact to the complete candidate gate, two isolated build roots, an offline
+Zig-free archive consumer, a bounded checksummed evidence review, and a
+fail-closed no-go decision. These release controls change no native layout,
+symbol, runtime dispatch, source-build input, or supported-target promise.
+
 Milestone 6 Phase 5 follow-up qualification pins Zigler's release target to
 generic `x86_64-linux-gnu` instead of inheriting a GitHub runner's native CPU
 features. Independent builders therefore produce one portable checksum while

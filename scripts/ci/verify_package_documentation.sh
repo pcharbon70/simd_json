@@ -82,6 +82,7 @@ required_package_files=(
   docs/milestones/05-compatible-decode-api.md
   docs/milestones/05-compatible-decode-api-acceptance.md
   docs/releases/ci-policy.md
+  docs/releases/candidate-review.md
   docs/releases/installation.md
   docs/releases/preflight.md
   docs/releases/provenance.md

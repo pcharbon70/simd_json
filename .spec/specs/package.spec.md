@@ -1,5 +1,24 @@
 # SimdJson Package
 
+Milestone 6 Phase 6 Section 6.4 fingerprints the repository-only fail-closed
+go/no-go reviewer. It creates no tag, release, upload, publication, owner
+mutation, package file, runtime dependency, or credential evidence.
+
+Milestone 6 Phase 6 Section 6.3 packages the candidate-review guide and
+fingerprints the repository-only evidence assembler. The bounded checksummed
+review adds no runtime dependency, native binary, credential, or raw log.
+
+Milestone 6 Phase 6 Section 6.2 qualifies the locally built archive in an
+offline Zig-free scratch consumer using only copied production dependencies.
+It verifies the public API, ownership, bounded capacity, telemetry, runtime
+dependency exclusions, and fail-closed artifact handling without changing the
+archive or dependency declarations.
+
+Milestone 6 Phase 6 Section 6.1 composes the cumulative native, runtime,
+benchmark, package, documentation, full-suite, and SpecLed gates at one source
+identity. Its two isolated native and archive build roots and CI cache matrix
+add qualification evidence without changing package contents or runtime APIs.
+
 Milestone 6 Phase 5 follow-up qualification builds the packaged native asset
 for an explicit generic `x86_64-linux-gnu` target, preventing runner CPU
 features from changing its bytes. Package contents, dependencies, and public

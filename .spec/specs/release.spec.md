@@ -1,5 +1,28 @@
 # First Public Hex Release
 
+Milestone 6 Phase 6 Section 6.4 adds the final non-publishing review. It
+presents the exact proposed identity, defaults to no-go, and permits GO only
+for an unconditional exact owner decision with green PR and main checks,
+passed availability preflight, a loaded interactive credential, and unchanged
+source. Any subsequent source change invalidates that decision.
+
+Milestone 6 Phase 6 Section 6.3 assembles one bounded checksummed internal
+review with source, package, native, toolchain, test, benchmark, legal,
+security, consumer, recovery, and CI identities. Every gate has an evidence
+path; credentials, source input, process identity, native addresses, and raw
+logs are excluded, and pending authorization remains explicit.
+
+Milestone 6 Phase 6 Section 6.2 installs only the built Hex tarball, a copied
+production dependency, and the checksummed NIF into a fresh offline scratch
+project. The Zig-free smoke covers every public operation, ownership,
+capacity, telemetry, runtime dependency exclusions, and fail-closed artifact
+and target errors without repository-relative consumer inputs.
+
+Milestone 6 Phase 6 Section 6.1 adds the supported-target candidate gate. It
+binds the complete cumulative safety program, two isolated native and archive
+build roots, and the cold/restored pull-request and main checks to one commit,
+tree, and qualification fingerprint without authorizing publication.
+
 Milestone 6 Phase 5 follow-up qualification pins the release builder to generic
 `x86_64-linux-gnu` so cold, restored, and publication runners attest the same
 portable NIF bytes rather than host-specific CPU output.
@@ -95,6 +118,9 @@ surface:
   - scripts/ci/validate_exdoc_links.exs
   - scripts/ci/generate_dependency_inventory.exs
   - scripts/ci/verify_package_documentation.sh
+  - scripts/ci/qualify_release_candidate.sh
+  - scripts/release/assemble_candidate_evidence.sh
+  - scripts/release/review_go_no_go.sh
   - scripts/release/preflight.sh
   - scripts/release/verify_publisher.sh
   - scripts/release/verify_candidate_evidence.sh

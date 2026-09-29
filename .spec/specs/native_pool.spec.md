@@ -1,5 +1,12 @@
 # Native Worker Pool and Admission
 
+Milestone 6 Phase 6 release-candidate qualification treats native job
+completion and result delivery as separately published terminal counters. Public
+operation tests wait for both counters and a quiescent queue before asserting
+fixed-worker accounting, avoiding a race between a caller receiving its reply
+and the worker publishing its final completion statistic. Runtime capacity,
+admission, delivery, and cleanup behavior are unchanged.
+
 Milestone 6 Phase 5 packages the qualified pool implementation in the
 supported precompiled NIF. Artifact selection and checksum verification occur
 before loading and do not change capacity, admission, cancellation, telemetry,

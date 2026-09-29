@@ -3,6 +3,7 @@ id: simd_json.public_hex_release_contract
 status: accepted
 date: 2026-09-05
 affects:
+  - simd_json.native_build_and_abi
   - simd_json.package
   - simd_json.release
 ---
@@ -82,6 +83,19 @@ must bind the same revision, tree, and qualification-input identity. Local
 qualification is supporting evidence only. Branch-protection changes remain a
 separate repository-owner mutation requiring explicit authorization naming
 the branch and exact required checks.
+
+The Phase 6 candidate gate composes the cumulative native, scheduler, memory,
+large-input, API, documentation, archive, and SpecLed program at one commit,
+tree, and qualification fingerprint. A fresh consumer is prepared only from
+the built Hex tarball, a copied production dependency set, and the checksummed
+NIF, then compiled offline with Zig unavailable. One bounded internal review
+records gate states and evidence paths without raw logs or high-cardinality
+runtime data. The final reviewer defaults to no-go and accepts only an
+unconditional decision whose version, commit, tag, archive checksum,
+destination, and command exactly match green pull-request and main evidence,
+passed name/version preflight, a loaded interactive credential, and an
+unchanged clean source tree. This review performs no release mutation, and any
+later source change invalidates a GO.
 
 The repository owner selected the MIT License for SimdJson wrapper code, with
 copyright recorded as `Copyright (c) 2026 pcharbon70`. Vendored simdjson keeps
