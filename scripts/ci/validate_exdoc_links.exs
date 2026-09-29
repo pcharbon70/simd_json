@@ -9,7 +9,7 @@ defmodule SimdJson.ValidateExDocLinks do
     "security.html" => "Report a vulnerability privately",
     "contributing.html" => "Before opening a pull request",
     "license.html" => "MIT License",
-    "third-party-notices.html" => "simdjson 4.6.9",
+    "third-party-notices.html" => "simdjson 5.0.1",
     "installation.html" => "Installation and Native Delivery",
     "support.html" => "Input and memory boundary"
   }

@@ -1,7 +1,7 @@
 # Milestone 3 Batched Array Streaming Operations
 
 Milestone 3 is supported on Ubuntu 24.04 x86-64 GNU/Linux with OTP 27.3,
-Elixir 1.18.4, Zig/Zigler 0.16.0, vendored simdjson 4.6.9, and private ABI v3.
+Elixir 1.18.4, Zig/Zigler 0.16.0, vendored simdjson 5.0.1, and cumulative private ABI v6.
 Other targets do not inherit its package, sanitizer, scheduler, or benchmark
 evidence. The threaded adapter remains pre-production until Milestone 4 adds a
 bounded global worker pool and admission policy.

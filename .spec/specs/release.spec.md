@@ -35,9 +35,11 @@ reached the former 45-minute step ceiling; both limits remain bounded above
 the observed complete cold-cache duration.
 
 Current-truth contract for preparing and publishing the first public release.
-Milestone 6 Phase 1 freezes identity, licensing, and support; Phases 2–7 own CI
+Milestone 6 Phase 1 freezes identity, licensing, and support; Phases 2–8 own CI
 repair, public package documentation, release tooling, exact-candidate
-qualification, explicit authorization, publication, and external verification.
+qualification, native file-backed input remediation, explicit authorization,
+publication, and external verification. Phase 7 invalidates every preceding
+candidate until its corrected native surface is fully requalified.
 Phase 3 Section 3.1 adds explicit Hex identity, maintainer and public links,
 tag-bound ExDoc source metadata, documentation groups, and executable proof
 that telemetry is the required runtime dependency while Zigler is an optional
@@ -129,6 +131,7 @@ surface:
   - test/release/*.exs
 decisions:
   - simd_json.public_hex_release_contract
+  - simd_json.native_file_backed_input_and_batched_streaming
 bootstrap:
   reason: Phase 1 freezes release identity, licensing, support, and authorization boundaries; CI repair, public documentation, tooling, precompiled delivery, candidate qualification, publication, and post-publish verification remain in Phases 2 through 7.
   requirements:
@@ -161,9 +164,14 @@ bootstrap:
   stability: stable
 
 - id: simd_json.release.qualified_support
-  statement: Public documentation shall claim support only for the exact qualified Ubuntu 24.04 x86-64 toolchain and shall distinguish complete input-binary residency from avoided decoded-tree allocation.
+  statement: Public documentation shall claim support only for the exact qualified Ubuntu 24.04 x86-64 toolchain, present native file-backed processing as the principal large-document capability, and distinguish mapped source bytes, simdjson parser working memory, bounded result batches, and eager decoded-tree allocation.
   priority: must
-  stability: stable
+  stability: evolving
+
+- id: simd_json.release.file_input_gate
+  statement: No release commit, tag, GitHub release, or Hex publication shall proceed until open_file, select_file, and batched stream_file pass the complete supported-target, memory-scaling, archive, precompiled-NIF, and Zig-free consumer matrix at the proposed commit.
+  priority: must
+  stability: evolving
 
 - id: simd_json.release.green_ci
   statement: The exact release commit shall pass required pull-request and main CI from cold and restored caches with no pending or red check.
@@ -265,6 +273,7 @@ bootstrap:
     - simd_json.release.public_identity
     - simd_json.release.project_license
     - simd_json.release.qualified_support
+    - simd_json.release.file_input_gate
     - simd_json.release.explicit_authorization
   given:
     - A completely green candidate with verified package ownership and credentials
@@ -273,6 +282,7 @@ bootstrap:
   then:
     - Publication proceeds only after explicit approval
     - Any source or identity change invalidates approval and returns to qualification
+    - Candidate evidence created before the accepted file-input correction is rejected
 
 - id: simd_json.release.publisher_identity_is_read_only
   covers:
@@ -421,6 +431,7 @@ bootstrap:
     - simd_json.release.post_publish_verification
     - simd_json.release.candidate_preflight
     - simd_json.release.public_verification
+    - simd_json.release.file_input_gate
 
 - kind: command
   target: bash scripts/ci/verify_precompiled_consumer.sh

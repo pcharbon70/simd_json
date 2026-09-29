@@ -9,6 +9,16 @@ int main(void) {
   simd_json_status (*parser_create)(simd_json_parser **) =
       simd_json_parser_create;
   void (*parser_destroy)(simd_json_parser *) = simd_json_parser_destroy;
+  simd_json_status (*mapped_input_create)(const uint8_t *, uint64_t,
+                                          simd_json_mapped_input **) =
+      simd_json_mapped_input_create;
+  simd_json_status (*mapped_input_read)(const simd_json_mapped_input *,
+                                        simd_json_input_view *) =
+      simd_json_mapped_input_read;
+  simd_json_status (*mapped_input_verify)(const simd_json_mapped_input *) =
+      simd_json_mapped_input_verify;
+  void (*mapped_input_destroy)(simd_json_mapped_input *) =
+      simd_json_mapped_input_destroy;
   simd_json_status (*document_open)(simd_json_parser *, const uint8_t *,
                                     uint64_t, uint64_t,
                                     simd_json_document **) =
@@ -27,6 +37,10 @@ int main(void) {
       simd_json_document *, const simd_json_stream_target *,
       simd_json_stream_cursor_config *, simd_json_stream_cursor **) =
       simd_json_stream_cursor_create;
+  simd_json_stream_status (*file_cursor_create)(
+      const uint8_t *, uint64_t, simd_json_file_stream_format, uint64_t,
+      simd_json_stream_cursor_config *, simd_json_stream_cursor **) =
+      simd_json_file_stream_cursor_create;
   void (*cursor_destroy)(simd_json_stream_cursor *) =
       simd_json_stream_cursor_destroy;
   simd_json_stream_status (*next_batch)(
@@ -48,12 +62,17 @@ int main(void) {
 
   (void)parser_create;
   (void)parser_destroy;
+  (void)mapped_input_create;
+  (void)mapped_input_read;
+  (void)mapped_input_verify;
+  (void)mapped_input_destroy;
   (void)document_open;
   (void)document_destroy;
   (void)plan_create;
   (void)plan_destroy;
   (void)projection_execute;
   (void)cursor_create;
+  (void)file_cursor_create;
   (void)cursor_destroy;
   (void)next_batch;
   (void)materializer_create;
@@ -62,16 +81,19 @@ int main(void) {
   (void)result_read;
   (void)result_destroy;
 
-  return (SIMD_JSON_ABI_VERSION == UINT32_C(4) &&
+  return (SIMD_JSON_ABI_VERSION == UINT32_C(6) &&
           SIMD_JSON_REQUIRED_PADDING == UINT64_C(64) &&
           SIMD_JSON_MAX_DEPTH == UINT64_C(1024) &&
           SIMD_JSON_OUTPUT_SLOT_UNAVAILABLE == UINT32_MAX &&
           SIMD_JSON_ARRAY_INDEX_UNAVAILABLE == UINT64_MAX &&
           SIMD_JSON_STATUS_CURSOR_STATE == INT32_C(14) &&
           SIMD_JSON_STATUS_MAX_OUTPUT_BYTES_EXCEEDED == INT32_C(18) &&
+          SIMD_JSON_STATUS_FILE_NOT_FOUND == INT32_C(19) &&
+          SIMD_JSON_STATUS_FILE_CHANGED == INT32_C(22) &&
           SIMD_JSON_PROJECTION_SEGMENT_OBJECT_KEY == UINT32_C(1) &&
           SIMD_JSON_RESULT_STRING == UINT32_C(6) &&
           SIMD_JSON_STREAM_CURSOR_CLOSED == UINT32_C(4) &&
+          SIMD_JSON_FILE_STREAM_COMMA_DELIMITED == UINT32_C(4) &&
           SIMD_JSON_DECODE_NODE_OBJECT == UINT32_C(1) &&
           SIMD_JSON_DECODE_NODE_NULL == UINT32_C(9))
              ? 0

@@ -42,7 +42,7 @@ belong to Milestone 4's fixed native worker pool.
 | `native/zig/document_resource.zig` | Padded buffer, native handle ownership, lifecycle, generation, admission, and accounting. |
 | `native/zig/projection_plan.zig` | ABI v2 layout assertions, normalized-path serialization, and idempotent plan ownership. |
 | `native/zig/build_smoke.zig` | BEAM resources, threaded workers, cleanup dispatcher, callbacks, and bounded diagnostics. |
-| `native/vendor/simdjson` | Exact official v4.6.9 amalgamation, provenance, patch declaration, and upstream licenses. |
+| `native/vendor/simdjson` | Exact official v5.0.1 amalgamation, provenance, patch declaration, and upstream licenses. |
 | `native/manifest.exs` | Authoritative toolchain, target, profile, cache, and qualification input matrix. |
 | `native/qualification/milestone_1.exs` | Supported target, deterministic seed, commands, and expected input fingerprint. |
 | `scripts/native` | Independent C, Zig, sanitizer, and release-symbol harnesses. |
@@ -96,7 +96,7 @@ flowchart LR
     Zigler --> Zig[Zig resource and term layer]
     Zig --> ABI[Private C ABI v2<br/>v1 parser/document symbols retained]
     ABI --> Shim[C++ exception boundary]
-    Shim --> SIMD[Official simdjson v4.6.9]
+    Shim --> SIMD[Official simdjson v5.0.1]
 ```
 
 The independent shared artifact retains four ABI v1 functions—parser

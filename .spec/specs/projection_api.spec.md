@@ -1,5 +1,10 @@
 # Projection API
 
+Milestone 6 Phase 7 adds `select_file/2` as a path-backed entry to the same
+closed projection grammar and scalar result contract. It validates the complete
+projection before file access, maps the source below the BEAM boundary, copies
+only selected scalar results, and closes native file ownership before return.
+
 Milestone 6 Phase 5 follow-up qualification waits for the opening native
 operation to release its retained input before testing invalid and rejected
 fresh-document projections. Projection grammar, results, errors, and public
@@ -108,6 +113,7 @@ surface:
   - docs/milestones/02-projection-api.md
 decisions:
   - simd_json.projection_api_and_validation
+  - simd_json.native_file_backed_input_and_batched_streaming
   - simd_json.projection_admission_consumption_and_lifetime
   - simd_json.document_resource_and_buffer_ownership
   - simd_json.owned_native_jobs_and_bounded_fifo

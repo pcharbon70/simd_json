@@ -116,6 +116,31 @@ parent = self()
 :ok = SimdJson.close(document)
 :ok = SimdJson.close(document)
 
+file_root = Path.join(System.tmp_dir!(), "simd-json-precompiled-#{System.unique_integer([:positive])}")
+array_path = file_root <> ".json"
+ndjson_path = file_root <> ".ndjson"
+File.write!(array_path, ~s({"rows":[{"id":1},{"id":2}]}))
+File.write!(ndjson_path, "{\"id\":1}\n{\"id\":2}\n")
+
+try do
+  {:ok, file_document} = SimdJson.open_file(array_path)
+  {:ok, %{id: 1}} = SimdJson.select(file_document, id: ["rows", 0, "id"])
+  :ok = SimdJson.close(file_document)
+  {:ok, %{id: 2}} = SimdJson.select_file(array_path, id: ["rows", 1, "id"])
+
+  [%{id: 1}, %{id: 2}] =
+    SimdJson.stream_file(ndjson_path,
+      format: :ndjson,
+      fields: [id: ["id"]],
+      batch_size: 1,
+      max_batch_bytes: 1_024
+    )
+    |> Enum.to_list()
+after
+  File.rm(array_path)
+  File.rm(ndjson_path)
+end
+
 pool = SimdJson.Native.OperationCoordinator.pool_snapshot()
 true = pool.worker_count in 1..64
 true = pool.queue_capacity in 1..4096

@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-SimdJson includes the official single-header distribution of simdjson 4.6.9.
+SimdJson includes the official single-header distribution of simdjson 5.0.1.
 That upstream work is available under either the Apache License 2.0 or the MIT
 License, at the recipient's option. Its unmodified license texts are shipped
 with the vendored source:

@@ -34,7 +34,7 @@ Back to plan: [README](./README.md)
 
 - [x] 1.3 Section - Convert milestone acceptance into a public support policy.
   - [x] 1.3.1 Task - Freeze the supported environment.
-    - [x] 1.3.1.1 Subtask - Claim only Ubuntu 24.04 x86-64, OTP 27.3, Elixir 1.18.4, Zig 0.16.0, Zigler 0.16.0, and simdjson 4.6.9.
+    - [x] 1.3.1.1 Subtask - Claim only Ubuntu 24.04 x86-64, OTP 27.3, Elixir 1.18.4, Zig 0.16.0, Zigler 0.16.0, and simdjson 5.0.1.
     - [x] 1.3.1.2 Subtask - Label other operating systems, architectures, OTP/Elixir versions, and CPU dispatch paths experimental or unsupported.
     - [x] 1.3.1.3 Subtask - Define the evidence required to add another supported target.
   - [x] 1.3.2 Task - Freeze public limitations.

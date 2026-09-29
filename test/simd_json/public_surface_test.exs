@@ -1,4 +1,5 @@
 defmodule SimdJson.PublicSurfaceTest do
+  # covers: simd_json.file_input.stream_file_contract
   use ExUnit.Case, async: true
 
   alias SimdJson.Document
@@ -15,8 +16,11 @@ defmodule SimdJson.PublicSurfaceTest do
     decode!: 1,
     decode!: 2,
     open: 1,
+    open_file: 1,
     select: 2,
-    stream: 2
+    select_file: 2,
+    stream: 2,
+    stream_file: 2
   ]
   @struct_functions [__struct__: 0, __struct__: 1]
   @forbidden_functions [
@@ -36,6 +40,8 @@ defmodule SimdJson.PublicSurfaceTest do
   ]
   @root_types [
     {:array_index, :type},
+    {:file_stream_format, :type},
+    {:file_stream_option, :type},
     {:object_segment, :type},
     {:output_key, :type},
     {:path, :type},
@@ -51,7 +57,7 @@ defmodule SimdJson.PublicSurfaceTest do
     {:stream_target_segment, :type}
   ]
 
-  # covers: simd_json.document_api.milestone_scope simd_json.document_api.no_future_surface simd_json.projection_api.select_contract simd_json.projection_api.milestone_scope simd_json.projection_api.atom_and_surface_safety
+  # covers: simd_json.document_api.milestone_scope simd_json.document_api.no_future_surface simd_json.projection_api.select_contract simd_json.projection_api.milestone_scope simd_json.projection_api.atom_and_surface_safety simd_json.file_input.open_file_contract simd_json.file_input.select_file_contract
   test "exports the accepted document, projection, and streaming operations" do
     assert SimdJson.__info__(:functions) == @root_functions
     assert Document.__info__(:functions) == @struct_functions
@@ -96,6 +102,7 @@ defmodule SimdJson.PublicSurfaceTest do
     assert stream_option_functions == [
              inspect_metadata: 1,
              new: 2,
+             new_file: 2,
              runtime: 1,
              snapshot_for_test: 1
            ]

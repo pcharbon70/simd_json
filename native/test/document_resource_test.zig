@@ -7,6 +7,10 @@ const c = @cImport({
 });
 const resource = resource_module.Implementation(c);
 
+fn neverCancelled(_: ?*anyopaque) bool {
+    return false;
+}
+
 test "canonical C status values adapt to a closed Zig status" {
     const success = resource.adaptStatus(.{
         .code = c.SIMD_JSON_STATUS_OK,
@@ -32,6 +36,40 @@ test "empty document state is closed and safely destructible" {
     try std.testing.expectEqual(@as(usize, 0), state.logical_length);
     try std.testing.expectEqual(@as(u64, 0), state.generation.load(.acquire));
     try std.testing.expectEqual(@as(usize, 0), state.admitted_operations.load(.acquire));
+}
+
+test "mapped document retains native source ownership without a padded copy" {
+    var directory = std.testing.tmpDir(.{});
+    defer directory.cleanup();
+
+    const file = try directory.dir.createFile(std.testing.io, "mapped.json", .{});
+    try file.writeStreamingAll(std.testing.io, "{\"mapped\":true}");
+    file.close(std.testing.io);
+
+    const path = try directory.dir.realPathFileAlloc(
+        std.testing.io,
+        "mapped.json",
+        std.testing.allocator,
+    );
+    defer std.testing.allocator.free(path);
+
+    const before = resource.ownershipSnapshot();
+    var state = resource.DocumentState.empty();
+    try std.testing.expect(state.openMappedCancellable(path, .{
+        .context = null,
+        .is_cancelled = neverCancelled,
+    }) == .ok);
+
+    const active = resource.ownershipSnapshot();
+    try std.testing.expectEqual(before.live_mapped_inputs + 1, active.live_mapped_inputs);
+    try std.testing.expectEqual(before.live_padded_buffers, active.live_padded_buffers);
+    try std.testing.expect(state.padded_input == null);
+    try std.testing.expect(state.mapped_input != null);
+
+    try std.testing.expect(state.closeAndDestroy());
+    const released = resource.ownershipSnapshot();
+    try std.testing.expectEqual(before.live_mapped_inputs, released.live_mapped_inputs);
+    try std.testing.expectEqual(before.live_padded_buffers, released.live_padded_buffers);
 }
 
 test "owned padded input is aligned, initialized, and independent of its source" {

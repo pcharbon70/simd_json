@@ -11,7 +11,8 @@ defmodule SimdJson.MixProject do
     "docs/milestones/02-projection-api.md",
     "docs/milestones/03-batched-array-streaming.md",
     "docs/milestones/04-worker-pool-and-operations.md",
-    "docs/milestones/05-compatible-decode-api.md"
+    "docs/milestones/05-compatible-decode-api.md",
+    "docs/milestones/06-file-backed-input.md"
   ]
 
   @operations_guides [
@@ -45,7 +46,7 @@ defmodule SimdJson.MixProject do
       version: @version,
       elixir: "~> 1.18.4",
       start_permanent: Mix.env() == :prod,
-      description: "An ownership-safe Elixir NIF wrapper for simdjson",
+      description: "File-backed SIMD JSON projection and bounded streaming for Elixir",
       source_url: @source_url,
       homepage_url: @source_url,
       docs: docs(),

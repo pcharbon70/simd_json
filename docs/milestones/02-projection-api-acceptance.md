@@ -38,7 +38,7 @@ checkbox, or older artifact is not transferable to changed inputs.
 | Operating system and ABI | Ubuntu 24.04 LTS, glibc 2.39, `x86_64-linux-gnu` |
 | BEAM | OTP 27.3, Elixir 1.18.4 |
 | Native toolchain | Zigler 0.16.0; Zig 0.16.0; bundled Clang/LLVM 21.1.0 and libc++ |
-| Parser | Official vendored simdjson 4.6.9; runtime dispatch `haswell`, `westmere`, or `fallback`; Ice Lake disabled |
+| Parser | Official vendored simdjson 5.0.1; runtime dispatch `haswell`, `westmere`, or `fallback`; Ice Lake disabled |
 | Benchmark baseline | Jason 1.4.5, exact development/test-only dependency |
 | Private ABI | Version 2 with the four ABI v1 parser/document symbols retained |
 

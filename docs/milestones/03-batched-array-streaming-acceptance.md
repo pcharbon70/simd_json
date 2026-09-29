@@ -9,7 +9,7 @@ pre-production pending Milestone 4 global admission control.
 | Qualification date | 2026-09-02 |
 | Qualification seed | `260902003` |
 | Private ABI | v3, retaining ABI v1/v2 symbols |
-| Parser | vendored simdjson 4.6.9 |
+| Parser | vendored simdjson 5.0.1 |
 | Benchmark baseline | Jason 1.4.5 |
 | Complete command | `bash scripts/ci/qualify_milestone_3.sh` |
 | CI artifact | `milestone-3-acceptance-<source revision>` |

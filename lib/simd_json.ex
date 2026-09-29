@@ -1,8 +1,9 @@
 defmodule SimdJson do
   # covers: simd_json.package.mix_library simd_json.native_build_and_abi.layered_boundary simd_json.document_api.open_contract simd_json.document_api.binary_only simd_json.document_api.close_contract simd_json.document_api.document_argument_validation simd_json.projection_api.select_contract simd_json.projection_api.source_argument_validation simd_json.projection_api.output_key_identity simd_json.projection_api.scalar_results simd_json.projection_api.atomic_result
   @moduledoc """
-  Decodes complete JSON values, opens opaque documents, selects scalar values,
-  and lazily streams projected array rows using SIMD-accelerated parsing.
+  Decodes complete JSON values, opens binary or native file-backed documents,
+  selects scalar values, and lazily streams projected rows using
+  SIMD-accelerated parsing.
 
   `select/2` extracts several named scalar paths from either a JSON binary or
   a caller-owned document. Results use the exact atom or binary keys supplied
@@ -25,6 +26,11 @@ defmodule SimdJson do
   Elixir-only and raises the same structured error returned by `decode/2`.
   Eager decode allocates the complete value; prefer projection or streaming for
   large inputs when only a subset is needed.
+
+  For large files, `open_file/1`, `select_file/2`, and `stream_file/2` pass only
+  the path through the BEAM boundary. File streaming delegates the memory map,
+  fixed parser windows, document iteration, and projection batching to
+  simdjson; do not wrap these calls in `File.read/1`.
 
   The API intentionally has no projection bang variant, JSONPath, wildcard,
   default-field policy, public compiled plan, raw
@@ -166,6 +172,16 @@ defmodule SimdJson do
           | {:batch_size, 1..10_000}
           | {:max_batch_bytes, 1..67_108_864}
 
+  @typedoc "An explicit top-level file format supported by native batching."
+  @type file_stream_format :: :json_array | :ndjson | :json_sequence | :comma_delimited
+
+  @typedoc "Options for native file-backed document streaming."
+  @type file_stream_option ::
+          {:format, file_stream_format()}
+          | {:fields, stream_fields()}
+          | {:batch_size, 1..10_000}
+          | {:max_batch_bytes, 1..67_108_864}
+
   @typedoc "One scalar-only projected row."
   @type stream_row :: %{optional(output_key()) => scalar_result()}
 
@@ -247,6 +263,21 @@ defmodule SimdJson do
   end
 
   @doc """
+  Constructs a lazy, owner-bound stream over top-level documents in a file.
+
+  `:format` and `:fields` are required. Supported formats are `:json_array`,
+  `:ndjson`, `:json_sequence`, and `:comma_delimited`. The JSON bytes remain
+  in a native memory map; simdjson parses bounded windows and returns only the
+  copied projected scalars for each demanded batch.
+  """
+  @spec stream_file(binary(), [file_stream_option()]) :: Stream.t()
+  def stream_file(path, options) do
+    path
+    |> StreamOptions.new_file(options)
+    |> Stream.new()
+  end
+
+  @doc """
   Opens one JSON binary as an opaque document owned by the calling process.
 
   Malformed input returns a structured error. A non-binary argument raises
@@ -274,6 +305,37 @@ defmodule SimdJson do
   end
 
   @doc """
+  Opens one immutable regular-file JSON source through simdjson's native
+  memory-map owner.
+
+  The path crosses the BEAM boundary, but the JSON bytes do not become an
+  Elixir binary and are not copied into a padded native source allocation. The
+  file must remain unchanged until the returned document is closed.
+  """
+  @spec open_file(binary()) :: {:ok, Document.t()} | {:error, Error.t()}
+  def open_file(path) when is_binary(path) and byte_size(path) > 0 do
+    if :binary.match(path, <<0>>) != :nomatch do
+      invalid_file_path!()
+    end
+
+    result =
+      try do
+        ThreadedOperation.open_file(path)
+      rescue
+        ErlangError -> native_failure_result()
+      catch
+        :exit, _reason -> native_failure_result()
+      end
+
+    case result do
+      {:ok, resource} -> {:ok, %Document{__resource__: resource}}
+      {:error, native_error} -> {:error, translate_error(native_error, :unknown)}
+    end
+  end
+
+  def open_file(_path), do: invalid_file_path!()
+
+  @doc """
   Selects several scalar paths from a JSON binary or caller-owned document.
 
   The projection is completely validated before parsing or document
@@ -294,6 +356,19 @@ defmodule SimdJson do
   @spec select(binary() | Document.t(), projection()) ::
           {:ok, projection_result()} | {:error, Error.t()}
   def select(source, projection), do: ProjectionOperation.select(source, projection)
+
+  @doc """
+  Selects scalar paths directly from one immutable regular-file JSON source.
+
+  The projection is validated before file access. Native code maps and parses
+  the file without constructing a complete BEAM source binary or padded native
+  source copy, copies only selected scalar results, and closes the mapping
+  before this function returns. The source must remain unchanged throughout
+  the operation.
+  """
+  @spec select_file(binary(), projection()) ::
+          {:ok, projection_result()} | {:error, Error.t()}
+  def select_file(path, projection), do: ProjectionOperation.select_file(path, projection)
 
   @doc """
   Closes an opaque document owned by the calling process.
@@ -360,7 +435,16 @@ defmodule SimdJson do
   end
 
   defp stable_reason(reason)
-       when reason in [:invalid_json, :invalid_utf8, :unexpected_eof, :out_of_memory],
+       when reason in [
+              :invalid_json,
+              :invalid_utf8,
+              :unexpected_eof,
+              :out_of_memory,
+              :file_not_found,
+              :file_unreadable,
+              :not_regular_file,
+              :file_changed
+            ],
        do: reason
 
   defp stable_reason(:not_owner), do: :not_owner
@@ -386,6 +470,10 @@ defmodule SimdJson do
   defp decode_reason(:max_output_bytes_exceeded), do: :output_too_large
   defp decode_reason(_reason), do: :native_failure
 
+  defp safe_offset(offset, :unknown)
+       when is_integer(offset) and offset >= 0 and offset <= 18_446_744_073_709_551_615,
+       do: offset
+
   defp safe_offset(offset, logical_length)
        when is_integer(offset) and offset >= 0 and offset <= logical_length,
        do: offset
@@ -403,6 +491,10 @@ defmodule SimdJson do
   defp message(:invalid_utf8), do: "invalid UTF-8 in JSON input"
   defp message(:unexpected_eof), do: "unexpected end of JSON input"
   defp message(:out_of_memory), do: "native JSON allocation failed"
+  defp message(:file_not_found), do: "JSON file was not found"
+  defp message(:file_unreadable), do: "JSON file could not be read"
+  defp message(:not_regular_file), do: "JSON path is not a regular file"
+  defp message(:file_changed), do: "JSON file changed while mapped"
   defp message(:closed), do: "document is closed"
   defp message(:not_owner), do: "document belongs to another process"
   defp message(:busy), do: "native execution capacity is busy"
@@ -420,5 +512,9 @@ defmodule SimdJson do
 
   defp invalid_document! do
     raise ArgumentError, "expected a SimdJson.Document"
+  end
+
+  defp invalid_file_path! do
+    raise ArgumentError, "expected file path to be a non-empty binary without NUL bytes"
   end
 end

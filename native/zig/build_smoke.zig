@@ -84,6 +84,10 @@ const StreamFixtureStatus = enum(u8) {
     incorrect_type,
     number_out_of_range,
     batch_too_large,
+    file_not_found,
+    file_unreadable,
+    not_regular_file,
+    file_changed,
 };
 
 const StreamSetupFixtureResult = struct {
@@ -477,6 +481,14 @@ pub fn native_pool_submit_open(operation: OperationResource) !worker_pool.Monito
     return pool.submitOperation(.document_open, operation, null, null, null, null, 0, 0, 0);
 }
 
+pub fn native_pool_submit_open_file(operation: OperationResource) !worker_pool.MonitoredSubmission {
+    const guard = PoolLifecycleGuard.acquire() orelse return error.pool_stopped;
+    defer guard.release();
+
+    const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
+    return pool.submitOperation(.document_open_file, operation, null, null, null, null, 0, 0, 0);
+}
+
 pub fn native_pool_submit_cleanup(
     operation: OperationResource,
     document: DocumentResource,
@@ -531,6 +543,20 @@ pub fn native_pool_submit_stream_document_setup(
 
     const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
     return pool.submitOperation(.stream_document_setup, operation, document, null, projection, target, row_limit, byte_limit, 0);
+}
+
+pub fn native_pool_submit_stream_file_setup(
+    operation: OperationResource,
+    projection: beam.term,
+    format: beam.term,
+    row_limit: u64,
+    byte_limit: u64,
+) !worker_pool.MonitoredSubmission {
+    const guard = PoolLifecycleGuard.acquire() orelse return error.pool_stopped;
+    defer guard.release();
+
+    const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
+    return pool.submitOperation(.stream_file_setup, operation, null, null, projection, format, row_limit, byte_limit, 0);
 }
 
 pub fn native_pool_submit_stream_batch(
@@ -824,6 +850,12 @@ const OperationRecord = struct {
         return control.native.projectionDocument(reservation);
     }
 
+    fn verifyProjectionSource(self: *OperationRecord) document_resource.NativeStatus {
+        const control = self.projection_document orelse
+            return .{ .internal_failure = .{ .native_code = null, .byte_offset = null } };
+        return control.native.verifySourceUnchanged();
+    }
+
     fn releaseProjectionReservation(self: *OperationRecord) bool {
         if (self.projection_source_kind != .document or
             !self.projection_reservation_active.swap(false, .acq_rel))
@@ -1104,6 +1136,8 @@ const ExecutionSnapshot = struct {
     live_documents: usize,
     completed_document_cleanup: usize,
     live_document_controls: usize,
+    live_document_padded_buffers: usize,
+    live_document_mapped_inputs: usize,
     dispatcher_queued_cleanup: usize,
     dispatcher_active_cleanup: usize,
     dispatcher_completed_cleanup: usize,
@@ -1149,6 +1183,10 @@ pub const DocumentOpenStatus = enum(u8) {
     out_of_memory,
     invalid_argument,
     internal_failure,
+    file_not_found,
+    file_unreadable,
+    not_regular_file,
+    file_changed,
 };
 
 pub const DocumentOpenResult = struct {
@@ -1235,6 +1273,10 @@ pub const ProjectionStatus = enum(u8) {
     incorrect_type,
     number_out_of_range,
     cursor_consumed,
+    file_not_found,
+    file_unreadable,
+    not_regular_file,
+    file_changed,
 };
 
 pub const ProjectionResult = struct {
@@ -1374,6 +1416,10 @@ fn failedDocumentOpen(
         .out_of_memory => |diagnostics| documentOpenResult(.out_of_memory, operation, diagnostics, null),
         .invalid_argument => |diagnostics| documentOpenResult(.invalid_argument, operation, diagnostics, null),
         .internal_failure => |diagnostics| documentOpenResult(.internal_failure, operation, diagnostics, null),
+        .file_not_found => |diagnostics| documentOpenResult(.file_not_found, operation, diagnostics, null),
+        .file_unreadable => |diagnostics| documentOpenResult(.file_unreadable, operation, diagnostics, null),
+        .not_regular_file => |diagnostics| documentOpenResult(.not_regular_file, operation, diagnostics, null),
+        .file_changed => |diagnostics| documentOpenResult(.file_changed, operation, diagnostics, null),
     };
 }
 
@@ -1861,6 +1907,22 @@ fn projectionOpenFailureResult(
             result.status = .internal_failure;
             break :blk value;
         },
+        .file_not_found => |value| blk: {
+            result.status = .file_not_found;
+            break :blk value;
+        },
+        .file_unreadable => |value| blk: {
+            result.status = .file_unreadable;
+            break :blk value;
+        },
+        .not_regular_file => |value| blk: {
+            result.status = .not_regular_file;
+            break :blk value;
+        },
+        .file_changed => |value| blk: {
+            result.status = .file_changed;
+            break :blk value;
+        },
     };
     if (diagnostics) |value| {
         result.native_code = value.native_code;
@@ -2092,6 +2154,10 @@ pub fn threaded_decode_execute(operation: OperationResource) beam.term {
             .out_of_memory => |item| item,
             .invalid_argument => |item| item,
             .internal_failure => |item| item,
+            .file_not_found => |item| item,
+            .file_unreadable => |item| item,
+            .not_regular_file => |item| item,
+            .file_changed => |item| item,
         };
         const status: []const u8 = switch (opened) {
             .ok => unreachable,
@@ -2101,6 +2167,7 @@ pub fn threaded_decode_execute(operation: OperationResource) beam.term {
             .out_of_memory => "out_of_memory",
             .invalid_argument => "invalid_argument",
             .internal_failure => if (record.cancelled.load(.acquire)) "cancelled" else "native_failure",
+            .file_not_found, .file_unreadable, .not_regular_file, .file_changed => "native_failure",
         };
         worker_finished = true;
         return decodePoolResultWithDiagnostics(env, record, status, null, diagnostics);
@@ -2307,6 +2374,14 @@ pub fn threaded_projection_execute(operation: OperationResource) ProjectionResul
     }
 
     if (!binary_source) {
+        const source_status = record.verifyProjectionSource();
+        if (source_status != .ok) {
+            worker_finished = true;
+            return finishProjectionResult(
+                record,
+                projectionOpenFailureResult(record, source_status, compilation_nanoseconds),
+            );
+        }
         if (!record.commitProjectionReservation()) {
             worker_finished = true;
             return finishProjectionResult(
@@ -2427,6 +2502,8 @@ pub fn threaded_projection_execute(operation: OperationResource) ProjectionResul
 }
 
 pub fn execution_snapshot() ExecutionSnapshot {
+    const document_snapshot = document_resource.ownershipSnapshot();
+
     return .{
         .live_operations = ExecutionAccounting.live_operations.load(.acquire),
         .retained_inputs = ExecutionAccounting.retained_inputs.load(.acquire),
@@ -2439,6 +2516,8 @@ pub fn execution_snapshot() ExecutionSnapshot {
         .live_documents = ExecutionAccounting.live_documents.load(.acquire),
         .completed_document_cleanup = ExecutionAccounting.completed_document_cleanup.load(.acquire),
         .live_document_controls = ExecutionAccounting.live_document_controls.load(.acquire),
+        .live_document_padded_buffers = document_snapshot.live_padded_buffers,
+        .live_document_mapped_inputs = document_snapshot.live_mapped_inputs,
         .dispatcher_queued_cleanup = ExecutionAccounting.dispatcher_queued_cleanup.load(.acquire),
         .dispatcher_active_cleanup = ExecutionAccounting.dispatcher_active_cleanup.load(.acquire),
         .dispatcher_completed_cleanup = ExecutionAccounting.dispatcher_completed_cleanup.load(.acquire),
@@ -2540,6 +2619,89 @@ pub fn threaded_document_open(operation: OperationResource) !DocumentOpenResult 
 
     // Final cancellation/delivery claim occurs before the resource can be
     // encoded by the generated bounded join entry.
+    if (!record.markReadyForDelivery()) {
+        _ = control.native.closeAndDestroy();
+        worker_finished = true;
+        return documentOpenResult(.cancelled, record, null, null);
+    }
+
+    control.accounted.store(true, .release);
+    _ = ExecutionAccounting.live_documents.fetchAdd(1, .acq_rel);
+    publish_document = true;
+    worker_finished = true;
+    return documentOpenResult(.ok, record, null, document);
+}
+
+/// File-backed document construction passes only the retained path to the
+/// worker. C++/simdjson owns the mapping and no complete JSON binary or padded
+/// source allocation is created in the BEAM or Zig layer.
+pub fn threaded_document_open_file(operation: OperationResource) !DocumentOpenResult {
+    const record = operation.unpack();
+    if (!record.beginRunning())
+        return documentOpenResult(.cancelled, record, null, null);
+
+    var worker_finished = false;
+    defer if (!worker_finished) record.abortRunning();
+
+    if (!module_loaded.load(.acquire) or
+        record.generation != module_generation.load(.acquire))
+    {
+        const ready = record.markReadyForDelivery();
+        worker_finished = true;
+        return documentOpenResult(
+            if (ready) .execution_unavailable else .cancelled,
+            record,
+            null,
+            null,
+        );
+    }
+
+    const path = record.inputBytes() catch {
+        const ready = record.markReadyForDelivery();
+        worker_finished = true;
+        return documentOpenResult(
+            if (ready) .invalid_argument else .cancelled,
+            record,
+            null,
+            null,
+        );
+    };
+    if (record.cancelled.load(.acquire))
+        return documentOpenResult(.cancelled, record, null, null);
+
+    const control = try createDocumentControl(record.owner, record.generation);
+    const document = DocumentResource.create(.{ .control = control }, .{}) catch |err| {
+        destroyDocumentControl(control);
+        return err;
+    };
+    var publish_document = false;
+    defer if (!publish_document) document.release();
+
+    const native_status = control.native.openMappedCancellable(path, .{
+        .context = record,
+        .is_cancelled = operationCancelled,
+        .at_boundary = operationBoundary,
+    });
+
+    if (record.cancelled.load(.acquire)) {
+        _ = control.native.closeAndDestroy();
+        return documentOpenResult(.cancelled, record, null, null);
+    }
+    if (native_status != .ok) {
+        const ready = record.markReadyForDelivery();
+        worker_finished = true;
+        return if (ready)
+            failedDocumentOpen(native_status, record)
+        else
+            documentOpenResult(.cancelled, record, null, null);
+    }
+
+    if (beam.context.mode == .threaded) try beam.yield();
+    record.pauseAt(.before_delivery);
+    if (record.cancelled.load(.acquire)) {
+        _ = control.native.closeAndDestroy();
+        return documentOpenResult(.cancelled, record, null, null);
+    }
     if (!record.markReadyForDelivery()) {
         _ = control.native.closeAndDestroy();
         worker_finished = true;
@@ -2900,6 +3062,7 @@ pub fn threaded_stream_binary_setup_fixture(
             switch (err) {
                 error.OutOfMemory => .out_of_memory,
                 error.InvalidTarget, error.InvalidPlan => .invalid_target,
+                error.InvalidJson, error.UnexpectedEof, error.FileNotFound, error.FileUnreadable, error.NotRegularFile, error.FileChanged => .native_failure,
                 error.NativeFailure => .native_failure,
             },
             record,
@@ -2931,6 +3094,98 @@ pub fn threaded_stream_binary_setup_fixture(
         return streamSetupFixtureResult(.out_of_memory, record, null, record.markReadyForDelivery());
     };
     transferred = true;
+    worker_finished = true;
+    return streamSetupFixtureResult(.ok, record, resource, record.markReadyForDelivery());
+}
+
+pub fn threaded_stream_file_setup(
+    operation: OperationResource,
+    projection: beam.term,
+    format_term: beam.term,
+    row_limit: u64,
+    byte_limit: u64,
+) StreamSetupFixtureResult {
+    const record = operation.unpack();
+    if (record.kind != .stream_setup or !record.beginRunning())
+        return streamSetupFixtureResult(.cancelled, record, null, false);
+    var worker_finished = false;
+    defer if (!worker_finished) record.abortRunning();
+
+    const path = record.inputBytes() catch {
+        worker_finished = true;
+        return streamSetupFixtureResult(.invalid_target, record, null, record.markReadyForDelivery());
+    };
+    var format_number: c_uint = 0;
+    if (e.enif_get_uint(beam.context.env, format_term.v, &format_number) == 0 or
+        format_number > @intFromEnum(stream_cursor.FileFormat.comma_delimited))
+    {
+        worker_finished = true;
+        return streamSetupFixtureResult(.invalid_target, record, null, record.markReadyForDelivery());
+    }
+    const format: stream_cursor.FileFormat = @enumFromInt(@as(u2, @intCast(format_number)));
+    var decoded = decodeProjectionTerm(beam.context.env, projection) catch |err| {
+        worker_finished = true;
+        return streamSetupFixtureResult(if (err == error.OutOfMemory) .out_of_memory else .invalid_target, record, null, record.markReadyForDelivery());
+    };
+    defer decoded.deinit();
+    var plan = projection_plan.OwnedPlan.init(beam.allocator, decoded.normalized()) catch |err| {
+        worker_finished = true;
+        return streamSetupFixtureResult(
+            if (err == error.OutOfMemory) .out_of_memory else .native_failure,
+            record,
+            null,
+            record.markReadyForDelivery(),
+        );
+    };
+    defer plan.deinit();
+    var cursor = stream_cursor.OwnedCursor.initFile(
+        path,
+        format,
+        &plan,
+        .{ .rows = row_limit, .encoded_bytes = byte_limit },
+        record.generation,
+    ) catch |err| {
+        worker_finished = true;
+        return streamSetupFixtureResult(
+            switch (err) {
+                error.OutOfMemory => .out_of_memory,
+                error.InvalidTarget, error.InvalidPlan => .invalid_target,
+                error.InvalidJson => .invalid_json,
+                error.UnexpectedEof => .unexpected_eof,
+                error.FileNotFound => .file_not_found,
+                error.FileUnreadable => .file_unreadable,
+                error.NotRegularFile => .not_regular_file,
+                error.FileChanged => .file_changed,
+                error.NativeFailure => .native_failure,
+            },
+            record,
+            null,
+            record.markReadyForDelivery(),
+        );
+    };
+    errdefer cursor.deinit();
+    const control = beam.allocator.create(StreamCursorControl) catch {
+        cursor.deinit();
+        worker_finished = true;
+        return streamSetupFixtureResult(.out_of_memory, record, null, record.markReadyForDelivery());
+    };
+    control.* = .{
+        .allocator = beam.allocator,
+        .native = cursor,
+        .parent = null,
+        .owner = record.owner,
+        .parent_generation = record.generation,
+        .demand_state = .init(@intFromEnum(StreamDemandState.ready)),
+        .next_sequence = .init(0),
+        .stream_reservation = null,
+        .owned_document = document_resource.DocumentState.empty(),
+    };
+    _ = ExecutionAccounting.live_stream_cursor_resources.fetchAdd(1, .acq_rel);
+    const resource = StreamCursorResource.create(.{ .control = control }, .{}) catch {
+        destroyStreamCursorControl(control);
+        worker_finished = true;
+        return streamSetupFixtureResult(.out_of_memory, record, null, record.markReadyForDelivery());
+    };
     worker_finished = true;
     return streamSetupFixtureResult(.ok, record, resource, record.markReadyForDelivery());
 }
@@ -3030,6 +3285,7 @@ pub fn threaded_stream_setup_fixture(
             switch (err) {
                 error.OutOfMemory => .out_of_memory,
                 error.InvalidTarget, error.InvalidPlan => .invalid_target,
+                error.InvalidJson, error.UnexpectedEof, error.FileNotFound, error.FileUnreadable, error.NotRegularFile, error.FileChanged => .native_failure,
                 error.NativeFailure => .native_failure,
             },
             record,
@@ -3138,6 +3394,10 @@ pub fn threaded_stream_batch_fixture(
             .cursor_consumed, .cursor_state => .cursor_state,
             .cancelled => .cancelled,
             .batch_too_large => .batch_too_large,
+            .file_not_found => .file_not_found,
+            .file_unreadable => .file_unreadable,
+            .not_regular_file => .not_regular_file,
+            .file_changed => .file_changed,
             .internal_failure => .native_failure,
         };
         result.native_code = failure.native_code;

@@ -29,7 +29,7 @@ defmodule SimdJson.ReleaseContractTest do
     assert "THIRD_PARTY_NOTICES.md" in files
     assert license =~ "MIT License"
     assert license =~ "Copyright (c) 2026 pcharbon70"
-    assert notices =~ "simdjson 4.6.9"
+    assert notices =~ "simdjson 5.0.1"
     assert notices =~ "native/vendor/simdjson/LICENSE"
     assert notices =~ "native/vendor/simdjson/LICENSE-MIT"
     assert File.exists?("native/vendor/simdjson/LICENSE")
@@ -47,7 +47,8 @@ defmodule SimdJson.ReleaseContractTest do
     assert support =~ "| Source-build Zig | 0.16.0; maintainer/audit path only |"
     assert support =~ "checksummed precompiled NIF"
     assert support =~ "Ordinary consumers need neither Zig nor Zigler"
-    assert support =~ ~r/encoded source is\s+therefore already resident in memory/
+    assert support =~ "Binary operations accept a complete resident JSON binary"
+    assert support =~ "stream_file/2` is the bounded-parser-memory path"
     assert support =~ "avoid constructing a complete decoded BEAM tree"
     assert support =~ "experimental or unsupported"
   end

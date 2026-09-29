@@ -4,11 +4,13 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
         pub const JobKind = enum(u8) {
             fixture,
             document_open,
+            document_open_file,
             document_cleanup,
             projection,
             decode,
             stream_binary_setup,
             stream_document_setup,
+            stream_file_setup,
             stream_batch,
         };
         pub const JobState = enum(u8) { queued, running, completed, cancelled };
@@ -729,11 +731,13 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                         };
                         native_result = switch (job.?.kind) {
                             .document_open => if (ops.threaded_document_open(job.?.operation.?)) |result| encodeResult(job.?.env.?, result) else |_| null,
+                            .document_open_file => if (ops.threaded_document_open_file(job.?.operation.?)) |result| encodeResult(job.?.env.?, result) else |_| null,
                             .document_cleanup => encodeResult(job.?.env.?, ops.threaded_document_cleanup(job.?.operation.?, job.?.document.?)),
                             .projection => ops.pool_encode_projection_result(job.?.env.?, ops.threaded_projection_execute(job.?.operation.?)),
                             .decode => ops.threaded_decode_execute(job.?.operation.?),
                             .stream_binary_setup => encodeResult(job.?.env.?, ops.threaded_stream_binary_setup_fixture(job.?.operation.?, job.?.projection.?, job.?.target.?, job.?.row_limit, job.?.byte_limit)),
                             .stream_document_setup => encodeResult(job.?.env.?, ops.threaded_stream_setup_fixture(job.?.operation.?, job.?.document.?, job.?.projection.?, job.?.target.?, job.?.row_limit, job.?.byte_limit)),
+                            .stream_file_setup => encodeResult(job.?.env.?, ops.threaded_stream_file_setup(job.?.operation.?, job.?.projection.?, job.?.target.?, job.?.row_limit, job.?.byte_limit)),
                             .stream_batch => encodeResult(job.?.env.?, ops.threaded_stream_batch_fixture(job.?.operation.?, job.?.cursor.?, job.?.projection.?, job.?.sequence)),
                             .fixture => unreachable,
                         };

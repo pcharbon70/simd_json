@@ -7,7 +7,7 @@ revision-bound Milestone 5 CI gate is green.
 | --- | --- |
 | Qualification date | 2026-09-05 |
 | Private ABI | v4, retaining ABI v1/v2/v3 symbols |
-| Parser | vendored simdjson 4.6.9 |
+| Parser | vendored simdjson 5.0.1 |
 | Compatibility baseline | Jason 1.4.5 |
 | Complete command | `bash scripts/ci/qualify_milestone_5.sh` |
 | CI artifact | `milestone-5-acceptance-<source revision>` |

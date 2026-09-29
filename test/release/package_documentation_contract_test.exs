@@ -115,9 +115,9 @@ defmodule SimdJson.PackageDocumentationContractTest do
     contributing = File.read!("CONTRIBUTING.md")
 
     assert readme =~ "Milestones 1–5 are active"
-    assert readme =~ ~r/complete JSON binary.*encoded document is already\s+resident in memory/s
-    assert readme =~ "does not incrementally read JSON from a file"
-    assert readme =~ "45,666,793-byte million-row fixture"
+    assert readme =~ "File-backed APIs instead"
+    assert readme =~ "simdjson owns the memory map"
+    assert readme =~ "stream_file/2"
     assert readme =~ "pool operations guide"
     assert readme =~ "telemetry runbook"
     assert readme =~ "decode acceptance record"

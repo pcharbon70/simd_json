@@ -252,6 +252,13 @@ defmodule SimdJson.Native.ThreadedOperation do
     OperationCoordinator.open(operation)
   end
 
+  @spec open_file(binary()) :: {:ok, reference()} | {:error, map()}
+  def open_file(path) when is_binary(path) do
+    generation = BuildSmoke.execution_generation()
+    operation = admit(path, :document_open, generation)
+    OperationCoordinator.open_file(operation)
+  end
+
   @spec cleanup(reference()) :: :ok | {:error, map()}
   def cleanup(document) when is_reference(document) do
     generation = BuildSmoke.execution_generation()
@@ -270,7 +277,11 @@ defmodule SimdJson.Native.ThreadedOperation do
     generation = BuildSmoke.execution_generation()
 
     operation =
-      admit(if(source_kind == :binary, do: source, else: <<>>), :stream_setup, generation)
+      admit(
+        if(source_kind in [:binary, :file], do: source, else: <<>>),
+        :stream_setup,
+        generation
+      )
 
     OperationCoordinator.stream_setup(
       operation,
@@ -319,6 +330,9 @@ defmodule SimdJson.Native.ThreadedOperation do
         {:document_open, nil} ->
           BuildSmoke.native_pool_submit_open(operation.resource)
 
+        {:document_open, :file} ->
+          BuildSmoke.native_pool_submit_open_file(operation.resource)
+
         {:document_cleanup, document} ->
           BuildSmoke.native_pool_submit_cleanup(operation.resource, document)
 
@@ -343,6 +357,15 @@ defmodule SimdJson.Native.ThreadedOperation do
             document,
             projection,
             target,
+            rows,
+            bytes
+          )
+
+        {:stream_setup, {:file, _path, projection, format, rows, bytes}} ->
+          BuildSmoke.native_pool_submit_stream_file_setup(
+            operation.resource,
+            projection,
+            format,
             rows,
             bytes
           )

@@ -1,5 +1,12 @@
 # Native Build and ABI
 
+Milestone 6 Phase 7 advances the cumulative private contract to ABI v6. Four
+versioned mapping-owner symbols and one file-stream cursor constructor expose
+simdjson's `padded_memory_map` and `iterate_many` behind the C boundary while
+preserving every ABI v1-v5 layout and symbol. The cursor owns its mapping,
+parser, document stream, compiled projection, and bounded copied-result batch;
+it never creates the binary API's padded source copy.
+
 Milestone 6 Phase 6 binds the unchanged ABI v4 and generic supported-target
 artifact to the complete candidate gate, two isolated build roots, an offline
 Zig-free archive consumer, a bounded checksummed evidence review, and a

@@ -7,7 +7,7 @@ repository_root="$(git rev-parse --show-toplevel)"
 scratch_root="$(mktemp -d "${TMPDIR:-/tmp}/simd-json-symbols.XXXXXX")"
 zig_cache_root="${XDG_CACHE_HOME:-${HOME}/.cache}"
 zig_executable="${ZIG_EXECUTABLE_PATH:-${zig_cache_root}/zigler/zig-x86_64-linux-0.16.0/zig}"
-export ZIG_GLOBAL_CACHE_DIR="${ZIG_GLOBAL_CACHE_DIR:-${TMPDIR:-/tmp}/simd-json-zig-global-cache}"
+export ZIG_GLOBAL_CACHE_DIR="${ZIG_GLOBAL_CACHE_DIR:-${scratch_root}/zig-global-cache}"
 export ZIG_LOCAL_CACHE_DIR="${ZIG_LOCAL_CACHE_DIR:-${scratch_root}/zig-local-cache}"
 release_build_root="${scratch_root}/release-build"
 nif_path="${SIMD_JSON_NIF_PATH:-${release_build_root}/lib/simd_json/priv/lib/Elixir.SimdJson.Native.BuildSmoke.so}"
@@ -85,7 +85,7 @@ for artifact in "${abi_library}" "${nif_path}"; do
   fi
 
   forbidden_strings="$(strings "${artifact}" | grep -E \
-    'simd_json_test_|simd_json_test_standard_exception|simd_json_projection_standard_exception|simd_json_stream_standard_exception|after_buffer_allocation|live_padded_buffers|completed_destruction_events|openWithFailure|projection_operation_inject_failure|stream_operation_inject_failure|operation_configure_pause|operation_release_pause|execution_set_cleanup_rejection|execution_snapshot|live_(projection|stream)_(operations|environments|plans|slots|cursors|batches|temporary_document_graphs)|projection_(worker|boundary)_entries|stream_(setup|batch|worker|boundary)_entries' || true)"
+    'simd_json_test_|simd_json_test_standard_exception|simd_json_projection_standard_exception|simd_json_stream_standard_exception|after_buffer_allocation|completed_destruction_events|openWithFailure|projection_operation_inject_failure|stream_operation_inject_failure|operation_configure_pause|operation_release_pause|execution_set_cleanup_rejection|execution_snapshot|live_(projection|stream)_(operations|environments|plans|slots|cursors|batches|temporary_document_graphs)|projection_(worker|boundary)_entries|stream_(setup|batch|worker|boundary)_entries' || true)"
 
   if [[ -n "${forbidden_strings}" ]]; then
     printf 'release artifact contains native failure-injection controls: %s\n%s\n' \

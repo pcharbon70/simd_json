@@ -27,6 +27,10 @@ pub fn Implementation(comptime c: type) type {
             out_of_memory: Diagnostics,
             invalid_argument: Diagnostics,
             internal_failure: Diagnostics,
+            file_not_found: Diagnostics,
+            file_unreadable: Diagnostics,
+            not_regular_file: Diagnostics,
+            file_changed: Diagnostics,
         };
 
         pub const Lifecycle = enum(u8) {
@@ -104,6 +108,7 @@ pub fn Implementation(comptime c: type) type {
 
         const TestSnapshot = struct {
             live_padded_buffers: usize,
+            live_mapped_inputs: usize,
             live_parser_handles: usize,
             live_document_handles: usize,
             live_resource_records: usize,
@@ -119,6 +124,7 @@ pub fn Implementation(comptime c: type) type {
 
             pub fn isQuiescent(self: TestSnapshot) bool {
                 return self.live_padded_buffers == 0 and
+                    self.live_mapped_inputs == 0 and
                     self.live_parser_handles == 0 and
                     self.live_document_handles == 0 and
                     self.live_resource_records == 0 and
@@ -131,6 +137,7 @@ pub fn Implementation(comptime c: type) type {
 
         const Accounting = if (test_build) struct {
             var live_padded_buffers = std.atomic.Value(usize).init(0);
+            var live_mapped_inputs = std.atomic.Value(usize).init(0);
             var live_parser_handles = std.atomic.Value(usize).init(0);
             var live_document_handles = std.atomic.Value(usize).init(0);
             var live_resource_records = std.atomic.Value(usize).init(0);
@@ -151,6 +158,7 @@ pub fn Implementation(comptime c: type) type {
             fn snapshot() TestSnapshot {
                 return .{
                     .live_padded_buffers = live_padded_buffers.load(.acquire),
+                    .live_mapped_inputs = live_mapped_inputs.load(.acquire),
                     .live_parser_handles = live_parser_handles.load(.acquire),
                     .live_document_handles = live_document_handles.load(.acquire),
                     .live_resource_records = live_resource_records.load(.acquire),
@@ -176,6 +184,23 @@ pub fn Implementation(comptime c: type) type {
             }
         } else struct {};
 
+        const RuntimeOwnershipAccounting = struct {
+            var live_padded_buffers = std.atomic.Value(usize).init(0);
+            var live_mapped_inputs = std.atomic.Value(usize).init(0);
+        };
+
+        pub const OwnershipSnapshot = struct {
+            live_padded_buffers: usize,
+            live_mapped_inputs: usize,
+        };
+
+        pub fn ownershipSnapshot() OwnershipSnapshot {
+            return .{
+                .live_padded_buffers = RuntimeOwnershipAccounting.live_padded_buffers.load(.acquire),
+                .live_mapped_inputs = RuntimeOwnershipAccounting.live_mapped_inputs.load(.acquire),
+            };
+        }
+
         pub fn checkedCapacity(logical_length: u128) ?usize {
             if (logical_length > std.math.maxInt(usize) or
                 logical_length > std.math.maxInt(u64)) return null;
@@ -197,6 +222,10 @@ pub fn Implementation(comptime c: type) type {
                 .out_of_memory => .{ .out_of_memory = diagnostics },
                 .invalid_argument => .{ .invalid_argument = diagnostics },
                 .internal_failure => .{ .internal_failure = diagnostics },
+                .file_not_found => .{ .file_not_found = diagnostics },
+                .file_unreadable => .{ .file_unreadable = diagnostics },
+                .not_regular_file => .{ .not_regular_file = diagnostics },
+                .file_changed => .{ .file_changed = diagnostics },
             };
         }
 
@@ -226,6 +255,7 @@ pub fn Implementation(comptime c: type) type {
         pub const DocumentState = struct {
             allocator: ?std.mem.Allocator,
             padded_input: ?[]align(input_alignment_bytes) u8,
+            mapped_input: ?*c.simd_json_mapped_input,
             logical_length: usize,
             parser_handle: ?*c.simd_json_parser,
             document_handle: ?*c.simd_json_document,
@@ -241,6 +271,7 @@ pub fn Implementation(comptime c: type) type {
                 return .{
                     .allocator = null,
                     .padded_input = null,
+                    .mapped_input = null,
                     .logical_length = 0,
                     .parser_handle = null,
                     .document_handle = null,
@@ -263,8 +294,17 @@ pub fn Implementation(comptime c: type) type {
 
             pub fn hasOwnedNativeState(self: *const DocumentState) bool {
                 return self.padded_input != null or
+                    self.mapped_input != null or
                     self.parser_handle != null or
                     self.document_handle != null;
+            }
+
+            /// Rechecks observable file identity and metadata on a worker
+            /// immediately before a mapped document is consumed. Binary-backed
+            /// documents have no external source to verify.
+            pub fn verifySourceUnchanged(self: *const DocumentState) NativeStatus {
+                const mapped = self.mapped_input orelse return .ok;
+                return adaptStatus(c.simd_json_mapped_input_verify(mapped));
             }
 
             /// The sole Milestone 1 route from caller memory to simdjson. It
@@ -302,6 +342,112 @@ pub fn Implementation(comptime c: type) type {
                 return self.openOwnedWithFailure(allocator, source, .none, cancellation, false);
             }
 
+            /// File-backed construction lets simdjson own the mapping and
+            /// never allocates or retains a complete padded source copy.
+            pub fn openMappedCancellable(
+                self: *DocumentState,
+                path: []const u8,
+                cancellation: CancellationProbe,
+            ) NativeStatus {
+                if (cancellation.cancelledAt(.before_copy))
+                    return statusWithoutDiagnostics(.internal_failure);
+                if (self.lifecycleState() != .closed or
+                    self.hasOwnedNativeState() or
+                    self.generation.load(.acquire) != 0 or
+                    self.admitted_operations.load(.acquire) != 0)
+                    return statusWithoutDiagnostics(.invalid_argument);
+
+                var mapped: ?*c.simd_json_mapped_input = null;
+                var status = adaptStatus(c.simd_json_mapped_input_create(
+                    path.ptr,
+                    @intCast(path.len),
+                    &mapped,
+                ));
+                if (status != .ok or mapped == null)
+                    return if (status == .ok)
+                        statusWithoutDiagnostics(.internal_failure)
+                    else
+                        status;
+
+                self.mapped_input = mapped;
+                self.record_accounted = true;
+                if (test_build) {
+                    _ = Accounting.live_resource_records.fetchAdd(1, .acq_rel);
+                    _ = Accounting.live_mapped_inputs.fetchAdd(1, .acq_rel);
+                }
+                _ = RuntimeOwnershipAccounting.live_mapped_inputs.fetchAdd(1, .acq_rel);
+
+                var view = std.mem.zeroes(c.simd_json_input_view);
+                status = adaptStatus(c.simd_json_mapped_input_read(mapped.?, &view));
+                if (status != .ok or view.data == null or view.logical_length == 0) {
+                    self.rollbackConstruction();
+                    return if (status == .ok)
+                        statusWithoutDiagnostics(.internal_failure)
+                    else
+                        status;
+                }
+                if (view.logical_length > std.math.maxInt(usize)) {
+                    self.rollbackConstruction();
+                    return statusWithoutDiagnostics(.invalid_argument);
+                }
+                self.logical_length = @intCast(view.logical_length);
+
+                var parser: ?*c.simd_json_parser = null;
+                status = adaptStatus(c.simd_json_parser_create(&parser));
+                if (status != .ok or parser == null) {
+                    self.rollbackConstruction();
+                    return if (status == .ok)
+                        statusWithoutDiagnostics(.internal_failure)
+                    else
+                        status;
+                }
+                self.parser_handle = parser;
+                if (test_build) _ = Accounting.live_parser_handles.fetchAdd(1, .acq_rel);
+
+                if (cancellation.cancelledAt(.before_parse)) {
+                    self.rollbackConstruction();
+                    return statusWithoutDiagnostics(.internal_failure);
+                }
+
+                var document: ?*c.simd_json_document = null;
+                status = adaptStatus(c.simd_json_document_open(
+                    parser.?,
+                    view.data,
+                    view.logical_length,
+                    view.capacity,
+                    &document,
+                ));
+                if (status != .ok or document == null) {
+                    self.rollbackConstruction();
+                    return if (status == .ok)
+                        statusWithoutDiagnostics(.internal_failure)
+                    else
+                        status;
+                }
+                self.document_handle = document;
+                if (test_build) _ = Accounting.live_document_handles.fetchAdd(1, .acq_rel);
+
+                if (cancellation.cancelledAt(.after_parse)) {
+                    self.rollbackConstruction();
+                    return statusWithoutDiagnostics(.internal_failure);
+                }
+                status = adaptStatus(c.simd_json_mapped_input_verify(mapped.?));
+                if (status != .ok) {
+                    self.rollbackConstruction();
+                    return status;
+                }
+
+                self.cleanup_started.store(false, .release);
+                self.projection_state.store(@intFromEnum(ProjectionState.fresh), .release);
+                self.generation.store(1, .release);
+                if (cancellation.cancelledAt(.before_publication)) {
+                    self.rollbackConstruction();
+                    return statusWithoutDiagnostics(.internal_failure);
+                }
+                self.lifecycle.store(@intFromEnum(Lifecycle.open), .release);
+                return .ok;
+            }
+
             fn openOwnedWithFailure(
                 self: *DocumentState,
                 allocator: std.mem.Allocator,
@@ -337,6 +483,7 @@ pub fn Implementation(comptime c: type) type {
                     _ = Accounting.live_resource_records.fetchAdd(1, .acq_rel);
                     _ = Accounting.live_padded_buffers.fetchAdd(1, .acq_rel);
                 }
+                _ = RuntimeOwnershipAccounting.live_padded_buffers.fetchAdd(1, .acq_rel);
                 @memcpy(owned[0..source.len], source);
                 @memset(owned[source.len..capacity], 0);
 
@@ -762,6 +909,20 @@ pub fn Implementation(comptime c: type) type {
                         _ = Accounting.completed_destruction_events.fetchAdd(1, .acq_rel);
                         Accounting.destructionStep(&Accounting.last_buffer_release_step);
                     }
+                    const runtime_previous = RuntimeOwnershipAccounting.live_padded_buffers.fetchSub(1, .acq_rel);
+                    std.debug.assert(runtime_previous > 0);
+                }
+                if (self.mapped_input) |mapped| {
+                    c.simd_json_mapped_input_destroy(mapped);
+                    self.mapped_input = null;
+                    if (test_build) {
+                        const previous = Accounting.live_mapped_inputs.fetchSub(1, .acq_rel);
+                        std.debug.assert(previous > 0);
+                        _ = Accounting.completed_destruction_events.fetchAdd(1, .acq_rel);
+                        Accounting.destructionStep(&Accounting.last_buffer_release_step);
+                    }
+                    const runtime_previous = RuntimeOwnershipAccounting.live_mapped_inputs.fetchSub(1, .acq_rel);
+                    std.debug.assert(runtime_previous > 0);
                 }
 
                 self.allocator = null;
@@ -898,6 +1059,10 @@ pub fn Implementation(comptime c: type) type {
                 c.SIMD_JSON_STATUS_OUT_OF_MEMORY => .{ .out_of_memory = diagnostics },
                 c.SIMD_JSON_STATUS_INVALID_ARGUMENT => .{ .invalid_argument = diagnostics },
                 c.SIMD_JSON_STATUS_INTERNAL_FAILURE => .{ .internal_failure = diagnostics },
+                c.SIMD_JSON_STATUS_FILE_NOT_FOUND => .{ .file_not_found = diagnostics },
+                c.SIMD_JSON_STATUS_FILE_UNREADABLE => .{ .file_unreadable = diagnostics },
+                c.SIMD_JSON_STATUS_NOT_REGULAR_FILE => .{ .not_regular_file = diagnostics },
+                c.SIMD_JSON_STATUS_FILE_CHANGED => .{ .file_changed = diagnostics },
                 else => .{ .internal_failure = diagnostics },
             };
         }
@@ -924,6 +1089,10 @@ pub fn Implementation(comptime c: type) type {
                 c.SIMD_JSON_STATUS_OUT_OF_MEMORY,
                 c.SIMD_JSON_STATUS_INVALID_ARGUMENT,
                 c.SIMD_JSON_STATUS_INTERNAL_FAILURE,
+                c.SIMD_JSON_STATUS_FILE_NOT_FOUND,
+                c.SIMD_JSON_STATUS_FILE_UNREADABLE,
+                c.SIMD_JSON_STATUS_NOT_REGULAR_FILE,
+                c.SIMD_JSON_STATUS_FILE_CHANGED,
             };
             for (status_values, 0..) |value, index| {
                 for (status_values[index + 1 ..]) |other| {

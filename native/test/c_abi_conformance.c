@@ -1,11 +1,15 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include "simd_json_abi.h"
 #include "simd_json_test_hooks.h"
 
 #include <inttypes.h>
+#include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 /* covers: simd_json.native_build_and_abi.c_abi_conformance simd_json.native_build_and_abi.cpp_exception_translation simd_json.native_build_and_abi.partial_failure_cleanup */
 
@@ -217,6 +221,116 @@ static int invalid_argument_matrix(void) {
   return 0;
 }
 
+/* covers: simd_json.file_input.mapped_document simd_json.file_input.no_complete_source_copy simd_json.file_input.immutable_source */
+static int mapped_input_matrix(void) {
+  static const uint8_t valid_json[] = "{\"mapped\":true}";
+  static const uint8_t nul_path[] = {'b', 'a', 'd', 0, 'p', 'a', 't', 'h'};
+  char path[] = "/tmp/simd-json-map-XXXXXX";
+  char empty_path[] = "/tmp/simd-json-empty-XXXXXX";
+  char replacement_path[] = "/tmp/simd-json-replacement-XXXXXX";
+  simd_json_mapped_input *input = NULL;
+  simd_json_input_view view;
+  simd_json_status status;
+  int descriptor = mkstemp(path);
+
+  CHECK(descriptor >= 0);
+  CHECK(write(descriptor, valid_json, sizeof(valid_json) - 1) ==
+        (ssize_t)(sizeof(valid_json) - 1));
+  CHECK(fsync(descriptor) == 0);
+  CHECK(close(descriptor) == 0);
+
+  status = simd_json_mapped_input_create(
+      (const uint8_t *)path, (uint64_t)strlen(path), &input);
+  CHECK(status.code == SIMD_JSON_STATUS_OK);
+  CHECK(input != NULL);
+
+  memset(&view, 0, sizeof(view));
+  status = simd_json_mapped_input_read(input, &view);
+  CHECK(status.code == SIMD_JSON_STATUS_OK);
+  CHECK(view.data != NULL);
+  CHECK(view.logical_length == sizeof(valid_json) - 1);
+  CHECK(view.capacity >= view.logical_length + SIMD_JSON_REQUIRED_PADDING);
+  CHECK(memcmp(view.data, valid_json, sizeof(valid_json) - 1) == 0);
+
+  status = simd_json_mapped_input_verify(input);
+  CHECK(status.code == SIMD_JSON_STATUS_OK);
+
+  descriptor = open(path, O_WRONLY | O_APPEND);
+  CHECK(descriptor >= 0);
+  CHECK(write(descriptor, " ", 1) == 1);
+  CHECK(fsync(descriptor) == 0);
+  CHECK(close(descriptor) == 0);
+  status = simd_json_mapped_input_verify(input);
+  CHECK(status.code == SIMD_JSON_STATUS_FILE_CHANGED);
+
+  simd_json_mapped_input_destroy(input);
+  input = NULL;
+  simd_json_mapped_input_destroy(NULL);
+
+  status = simd_json_mapped_input_create(
+      (const uint8_t *)path, (uint64_t)strlen(path), &input);
+  CHECK(status.code == SIMD_JSON_STATUS_OK);
+  CHECK(input != NULL);
+  descriptor = open(path, O_WRONLY);
+  CHECK(descriptor >= 0);
+  CHECK(ftruncate(descriptor, 1) == 0);
+  CHECK(fsync(descriptor) == 0);
+  CHECK(close(descriptor) == 0);
+  status = simd_json_mapped_input_verify(input);
+  CHECK(status.code == SIMD_JSON_STATUS_FILE_CHANGED);
+  simd_json_mapped_input_destroy(input);
+  input = NULL;
+
+  descriptor = open(path, O_WRONLY | O_TRUNC);
+  CHECK(descriptor >= 0);
+  CHECK(write(descriptor, valid_json, sizeof(valid_json) - 1) ==
+        (ssize_t)(sizeof(valid_json) - 1));
+  CHECK(fsync(descriptor) == 0);
+  CHECK(close(descriptor) == 0);
+  status = simd_json_mapped_input_create(
+      (const uint8_t *)path, (uint64_t)strlen(path), &input);
+  CHECK(status.code == SIMD_JSON_STATUS_OK);
+  CHECK(input != NULL);
+
+  descriptor = mkstemp(replacement_path);
+  CHECK(descriptor >= 0);
+  CHECK(write(descriptor, valid_json, sizeof(valid_json) - 1) ==
+        (ssize_t)(sizeof(valid_json) - 1));
+  CHECK(fsync(descriptor) == 0);
+  CHECK(close(descriptor) == 0);
+  CHECK(rename(replacement_path, path) == 0);
+  status = simd_json_mapped_input_verify(input);
+  CHECK(status.code == SIMD_JSON_STATUS_FILE_CHANGED);
+  simd_json_mapped_input_destroy(input);
+  input = NULL;
+
+  CHECK(unlink(path) == 0);
+
+  status = simd_json_mapped_input_create(
+      (const uint8_t *)path, (uint64_t)strlen(path), &input);
+  CHECK(status.code == SIMD_JSON_STATUS_FILE_NOT_FOUND);
+  CHECK(input == NULL);
+
+  status = simd_json_mapped_input_create((const uint8_t *)".", 1, &input);
+  CHECK(status.code == SIMD_JSON_STATUS_NOT_REGULAR_FILE);
+  CHECK(input == NULL);
+
+  status = simd_json_mapped_input_create(nul_path, sizeof(nul_path), &input);
+  CHECK(status.code == SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  CHECK(input == NULL);
+
+  descriptor = mkstemp(empty_path);
+  CHECK(descriptor >= 0);
+  CHECK(close(descriptor) == 0);
+  status = simd_json_mapped_input_create(
+      (const uint8_t *)empty_path, (uint64_t)strlen(empty_path), &input);
+  CHECK(status.code == SIMD_JSON_STATUS_UNEXPECTED_EOF);
+  CHECK(input == NULL);
+  CHECK(unlink(empty_path) == 0);
+
+  return 0;
+}
+
 static simd_json_status_code expected_injected_status(int32_t kind) {
   switch (kind) {
     case SIMD_JSON_TEST_FAILURE_SIMDJSON:
@@ -387,6 +501,7 @@ int main(void) {
   CHECK(valid_input_matrix() == 0);
   CHECK(malformed_input_matrix() == 0);
   CHECK(invalid_argument_matrix() == 0);
+  CHECK(mapped_input_matrix() == 0);
   CHECK(parser_failure_matrix() == 0);
   CHECK(document_failure_matrix() == 0);
   CHECK(randomized_malformed_and_lifecycle_matrix(seed) == 0);

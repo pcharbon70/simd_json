@@ -622,7 +622,8 @@ struct traversal_counters {
 
 struct traversal_context {
   simd_json_document *opaque_document;
-  simdjson::ondemand::document &document;
+  simdjson::ondemand::document *document;
+  simdjson::ondemand::value *location_value;
   const uint8_t *data;
   uint64_t logical_length;
   simd_json_result_slot *result_slots;
@@ -634,7 +635,11 @@ struct traversal_context {
 
 uint64_t current_byte_offset(const traversal_context &context) noexcept {
   const char *location = nullptr;
-  if (context.document.current_location().get(location) != simdjson::SUCCESS ||
+  const simdjson::error_code location_error =
+      context.location_value == nullptr
+          ? context.document->current_location().get(location)
+          : context.location_value->current_location().get(location);
+  if (location_error != simdjson::SUCCESS ||
       location == nullptr || context.data == nullptr) {
     return SIMD_JSON_BYTE_OFFSET_UNAVAILABLE;
   }
@@ -1223,12 +1228,12 @@ simd_json_projection_status consume_root_scalar(
     case simdjson::ondemand::json_type::number: {
       std::string_view raw;
       simdjson::error_code raw_error =
-          context.document.raw_json_token().get(raw);
+          context.document->raw_json_token().get(raw);
       if (raw_error != simdjson::SUCCESS) {
         return status_from_simdjson(raw_error, context);
       }
       simdjson::ondemand::number number;
-      error = context.document.get_number().get(number);
+      error = context.document->get_number().get(number);
       if (error == simdjson::NUMBER_ERROR && valid_json_number_syntax(raw)) {
         return make_status(SIMD_JSON_STATUS_NUMBER_OUT_OF_RANGE,
                            static_cast<int32_t>(error),
@@ -1248,19 +1253,19 @@ simd_json_projection_status consume_root_scalar(
     }
     case simdjson::ondemand::json_type::string: {
       std::string_view string;
-      error = context.document.get_string().get(string);
+      error = context.document->get_string().get(string);
       (void)string;
       break;
     }
     case simdjson::ondemand::json_type::boolean: {
       bool boolean = false;
-      error = context.document.get_bool().get(boolean);
+      error = context.document->get_bool().get(boolean);
       (void)boolean;
       break;
     }
     case simdjson::ondemand::json_type::null: {
       bool is_null = false;
-      error = context.document.is_null().get(is_null);
+      error = context.document->is_null().get(is_null);
       if (error == simdjson::SUCCESS && !is_null) {
         error = simdjson::TAPE_ERROR;
       }
@@ -1290,7 +1295,7 @@ simd_json_projection_status traverse_document(
   note_node_visit(*plan.root, context);
 
   simdjson::ondemand::json_type type;
-  simdjson::error_code error = context.document.type().get(type);
+  simdjson::error_code error = context.document->type().get(type);
   if (error != simdjson::SUCCESS) {
     return status_from_simdjson(error, context);
   }
@@ -1298,14 +1303,14 @@ simd_json_projection_status traverse_document(
   switch (type) {
     case simdjson::ondemand::json_type::object: {
       simdjson::ondemand::object object;
-      error = context.document.get_object().get(object);
+      error = context.document->get_object().get(object);
       return error == simdjson::SUCCESS
                  ? traverse_object(object, *plan.root, context, 1)
                  : status_from_simdjson(error, context);
     }
     case simdjson::ondemand::json_type::array: {
       simdjson::ondemand::array array;
-      error = context.document.get_array().get(array);
+      error = context.document->get_array().get(array);
       return error == simdjson::SUCCESS
                  ? traverse_array(array, *plan.root, context, 1)
                  : status_from_simdjson(error, context);
@@ -1405,9 +1410,61 @@ simd_json_projection_status projection_execute_value(
       return finish(make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT));
     }
     traversal_context context{
-        document, *native_document, data, document_logical_length(document),
+        document, native_document, &value, data, document_logical_length(document),
         result_slots, satisfied_object_edges, make_status(SIMD_JSON_STATUS_OK),
         counters};
+    simd_json_projection_status status =
+        traverse_value(value, *plan->root, context, 1);
+    if (status.code != SIMD_JSON_STATUS_OK) return finish(status);
+    if (context.pending_path_failure.code != SIMD_JSON_STATUS_OK) {
+      return finish(context.pending_path_failure);
+    }
+    for (uint64_t index = 0; index < result_slot_count; ++index) {
+      if (result_slots[index].tag == SIMD_JSON_RESULT_EMPTY ||
+          result_slots[index].reserved != UINT32_C(0)) {
+        return finish(make_status(SIMD_JSON_STATUS_INTERNAL_FAILURE));
+      }
+    }
+    return finish(make_status(SIMD_JSON_STATUS_OK));
+  } catch (...) {
+    return finish(status_from_current_exception());
+  }
+}
+
+simd_json_projection_status projection_execute_stream_value(
+    const simd_json_projection_plan *plan,
+    simdjson::ondemand::value &value,
+    const uint8_t *data,
+    uint64_t logical_length,
+    simd_json_result_slot *result_slots,
+    uint64_t result_slot_count) noexcept {
+  if (plan == nullptr || data == nullptr || result_slots == nullptr ||
+      result_slot_count != plan->output_slots ||
+      exceeds_size_t(result_slot_count)) {
+    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+  clear_result_slots(result_slots, result_slot_count);
+  traversal_counters counters;
+#ifdef SIMD_JSON_TESTING
+  const auto traversal_started = std::chrono::steady_clock::now();
+  plan->execution_entries.fetch_add(1, std::memory_order_acq_rel);
+#endif
+  const auto finish = [&](simd_json_projection_status status) noexcept {
+    if (status.code != SIMD_JSON_STATUS_OK) {
+      clear_result_slots(result_slots, result_slot_count);
+    }
+#ifdef SIMD_JSON_TESTING
+    record_execution(*plan, counters, traversal_started);
+#endif
+    return status;
+  };
+  try {
+    projection_checkpoint();
+    std::vector<uint8_t> satisfied_object_edges(
+        static_cast<size_t>(plan->object_edges), UINT8_C(0));
+    traversal_context context{
+        nullptr, nullptr, &value, data, logical_length, result_slots,
+        satisfied_object_edges, make_status(SIMD_JSON_STATUS_OK), counters};
     simd_json_projection_status status =
         traverse_value(value, *plan->root, context, 1);
     if (status.code != SIMD_JSON_STATUS_OK) return finish(status);
@@ -1439,7 +1496,7 @@ simd_json_projection_status projection_validate_value(
     std::vector<uint8_t> no_edges;
     traversal_counters counters;
     traversal_context context{
-        document, *native_document, data, document_logical_length(document),
+        document, native_document, &value, data, document_logical_length(document),
         nullptr, no_edges, make_status(SIMD_JSON_STATUS_OK), counters};
     return validate_unselected_value(value, context, depth);
   } catch (...) {
@@ -1558,7 +1615,7 @@ extern "C" simd_json_projection_status simd_json_projection_execute(
     }
 
     traversal_context context{
-        document,       *native_document, data, logical_length,
+        document,       native_document, nullptr, data, logical_length,
         result_slots,   satisfied_object_edges,
         make_status(SIMD_JSON_STATUS_OK), counters,
     };

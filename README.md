@@ -1,7 +1,8 @@
 # SimdJson
 
 An Elixir library for decoding JSON and extracting selected values with
-SIMD-accelerated parsing.
+SIMD-accelerated parsing. Native file-backed APIs keep large JSON sources out
+of BEAM binaries and delegate mapping, parsing, and batching to simdjson.
 
 ## Installation
 
@@ -46,7 +47,35 @@ SimdJson.decode!("null", [])
 Object keys and strings are copied binaries, duplicate keys use the last
 value, arrays preserve order, and input never creates atoms. Only binary input
 and `[]` options are accepted. Eager decode constructs the entire BEAM value;
-for large payloads, prefer `select/2` or `stream/2` when practical.
+for large in-memory payloads, prefer `select/2` or `stream/2`. For large files,
+prefer the native path APIs below so the source is never loaded into a BEAM
+binary.
+
+Process a large file by path without `File.read/1`:
+
+```elixir
+{:ok, %{account_id: 7}} =
+  SimdJson.select_file("account.json", account_id: ["account", "id"])
+
+rows =
+  SimdJson.stream_file("events.ndjson",
+    format: :ndjson,
+    fields: [id: ["id"], kind: ["kind"]],
+    batch_size: 500,
+    max_batch_bytes: 8_388_608
+  )
+
+Enum.take(rows, 10)
+```
+
+`open_file/1` and `select_file/2` use simdjson's padded memory-map owner.
+`stream_file/2` additionally uses `ondemand::parser::iterate_many` with a
+fixed 1 MiB parser window and one row/byte-bounded result batch per demand.
+Its required `:format` is one of `:json_array`, `:ndjson`, `:json_sequence`,
+or `:comma_delimited`. File streams operate only on top-level documents; they
+do not accept a nested `:path`. Selected strings are copied, the source file
+must remain immutable for the operation lifetime, and early halt immediately
+closes the native cursor, parser, projection plan, and mapping.
 
 Select several nested scalar values from a binary in one operation:
 
@@ -105,7 +134,8 @@ JSON content, caller path contents, native identity, timing, generation, and
 exception text.
 
 The public root operations are `decode/1,2`, `decode!/1,2`, `open/1`,
-`select/2`, `stream/2`, and `close/1`. There is no projection bang variant,
+`open_file/1`, `select/2`, `select_file/2`, `stream/2`, `stream_file/2`, and
+`close/1`. There is no projection bang variant,
 JSONPath, wildcard/filter/default policy, streaming cursor, ownership transfer,
 raw native handle, or public diagnostic API. The active Milestone 4 runtime
 routes native work through a bounded worker pool and non-blocking queue
@@ -160,13 +190,14 @@ runtime, precompiled-NIF and optional source-build requirements, compatibility d
 saturation behavior, and promotion criteria are in the
 [support policy](docs/releases/support.md).
 
-Every API receives a complete JSON binary, so the encoded document is already
-resident in memory. This package does not incrementally read JSON from a file,
-socket, or device. `select/2` avoids materializing an entire decoded BEAM tree
-and `stream/2` limits returned rows to one bounded batch at a time, but native
-parsing still retains or copies input and bounded operation state. `decode/1,2`
-materializes the complete result. The 45,666,793-byte million-row fixture is
-qualified through both sparse selection and streaming; see the
+Binary APIs receive a complete resident JSON binary. File-backed APIs instead
+pass only a path through the BEAM boundary: simdjson owns the memory map, and
+`stream_file/2` parses bounded document windows while advising consumed Linux
+mapping pages away at safe batch boundaries. `select_file/2` avoids the source
+copy but may retain input-size-dependent simdjson structural indexes;
+`stream_file/2` is the bounded-parser-memory path. `decode/1,2` still
+materializes the complete result. Socket, device, iodata, and nested-path file
+streaming are not supported. See the
 [projection acceptance record](docs/milestones/02-projection-api-acceptance.md)
 and [streaming acceptance record](docs/milestones/03-batched-array-streaming-acceptance.md).
 

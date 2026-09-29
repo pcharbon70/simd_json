@@ -16,7 +16,7 @@ large-input profiles, and the complete public test suite.
 | Precompiled NIF | SHA-256-pinned `v0.1.0` GitHub release asset |
 | Source-build Zig | 0.16.0; maintainer/audit path only |
 | Source-build Zigler | 0.16.0; optional and not resolved for ordinary consumers |
-| simdjson | Vendored 4.6.9 |
+| simdjson | Vendored 5.0.1 |
 | Runtime dispatch | `haswell`, `westmere`, or `fallback` as selected by simdjson |
 
 Other Linux distributions, libc implementations, architectures, operating
@@ -32,9 +32,10 @@ reproduce the artifact through the explicit qualified source-build path.
 
 ## Input and memory boundary
 
-All public operations accept a complete JSON binary. The encoded source is
-therefore already resident in memory; this library does not incrementally read
-from a file, socket, or device.
+Binary operations accept a complete resident JSON binary. `open_file/1`,
+`select_file/2`, and `stream_file/2` instead pass only a validated path through
+the BEAM boundary and retain a simdjson-owned memory map for the native
+operation lifetime.
 
 `select/2` and `stream/2` avoid constructing a complete decoded BEAM tree.
 Projection returns only requested scalar values, while streaming exposes one
@@ -45,6 +46,14 @@ operation state and, depending on the operation, an input copy for safety.
 `decode/1,2` intentionally materializes the complete result tree and should not
 be described as bounded-memory streaming. Prefer projection or streaming when
 only part of a large document is required.
+
+`select_file/2` avoids both the BEAM source binary and the padded native source
+copy, but simdjson structural indexes may still scale with input size.
+`stream_file/2` is the bounded-parser-memory path: it supports explicit
+top-level `:json_array`, `:ndjson`, `:json_sequence`, and `:comma_delimited`
+formats, uses a fixed 1 MiB parser window, applies bounded result batches, and
+stops immediately on early halt. The source must remain immutable. Nested-path
+file streaming, sockets, devices, and iodata are not supported.
 
 ## Public compatibility boundary
 

@@ -49,6 +49,7 @@ defmodule SimdJson.Native.BuildSmoke.Config do
     operation_finish: [],
     operation_owner_is: [],
     threaded_document_open: [concurrency: :threaded],
+    threaded_document_open_file: [concurrency: :threaded],
     threaded_document_cleanup: [concurrency: :threaded],
     threaded_projection_execute: [concurrency: :threaded],
     document_owner_state: [],
@@ -60,15 +61,18 @@ defmodule SimdJson.Native.BuildSmoke.Config do
     native_pool_snapshot: [],
     native_pool_stop: [],
     native_pool_submit_open: [],
+    native_pool_submit_open_file: [],
     native_pool_submit_cleanup: [],
     native_pool_submit_projection: [],
     native_pool_submit_decode: [],
     native_pool_submit_stream_binary_setup: [],
     native_pool_submit_stream_document_setup: [],
+    native_pool_submit_stream_file_setup: [],
     native_pool_submit_stream_batch: [],
     stream_cursor_resource_close: [],
     threaded_stream_setup_fixture: [concurrency: :threaded],
     threaded_stream_binary_setup_fixture: [concurrency: :threaded],
+    threaded_stream_file_setup: [concurrency: :threaded],
     threaded_stream_batch_fixture: [concurrency: :threaded]
   ]
 
@@ -126,10 +130,12 @@ defmodule SimdJson.Native.BuildSmoke.Config do
     native_pool_submit_cleanup: 2,
     native_pool_submit_decode: 1,
     native_pool_submit_open: 1,
+    native_pool_submit_open_file: 1,
     native_pool_submit_projection: 1,
     native_pool_submit_stream_batch: 4,
     native_pool_submit_stream_binary_setup: 5,
     native_pool_submit_stream_document_setup: 6,
+    native_pool_submit_stream_file_setup: 5,
     operation_admit: 4,
     operation_cancel: 1,
     operation_finish: 2,
@@ -144,9 +150,11 @@ defmodule SimdJson.Native.BuildSmoke.Config do
   @threaded_nifs [
     threaded_document_cleanup: 2,
     threaded_document_open: 1,
+    threaded_document_open_file: 1,
     threaded_projection_execute: 1,
     threaded_stream_batch_fixture: 4,
     threaded_stream_binary_setup_fixture: 5,
+    threaded_stream_file_setup: 5,
     threaded_stream_setup_fixture: 6
   ]
 

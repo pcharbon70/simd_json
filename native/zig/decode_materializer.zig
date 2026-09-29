@@ -190,12 +190,12 @@ pub fn Implementation(comptime c: type) type {
         };
 
         comptime {
-            if (c.SIMD_JSON_ABI_VERSION != 4) @compileError("decode requires ABI v4");
+            if (c.SIMD_JSON_ABI_VERSION != 6) @compileError("decode requires ABI v6");
             if (@sizeOf(c.simd_json_decode_config) != 40 or
                 @sizeOf(c.simd_json_decode_node) != 40 or
                 @sizeOf(c.simd_json_decode_edge) != 32 or
                 @sizeOf(c.simd_json_decode_result_view) != 64)
-                @compileError("ABI v4 decode layouts changed");
+                @compileError("ABI v6 decode layouts changed");
         }
     };
 }

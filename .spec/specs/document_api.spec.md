@@ -130,6 +130,7 @@ surface:
 decisions:
   - simd_json.native_stack_and_c_abi
   - simd_json.document_resource_and_buffer_ownership
+  - simd_json.native_file_backed_input_and_batched_streaming
   - simd_json.off_scheduler_native_execution
   - simd_json.owned_native_jobs_and_bounded_fifo
   - simd_json.monitored_delivery_and_resource_serialization

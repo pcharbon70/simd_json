@@ -1,5 +1,10 @@
 # Projection Execution and Lifecycle
 
+Milestone 6 Phase 7 reuses the existing compiled plan and one-shot document
+projection worker for mapped files. The worker verifies observable source
+identity and metadata immediately before cursor commitment; selected strings
+are copied before the mapped document is deterministically closed.
+
 Milestone 6 Phase 5 follow-up qualification waits for the shared native
 operation and retained-input gauges as well as projection-specific gauges
 before recording a document projection baseline. This removes a test-only

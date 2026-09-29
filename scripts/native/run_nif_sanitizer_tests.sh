@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# covers: simd_json.native_build_and_abi.c_abi_conformance simd_json.native_build_and_abi.cpp_exception_translation simd_json.document_resource.input_lifetime simd_json.document_resource.repeated_close simd_json.document_resource.gc_cleanup simd_json.native_execution.threaded_parse simd_json.native_execution.threaded_cleanup simd_json.document_api.open_and_close simd_json.document_api.invalid_input_errors simd_json.projection_api.select_contract simd_json.projection_api.scalar_results simd_json.projection_api.atomic_result simd_json.projection_api.projection_error_reasons simd_json.projection_engine.transactional_conversion simd_json.projection_engine.exception_and_failure_cleanup simd_json.projection_engine.single_beam_boundary simd_json.projection_execution.threaded_projection simd_json.projection_execution.binary_temporary_document simd_json.projection_execution.close_interlock simd_json.projection_execution.cancellation_boundaries simd_json.projection_execution.native_memory_baseline
+# covers: simd_json.native_build_and_abi.c_abi_conformance simd_json.native_build_and_abi.cpp_exception_translation simd_json.document_resource.input_lifetime simd_json.document_resource.repeated_close simd_json.document_resource.gc_cleanup simd_json.native_execution.threaded_parse simd_json.native_execution.threaded_cleanup simd_json.document_api.open_and_close simd_json.document_api.invalid_input_errors simd_json.projection_api.select_contract simd_json.projection_api.scalar_results simd_json.projection_api.atomic_result simd_json.projection_api.projection_error_reasons simd_json.projection_engine.transactional_conversion simd_json.projection_engine.exception_and_failure_cleanup simd_json.projection_engine.single_beam_boundary simd_json.projection_execution.threaded_projection simd_json.projection_execution.binary_temporary_document simd_json.projection_execution.close_interlock simd_json.projection_execution.cancellation_boundaries simd_json.projection_execution.native_memory_baseline simd_json.file_input.native_path_boundary simd_json.file_input.mapped_document simd_json.file_input.open_file_contract simd_json.file_input.no_complete_source_copy simd_json.file_input.immutable_source simd_json.file_input.pool_and_cleanup
 
 repository_root="$(git rev-parse --show-toplevel)"
 scratch_root="$(mktemp -d "${TMPDIR:-/tmp}/simd-json-nif-sanitizer.XXXXXX")"
@@ -10,7 +10,7 @@ zig_cache_root="${XDG_CACHE_HOME:-${HOME}/.cache}"
 zig_executable="${ZIG_EXECUTABLE_PATH:-${zig_cache_root}/zigler/zig-x86_64-linux-0.16.0/zig}"
 sanitizer_seed="${SIMD_JSON_NIF_SANITIZER_SEED:-935088}"
 sanitizer_trace="${SIMD_JSON_NIF_SANITIZER_TRACE:-0}"
-export ZIG_GLOBAL_CACHE_DIR="${ZIG_GLOBAL_CACHE_DIR:-${TMPDIR:-/tmp}/simd-json-zig-global-cache}"
+export ZIG_GLOBAL_CACHE_DIR="${ZIG_GLOBAL_CACHE_DIR:-${scratch_root}/zig-global-cache}"
 export ZIG_LOCAL_CACHE_DIR="${ZIG_LOCAL_CACHE_DIR:-${scratch_root}/zig-local-cache}"
 
 cleanup() {
@@ -92,6 +92,8 @@ env \
     test/native/threaded_stream_lifecycle_test.exs \
     test/simd_json/document_api_test.exs \
     test/simd_json/error_test.exs \
+    test/simd_json/file_input_test.exs \
+    test/simd_json/file_stream_test.exs \
     test/simd_json/phase_5_integration_test.exs \
     test/simd_json/select_test.exs \
     test/simd_json/stream_constructor_test.exs \

@@ -53,6 +53,12 @@ defmodule SimdJson.Native.OperationCoordinator do
     GenServer.call(__MODULE__, {:submit, :document_open, operation, nil}, :infinity)
   end
 
+  @spec open_file(ThreadedOperation.operation()) ::
+          {:ok, reference()} | {:error, map()}
+  def open_file(operation) do
+    GenServer.call(__MODULE__, {:submit, :document_open, operation, :file}, :infinity)
+  end
+
   @spec cleanup(ThreadedOperation.operation(), reference()) :: :ok | {:error, map()}
   def cleanup(operation, document) do
     GenServer.call(
@@ -657,10 +663,11 @@ defmodule SimdJson.Native.OperationCoordinator do
 
   defp pool_submission?(kind, payload, false, nil)
        when kind in [:document_open, :document_cleanup, :projection, :decode],
-       do: payload == nil or kind == :document_cleanup
+       do:
+         payload == nil or kind == :document_cleanup or {kind, payload} == {:document_open, :file}
 
   defp pool_submission?(:stream_setup, {source_kind, _, _, _, _, _}, false, nil)
-       when source_kind in [:binary, :document],
+       when source_kind in [:binary, :document, :file],
        do: true
 
   defp pool_submission?(:stream_batch, {:batch, _, _, _}, false, nil), do: true
@@ -708,8 +715,12 @@ defmodule SimdJson.Native.OperationCoordinator do
     defp reject_submission_for_test!(_reject?), do: :ok
   end
 
-  defp execute_operation(:document_open, operation, _payload, nil) do
+  defp execute_operation(:document_open, operation, nil, nil) do
     BuildSmoke.threaded_document_open(operation.resource)
+  end
+
+  defp execute_operation(:document_open, operation, :file, nil) do
+    BuildSmoke.threaded_document_open_file(operation.resource)
   end
 
   defp execute_operation(:document_cleanup, operation, payload, nil) do
@@ -731,6 +742,21 @@ defmodule SimdJson.Native.OperationCoordinator do
            operation.resource,
            projection,
            target,
+           rows,
+           bytes
+         )
+
+  defp execute_operation(
+         :stream_setup,
+         operation,
+         {:file, _path, projection, format, rows, bytes},
+         nil
+       ),
+       do:
+         BuildSmoke.threaded_stream_file_setup(
+           operation.resource,
+           projection,
+           format,
            rows,
            bytes
          )

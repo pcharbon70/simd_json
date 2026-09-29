@@ -7,12 +7,16 @@
 #include <cstddef>
 #include <cstdint>
 #include <atomic>
+#include <cerrno>
 #include <exception>
 #include <limits>
 #include <memory>
 #include <new>
+#include <string>
 #include <string_view>
 #include <utility>
+
+#include <sys/stat.h>
 
 #ifdef SIMD_JSON_TESTING
 #include "../include/simd_json_test_hooks.h"
@@ -155,6 +159,24 @@ constexpr bool exceeds_size_t(uint64_t value) noexcept {
   } else {
     return value > std::numeric_limits<size_t>::max();
   }
+}
+
+simd_json_status status_from_file_errno(int error) noexcept {
+  const simd_json_status_code code =
+      error == ENOENT || error == ENOTDIR
+          ? SIMD_JSON_STATUS_FILE_NOT_FOUND
+          : SIMD_JSON_STATUS_FILE_UNREADABLE;
+  return make_status(code, static_cast<int32_t>(error));
+}
+
+bool same_file_snapshot(const struct stat &left,
+                        const struct stat &right) noexcept {
+  return left.st_dev == right.st_dev && left.st_ino == right.st_ino &&
+         left.st_size == right.st_size &&
+         left.st_mtim.tv_sec == right.st_mtim.tv_sec &&
+         left.st_mtim.tv_nsec == right.st_mtim.tv_nsec &&
+         left.st_ctim.tv_sec == right.st_ctim.tv_sec &&
+         left.st_ctim.tv_nsec == right.st_ctim.tv_nsec;
 }
 
 simdjson::error_code validate_value(simdjson::ondemand::value &value,
@@ -370,6 +392,19 @@ struct simd_json_parser {
 #endif
 };
 
+struct simd_json_mapped_input {
+  std::string path;
+  struct stat snapshot;
+  std::unique_ptr<simdjson::padded_memory_map> mapping;
+
+  simd_json_mapped_input(std::string source_path,
+                         const struct stat &source_snapshot,
+                         std::unique_ptr<simdjson::padded_memory_map> source_mapping)
+      : path(std::move(source_path)),
+        snapshot(source_snapshot),
+        mapping(std::move(source_mapping)) {}
+};
+
 struct simd_json_document {
   simd_json_parser *parser;
   simdjson::ondemand::document value;
@@ -459,6 +494,119 @@ simd_json_parser_create(simd_json_parser **out_parser) noexcept {
 extern "C" void simd_json_parser_destroy(simd_json_parser *parser) noexcept {
   try {
     delete parser;
+  } catch (...) {
+  }
+}
+
+extern "C" simd_json_status simd_json_mapped_input_create(
+    const uint8_t *path,
+    uint64_t path_length,
+    simd_json_mapped_input **out_input) noexcept {
+  if (out_input == nullptr) {
+    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+  *out_input = nullptr;
+  if (path == nullptr || path_length == 0 || exceeds_size_t(path_length)) {
+    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+
+  try {
+    const std::string source_path(reinterpret_cast<const char *>(path),
+                                  static_cast<size_t>(path_length));
+    if (source_path.find('\0') != std::string::npos) {
+      return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+    }
+
+    struct stat before {};
+    if (stat(source_path.c_str(), &before) != 0) {
+      return status_from_file_errno(errno);
+    }
+    if (!S_ISREG(before.st_mode)) {
+      return make_status(SIMD_JSON_STATUS_NOT_REGULAR_FILE);
+    }
+    if (before.st_size == 0) {
+      return make_status(SIMD_JSON_STATUS_UNEXPECTED_EOF);
+    }
+    if (before.st_size < 0 ||
+        static_cast<uint64_t>(before.st_size) > simdjson::SIMDJSON_MAXSIZE_BYTES ||
+        static_cast<uint64_t>(before.st_size) >
+            UINT64_MAX - SIMD_JSON_REQUIRED_PADDING) {
+      return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+    }
+
+    auto mapping =
+        std::make_unique<simdjson::padded_memory_map>(source_path.c_str());
+    if (!mapping->is_valid()) {
+      return status_from_file_errno(errno == 0 ? EIO : errno);
+    }
+
+    struct stat after {};
+    if (stat(source_path.c_str(), &after) != 0) {
+      return status_from_file_errno(errno);
+    }
+    if (!same_file_snapshot(before, after)) {
+      return make_status(SIMD_JSON_STATUS_FILE_CHANGED);
+    }
+
+    auto input = std::make_unique<simd_json_mapped_input>(
+        source_path, after, std::move(mapping));
+    *out_input = input.release();
+    return make_status(SIMD_JSON_STATUS_OK);
+  } catch (...) {
+    return status_from_current_exception();
+  }
+}
+
+extern "C" simd_json_status simd_json_mapped_input_read(
+    const simd_json_mapped_input *input,
+    simd_json_input_view *out_view) noexcept {
+  if (out_view == nullptr) {
+    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+  *out_view = {nullptr, 0, 0};
+  if (input == nullptr || input->mapping == nullptr ||
+      !input->mapping->is_valid()) {
+    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+
+  try {
+    const simdjson::padded_string_view view = input->mapping->view();
+    if (view.data() == nullptr || view.length() == 0 ||
+        view.capacity() < view.length() + SIMD_JSON_REQUIRED_PADDING) {
+      return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+    }
+    out_view->data = reinterpret_cast<const uint8_t *>(view.data());
+    out_view->logical_length = static_cast<uint64_t>(view.length());
+    out_view->capacity = static_cast<uint64_t>(view.capacity());
+    return make_status(SIMD_JSON_STATUS_OK);
+  } catch (...) {
+    return status_from_current_exception();
+  }
+}
+
+extern "C" simd_json_status simd_json_mapped_input_verify(
+    const simd_json_mapped_input *input) noexcept {
+  if (input == nullptr || input->mapping == nullptr ||
+      !input->mapping->is_valid()) {
+    return make_status(SIMD_JSON_STATUS_INVALID_ARGUMENT);
+  }
+  try {
+    struct stat current {};
+    if (stat(input->path.c_str(), &current) != 0) {
+      return status_from_file_errno(errno);
+    }
+    return same_file_snapshot(input->snapshot, current)
+               ? make_status(SIMD_JSON_STATUS_OK)
+               : make_status(SIMD_JSON_STATUS_FILE_CHANGED);
+  } catch (...) {
+    return status_from_current_exception();
+  }
+}
+
+extern "C" void simd_json_mapped_input_destroy(
+    simd_json_mapped_input *input) noexcept {
+  try {
+    delete input;
   } catch (...) {
   }
 }
