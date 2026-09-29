@@ -1,4 +1,5 @@
 defmodule SimdJson.PublicSurfaceTest do
+  # covers: simd_json.file_input.stream_file_contract
   use ExUnit.Case, async: true
 
   alias SimdJson.Document

@@ -1,8 +1,9 @@
 defmodule SimdJson do
   # covers: simd_json.package.mix_library simd_json.native_build_and_abi.layered_boundary simd_json.document_api.open_contract simd_json.document_api.binary_only simd_json.document_api.close_contract simd_json.document_api.document_argument_validation simd_json.projection_api.select_contract simd_json.projection_api.source_argument_validation simd_json.projection_api.output_key_identity simd_json.projection_api.scalar_results simd_json.projection_api.atomic_result
   @moduledoc """
-  Decodes complete JSON values, opens opaque documents, selects scalar values,
-  and lazily streams projected array rows using SIMD-accelerated parsing.
+  Decodes complete JSON values, opens binary or native file-backed documents,
+  selects scalar values, and lazily streams projected rows using
+  SIMD-accelerated parsing.
 
   `select/2` extracts several named scalar paths from either a JSON binary or
   a caller-owned document. Results use the exact atom or binary keys supplied
@@ -25,6 +26,11 @@ defmodule SimdJson do
   Elixir-only and raises the same structured error returned by `decode/2`.
   Eager decode allocates the complete value; prefer projection or streaming for
   large inputs when only a subset is needed.
+
+  For large files, `open_file/1`, `select_file/2`, and `stream_file/2` pass only
+  the path through the BEAM boundary. File streaming delegates the memory map,
+  fixed parser windows, document iteration, and projection batching to
+  simdjson; do not wrap these calls in `File.read/1`.
 
   The API intentionally has no projection bang variant, JSONPath, wildcard,
   default-field policy, public compiled plan, raw

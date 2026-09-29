@@ -10,7 +10,7 @@ zig_cache_root="${XDG_CACHE_HOME:-${HOME}/.cache}"
 zig_executable="${ZIG_EXECUTABLE_PATH:-${zig_cache_root}/zigler/zig-x86_64-linux-0.16.0/zig}"
 sanitizer_seed="${SIMD_JSON_NIF_SANITIZER_SEED:-935088}"
 sanitizer_trace="${SIMD_JSON_NIF_SANITIZER_TRACE:-0}"
-export ZIG_GLOBAL_CACHE_DIR="${ZIG_GLOBAL_CACHE_DIR:-${TMPDIR:-/tmp}/simd-json-zig-global-cache}"
+export ZIG_GLOBAL_CACHE_DIR="${ZIG_GLOBAL_CACHE_DIR:-${scratch_root}/zig-global-cache}"
 export ZIG_LOCAL_CACHE_DIR="${ZIG_LOCAL_CACHE_DIR:-${scratch_root}/zig-local-cache}"
 
 cleanup() {

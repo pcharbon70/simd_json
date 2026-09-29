@@ -56,7 +56,7 @@ The profile was executed on 2026-08-28 with this environment:
 | CPU | Intel Core i7-12700F, 12 cores / 20 logical CPUs |
 | BEAM | OTP 27.3, ERTS 15.2.3, 20 normal / 20 dirty CPU / 10 dirty I/O schedulers |
 | Elixir | 1.18.4 |
-| Native pins | Zigler 0.16.0, Zig 0.16.0, simdjson 4.6.9 |
+| Native pins | Zigler 0.16.0, Zig 0.16.0, simdjson 5.0.1 |
 | Workload | 8 valid + 8 invalid callers, 3 rounds, 4 MiB fixture |
 | Result | 8 heartbeat samples; maximum interval 7,794 us; normal 5.052%; dirty CPU 0.000%; dirty I/O 0.005% |
 

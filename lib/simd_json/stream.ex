@@ -1,10 +1,10 @@
 defmodule SimdJson.Stream do
   @moduledoc """
-  A lazy, owner-bound stream of projected JSON array rows.
+  A lazy, owner-bound stream of projected JSON rows.
 
-  Values are constructed by `SimdJson.stream/2`. The representation is opaque;
-  inspect output intentionally reveals only the source class and configured
-  limits.
+  Values are constructed by `SimdJson.stream/2` or `SimdJson.stream_file/2`.
+  The representation is opaque; inspect output intentionally reveals only the
+  source class and configured limits.
   """
 
   alias SimdJson.StreamOptions

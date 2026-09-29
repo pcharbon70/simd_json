@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# This is the cumulative ABI v1/v2/v3/v4 release gate. Later additions must
+# This is the cumulative ABI v1 through v6 release gate. Later additions must
 # extend it; they must never replace earlier document, projection, streaming,
 # pool, or decode proof.
 
@@ -77,6 +77,7 @@ required_package_files=(
   docs/milestones/03-batched-array-streaming.md
   docs/milestones/05-compatible-decode-api.md
   docs/milestones/05-compatible-decode-api-acceptance.md
+  docs/milestones/06-file-backed-input.md
   docs/releases/installation.md
   docs/releases/support.md
   docs/releases/ci-policy.md
@@ -147,6 +148,10 @@ run_step qualification_freshness mix simd_json.verify_qualification
 run_step compile env MIX_ENV=test ZIGLER_RELEASE_MODE=safe mix compile --force
 run_step diagnostics env MIX_ENV=test mix run --no-compile -e 'IO.inspect(SimdJson.Native.Diagnostics.build())'
 run_step native_tests env MIX_ENV=test mix test test/native test/qualification/native_release_qualification_test.exs
+run_step file_input_memory \
+  env MIX_ENV=test SIMD_JSON_QUALIFICATION_DIR="${evidence_root}/file-input" \
+  mix test test/qualification/file_selection_memory_qualification_test.exs \
+    test/qualification/file_stream_memory_qualification_test.exs
 run_step c_abi_ordinary env SIMD_JSON_QUALIFICATION_SEED="${seed}" bash scripts/native/run_c_abi_conformance.sh ordinary
 run_step c_abi_sanitizer env SIMD_JSON_QUALIFICATION_SEED="${seed}" bash scripts/native/run_c_abi_conformance.sh sanitizer
 run_step zig_resource_ordinary bash scripts/native/run_zig_resource_tests.sh ordinary
@@ -157,5 +162,5 @@ run_step offline_package_build \
   env SIMD_JSON_SOURCE_DIRECTORY="${package_root}" \
   bash scripts/ci/verify_offline_native_build.sh
 
-printf 'Cumulative ABI v1/v2/v3/v4 release-native qualification passed\n' \
+printf 'Cumulative ABI v1 through v6 release-native qualification passed\n' \
   | tee "${evidence_root}/summary.txt"

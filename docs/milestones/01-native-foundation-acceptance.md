@@ -32,7 +32,7 @@ or an earlier build as acceptance.
 
 | Operating system | Architecture and ABI | BEAM | Native toolchain | simdjson |
 | --- | --- | --- | --- | --- |
-| Ubuntu 24.04 LTS, glibc 2.39 | `x86_64-linux-gnu` | OTP 27.3, Elixir 1.18.4 | Zigler 0.16.0, Zig 0.16.0, bundled Clang/LLVM 21.1.0 and libc++ | Official v4.6.9; runtime dispatch `haswell`, `westmere`, or `fallback`; Ice Lake disabled |
+| Ubuntu 24.04 LTS, glibc 2.39 | `x86_64-linux-gnu` | OTP 27.3, Elixir 1.18.4 | Zigler 0.16.0, Zig 0.16.0, bundled Clang/LLVM 21.1.0 and libc++ | Official v5.0.1; runtime dispatch `haswell`, `westmere`, or `fallback`; Ice Lake disabled |
 
 Linux aarch64 and macOS remain experimental. Windows, BSD, musl, and all other
 triples remain unsupported. None inherit the accepted target's ABI, sanitizer,

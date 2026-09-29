@@ -33,7 +33,7 @@ is supplied through the documented local override. The NIF is named
 unsupported target, or checksum mismatch stops compilation before native code
 is installed or loaded.
 
-## Smoke test the three workflows
+## Smoke test binary and file-backed workflows
 
 Start `iex -S mix` in the consumer project and run:
 
@@ -55,6 +55,21 @@ Start `iex -S mix` in the consumer project and run:
 These checks cover eager decode, sparse projection, and demand-driven batched
 streaming through the production bounded worker pool.
 
+For a file-backed smoke check, write an NDJSON file and pass its path directly:
+
+```elixir
+[%{id: 1}, %{id: 2}] =
+  SimdJson.stream_file("events.ndjson",
+    format: :ndjson,
+    fields: [id: ["id"]],
+    batch_size: 1
+  )
+  |> Enum.to_list()
+```
+
+Do not wrap the file with `File.read/1`; that recreates the resident BEAM
+binary the file-backed API is designed to avoid.
+
 ## Qualified prerequisites
 
 The supported target is deliberately narrow:
@@ -69,7 +84,7 @@ The supported target is deliberately narrow:
 | Precompiled NIF | Versioned, target-specific GitHub release asset with a package-pinned SHA-256 digest |
 | Zigler | Not required for supported consumers; optional exact release 0.16.0 for qualified source builds |
 | Zig and C++ toolchain | Not required for supported consumers; source builds use Zig 0.16.0 with bundled Clang/LLVM 21.1.0 and libc++ |
-| simdjson | Package-vendored release 4.6.9 used to reproduce the asset |
+| simdjson | Package-vendored release 5.0.1 used to reproduce the asset |
 
 The release NIF was built from the packaged C++17 and Zig sources with the
 qualified toolchain. A separate system `g++`, system simdjson package, or

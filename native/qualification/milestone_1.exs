@@ -6,8 +6,8 @@
 # covers: simd_json.native_build_and_abi.pinned_toolchain simd_json.native_build_and_abi.target_qualification simd_json.native_build_and_abi.dependency_upgrade_gate
 [
   schema_version: 1,
-  qualified_on: ~D[2026-09-21],
-  input_sha256: "3a349da100f9226555ec0c8bad4e32f9fc7c2a3e23ad1d4f7d8e2472f2d37b0a",
+  qualified_on: ~D[2026-09-29],
+  input_sha256: "b2bee744b400d95768f779c31067e65948cd80e4afe14ed99750caa01fc890f2",
   randomized_seed: 260_831_006,
   supported_targets: [
     [
@@ -33,6 +33,7 @@
     "bash scripts/native/run_zig_resource_tests.sh ordinary",
     "bash scripts/native/run_zig_resource_tests.sh sanitizer",
     "bash scripts/native/run_nif_sanitizer_tests.sh",
+    "mix test test/qualification/file_selection_memory_qualification_test.exs test/qualification/file_stream_memory_qualification_test.exs",
     "bash scripts/native/verify_release_symbols.sh",
     "bash scripts/ci/qualify_document_resource.sh",
     "bash scripts/ci/qualify_runtime.sh",

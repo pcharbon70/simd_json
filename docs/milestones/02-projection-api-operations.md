@@ -10,7 +10,7 @@ slice.
 
 Milestone 2 is supported on the same qualified target as Milestone 1: Ubuntu
 24.04 LTS, x86-64 GNU/Linux with glibc 2.39, OTP 27.3, Elixir 1.18.4, Zigler
-0.16.0, Zig 0.16.0, and vendored simdjson 4.6.9. Other targets do not inherit
+0.16.0, Zig 0.16.0, and vendored simdjson 5.0.1. Other targets do not inherit
 its ABI, sanitizer, scheduler, lifecycle, or allocation evidence.
 
 The present Zigler-threaded adapter remains a pre-production qualification

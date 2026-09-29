@@ -650,7 +650,42 @@
       "entity_id": "simd_json.file_input",
       "file": ".spec/specs/file_input.spec.md",
       "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.batched_formats"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.batched_formats"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
       "message": "Verification strength linked is below required executed for simd_json.file_input.bounded_stream_memory"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.bounded_stream_memory"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.early_halt"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.early_halt"
     },
     {
       "code": "verification_strength_below_minimum",
@@ -678,6 +713,13 @@
       "entity_id": "simd_json.file_input",
       "file": ".spec/specs/file_input.spec.md",
       "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.immutable_source"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
       "message": "Verification strength linked is below required executed for simd_json.file_input.mapped_document"
     },
     {
@@ -686,6 +728,13 @@
       "file": ".spec/specs/file_input.spec.md",
       "level": "error",
       "message": "Verification strength linked is below required executed for simd_json.file_input.mapped_document"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.native_path_boundary"
     },
     {
       "code": "verification_strength_below_minimum",
@@ -720,6 +769,20 @@
       "entity_id": "simd_json.file_input",
       "file": ".spec/specs/file_input.spec.md",
       "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.no_complete_source_copy"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.no_complete_source_copy"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
       "message": "Verification strength linked is below required executed for simd_json.file_input.open_file_contract"
     },
     {
@@ -728,6 +791,34 @@
       "file": ".spec/specs/file_input.spec.md",
       "level": "error",
       "message": "Verification strength linked is below required executed for simd_json.file_input.open_file_contract"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.open_file_contract"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.pool_and_cleanup"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.pool_and_cleanup"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.pool_and_cleanup"
     },
     {
       "code": "verification_strength_below_minimum",
@@ -749,6 +840,41 @@
       "file": ".spec/specs/file_input.spec.md",
       "level": "error",
       "message": "Verification strength linked is below required executed for simd_json.file_input.select_file_contract"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.select_file_contract"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.select_file_contract"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.stream_file_contract"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.stream_file_contract"
+    },
+    {
+      "code": "verification_strength_below_minimum",
+      "entity_id": "simd_json.file_input",
+      "file": ".spec/specs/file_input.spec.md",
+      "level": "error",
+      "message": "Verification strength linked is below required executed for simd_json.file_input.stream_file_contract"
     },
     {
       "code": "verification_strength_below_minimum",
@@ -4763,7 +4889,7 @@
           ],
           "id": "simd_json.file_input",
           "kind": "feature",
-          "status": "planned",
+          "status": "active",
           "summary": "File-backed operations delegate source ownership and batched traversal to simdjson without a complete BEAM or padded native source copy.",
           "surface": [
             "lib/simd_json.ex",
@@ -5231,6 +5357,56 @@
         "kind": "test_file",
         "subject_id": "simd_json.file_input",
         "target": "test/simd_json/file_input_test.exs"
+      },
+      {
+        "covers": [
+          "simd_json.file_input.native_path_boundary",
+          "simd_json.file_input.select_file_contract",
+          "simd_json.file_input.no_complete_source_copy",
+          "simd_json.file_input.pool_and_cleanup"
+        ],
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "test_file",
+        "subject_id": "simd_json.file_input",
+        "target": "test/qualification/file_selection_memory_qualification_test.exs"
+      },
+      {
+        "covers": [
+          "simd_json.file_input.stream_file_contract",
+          "simd_json.file_input.batched_formats",
+          "simd_json.file_input.no_complete_source_copy",
+          "simd_json.file_input.bounded_stream_memory",
+          "simd_json.file_input.early_halt",
+          "simd_json.file_input.pool_and_cleanup"
+        ],
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "test_file",
+        "subject_id": "simd_json.file_input",
+        "target": "test/qualification/file_stream_memory_qualification_test.exs"
+      },
+      {
+        "covers": [
+          "simd_json.file_input.open_file_contract",
+          "simd_json.file_input.select_file_contract",
+          "simd_json.file_input.stream_file_contract"
+        ],
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "test_file",
+        "subject_id": "simd_json.file_input",
+        "target": "test/simd_json/public_surface_test.exs"
+      },
+      {
+        "covers": [
+          "simd_json.file_input.stream_file_contract",
+          "simd_json.file_input.batched_formats",
+          "simd_json.file_input.immutable_source",
+          "simd_json.file_input.early_halt",
+          "simd_json.file_input.pool_and_cleanup"
+        ],
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "test_file",
+        "subject_id": "simd_json.file_input",
+        "target": "test/simd_json/file_stream_test.exs"
       },
       {
         "covers": [
@@ -5920,11 +6096,11 @@
     "decision_parse_errors": 0,
     "decisions": 19,
     "exceptions": 0,
-    "findings": 162,
+    "findings": 180,
     "requirements": 182,
     "scenarios": 89,
     "subjects": 16,
-    "verifications": 55
+    "verifications": 59
   },
   "verification": {
     "claims": [
@@ -6633,135 +6809,201 @@
         "verification_index": 1
       },
       {
-        "cover_id": "simd_json.file_input.immutable_source",
+        "cover_id": "simd_json.file_input.native_path_boundary",
         "file": ".spec/specs/file_input.spec.md",
-        "kind": "command",
+        "kind": "test_file",
         "meets_minimum": false,
         "required_strength": "executed",
-        "strength": "claimed",
+        "strength": "linked",
         "subject_id": "simd_json.file_input",
-        "target": "bash scripts/native/run_c_abi_conformance.sh ordinary",
-        "verification_index": 2
-      },
-      {
-        "cover_id": "simd_json.file_input.mapped_document",
-        "file": ".spec/specs/file_input.spec.md",
-        "kind": "command",
-        "meets_minimum": false,
-        "required_strength": "executed",
-        "strength": "claimed",
-        "subject_id": "simd_json.file_input",
-        "target": "bash scripts/native/run_c_abi_conformance.sh ordinary",
+        "target": "test/qualification/file_selection_memory_qualification_test.exs",
         "verification_index": 2
       },
       {
         "cover_id": "simd_json.file_input.no_complete_source_copy",
         "file": ".spec/specs/file_input.spec.md",
-        "kind": "command",
+        "kind": "test_file",
         "meets_minimum": false,
         "required_strength": "executed",
-        "strength": "claimed",
+        "strength": "linked",
         "subject_id": "simd_json.file_input",
-        "target": "bash scripts/native/run_c_abi_conformance.sh ordinary",
+        "target": "test/qualification/file_selection_memory_qualification_test.exs",
         "verification_index": 2
-      },
-      {
-        "cover_id": "simd_json.file_input.immutable_source",
-        "file": ".spec/specs/file_input.spec.md",
-        "kind": "command",
-        "meets_minimum": false,
-        "required_strength": "executed",
-        "strength": "claimed",
-        "subject_id": "simd_json.file_input",
-        "target": "bash scripts/native/run_c_abi_conformance.sh sanitizer",
-        "verification_index": 3
-      },
-      {
-        "cover_id": "simd_json.file_input.mapped_document",
-        "file": ".spec/specs/file_input.spec.md",
-        "kind": "command",
-        "meets_minimum": false,
-        "required_strength": "executed",
-        "strength": "claimed",
-        "subject_id": "simd_json.file_input",
-        "target": "bash scripts/native/run_c_abi_conformance.sh sanitizer",
-        "verification_index": 3
-      },
-      {
-        "cover_id": "simd_json.file_input.no_complete_source_copy",
-        "file": ".spec/specs/file_input.spec.md",
-        "kind": "command",
-        "meets_minimum": false,
-        "required_strength": "executed",
-        "strength": "claimed",
-        "subject_id": "simd_json.file_input",
-        "target": "bash scripts/native/run_c_abi_conformance.sh sanitizer",
-        "verification_index": 3
-      },
-      {
-        "cover_id": "simd_json.file_input.mapped_document",
-        "file": ".spec/specs/file_input.spec.md",
-        "kind": "command",
-        "meets_minimum": false,
-        "required_strength": "executed",
-        "strength": "claimed",
-        "subject_id": "simd_json.file_input",
-        "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
-        "verification_index": 4
-      },
-      {
-        "cover_id": "simd_json.file_input.no_complete_source_copy",
-        "file": ".spec/specs/file_input.spec.md",
-        "kind": "command",
-        "meets_minimum": false,
-        "required_strength": "executed",
-        "strength": "claimed",
-        "subject_id": "simd_json.file_input",
-        "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
-        "verification_index": 4
       },
       {
         "cover_id": "simd_json.file_input.pool_and_cleanup",
         "file": ".spec/specs/file_input.spec.md",
-        "kind": "command",
+        "kind": "test_file",
         "meets_minimum": false,
         "required_strength": "executed",
-        "strength": "claimed",
+        "strength": "linked",
         "subject_id": "simd_json.file_input",
-        "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
-        "verification_index": 4
+        "target": "test/qualification/file_selection_memory_qualification_test.exs",
+        "verification_index": 2
       },
       {
-        "cover_id": "simd_json.file_input.mapped_document",
+        "cover_id": "simd_json.file_input.select_file_contract",
         "file": ".spec/specs/file_input.spec.md",
-        "kind": "command",
+        "kind": "test_file",
         "meets_minimum": false,
         "required_strength": "executed",
-        "strength": "claimed",
+        "strength": "linked",
         "subject_id": "simd_json.file_input",
-        "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
-        "verification_index": 5
+        "target": "test/qualification/file_selection_memory_qualification_test.exs",
+        "verification_index": 2
+      },
+      {
+        "cover_id": "simd_json.file_input.batched_formats",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "test_file",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "linked",
+        "subject_id": "simd_json.file_input",
+        "target": "test/qualification/file_stream_memory_qualification_test.exs",
+        "verification_index": 3
+      },
+      {
+        "cover_id": "simd_json.file_input.bounded_stream_memory",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "test_file",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "linked",
+        "subject_id": "simd_json.file_input",
+        "target": "test/qualification/file_stream_memory_qualification_test.exs",
+        "verification_index": 3
+      },
+      {
+        "cover_id": "simd_json.file_input.early_halt",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "test_file",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "linked",
+        "subject_id": "simd_json.file_input",
+        "target": "test/qualification/file_stream_memory_qualification_test.exs",
+        "verification_index": 3
       },
       {
         "cover_id": "simd_json.file_input.no_complete_source_copy",
         "file": ".spec/specs/file_input.spec.md",
-        "kind": "command",
+        "kind": "test_file",
         "meets_minimum": false,
         "required_strength": "executed",
-        "strength": "claimed",
+        "strength": "linked",
         "subject_id": "simd_json.file_input",
-        "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
+        "target": "test/qualification/file_stream_memory_qualification_test.exs",
+        "verification_index": 3
+      },
+      {
+        "cover_id": "simd_json.file_input.pool_and_cleanup",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "test_file",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "linked",
+        "subject_id": "simd_json.file_input",
+        "target": "test/qualification/file_stream_memory_qualification_test.exs",
+        "verification_index": 3
+      },
+      {
+        "cover_id": "simd_json.file_input.stream_file_contract",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "test_file",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "linked",
+        "subject_id": "simd_json.file_input",
+        "target": "test/qualification/file_stream_memory_qualification_test.exs",
+        "verification_index": 3
+      },
+      {
+        "cover_id": "simd_json.file_input.open_file_contract",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "test_file",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "linked",
+        "subject_id": "simd_json.file_input",
+        "target": "test/simd_json/public_surface_test.exs",
+        "verification_index": 4
+      },
+      {
+        "cover_id": "simd_json.file_input.select_file_contract",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "test_file",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "linked",
+        "subject_id": "simd_json.file_input",
+        "target": "test/simd_json/public_surface_test.exs",
+        "verification_index": 4
+      },
+      {
+        "cover_id": "simd_json.file_input.stream_file_contract",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "test_file",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "linked",
+        "subject_id": "simd_json.file_input",
+        "target": "test/simd_json/public_surface_test.exs",
+        "verification_index": 4
+      },
+      {
+        "cover_id": "simd_json.file_input.batched_formats",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "test_file",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "linked",
+        "subject_id": "simd_json.file_input",
+        "target": "test/simd_json/file_stream_test.exs",
+        "verification_index": 5
+      },
+      {
+        "cover_id": "simd_json.file_input.early_halt",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "test_file",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "linked",
+        "subject_id": "simd_json.file_input",
+        "target": "test/simd_json/file_stream_test.exs",
+        "verification_index": 5
+      },
+      {
+        "cover_id": "simd_json.file_input.immutable_source",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "test_file",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "linked",
+        "subject_id": "simd_json.file_input",
+        "target": "test/simd_json/file_stream_test.exs",
         "verification_index": 5
       },
       {
         "cover_id": "simd_json.file_input.pool_and_cleanup",
         "file": ".spec/specs/file_input.spec.md",
-        "kind": "command",
+        "kind": "test_file",
         "meets_minimum": false,
         "required_strength": "executed",
-        "strength": "claimed",
+        "strength": "linked",
         "subject_id": "simd_json.file_input",
-        "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
+        "target": "test/simd_json/file_stream_test.exs",
+        "verification_index": 5
+      },
+      {
+        "cover_id": "simd_json.file_input.stream_file_contract",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "test_file",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "linked",
+        "subject_id": "simd_json.file_input",
+        "target": "test/simd_json/file_stream_test.exs",
         "verification_index": 5
       },
       {
@@ -6772,7 +7014,7 @@
         "required_strength": "executed",
         "strength": "claimed",
         "subject_id": "simd_json.file_input",
-        "target": "bash scripts/native/run_nif_sanitizer_tests.sh",
+        "target": "bash scripts/native/run_c_abi_conformance.sh ordinary",
         "verification_index": 6
       },
       {
@@ -6783,8 +7025,140 @@
         "required_strength": "executed",
         "strength": "claimed",
         "subject_id": "simd_json.file_input",
-        "target": "bash scripts/native/run_nif_sanitizer_tests.sh",
+        "target": "bash scripts/native/run_c_abi_conformance.sh ordinary",
         "verification_index": 6
+      },
+      {
+        "cover_id": "simd_json.file_input.no_complete_source_copy",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "command",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "claimed",
+        "subject_id": "simd_json.file_input",
+        "target": "bash scripts/native/run_c_abi_conformance.sh ordinary",
+        "verification_index": 6
+      },
+      {
+        "cover_id": "simd_json.file_input.immutable_source",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "command",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "claimed",
+        "subject_id": "simd_json.file_input",
+        "target": "bash scripts/native/run_c_abi_conformance.sh sanitizer",
+        "verification_index": 7
+      },
+      {
+        "cover_id": "simd_json.file_input.mapped_document",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "command",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "claimed",
+        "subject_id": "simd_json.file_input",
+        "target": "bash scripts/native/run_c_abi_conformance.sh sanitizer",
+        "verification_index": 7
+      },
+      {
+        "cover_id": "simd_json.file_input.no_complete_source_copy",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "command",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "claimed",
+        "subject_id": "simd_json.file_input",
+        "target": "bash scripts/native/run_c_abi_conformance.sh sanitizer",
+        "verification_index": 7
+      },
+      {
+        "cover_id": "simd_json.file_input.mapped_document",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "command",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "claimed",
+        "subject_id": "simd_json.file_input",
+        "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
+        "verification_index": 8
+      },
+      {
+        "cover_id": "simd_json.file_input.no_complete_source_copy",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "command",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "claimed",
+        "subject_id": "simd_json.file_input",
+        "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
+        "verification_index": 8
+      },
+      {
+        "cover_id": "simd_json.file_input.pool_and_cleanup",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "command",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "claimed",
+        "subject_id": "simd_json.file_input",
+        "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
+        "verification_index": 8
+      },
+      {
+        "cover_id": "simd_json.file_input.mapped_document",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "command",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "claimed",
+        "subject_id": "simd_json.file_input",
+        "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
+        "verification_index": 9
+      },
+      {
+        "cover_id": "simd_json.file_input.no_complete_source_copy",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "command",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "claimed",
+        "subject_id": "simd_json.file_input",
+        "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
+        "verification_index": 9
+      },
+      {
+        "cover_id": "simd_json.file_input.pool_and_cleanup",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "command",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "claimed",
+        "subject_id": "simd_json.file_input",
+        "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
+        "verification_index": 9
+      },
+      {
+        "cover_id": "simd_json.file_input.immutable_source",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "command",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "claimed",
+        "subject_id": "simd_json.file_input",
+        "target": "bash scripts/native/run_nif_sanitizer_tests.sh",
+        "verification_index": 10
+      },
+      {
+        "cover_id": "simd_json.file_input.mapped_document",
+        "file": ".spec/specs/file_input.spec.md",
+        "kind": "command",
+        "meets_minimum": false,
+        "required_strength": "executed",
+        "strength": "claimed",
+        "subject_id": "simd_json.file_input",
+        "target": "bash scripts/native/run_nif_sanitizer_tests.sh",
+        "verification_index": 10
       },
       {
         "cover_id": "simd_json.file_input.native_path_boundary",
@@ -6795,7 +7169,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_nif_sanitizer_tests.sh",
-        "verification_index": 6
+        "verification_index": 10
       },
       {
         "cover_id": "simd_json.file_input.no_complete_source_copy",
@@ -6806,7 +7180,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_nif_sanitizer_tests.sh",
-        "verification_index": 6
+        "verification_index": 10
       },
       {
         "cover_id": "simd_json.file_input.open_file_contract",
@@ -6817,7 +7191,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_nif_sanitizer_tests.sh",
-        "verification_index": 6
+        "verification_index": 10
       },
       {
         "cover_id": "simd_json.file_input.pool_and_cleanup",
@@ -6828,7 +7202,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_nif_sanitizer_tests.sh",
-        "verification_index": 6
+        "verification_index": 10
       },
       {
         "cover_id": "simd_json.native_build_and_abi.c_abi_conformance",
@@ -9575,9 +9949,9 @@
     "strength_summary": {
       "claimed": 293,
       "executed": 0,
-      "linked": 38
+      "linked": 56
     },
-    "threshold_failures": 162
+    "threshold_failures": 180
   },
   "workspace": {
     "decision_count": 19,

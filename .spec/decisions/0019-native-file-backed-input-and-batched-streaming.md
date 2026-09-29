@@ -24,7 +24,7 @@ document path creates a padded source copy. That design contradicts the
 library's principal large-document goal and leaves simdjson's file mapping and
 batched document-stream facilities unused.
 
-The pinned simdjson 4.6.9 release provides `padded_memory_map` plus On-Demand
+The pinned simdjson 5.0.1 release provides `padded_memory_map` plus On-Demand
 `iterate_many` formats for whitespace-delimited documents, JSON sequences,
 comma-delimited documents, and a top-level comma-delimited array. These are the
 authoritative source ownership and batching mechanisms for the supported

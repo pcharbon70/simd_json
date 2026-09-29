@@ -2,13 +2,13 @@
 
 Milestone 6 Phase 7 corrects the release-blocking resident-binary design by
 making simdjson own file mapping, On-Demand traversal, and batched document
-streams. This subject remains planned until its native, public, memory, and
-packaged-consumer evidence executes successfully.
+streams. The native, public, memory, sanitizer, and packaged-consumer evidence
+is executable and bound into the replacement release-candidate gate.
 
 ```spec-meta
 id: simd_json.file_input
 kind: feature
-status: planned
+status: active
 verification_minimum_strength: executed
 summary: File-backed operations delegate source ownership and batched traversal to simdjson without a complete BEAM or padded native source copy.
 surface:
@@ -25,20 +25,6 @@ decisions:
   - simd_json.off_scheduler_native_execution
   - simd_json.owned_native_jobs_and_bounded_fifo
   - simd_json.monitored_delivery_and_resource_serialization
-bootstrap:
-  reason: Phase 7.1 freezes the corrected contract; Sections 7.2 through 7.5 must implement and qualify the complete native and public path before activation.
-  requirements:
-    - simd_json.file_input.native_path_boundary
-    - simd_json.file_input.mapped_document
-    - simd_json.file_input.open_file_contract
-    - simd_json.file_input.select_file_contract
-    - simd_json.file_input.stream_file_contract
-    - simd_json.file_input.batched_formats
-    - simd_json.file_input.no_complete_source_copy
-    - simd_json.file_input.immutable_source
-    - simd_json.file_input.bounded_stream_memory
-    - simd_json.file_input.early_halt
-    - simd_json.file_input.pool_and_cleanup
 ```
 
 ## Requirements
@@ -153,10 +139,10 @@ bootstrap:
 
 ## Required Closure Evidence
 
-Replace the bootstrap exception with executed C/C++ and Zig ABI conformance,
-ordinary and sanitizer lifecycle tests, public API tests, progressively scaled
-RSS qualification, early-halt boundary accounting, package inventory, release
-symbol, precompiled artifact, and Zig-free fresh-consumer evidence.
+Closure requires executed C/C++ and Zig ABI conformance, ordinary and sanitizer
+lifecycle tests, public API tests, progressively scaled RSS qualification,
+early-halt boundary accounting, package inventory, release symbol, precompiled
+artifact, and Zig-free fresh-consumer evidence.
 
 ## Verification
 
@@ -192,6 +178,16 @@ symbol, precompiled artifact, and Zig-free fresh-consumer evidence.
     - simd_json.file_input.native_path_boundary
     - simd_json.file_input.select_file_contract
     - simd_json.file_input.no_complete_source_copy
+    - simd_json.file_input.pool_and_cleanup
+
+- kind: test_file
+  target: test/qualification/file_stream_memory_qualification_test.exs
+  covers:
+    - simd_json.file_input.stream_file_contract
+    - simd_json.file_input.batched_formats
+    - simd_json.file_input.no_complete_source_copy
+    - simd_json.file_input.bounded_stream_memory
+    - simd_json.file_input.early_halt
     - simd_json.file_input.pool_and_cleanup
 
 - kind: test_file

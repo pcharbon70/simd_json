@@ -231,6 +231,7 @@
     "docs/milestones/04-worker-pool-and-operations.md",
     "docs/milestones/05-compatible-decode-api.md",
     "docs/milestones/05-compatible-decode-api-acceptance.md",
+    "docs/milestones/06-file-backed-input.md",
     "docs/releases/support.md",
     "docs/releases/ci-policy.md",
     "docs/releases/candidate-review.md",
@@ -396,6 +397,8 @@
     "test/release/precompiled_delivery_contract_test.exs",
     "test/qualification/scheduler_qualification_test.exs",
     "test/qualification/stream_runtime_qualification_test.exs",
+    "test/qualification/file_selection_memory_qualification_test.exs",
+    "test/qualification/file_stream_memory_qualification_test.exs",
     "test/simd_json/document_api_test.exs",
     "test/simd_json/decode_options_test.exs",
     "test/simd_json/error_test.exs",
@@ -407,6 +410,8 @@
     "test/simd_json/stream_options_test.exs",
     "test/simd_json/stream_constructor_test.exs",
     "test/simd_json/stream_enumerable_test.exs",
+    "test/simd_json/file_input_test.exs",
+    "test/simd_json/file_stream_test.exs",
     "test/test_helper.exs",
     ".spec/research/phase_6_scheduler_qualification.md"
   ]

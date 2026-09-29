@@ -1,4 +1,5 @@
 defmodule SimdJson.FileStreamTest do
+  # covers: simd_json.file_input.stream_file_contract simd_json.file_input.batched_formats simd_json.file_input.immutable_source simd_json.file_input.early_halt simd_json.file_input.pool_and_cleanup
   use ExUnit.Case, async: false
 
   alias SimdJson.Error

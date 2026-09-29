@@ -72,7 +72,7 @@ jobs:
       - name: Verify the official simdjson archive
         run: |
           curl --fail --silent --show-error --location \
-            https://github.com/simdjson/simdjson/releases/download/v4.6.9/singleheader.zip \
+            https://github.com/simdjson/simdjson/releases/download/v5.0.1/singleheader.zip \
             --output "${RUNNER_TEMP}/simdjson-singleheader.zip"
           mix simd_json.verify_vendor --archive "${RUNNER_TEMP}/simdjson-singleheader.zip"
 

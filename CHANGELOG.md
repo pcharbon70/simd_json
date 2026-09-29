@@ -19,12 +19,16 @@ First public release candidate.
   JSON arrays with no native prefetch.
 - Owner-bound `open/1` and idempotent `close/1` around opaque, one-shot native
   documents.
+- `open_file/1` and `select_file/2` over simdjson-owned memory maps, without a
+  complete BEAM or padded native source copy.
+- `stream_file/2` for bounded native streaming of root arrays, NDJSON, JSON
+  Text Sequences, and comma-delimited documents through simdjson 5.0.1.
 - A fixed native worker pool, finite non-blocking queue, cooperative
   cancellation, serialized stateful resources, and redacted `:telemetry`
   events.
 - A SHA-256-pinned, versioned Linux x86-64 NIF release asset that supported
   consumers install without Zig or Zigler, plus the complete pinned simdjson,
-  Zig/Zigler source-build inputs, provenance, licenses, and C ABI v4 sources.
+  Zig/Zigler source-build inputs, provenance, licenses, and C ABI v6 sources.
 
 ### Safety and qualification
 
@@ -46,8 +50,11 @@ First public release candidate.
 - Supported installation downloads the immutable NIF from the matching GitHub
   release and therefore needs network access unless a checksummed local asset
   is supplied.
-- Every operation receives a complete resident binary. There is no incremental
-  file, socket, device, or iodata input API and no zero-total-memory claim.
+- Binary operations still receive a complete resident binary. File-backed
+  operations accept paths, but socket, device, and iodata inputs are absent.
+- File selection avoids a source copy but may use input-size-dependent parser
+  indexes. Bounded parser memory applies to `stream_file/2`, not eager decode
+  or arbitrary nested-document traversal.
 - `decode/2` accepts only `[]`; key atomization, structs, custom decoders,
   decimal modes, and other Jason options are not implemented.
 - Decode uses the last duplicate object value while Jason 1.4.5 uses the first.

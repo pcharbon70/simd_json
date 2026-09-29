@@ -4,7 +4,7 @@
 
 Back to plan: [README](./README.md)
 
-- [ ] 7 Phase - Replace the release-blocking complete-binary-only large-document
+- [x] 7 Phase - Replace the release-blocking complete-binary-only large-document
   design with file-backed simdjson ownership, batching, and measured memory
   evidence before any release identity is frozen.
 
@@ -58,12 +58,12 @@ Back to plan: [README](./README.md)
 
 ## 7.5 Section — Memory Qualification, Documentation, and Candidate Invalidation
 
-- [ ] 7.5 Section - Demonstrate the corrected goal and rebuild release truth.
-  - [ ] 7.5.1 Task - Establish executable large-file evidence.
-    - [ ] 7.5.1.1 Subtask - Generate fixtures without first retaining their complete contents in the test VM.
-    - [ ] 7.5.1.2 Subtask - Measure peak RSS for progressively larger root-array and document-sequence files and fail when memory scales approximately with total source size.
-    - [ ] 7.5.1.3 Subtask - Verify sparse selection and early stream halt from paths, including proof that only demanded batches are advanced.
-  - [ ] 7.5.2 Task - Reconcile documentation and release gates.
-    - [ ] 7.5.2.1 Subtask - Rewrite README, HexDocs, support policy, changelog, and milestone records around native file-backed processing as the principal large-document capability.
-    - [ ] 7.5.2.2 Subtask - Invalidate Phase 6 candidate evidence, artifact checksums, GO/NO_GO review, and qualification fingerprints changed by the native ABI and source surface.
-    - [ ] 7.5.2.3 Subtask - Re-run the complete supported-target, archive, precompiled-NIF, Zig-free consumer, and SpecLed matrix before returning to Phase 8.
+- [x] 7.5 Section - Demonstrate the corrected goal and rebuild release truth.
+  - [x] 7.5.1 Task - Establish executable large-file evidence.
+    - [x] 7.5.1.1 Subtask - Generate fixtures without first retaining their complete contents in the test VM.
+    - [x] 7.5.1.2 Subtask - Measure peak RSS for progressively larger root-array and document-sequence files and fail when memory scales approximately with total source size.
+    - [x] 7.5.1.3 Subtask - Verify sparse selection and early stream halt from paths, including proof that only demanded batches are advanced.
+  - [x] 7.5.2 Task - Reconcile documentation and release gates.
+    - [x] 7.5.2.1 Subtask - Rewrite README, HexDocs, support policy, changelog, and milestone records around native file-backed processing as the principal large-document capability.
+    - [x] 7.5.2.2 Subtask - Invalidate Phase 6 candidate evidence, artifact checksums, GO/NO_GO review, and qualification fingerprints changed by the native ABI and source surface.
+    - [x] 7.5.2.3 Subtask - Re-run the complete supported-target, archive, precompiled-NIF, Zig-free consumer, and SpecLed matrix before returning to Phase 8.

@@ -88,6 +88,7 @@ flowchart LR
     M2 --> M3[Milestone 3<br/>Batched streaming]
     M3 --> M4[Milestone 4<br/>Production concurrency]
     M4 --> M5[Milestone 5<br/>Compatible decode]
+    M5 --> M6[Milestone 6<br/>File-backed release readiness]
 
     J[Jason behavior and benchmarks] -. informs .-> M2
     J -. informs .-> M3
@@ -95,6 +96,18 @@ flowchart LR
 ```
 
 The milestones are deliberately sequential. Later work may begin experimentally, but no milestone is complete until the safety and ownership contracts from earlier milestones remain intact.
+
+## Milestone 6 — Native File-Backed Release Readiness
+
+[File-backed input guide](06-file-backed-input.md)
+
+**Status:** Active on the qualified Ubuntu 24.04 x86-64 target; final
+publication remains blocked until the replacement release-candidate review.
+
+The release path now puts native file mapping and simdjson document batching
+first for large inputs. `open_file/1` and `select_file/2` avoid resident source
+copies, while `stream_file/2` provides bounded-parser-memory processing for
+explicit top-level arrays and document sequences.
 
 ---
 
