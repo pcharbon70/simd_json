@@ -34,15 +34,15 @@ Back to plan: [README](./README.md)
 
 ## 7.3 Section — File-Backed Selection
 
-- [ ] 7.3 Section - Execute sparse selection directly against a simdjson memory map.
-  - [ ] 7.3.1 Task - Publish `select_file/2` through the bounded native pool.
-    - [ ] 7.3.1.1 Subtask - Reuse the exact projection grammar, prefix-sharing plan, scalar conversion, full-validation, and redacted error contract.
-    - [ ] 7.3.1.2 Subtask - Copy only selected result strings into fresh BEAM binaries and close the mapping deterministically after a path operation.
-    - [ ] 7.3.1.3 Subtask - Preserve cancellation, queue saturation, telemetry, and atomic no-partial-result behavior.
-  - [ ] 7.3.2 Task - Qualify source-memory behavior honestly.
-    - [ ] 7.3.2.1 Subtask - Prove no full BEAM or native padded source copy exists for file selection.
-    - [ ] 7.3.2.2 Subtask - Record peak RSS and native structural-index memory across increasing source sizes.
-    - [ ] 7.3.2.3 Subtask - Document that selection is zero-copy for source bytes but is not the bounded-parser-memory document-stream path.
+- [x] 7.3 Section - Execute sparse selection directly against a simdjson memory map.
+  - [x] 7.3.1 Task - Publish `select_file/2` through the bounded native pool.
+    - [x] 7.3.1.1 Subtask - Reuse the exact projection grammar, prefix-sharing plan, scalar conversion, full-validation, and redacted error contract.
+    - [x] 7.3.1.2 Subtask - Copy only selected result strings into fresh BEAM binaries and close the mapping deterministically after a path operation.
+    - [x] 7.3.1.3 Subtask - Preserve cancellation, queue saturation, telemetry, and atomic no-partial-result behavior.
+  - [x] 7.3.2 Task - Qualify source-memory behavior honestly.
+    - [x] 7.3.2.1 Subtask - Prove no full BEAM or native padded source copy exists for file selection.
+    - [x] 7.3.2.2 Subtask - Record peak RSS and native structural-index memory across increasing source sizes.
+    - [x] 7.3.2.3 Subtask - Document that selection is zero-copy for source bytes but is not the bounded-parser-memory document-stream path.
 
 ## 7.4 Section — Batched File Streaming Through simdjson
 

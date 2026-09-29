@@ -17,6 +17,17 @@ defmodule SimdJson.Native.ProjectionOperation do
   @spec select(term(), term()) :: {:ok, map()} | {:error, Error.t()}
   def select(source, projection), do: select_with_options(source, projection, [])
 
+  # covers: simd_json.file_input.native_path_boundary simd_json.file_input.select_file_contract simd_json.file_input.no_complete_source_copy simd_json.file_input.immutable_source simd_json.file_input.pool_and_cleanup
+  @doc false
+  @spec select_file(term(), term()) :: {:ok, map()} | {:error, Error.t()}
+  def select_file(path, projection) do
+    with {:ok, normalized} <- Projection.validate(projection),
+         :ok <- validate_file_path!(path),
+         {:ok, %Document{} = document} <- SimdJson.open_file(path) do
+      run_file_projection(document, normalized)
+    end
+  end
+
   if @test_hooks do
     @doc false
     @spec select_for_test(term(), term(), keyword()) :: {:ok, map()} | {:error, Error.t()}
@@ -89,6 +100,19 @@ defmodule SimdJson.Native.ProjectionOperation do
     end
   end
 
+  defp run_file_projection(%Document{__resource__: resource} = document, normalized) do
+    try do
+      result = run_projection(:document, resource, normalized, nil, [])
+
+      case SimdJson.close(document) do
+        :ok -> result
+        {:error, %Error{} = error} -> {:error, error}
+      end
+    after
+      _ = SimdJson.close(document)
+    end
+  end
+
   defp translate_error(native_error, normalized, logical_length) do
     reason = native_error |> field(:reason) |> stable_reason()
 
@@ -120,7 +144,11 @@ defmodule SimdJson.Native.ProjectionOperation do
               :number_out_of_range,
               :busy,
               :cursor_consumed,
-              :cancelled
+              :cancelled,
+              :file_not_found,
+              :file_unreadable,
+              :not_regular_file,
+              :file_changed
             ],
        do: reason
 
@@ -172,6 +200,10 @@ defmodule SimdJson.Native.ProjectionOperation do
   defp message(:busy), do: "native execution capacity is busy"
   defp message(:cursor_consumed), do: "document cursor has already been consumed"
   defp message(:cancelled), do: "JSON operation was cancelled"
+  defp message(:file_not_found), do: "JSON file was not found"
+  defp message(:file_unreadable), do: "JSON file could not be read"
+  defp message(:not_regular_file), do: "JSON path is not a regular file"
+  defp message(:file_changed), do: "JSON file changed while mapped"
   defp message(:native_failure), do: "native JSON operation failed"
 
   defp native_failure_result do
@@ -180,5 +212,20 @@ defmodule SimdJson.Native.ProjectionOperation do
 
   defp invalid_source! do
     raise ArgumentError, "expected JSON input to be a binary or SimdJson.Document"
+  end
+
+  defp validate_file_path!(path)
+       when is_binary(path) and byte_size(path) > 0 do
+    if :binary.match(path, <<0>>) == :nomatch do
+      :ok
+    else
+      invalid_file_path!()
+    end
+  end
+
+  defp validate_file_path!(_path), do: invalid_file_path!()
+
+  defp invalid_file_path! do
+    raise ArgumentError, "expected file path to be a non-empty binary without NUL bytes"
   end
 end

@@ -832,6 +832,12 @@ const OperationRecord = struct {
         return control.native.projectionDocument(reservation);
     }
 
+    fn verifyProjectionSource(self: *OperationRecord) document_resource.NativeStatus {
+        const control = self.projection_document orelse
+            return .{ .internal_failure = .{ .native_code = null, .byte_offset = null } };
+        return control.native.verifySourceUnchanged();
+    }
+
     fn releaseProjectionReservation(self: *OperationRecord) bool {
         if (self.projection_source_kind != .document or
             !self.projection_reservation_active.swap(false, .acq_rel))
@@ -1249,6 +1255,10 @@ pub const ProjectionStatus = enum(u8) {
     incorrect_type,
     number_out_of_range,
     cursor_consumed,
+    file_not_found,
+    file_unreadable,
+    not_regular_file,
+    file_changed,
 };
 
 pub const ProjectionResult = struct {
@@ -1879,8 +1889,20 @@ fn projectionOpenFailureResult(
             result.status = .internal_failure;
             break :blk value;
         },
-        .file_not_found, .file_unreadable, .not_regular_file, .file_changed => |value| blk: {
-            result.status = .internal_failure;
+        .file_not_found => |value| blk: {
+            result.status = .file_not_found;
+            break :blk value;
+        },
+        .file_unreadable => |value| blk: {
+            result.status = .file_unreadable;
+            break :blk value;
+        },
+        .not_regular_file => |value| blk: {
+            result.status = .not_regular_file;
+            break :blk value;
+        },
+        .file_changed => |value| blk: {
+            result.status = .file_changed;
             break :blk value;
         },
     };
@@ -2334,6 +2356,14 @@ pub fn threaded_projection_execute(operation: OperationResource) ProjectionResul
     }
 
     if (!binary_source) {
+        const source_status = record.verifyProjectionSource();
+        if (source_status != .ok) {
+            worker_finished = true;
+            return finishProjectionResult(
+                record,
+                projectionOpenFailureResult(record, source_status, compilation_nanoseconds),
+            );
+        }
         if (!record.commitProjectionReservation()) {
             worker_finished = true;
             return finishProjectionResult(

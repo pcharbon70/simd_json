@@ -148,6 +148,59 @@ defmodule SimdJson.FileInputTest do
     assert final.live_documents == baseline.live_documents
   end
 
+  # covers: simd_json.file_input.native_path_boundary simd_json.file_input.select_file_contract simd_json.file_input.no_complete_source_copy simd_json.file_input.pool_and_cleanup
+  @tag :tmp_dir
+  test "selects sparse scalars from a large mapped file and closes it before return", %{
+    tmp_dir: tmp_dir,
+    baseline: baseline
+  } do
+    path = Path.join(tmp_dir, "large-selection.json")
+    write_large_selection_fixture!(path, 4 * 1024 * 1024)
+
+    assert {:ok, %{selected: selected, count: 7}} =
+             SimdJson.select_file(path, selected: ["selected"], count: ["count"])
+
+    assert selected == "copied-result"
+    File.write!(path, "null")
+    assert selected == "copied-result"
+
+    wait_for_quiescence()
+    final = BuildSmoke.execution_snapshot()
+    assert final.live_document_mapped_inputs == baseline.live_document_mapped_inputs
+    assert final.live_document_padded_buffers == baseline.live_document_padded_buffers
+    assert final.live_documents == baseline.live_documents
+  end
+
+  # covers: simd_json.file_input.select_file_contract simd_json.file_input.native_path_boundary
+  test "validates a file projection before native file admission", %{baseline: baseline} do
+    assert {:error, %Error{reason: :invalid_projection}} =
+             SimdJson.select_file("missing-and-must-not-be-opened.json", [])
+
+    after_rejection = BuildSmoke.execution_snapshot()
+    assert after_rejection.worker_entries == baseline.worker_entries
+    assert after_rejection.live_operations == baseline.live_operations
+    assert after_rejection.live_document_mapped_inputs == baseline.live_document_mapped_inputs
+  end
+
+  # covers: simd_json.file_input.select_file_contract simd_json.file_input.immutable_source simd_json.file_input.pool_and_cleanup
+  @tag :tmp_dir
+  test "fails closed when a mapped document changes before selection", %{tmp_dir: tmp_dir} do
+    path = Path.join(tmp_dir, "changed.json")
+    File.write!(path, ~s({"selected":"before"}))
+    assert {:ok, %Document{} = document} = SimdJson.open_file(path)
+
+    File.write!(path, " ", [:append])
+
+    assert {:error,
+            %Error{
+              reason: :file_changed,
+              message: "JSON file changed while mapped",
+              path: nil
+            }} = SimdJson.select(document, selected: ["selected"])
+
+    assert :ok = SimdJson.close(document)
+  end
+
   defp write_large_json_string!(path, payload_bytes) do
     {:ok, file} = File.open(path, [:write, :binary])
 
@@ -160,6 +213,23 @@ defmodule SimdJson.FileInputTest do
       end
 
       IO.binwrite(file, "\"")
+    after
+      File.close(file)
+    end
+  end
+
+  defp write_large_selection_fixture!(path, ignored_bytes) do
+    {:ok, file} = File.open(path, [:write, :binary])
+
+    try do
+      IO.binwrite(file, ~s({"selected":"copied-result","count":7,"ignored":"))
+      chunk = :binary.copy("x", 4_096)
+
+      for _ <- 1..div(ignored_bytes, byte_size(chunk)) do
+        IO.binwrite(file, chunk)
+      end
+
+      IO.binwrite(file, ~s("}))
     after
       File.close(file)
     end

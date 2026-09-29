@@ -299,6 +299,14 @@ pub fn Implementation(comptime c: type) type {
                     self.document_handle != null;
             }
 
+            /// Rechecks observable file identity and metadata on a worker
+            /// immediately before a mapped document is consumed. Binary-backed
+            /// documents have no external source to verify.
+            pub fn verifySourceUnchanged(self: *const DocumentState) NativeStatus {
+                const mapped = self.mapped_input orelse return .ok;
+                return adaptStatus(c.simd_json_mapped_input_verify(mapped));
+            }
+
             /// The sole Milestone 1 route from caller memory to simdjson. It
             /// performs one copy into a 64-byte-aligned allocation and passes
             /// the logical length separately from its private capacity.

@@ -186,6 +186,20 @@ symbol, precompiled artifact, and Zig-free fresh-consumer evidence.
     - simd_json.file_input.immutable_source
     - simd_json.file_input.pool_and_cleanup
 
+- kind: test_file
+  target: test/qualification/file_selection_memory_qualification_test.exs
+  covers:
+    - simd_json.file_input.native_path_boundary
+    - simd_json.file_input.select_file_contract
+    - simd_json.file_input.no_complete_source_copy
+    - simd_json.file_input.pool_and_cleanup
+
+- kind: test_file
+  target: test/simd_json/public_surface_test.exs
+  covers:
+    - simd_json.file_input.open_file_contract
+    - simd_json.file_input.select_file_contract
+
 - kind: command
   target: bash scripts/native/run_c_abi_conformance.sh ordinary
   covers:

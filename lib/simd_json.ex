@@ -327,6 +327,19 @@ defmodule SimdJson do
   def select(source, projection), do: ProjectionOperation.select(source, projection)
 
   @doc """
+  Selects scalar paths directly from one immutable regular-file JSON source.
+
+  The projection is validated before file access. Native code maps and parses
+  the file without constructing a complete BEAM source binary or padded native
+  source copy, copies only selected scalar results, and closes the mapping
+  before this function returns. The source must remain unchanged throughout
+  the operation.
+  """
+  @spec select_file(binary(), projection()) ::
+          {:ok, projection_result()} | {:error, Error.t()}
+  def select_file(path, projection), do: ProjectionOperation.select_file(path, projection)
+
+  @doc """
   Closes an opaque document owned by the calling process.
 
   Owner close is idempotent and returns only after native cleanup completes.
