@@ -37,6 +37,13 @@ defmodule SimdJson.Benchmarks.StreamEtl do
     unless acceptance["pass"], do: raise("stream ETL acceptance threshold failed")
   end
 
+  def render_existing(json_path) do
+    report = json_path |> File.read!() |> Jason.decode!()
+    markdown_path = Path.rootname(json_path) <> ".md"
+    File.write!(markdown_path, markdown(report))
+    IO.puts("stream_etl markdown=#{markdown_path}")
+  end
+
   defp measure_fixture(fixture, source, batch_size, policy) do
     samples = Map.fetch!(policy.measured_samples, fixture.name)
 
@@ -269,9 +276,100 @@ defmodule SimdJson.Benchmarks.StreamEtl do
 
   defp markdown(report) do
     a = report["acceptance"]
+    jason_version = get_in(report, ["policy", "jason_version"])
 
-    "# Milestone 3 Stream ETL Result\n\n- Result: #{a["pass"]}\n- Stream/Jason million-row peak fraction: #{Float.round(a["million_stream_peak_fraction_of_jason"], 3)}\n- Million-row stream process peak: #{a["million_stream_process_peak_bytes"]} bytes\n"
+    comparison_rows =
+      Enum.map(report["reports"], fn sample ->
+        "| #{sample["fixture"]} | #{sample["rows"]} | #{sample["batch_size"]} | " <>
+          "#{workflow_label(sample["workflow"])} | " <>
+          "#{format_milliseconds(get_in(sample, ["latency_us", "p50"]))} | " <>
+          "#{format_milliseconds(get_in(sample, ["time_to_first_row_us", "p50"]))} | " <>
+          "#{sample["rows_per_second_p50"]} | " <>
+          "#{format_mebibytes(get_in(sample, ["process_peak_bytes", "p50"]))} | " <>
+          "#{format_mebibytes(get_in(sample, ["rss_peak_bytes", "p50"]))} |\n"
+      end)
+
+    ratio_rows =
+      report["reports"]
+      |> Enum.group_by(&{&1["fixture"], &1["batch_size"]})
+      |> Enum.sort_by(fn {{_fixture, batch_size}, samples} ->
+        {hd(samples)["rows"], batch_size}
+      end)
+      |> Enum.map(fn {{fixture, batch_size}, samples} ->
+        simd = Enum.find(samples, &(&1["workflow"] == "simd_json_stream_reduce"))
+        jason = Enum.find(samples, &(&1["workflow"] == "jason_decode_lookup_reduce"))
+
+        "| #{fixture} | #{batch_size} | " <>
+          "#{format_ratio(simd, jason, "latency_us")} | " <>
+          "#{format_ratio(simd, jason, "time_to_first_row_us")} | " <>
+          "#{format_ratio(simd, jason, "process_peak_bytes")} | " <>
+          "#{format_ratio(simd, jason, "rss_peak_bytes")} |\n"
+      end)
+
+    result = if a["pass"], do: "PASS", else: "FAIL"
+
+    [
+      "# Stream ETL benchmark: SimdJson vs Jason\n\n",
+      "Source revision: `#{report["source_revision"]}`  \n",
+      "Jason version: `#{jason_version}`\n\n",
+      "Both workflows parse the same JSON and calculate the same reduction. ",
+      "The SimdJson workflow uses `SimdJson.stream/2`; the Jason workflow uses ",
+      "`Jason.decode!/1` followed by equivalent lookup and reduction work.\n\n",
+      "## Acceptance\n\n",
+      "| Result | Million-row batch | SimdJson process peak | SimdJson/Jason process-peak ratio | Maximum allowed ratio | Maximum allowed SimdJson peak |\n",
+      "| --- | ---: | ---: | ---: | ---: | ---: |\n",
+      "| **#{result}** | 1,000 | #{format_mebibytes(a["million_stream_process_peak_bytes"])} | ",
+      "#{Float.round(a["million_stream_peak_fraction_of_jason"], 3)}× | ",
+      "#{Float.round(a["maximum_fraction"], 3)}× | ",
+      "#{format_mebibytes(a["maximum_process_peak_bytes"])} |\n\n",
+      "## Side-by-side measurements\n\n",
+      "All values are medians (`p50`).\n\n",
+      "| Fixture | Rows | Batch | Workflow | Total latency (ms) | Time to first row (ms) | Rows/s | Worker process peak (MiB) | Whole-VM RSS peak (MiB) |\n",
+      "| --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: |\n",
+      comparison_rows,
+      "\n## SimdJson relative to Jason\n\n",
+      "Values below `1.0×` mean SimdJson used less time or memory than Jason; ",
+      "values above `1.0×` mean it used more.\n\n",
+      "| Fixture | Batch | Total latency | Time to first row | Worker process peak | Whole-VM RSS peak |\n",
+      "| --- | ---: | ---: | ---: | ---: | ---: |\n",
+      ratio_rows,
+      "\n## Measurement definitions\n\n",
+      "- **Worker process peak** is the highest BEAM memory observed for the isolated benchmark worker. Compare it only with the other workflow's worker-process value.\n",
+      "- **Whole-VM RSS peak** is the highest resident-set size observed for the entire Erlang VM, including BEAM heaps, native allocations, resident mapped pages, loaded code, shared libraries, and allocator retention. Compare it only with the other workflow's RSS value.\n",
+      "- Absolute RSS is contextual rather than library-exclusive because both workflows run in the same long-lived VM. File-backed RSS qualifications therefore measure increase from a pre-operation baseline.\n",
+      "- This benchmark exercises the binary-based `stream/2` API. The separate `stream_file/2` qualification covers bounded file-backed parser memory.\n",
+      "- Total latency and throughput are informational. The release acceptance threshold is based on the million-row worker-process peak.\n"
+    ]
+  end
+
+  defp workflow_label("simd_json_stream_reduce"), do: "SimdJson.stream/2 + reduce"
+  defp workflow_label("jason_decode_lookup_reduce"), do: "Jason.decode!/1 + lookup/reduce"
+
+  defp format_milliseconds(microseconds), do: Float.round(microseconds / 1_000, 3)
+  defp format_mebibytes(bytes), do: "#{Float.round(bytes / 1_048_576, 2)} MiB"
+
+  defp format_ratio(simd, jason, metric) do
+    simd_value = get_in(simd, [metric, "p50"])
+    jason_value = get_in(jason, [metric, "p50"])
+
+    if jason_value == 0 do
+      "n/a"
+    else
+      "#{Float.round(simd_value / jason_value, 3)}×"
+    end
   end
 end
 
-SimdJson.Benchmarks.StreamEtl.run()
+case System.argv() do
+  [] ->
+    SimdJson.Benchmarks.StreamEtl.run()
+
+  ["--render-existing", json_path] ->
+    SimdJson.Benchmarks.StreamEtl.render_existing(json_path)
+
+  ["--", "--render-existing", json_path] ->
+    SimdJson.Benchmarks.StreamEtl.render_existing(json_path)
+
+  arguments ->
+    raise "unsupported stream ETL benchmark arguments: #{inspect(arguments)}"
+end
