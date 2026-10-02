@@ -1,5 +1,10 @@
 # First Public Hex Release
 
+The release stream-performance follow-up changes the private NIF binding set,
+so its source fingerprint, cumulative native matrix, precompiled artifact, and
+consumer proof must be regenerated before publication. It does not authorize a
+tag or release by itself.
+
 Milestone 6 Phase 6 Section 6.4 adds the final non-publishing review. It
 presents the exact proposed identity, defaults to no-go, and permits GO only
 for an unconditional exact owner decision with green PR and main checks,

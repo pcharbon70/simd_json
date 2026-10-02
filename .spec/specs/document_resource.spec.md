@@ -1,5 +1,9 @@
 # Document Resource
 
+The release stream-performance follow-up changes only private next-batch
+delivery. Parent retention, document state, close ordering, and cleanup remain
+unchanged and are requalified with the direct consumer handoff.
+
 Milestone 6 Phase 5 follow-up qualification records fresh-document projection
 baselines only after the opening operation releases its retained input. This
 hardens lifecycle evidence without changing document ownership, retention, or

@@ -256,6 +256,19 @@
         "id": "simd_json.native_file_backed_input_and_batched_streaming",
         "status": "accepted",
         "title": "Native File-Backed Input and Batched Streaming"
+      },
+      {
+        "affects": [
+          "simd_json.stream_execution",
+          "simd_json.native_pool",
+          "simd_json.native_execution",
+          "simd_json.package"
+        ],
+        "date": "2026-10-02",
+        "file": ".spec/decisions/0020-direct-stream-batch-delivery.md",
+        "id": "simd_json.direct_stream_batch_delivery",
+        "status": "accepted",
+        "title": "Direct Stream Batch Delivery"
       }
     ]
   },
@@ -2022,6 +2035,14 @@
       },
       {
         "file": ".spec/specs/native_pool.spec.md",
+        "id": "simd_json.native_pool.direct_stream_delivery",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "A production next-batch job shall construct its transactional row list in its delivery environment, send that bounded result exactly once to the monitored consumer, and notify the coordinator separately with bounded correlation, outcome, and timing metadata rather than forwarding row terms through the coordinator.",
+        "subject_id": "simd_json.native_pool"
+      },
+      {
+        "file": ".spec/specs/native_pool.spec.md",
         "id": "simd_json.native_pool.fixed_configuration",
         "priority": "must",
         "stability": "stable",
@@ -2761,7 +2782,7 @@
         "id": "simd_json.stream_execution.generation_and_retention",
         "priority": "must",
         "stability": "stable",
-        "statement": "Setup and batch operations shall retain cursor, parent document, input, parser, plan, batch, private term environment, cancellation state, and coordinator metadata and validate generation before native dereference and delivery until terminal cleanup completes.",
+        "statement": "Setup and batch operations shall retain cursor, parent document, input, parser, plan, batch, the term environment that owns each pending result, cancellation state, and coordinator metadata and validate generation before native dereference and delivery until terminal cleanup completes.",
         "subject_id": "simd_json.stream_execution"
       },
       {
@@ -2810,6 +2831,14 @@
         "priority": "must",
         "stability": "evolving",
         "statement": "Large concurrent successful, failing, slow, halted, and cancelled streams shall preserve the accepted normal-scheduler heartbeat budgets with exact threaded setup and batch accounting and shall not use dirty schedulers as the stream queue.",
+        "subject_id": "simd_json.stream_execution"
+      },
+      {
+        "file": ".spec/specs/stream_execution.spec.md",
+        "id": "simd_json.stream_execution.single_delivery_handoff",
+        "priority": "must",
+        "stability": "evolving",
+        "statement": "A production batch shall be materialized once in its native delivery environment and sent directly to the owner, while coordinator lifecycle completion uses a separate bounded notice that contains no row terms or selected values.",
         "subject_id": "simd_json.stream_execution"
       },
       {
@@ -3666,6 +3695,28 @@
         ],
         "when": [
           "Configuration is normalized before coordinator startup"
+        ]
+      },
+      {
+        "covers": [
+          "simd_json.native_pool.direct_stream_delivery",
+          "simd_json.native_pool.cancellation",
+          "simd_json.native_pool.telemetry"
+        ],
+        "file": ".spec/specs/native_pool.spec.md",
+        "given": [
+          "A monitored stream owner requests a bounded native batch"
+        ],
+        "id": "simd_json.native_pool.direct_stream_result",
+        "subject_id": "simd_json.native_pool",
+        "then": [
+          "A successful complete row list is sent only to the owner",
+          "The coordinator receives only bounded terminal metadata",
+          "One terminal path releases monitoring and operation state",
+          "Native queue and execution durations use a monotonic clock"
+        ],
+        "when": [
+          "The pool completes, cancels, or loses the result recipient"
         ]
       },
       {
@@ -4964,7 +5015,8 @@
             "simd_json.owned_native_jobs_and_bounded_fifo",
             "simd_json.monitored_delivery_and_resource_serialization",
             "simd_json.production_native_pool_routing_and_telemetry",
-            "simd_json.native_pool_qualification_and_activation"
+            "simd_json.native_pool_qualification_and_activation",
+            "simd_json.direct_stream_batch_delivery"
           ],
           "id": "simd_json.native_pool",
           "kind": "subsystem",
@@ -5193,7 +5245,8 @@
             "simd_json.forward_only_batched_array_cursor",
             "simd_json.lazy_stream_api_and_bounded_options",
             "simd_json.owned_native_jobs_and_bounded_fifo",
-            "simd_json.monitored_delivery_and_resource_serialization"
+            "simd_json.monitored_delivery_and_resource_serialization",
+            "simd_json.direct_stream_batch_delivery"
           ],
           "id": "simd_json.stream_execution",
           "kind": "subsystem",
@@ -5577,6 +5630,7 @@
           "simd_json.native_pool.cancellation",
           "simd_json.native_pool.resource_serialization",
           "simd_json.native_pool.telemetry",
+          "simd_json.native_pool.direct_stream_delivery",
           "simd_json.native_pool.shutdown",
           "simd_json.native_pool.saturation",
           "simd_json.native_pool.cancel_close_shutdown_races",
@@ -5990,6 +6044,7 @@
           "simd_json.stream_execution.single_in_flight_batch",
           "simd_json.stream_execution.no_prefetch",
           "simd_json.stream_execution.generation_and_retention",
+          "simd_json.stream_execution.single_delivery_handoff",
           "simd_json.stream_execution.early_halt_cleanup",
           "simd_json.stream_execution.cancellation_boundaries",
           "simd_json.stream_execution.close_shutdown_interlock",
@@ -6094,11 +6149,11 @@
   "specification_version": "1.0",
   "summary": {
     "decision_parse_errors": 0,
-    "decisions": 19,
+    "decisions": 20,
     "exceptions": 0,
     "findings": 180,
-    "requirements": 182,
-    "scenarios": 89,
+    "requirements": 184,
+    "scenarios": 90,
     "subjects": 16,
     "verifications": 59
   },
@@ -7756,6 +7811,17 @@
       },
       {
         "cover_id": "simd_json.native_pool.cancellation",
+        "file": ".spec/specs/native_pool.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.native_pool",
+        "target": "bash scripts/ci/qualify_native_pool.sh",
+        "verification_index": 4
+      },
+      {
+        "cover_id": "simd_json.native_pool.direct_stream_delivery",
         "file": ".spec/specs/native_pool.spec.md",
         "kind": "command",
         "meets_minimum": true,
@@ -9603,6 +9669,17 @@
         "verification_index": 0
       },
       {
+        "cover_id": "simd_json.stream_execution.single_delivery_handoff",
+        "file": ".spec/specs/stream_execution.spec.md",
+        "kind": "command",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "claimed",
+        "subject_id": "simd_json.stream_execution",
+        "target": "bash scripts/ci/qualify_stream_execution.sh",
+        "verification_index": 0
+      },
+      {
         "cover_id": "simd_json.stream_execution.single_in_flight_batch",
         "file": ".spec/specs/stream_execution.spec.md",
         "kind": "command",
@@ -9947,14 +10024,14 @@
     "cli_minimum_strength": null,
     "default_minimum_strength": "claimed",
     "strength_summary": {
-      "claimed": 293,
+      "claimed": 295,
       "executed": 0,
       "linked": 56
     },
     "threshold_failures": 180
   },
   "workspace": {
-    "decision_count": 19,
+    "decision_count": 20,
     "spec_count": 16
   }
 }

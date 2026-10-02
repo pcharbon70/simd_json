@@ -1,5 +1,10 @@
 # Projection Execution and Lifecycle
 
+The release stream-performance follow-up reuses the existing per-row compiled
+projection inside stream batches while eliminating an extra result copy.
+Standalone projection admission, delivery, and one-shot lifecycle are
+unchanged.
+
 Milestone 6 Phase 7 reuses the existing compiled plan and one-shot document
 projection worker for mapped files. The worker verifies observable source
 identity and metadata immediately before cursor commitment; selected strings

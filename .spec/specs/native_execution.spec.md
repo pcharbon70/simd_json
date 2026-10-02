@@ -1,5 +1,10 @@
 # Native Execution
 
+The release stream-performance follow-up retains the fixed native executor but
+constructs stream row terms in the pool delivery environment, sends them
+directly to the monitored consumer, and records worker timings with a monotonic
+native clock.
+
 Milestone 6 Phase 5 makes the qualified native execution path available to
 supported consumers through a checksummed precompiled NIF. It introduces no
 fallback executor: verification or loading failure stops compilation, while an
