@@ -324,7 +324,7 @@ defmodule SimdJson.Native.ThreadedOperation do
   @spec submit_to_pool(operation(), term()) ::
           {:ok, %{request_ref: reference(), request: reference(), request_id: pos_integer()}}
           | {:error, :busy | :stopped | :native_failure}
-  def submit_to_pool(operation, payload) do
+  def submit_to_pool(operation, payload, recipient \\ nil) do
     submission =
       case {operation.kind, payload} do
         {:document_open, nil} ->
@@ -368,6 +368,15 @@ defmodule SimdJson.Native.ThreadedOperation do
             format,
             rows,
             bytes
+          )
+
+        {:stream_batch, {:batch, cursor, projection, sequence}} when is_pid(recipient) ->
+          BuildSmoke.native_pool_submit_stream_batch_direct(
+            operation.resource,
+            cursor,
+            projection,
+            sequence,
+            recipient
           )
 
         {:stream_batch, {:batch, cursor, projection, sequence}} ->
