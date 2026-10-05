@@ -16,10 +16,14 @@ kind: feature
 status: active
 summary: Four reproducible benchmark families publish paired Markdown and JSON reports under one documented repository directory.
 surface:
+  - mix.exs
   - docs/benchmarks/**
   - scripts/benchmarks/*.exs
   - scripts/benchmarks/run_all_reports.sh
+  - scripts/ci/validate_exdoc_links.exs
   - scripts/ci/verify_benchmark_reports.sh
+  - scripts/ci/verify_package_documentation.sh
+  - test/release/package_documentation_contract_test.exs
 ```
 
 ## Requirements
@@ -44,6 +48,11 @@ surface:
   statement: The benchmark index and reports shall distinguish workloads, timed regions, worker memory, whole-VM RSS, and performance evidence from release qualification.
   priority: must
   stability: evolving
+
+- id: simd_json.benchmark_reporting.hexdocs_visibility
+  statement: HexDocs shall render the benchmark index and every human-readable benchmark report in one Benchmarks group with valid local navigation and version-bound raw JSON links.
+  priority: must
+  stability: evolving
 ```
 
 ## Scenarios
@@ -66,6 +75,7 @@ surface:
 - id: simd_json.benchmark_reporting.review
   covers:
     - simd_json.benchmark_reporting.interpretation
+    - simd_json.benchmark_reporting.hexdocs_visibility
   given:
     - A reader reviewing performance results before release
   when:
@@ -74,6 +84,7 @@ surface:
     - Each comparison identifies its input shape and equivalent work
     - Host-contextual RSS and worker-process memory are not presented as interchangeable
     - File-backed qualification evidence is not presented as a binary stream benchmark
+    - HexDocs navigation exposes every Markdown report and links raw JSON to the matching release source
 ```
 
 ## Verification
@@ -95,4 +106,10 @@ surface:
   covers:
     - simd_json.benchmark_reporting.complete_refresh
 
+- kind: command
+  target: MIX_ENV=test mix test test/release/package_documentation_contract_test.exs
+  execute: true
+  covers:
+    - simd_json.benchmark_reporting.hexdocs_visibility
+    - simd_json.benchmark_reporting.review
 ```

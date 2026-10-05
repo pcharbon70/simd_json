@@ -81,6 +81,15 @@ required_package_files=(
   docs/milestones/04-worker-pool-and-operations.md
   docs/milestones/05-compatible-decode-api.md
   docs/milestones/05-compatible-decode-api-acceptance.md
+  docs/benchmarks/README.md
+  docs/benchmarks/reports/eager-decode/decode-benchmark.json
+  docs/benchmarks/reports/eager-decode/decode-benchmark.md
+  docs/benchmarks/reports/sparse-projection/projection-benchmark.json
+  docs/benchmarks/reports/sparse-projection/projection-benchmark.md
+  docs/benchmarks/reports/stream-etl/stream-etl.json
+  docs/benchmarks/reports/stream-etl/stream-etl.md
+  docs/benchmarks/reports/wide-projection/wide-projection.json
+  docs/benchmarks/reports/wide-projection/wide-projection.md
   docs/releases/ci-policy.md
   docs/releases/candidate-review.md
   docs/releases/installation.md

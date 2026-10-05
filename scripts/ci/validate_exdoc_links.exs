@@ -11,7 +11,12 @@ defmodule SimdJson.ValidateExDocLinks do
     "license.html" => "MIT License",
     "third-party-notices.html" => "simdjson 5.0.1",
     "installation.html" => "Installation and Native Delivery",
-    "support.html" => "Input and memory boundary"
+    "support.html" => "Input and memory boundary",
+    "benchmarks.html" => "Benchmark reports",
+    "benchmark-sparse-projection.html" => "Sparse projection benchmark",
+    "benchmark-stream-etl.html" => "Stream ETL benchmark: SimdJson vs Jason",
+    "benchmark-eager-decode.html" => "Eager decode benchmark: SimdJson vs Jason",
+    "benchmark-wide-projection.html" => "Million-row wide projection benchmark"
   }
 
   def run([docs_root]) do

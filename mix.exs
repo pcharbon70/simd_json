@@ -39,7 +39,25 @@ defmodule SimdJson.MixProject do
     "docs/releases/candidate-review.md"
   ]
 
-  @benchmark_guides ["docs/benchmarks/README.md"]
+  @benchmark_guides [
+    "docs/benchmarks/README.md",
+    "docs/benchmarks/reports/sparse-projection/projection-benchmark.md",
+    "docs/benchmarks/reports/stream-etl/stream-etl.md",
+    "docs/benchmarks/reports/eager-decode/decode-benchmark.md",
+    "docs/benchmarks/reports/wide-projection/wide-projection.md"
+  ]
+
+  @benchmark_extras [
+    {"docs/benchmarks/README.md", filename: "benchmarks", title: "Benchmark Reports"},
+    {"docs/benchmarks/reports/sparse-projection/projection-benchmark.md",
+     filename: "benchmark-sparse-projection", title: "Sparse Projection Benchmark"},
+    {"docs/benchmarks/reports/stream-etl/stream-etl.md",
+     filename: "benchmark-stream-etl", title: "Stream ETL Benchmark"},
+    {"docs/benchmarks/reports/eager-decode/decode-benchmark.md",
+     filename: "benchmark-eager-decode", title: "Eager Decode Benchmark"},
+    {"docs/benchmarks/reports/wide-projection/wide-projection.md",
+     filename: "benchmark-wide-projection", title: "Wide Projection Benchmark"}
+  ]
 
   def project do
     [
@@ -140,7 +158,7 @@ defmodule SimdJson.MixProject do
           {"docs/milestones/README.md", filename: "milestones", title: "Milestone Roadmap"}
         ] ++
           List.delete(@milestone_guides, "docs/milestones/README.md") ++
-          @operations_guides ++ @acceptance_records ++ @release_guides ++ @benchmark_guides,
+          @operations_guides ++ @acceptance_records ++ @release_guides ++ @benchmark_extras,
       groups_for_extras: [
         "Milestone guides": @milestone_guides,
         "Operations guides": @operations_guides,

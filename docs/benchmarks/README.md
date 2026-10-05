@@ -8,17 +8,17 @@ bash scripts/benchmarks/run_all_reports.sh
 ```
 
 The command runs each family in a separate Erlang VM and overwrites the corresponding
-Markdown and JSON files under [`reports`](reports). Set
+Markdown and JSON files under `docs/benchmarks/reports`. Set
 `SIMD_JSON_BENCHMARK_REPORT_DIR` to write an untracked comparison run elsewhere.
 
 ## Report index
 
 | Family | Workload | Human-readable report | Raw measurements |
 | --- | --- | --- | --- |
-| Sparse projection | Select five nested values from small, medium, and large documents; compare `SimdJson.select/2` with Jason full decode and lookup | [Markdown](reports/sparse-projection/projection-benchmark.md) | [JSON](reports/sparse-projection/projection-benchmark.json) |
-| Stream ETL | Project and reduce `id` and `value` from every narrow row, including the one-million-row fixture; compare bounded batches with Jason full decode | [Markdown](reports/stream-etl/stream-etl.md) | [JSON](reports/stream-etl/stream-etl.json) |
-| Eager decode | Fully materialize seven representative valid and malformed documents; compare `SimdJson.decode/1` with `Jason.decode/1` | [Markdown](reports/eager-decode/decode-benchmark.md) | [JSON](reports/eager-decode/decode-benchmark.json) |
-| Wide projection | Select 1, 2, 4, 8, and 16 fields from the same row in a one-million-row, 16-field document; compare `SimdJson.select/2` with Jason full decode and lookup | [Markdown](reports/wide-projection/wide-projection.md) | [JSON](reports/wide-projection/wide-projection.json) |
+| Sparse projection | Select five nested values from small, medium, and large documents; compare `SimdJson.select/2` with Jason full decode and lookup | [Markdown](reports/sparse-projection/projection-benchmark.md) | [JSON](https://github.com/pcharbon70/simd_json/blob/v0.1.0/docs/benchmarks/reports/sparse-projection/projection-benchmark.json) |
+| Stream ETL | Project and reduce `id` and `value` from every narrow row, including the one-million-row fixture; compare bounded batches with Jason full decode | [Markdown](reports/stream-etl/stream-etl.md) | [JSON](https://github.com/pcharbon70/simd_json/blob/v0.1.0/docs/benchmarks/reports/stream-etl/stream-etl.json) |
+| Eager decode | Fully materialize seven representative valid and malformed documents; compare `SimdJson.decode/1` with `Jason.decode/1` | [Markdown](reports/eager-decode/decode-benchmark.md) | [JSON](https://github.com/pcharbon70/simd_json/blob/v0.1.0/docs/benchmarks/reports/eager-decode/decode-benchmark.json) |
+| Wide projection | Select 1, 2, 4, 8, and 16 fields from the same row in a one-million-row, 16-field document; compare `SimdJson.select/2` with Jason full decode and lookup | [Markdown](reports/wide-projection/wide-projection.md) | [JSON](https://github.com/pcharbon70/simd_json/blob/v0.1.0/docs/benchmarks/reports/wide-projection/wide-projection.json) |
 
 ## How to interpret the results
 

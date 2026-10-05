@@ -34,6 +34,23 @@ defmodule SimdJson.PackageDocumentationContractTest do
     assert groups[:"Release notes"] == ["CHANGELOG.md"]
     assert groups[:Security] == ["SECURITY.md"]
     assert groups[:Contributing] == ["CONTRIBUTING.md"]
+
+    assert groups[:Benchmarks] == [
+             "docs/benchmarks/README.md",
+             "docs/benchmarks/reports/sparse-projection/projection-benchmark.md",
+             "docs/benchmarks/reports/stream-etl/stream-etl.md",
+             "docs/benchmarks/reports/eager-decode/decode-benchmark.md",
+             "docs/benchmarks/reports/wide-projection/wide-projection.md"
+           ]
+
+    extras = Keyword.fetch!(docs, :extras)
+
+    for page <- groups[:Benchmarks] do
+      assert Enum.any?(extras, fn
+               {^page, _options} -> true
+               _extra -> false
+             end)
+    end
   end
 
   # covers: simd_json.package.specled_tooling simd_json.release.archive_integrity
