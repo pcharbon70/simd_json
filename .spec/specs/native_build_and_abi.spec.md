@@ -1,5 +1,12 @@
 # Native Build and ABI
 
+The stream-performance follow-up adds grouped HexDocs benchmark extras and
+version-bound report links through `mix.exs`. Those documentation settings do
+not change the pinned toolchain, native build profiles, cache inputs, ABI v6,
+release symbols, precompiled target, or runtime dispatch. The accompanying
+qualification-record refresh binds the final benchmark and documentation
+inputs to the same candidate identity.
+
 Milestone 6 Phase 7 advances the cumulative private contract to ABI v6. Four
 versioned mapping-owner symbols and one file-stream cursor constructor expose
 simdjson's `padded_memory_map` and `iterate_many` behind the C boundary while
