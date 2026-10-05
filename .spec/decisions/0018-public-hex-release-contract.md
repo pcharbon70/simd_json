@@ -97,6 +97,11 @@ passed name/version preflight, a loaded interactive credential, and an
 unchanged clean source tree. This review performs no release mutation, and any
 later source change invalidates a GO.
 
+Executable release traceability may accept a `mix run` benchmark harness as
+behavioral proof when the owning qualification script also verifies its
+retained report artifacts. This permits reviewable performance evidence without
+weakening the rule that planning text or an unasserted script is not proof.
+
 The repository owner selected the MIT License for SimdJson wrapper code, with
 copyright recorded as `Copyright (c) 2026 pcharbon70`. Vendored simdjson keeps
 its separate upstream Apache-2.0-or-MIT license choice and attribution. Hex

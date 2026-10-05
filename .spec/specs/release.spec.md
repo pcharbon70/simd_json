@@ -1,5 +1,10 @@
 # First Public Hex Release
 
+Release traceability recognizes executed `mix run` benchmark harnesses as
+behavioral proof. The qualifying script must retain and validate its concrete
+report artifacts, and a release regression contract binds that policy to the
+million-row wide-projection qualification.
+
 The release stream-performance follow-up changes the private NIF binding set,
 so its source fingerprint, cumulative native matrix, precompiled artifact, and
 consumer proof must be regenerated before publication. It does not authorize a
