@@ -10,6 +10,8 @@ defmodule SimdJson.CIReliabilityContractTest do
   @native_source "native/zig/build_smoke.zig"
   @pool_source "native/zig/worker_pool.zig"
   @ci_policy "docs/releases/ci-policy.md"
+  @traceability_task "lib/mix/tasks/simd_json.verify_traceability.ex"
+  @wide_projection_qualification "scripts/ci/qualify_wide_projection_benchmark.sh"
 
   # covers: simd_json.release.green_ci simd_json.release.ci_native_reliability
   test "preserves a deterministic sanitizer failure seed and optional trace mode" do
@@ -20,6 +22,17 @@ defmodule SimdJson.CIReliabilityContractTest do
     assert script =~ ~S|test_options=(--seed "${sanitizer_seed}")|
     assert script =~ ~S|test_options=(--seed "${sanitizer_seed}" --trace)|
     assert script =~ ~S|mix test --no-compile "${test_options[@]}"|
+  end
+
+  # covers: simd_json.release.green_ci simd_json.release.provenance
+  test "recognizes executable Mix benchmark harnesses as behavioral proof" do
+    verifier = File.read!(@traceability_task)
+    benchmark = File.read!(@wide_projection_qualification)
+
+    assert verifier =~ "hex\\.build|run|test"
+    assert benchmark =~ "mix run scripts/benchmarks/run_wide_projection.exs"
+    assert benchmark =~ "test -s \"${evidence_root}/wide-projection.json\""
+    assert benchmark =~ "test -s \"${evidence_root}/wide-projection.md\""
   end
 
   # covers: simd_json.release.green_ci simd_json.release.ci_cache_equivalence simd_json.release.ci_native_reliability
