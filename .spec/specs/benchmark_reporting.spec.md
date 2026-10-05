@@ -1,0 +1,98 @@
+# Benchmark Reporting
+
+Current-truth contract for the repository's reproducible performance evidence. The
+benchmark families retain independent measurement logic while one command refreshes a
+canonical, documented report set.
+
+## Intent
+
+Performance claims must remain traceable to their workload, raw samples, source revision,
+and measurement scope. Human-readable summaries and machine-readable evidence are kept
+together without conflating performance reports with broader release qualification logs.
+
+```spec-meta
+id: simd_json.benchmark_reporting
+kind: feature
+status: active
+summary: Four reproducible benchmark families publish paired Markdown and JSON reports under one documented repository directory.
+surface:
+  - docs/benchmarks/**
+  - scripts/benchmarks/*.exs
+  - scripts/benchmarks/run_all_reports.sh
+  - scripts/ci/verify_benchmark_reports.sh
+```
+
+## Requirements
+
+```spec-requirements
+- id: simd_json.benchmark_reporting.canonical_directory
+  statement: Reproducible performance reports shall be stored under docs/benchmarks/reports and indexed by docs/benchmarks/README.md.
+  priority: must
+  stability: evolving
+
+- id: simd_json.benchmark_reporting.complete_refresh
+  statement: One repository command shall run sparse projection, stream ETL, eager decode, and wide projection in separate Erlang VMs and refresh every report pair.
+  priority: must
+  stability: evolving
+
+- id: simd_json.benchmark_reporting.paired_evidence
+  statement: Every benchmark family shall produce a human-readable Markdown summary and machine-readable JSON measurements that identify the same source revision.
+  priority: must
+  stability: evolving
+
+- id: simd_json.benchmark_reporting.interpretation
+  statement: The benchmark index and reports shall distinguish workloads, timed regions, worker memory, whole-VM RSS, and performance evidence from release qualification.
+  priority: must
+  stability: evolving
+```
+
+## Scenarios
+
+```spec-scenarios
+- id: simd_json.benchmark_reporting.refresh
+  covers:
+    - simd_json.benchmark_reporting.canonical_directory
+    - simd_json.benchmark_reporting.complete_refresh
+    - simd_json.benchmark_reporting.paired_evidence
+  given:
+    - The checked-in benchmark runners, fixture policies, and frozen fixtures
+  when:
+    - The consolidated benchmark command runs from the repository root
+  then:
+    - All four benchmark families execute in isolated Erlang VMs
+    - Eight non-empty reports are written beneath the canonical directory
+    - Every Markdown and JSON pair records one common source revision
+
+- id: simd_json.benchmark_reporting.review
+  covers:
+    - simd_json.benchmark_reporting.interpretation
+  given:
+    - A reader reviewing performance results before release
+  when:
+    - The benchmark index and linked reports are inspected
+  then:
+    - Each comparison identifies its input shape and equivalent work
+    - Host-contextual RSS and worker-process memory are not presented as interchangeable
+    - File-backed qualification evidence is not presented as a binary stream benchmark
+```
+
+## Verification
+
+```spec-verification
+- kind: command
+  target: bash scripts/ci/verify_benchmark_reports.sh
+  execute: true
+  covers:
+    - simd_json.benchmark_reporting.canonical_directory
+    - simd_json.benchmark_reporting.paired_evidence
+    - simd_json.benchmark_reporting.interpretation
+    - simd_json.benchmark_reporting.refresh
+    - simd_json.benchmark_reporting.review
+
+- kind: command
+  target: bash -n scripts/benchmarks/run_all_reports.sh
+  execute: true
+  covers:
+    - simd_json.benchmark_reporting.complete_refresh
+
+```
