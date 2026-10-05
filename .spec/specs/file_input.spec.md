@@ -147,23 +147,9 @@ artifact, and Zig-free fresh-consumer evidence.
 ## Verification
 
 ```spec-verification
-- kind: source_file
-  target: .spec/planning/milestone_06_publication_readiness/phase-07-native-file-backed-input-remediation.md
-  covers:
-    - simd_json.file_input.native_path_boundary
-    - simd_json.file_input.mapped_document
-    - simd_json.file_input.open_file_contract
-    - simd_json.file_input.select_file_contract
-    - simd_json.file_input.stream_file_contract
-    - simd_json.file_input.batched_formats
-    - simd_json.file_input.no_complete_source_copy
-    - simd_json.file_input.immutable_source
-    - simd_json.file_input.bounded_stream_memory
-    - simd_json.file_input.early_halt
-    - simd_json.file_input.pool_and_cleanup
-
-- kind: test_file
-  target: test/simd_json/file_input_test.exs
+- kind: command
+  target: MIX_ENV=test mix test test/simd_json/file_input_test.exs
+  execute: true
   covers:
     - simd_json.file_input.native_path_boundary
     - simd_json.file_input.mapped_document
@@ -172,16 +158,18 @@ artifact, and Zig-free fresh-consumer evidence.
     - simd_json.file_input.immutable_source
     - simd_json.file_input.pool_and_cleanup
 
-- kind: test_file
-  target: test/qualification/file_selection_memory_qualification_test.exs
+- kind: command
+  target: MIX_ENV=test mix test test/qualification/file_selection_memory_qualification_test.exs
+  execute: true
   covers:
     - simd_json.file_input.native_path_boundary
     - simd_json.file_input.select_file_contract
     - simd_json.file_input.no_complete_source_copy
     - simd_json.file_input.pool_and_cleanup
 
-- kind: test_file
-  target: test/qualification/file_stream_memory_qualification_test.exs
+- kind: command
+  target: MIX_ENV=test mix test test/qualification/file_stream_memory_qualification_test.exs
+  execute: true
   covers:
     - simd_json.file_input.stream_file_contract
     - simd_json.file_input.batched_formats
@@ -190,15 +178,17 @@ artifact, and Zig-free fresh-consumer evidence.
     - simd_json.file_input.early_halt
     - simd_json.file_input.pool_and_cleanup
 
-- kind: test_file
-  target: test/simd_json/public_surface_test.exs
+- kind: command
+  target: MIX_ENV=test mix test test/simd_json/public_surface_test.exs
+  execute: true
   covers:
     - simd_json.file_input.open_file_contract
     - simd_json.file_input.select_file_contract
     - simd_json.file_input.stream_file_contract
 
-- kind: test_file
-  target: test/simd_json/file_stream_test.exs
+- kind: command
+  target: MIX_ENV=test mix test test/simd_json/file_stream_test.exs
+  execute: true
   covers:
     - simd_json.file_input.stream_file_contract
     - simd_json.file_input.batched_formats
@@ -208,6 +198,7 @@ artifact, and Zig-free fresh-consumer evidence.
 
 - kind: command
   target: bash scripts/native/run_c_abi_conformance.sh ordinary
+  execute: true
   covers:
     - simd_json.file_input.mapped_document
     - simd_json.file_input.no_complete_source_copy
@@ -215,6 +206,7 @@ artifact, and Zig-free fresh-consumer evidence.
 
 - kind: command
   target: bash scripts/native/run_c_abi_conformance.sh sanitizer
+  execute: true
   covers:
     - simd_json.file_input.mapped_document
     - simd_json.file_input.no_complete_source_copy
@@ -222,6 +214,7 @@ artifact, and Zig-free fresh-consumer evidence.
 
 - kind: command
   target: bash scripts/native/run_zig_resource_tests.sh ordinary
+  execute: true
   covers:
     - simd_json.file_input.mapped_document
     - simd_json.file_input.no_complete_source_copy
@@ -229,6 +222,7 @@ artifact, and Zig-free fresh-consumer evidence.
 
 - kind: command
   target: bash scripts/native/run_zig_resource_tests.sh sanitizer
+  execute: true
   covers:
     - simd_json.file_input.mapped_document
     - simd_json.file_input.no_complete_source_copy
@@ -236,6 +230,7 @@ artifact, and Zig-free fresh-consumer evidence.
 
 - kind: command
   target: bash scripts/native/run_nif_sanitizer_tests.sh
+  execute: true
   covers:
     - simd_json.file_input.native_path_boundary
     - simd_json.file_input.mapped_document

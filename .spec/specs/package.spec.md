@@ -1,5 +1,10 @@
 # SimdJson Package
 
+Release traceability treats an executed `mix run` benchmark harness as
+behavioral proof when its qualification script also validates the retained
+benchmark artifacts. This keeps the million-row wide-projection evidence
+reviewable without misclassifying a real benchmark run as source-only proof.
+
 The release stream-performance follow-up changes the private NIF binding set
 and therefore requires a newly built, checksummed, and consumer-qualified
 precompiled artifact before publication. Package dependencies and public API

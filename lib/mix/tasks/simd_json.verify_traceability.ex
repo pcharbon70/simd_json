@@ -18,7 +18,7 @@ defmodule Mix.Tasks.SimdJson.VerifyTraceability do
   @assertion_pattern ~r/\b(?:assert|assert_raise|refute|flunk|doctest)\b/
   @test_target_pattern ~r{test/[A-Za-z0-9_./*-]+}
   @script_target_pattern ~r{scripts/[A-Za-z0-9_./-]+\.sh}
-  @script_proof_pattern ~r/(?:mix (?:compile|hex\.build|test)|zig_executable|run_c_abi_conformance|run_zig_resource_tests|run_nif_sanitizer_tests|verify_release_symbols|verify_offline_native_build|nm -D)/
+  @script_proof_pattern ~r/(?:mix (?:compile|hex\.build|run|test)|zig_executable|run_c_abi_conformance|run_zig_resource_tests|run_nif_sanitizer_tests|verify_release_symbols|verify_offline_native_build|nm -D)/
 
   @impl Mix.Task
   def run(_arguments) do
