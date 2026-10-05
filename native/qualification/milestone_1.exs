@@ -6,8 +6,8 @@
 # covers: simd_json.native_build_and_abi.pinned_toolchain simd_json.native_build_and_abi.target_qualification simd_json.native_build_and_abi.dependency_upgrade_gate
 [
   schema_version: 1,
-  qualified_on: ~D[2026-10-02],
-  input_sha256: "eeec7f4301d15cba3fd2a270828ac2f12b85d8dbdf44d8e5db8c7f50e22f4b9a",
+  qualified_on: ~D[2026-10-05],
+  input_sha256: "aaca04a161c2dadd001ef2c4a4710dfebf187d6e89a0765ca65804e3b25453aa",
   randomized_seed: 260_831_006,
   supported_targets: [
     [
