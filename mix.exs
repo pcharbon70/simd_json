@@ -39,6 +39,8 @@ defmodule SimdJson.MixProject do
     "docs/releases/candidate-review.md"
   ]
 
+  @benchmark_guides ["docs/benchmarks/README.md"]
+
   def project do
     [
       app: :simd_json,
@@ -138,7 +140,7 @@ defmodule SimdJson.MixProject do
           {"docs/milestones/README.md", filename: "milestones", title: "Milestone Roadmap"}
         ] ++
           List.delete(@milestone_guides, "docs/milestones/README.md") ++
-          @operations_guides ++ @acceptance_records ++ @release_guides,
+          @operations_guides ++ @acceptance_records ++ @release_guides ++ @benchmark_guides,
       groups_for_extras: [
         "Milestone guides": @milestone_guides,
         "Operations guides": @operations_guides,
@@ -146,7 +148,8 @@ defmodule SimdJson.MixProject do
         "Release notes": ["CHANGELOG.md"],
         Security: ["SECURITY.md"],
         Contributing: ["CONTRIBUTING.md"],
-        "Release policies": @release_guides
+        "Release policies": @release_guides,
+        Benchmarks: @benchmark_guides
       ]
     ]
   end

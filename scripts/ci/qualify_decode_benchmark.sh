@@ -12,4 +12,7 @@ MIX_ENV=test SIMD_JSON_QUALIFICATION_DIR="${evidence_root}" \
   2>&1 | tee "${evidence_root}/benchmark.log"
 
 test -s "${evidence_root}/decode-benchmark.json"
+test -s "${evidence_root}/decode-benchmark.md"
+grep -q '^# Eager decode benchmark: SimdJson vs Jason$' \
+  "${evidence_root}/decode-benchmark.md"
 printf 'Milestone 5 decode benchmark passed\n' | tee "${evidence_root}/summary.txt"

@@ -50,6 +50,7 @@ defmodule SimdJson.Benchmarks.Decode do
     directory = System.get_env("SIMD_JSON_QUALIFICATION_DIR", "_build/qualification/decode")
     File.mkdir_p!(directory)
     File.write!(Path.join(directory, "decode-benchmark.json"), [:json.encode(report), "\n"])
+    File.write!(Path.join(directory, "decode-benchmark.md"), markdown(report))
     IO.puts("decode_benchmark acceptance=true profiles=#{length(reports)}")
   end
 
@@ -126,6 +127,42 @@ defmodule SimdJson.Benchmarks.Decode do
     p50 = summarize(samples, "latency_us")["p50"]
     round(byte_size(input) * 1_000_000 / max(p50, 1))
   end
+
+  defp markdown(report) do
+    rows =
+      Enum.map(report["reports"], fn sample ->
+        "| #{sample["fixture"]} | #{sample["input_bytes"]} | " <>
+          "#{decoder_label(sample["decoder"])} | " <>
+          "#{get_in(sample, ["latency_us", "p50"])} | " <>
+          "#{mebibytes_per_second(sample["throughput_bytes_per_second"])} | " <>
+          "#{get_in(sample, ["reductions", "p50"])} | " <>
+          "#{get_in(sample, ["process_memory_delta_bytes", "p50"])} | " <>
+          "#{get_in(sample, ["garbage_collections", "p50"])} |\n"
+      end)
+
+    [
+      "# Eager decode benchmark: SimdJson vs Jason\n\n",
+      "Source revision: `#{report["source_revision"]}`  \n",
+      "Jason version: `#{report["jason_version"]}`  \n",
+      "Correctness acceptance: **PASS**\n\n",
+      "Both workflows fully materialize the same JSON input into equivalent Elixir terms. ",
+      "This benchmark measures eager `decode/1`; it does not measure bounded streaming or ",
+      "sparse projection. Each value is the median (`p50`) of #{report["samples"]} measured ",
+      "samples after #{report["warmups"]} warmup samples.\n\n",
+      "| Fixture | Input bytes | Workflow | Latency p50 (µs) | Throughput (MiB/s) | Reductions p50 | Caller memory delta p50 (bytes) | Minor GCs p50 |\n",
+      "| --- | ---: | --- | ---: | ---: | ---: | ---: | ---: |\n",
+      rows,
+      "\nCaller memory delta is the non-negative difference between process memory immediately ",
+      "before and after the call. It is not a sampled peak and may be zero after garbage ",
+      "collection. Throughput and memory values are host- and allocator-contextual.\n"
+    ]
+  end
+
+  defp decoder_label("simd_json"), do: "SimdJson.decode/1"
+  defp decoder_label("jason_1_4_5"), do: "Jason.decode/1"
+
+  defp mebibytes_per_second(bytes_per_second),
+    do: Float.round(bytes_per_second / 1_048_576, 2)
 
   defp revision, do: System.cmd("git", ["rev-parse", "HEAD"]) |> elem(0) |> String.trim()
   defp tree, do: System.cmd("git", ["rev-parse", "HEAD^{tree}"]) |> elem(0) |> String.trim()
