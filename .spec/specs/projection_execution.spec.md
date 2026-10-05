@@ -1,5 +1,16 @@
 # Projection Execution and Lifecycle
 
+The release stream-performance follow-up reuses the existing per-row compiled
+projection inside stream batches while eliminating an extra result copy.
+Standalone projection admission, delivery, and one-shot lifecycle are
+unchanged.
+
+The wide-projection follow-up freezes a one-million-row, sixteen-field fixture
+and compares one through sixteen fields selected from the same middle row with
+Jason 1.4.5 full decode plus identical lookups. The earlier million-row
+supplement remains a narrow three-field, cross-row traversal proof; it is not a
+field-width scaling result.
+
 Milestone 6 Phase 7 reuses the existing compiled plan and one-shot document
 projection worker for mapped files. The worker verifies observable source
 identity and metadata immediately before cursor commitment; selected strings
@@ -214,6 +225,11 @@ decisions:
   priority: must
   stability: evolving
 
+- id: simd_json.projection_execution.wide_projection_scaling
+  statement: Informational projection qualification shall hold a frozen million-row wide document and target row constant while comparing one, two, four, eight, and sixteen selected fields against pinned Jason full decode plus identical lookups, with decompression outside both timed regions.
+  priority: should
+  stability: evolving
+
 - id: simd_json.projection_execution.preproduction_boundary
   statement: Milestone 2 shall continue to identify the Zigler-threaded runtime as pre-production and shall not claim the bounded admission pool, backpressure, or public telemetry assigned to Milestone 4.
   priority: must
@@ -321,6 +337,19 @@ decisions:
   then:
     - The report includes every required timing, scheduler, garbage-collection, retained-memory, and allocation dimension
     - The declared BEAM-allocation advantage passes without excluding validation, scheduling, result construction, or cleanup cost
+
+- id: simd_json.projection_execution.wide_projection_benchmark
+  covers:
+    - simd_json.projection_execution.end_to_end_benchmark
+    - simd_json.projection_execution.wide_projection_scaling
+  given:
+    - A digest-verified one-million-row fixture with sixteen numeric fields per row and a pinned Jason version
+  when:
+    - One, two, four, eight, and sixteen fields are selected from the same middle row
+  then:
+    - SimdJson.select/2 and Jason full decode plus identical lookups return the same values
+    - The report records latency, isolated worker-process peak, and whole-VM RSS increase for both workflows
+    - The report distinguishes this wide-row field-scaling workload from the earlier narrow-row traversal and streaming workloads
 ```
 
 ## Evidence Inventory
@@ -391,4 +420,12 @@ accepted measurement record.
     - simd_json.projection_execution.caller_death_and_cancellation
     - simd_json.projection_execution.large_projection_responsiveness
     - simd_json.projection_execution.jason_sparse_benchmark
+
+- kind: command
+  target: bash scripts/ci/qualify_wide_projection_benchmark.sh
+  execute: true
+  covers:
+    - simd_json.projection_execution.end_to_end_benchmark
+    - simd_json.projection_execution.wide_projection_scaling
+    - simd_json.projection_execution.wide_projection_benchmark
 ```

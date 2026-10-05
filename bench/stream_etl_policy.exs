@@ -17,7 +17,8 @@
     million_stream_process_peak_bytes: 134_217_728
   },
   notes: [
-    "Both workflows perform the same id/value lookup and integer sum reduction.",
+    "Each flat million-row record has three fields: numeric id, numeric value, and an unselected ignored string.",
+    "Both workflows project id/value from every row and perform the same integer sum reduction; this is a narrow-row streaming ETL benchmark, not a select-field-width scaling benchmark.",
     "The timed region includes validation, setup/decode, lookup, reduction, and cleanup.",
     "The million-row stream must remain within a fixed 128 MiB process-peak envelope and use at most 60 percent of Jason's process peak.",
     "Latency and throughput are measured context, not a universal superiority claim.",

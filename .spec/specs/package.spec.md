@@ -1,5 +1,10 @@
 # SimdJson Package
 
+The release stream-performance follow-up changes the private NIF binding set
+and therefore requires a newly built, checksummed, and consumer-qualified
+precompiled artifact before publication. Package dependencies and public API
+remain unchanged.
+
 Milestone 6 Phase 6 Section 6.4 fingerprints the repository-only fail-closed
 go/no-go reviewer. It creates no tag, release, upload, publication, owner
 mutation, package file, runtime dependency, or credential evidence.

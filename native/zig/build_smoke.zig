@@ -572,6 +572,31 @@ pub fn native_pool_submit_stream_batch(
     return pool.submitOperation(.stream_batch, operation, null, cursor, projection, null, 0, 0, sequence);
 }
 
+pub fn native_pool_submit_stream_batch_direct(
+    operation: OperationResource,
+    cursor: StreamCursorResource,
+    projection: beam.term,
+    sequence: u64,
+    recipient: beam.pid,
+) !worker_pool.MonitoredSubmission {
+    const guard = PoolLifecycleGuard.acquire() orelse return error.pool_stopped;
+    defer guard.release();
+
+    const pool = pool_ref.load(.acquire) orelse return error.pool_stopped;
+    return pool.submitOperationDirect(
+        .stream_batch,
+        operation,
+        null,
+        cursor,
+        projection,
+        null,
+        0,
+        0,
+        sequence,
+        recipient,
+    );
+}
+
 pub fn native_pool_close_serialization_fixture(resource: PoolSerializationResource) worker_pool.CloseStatus {
     return resource.__payload.close();
 }
@@ -591,6 +616,7 @@ pub fn native_pool_pause_workers(paused: bool) bool {
 
 const JoinCopiedTermPayload = struct {
     term: beam.term,
+    env: beam.env,
 };
 
 /// Zigler 0.16 stores a threaded return value in the worker environment and
@@ -623,6 +649,7 @@ pub const JoinCopiedTerm = struct {
     }
 
     pub fn make(self: JoinCopiedTerm, make_opts: anytype) beam.term {
+        if (make_opts.env == self.__payload.env) return self.__payload.term;
         return beam.copy(make_opts.env, self.__payload.term);
     }
 
@@ -1578,7 +1605,10 @@ fn createOperation(
         .projection_committed = .init(false),
         .projection_boundaries = .init(0),
         .projection_failure_after = .init(std.math.maxInt(usize)),
-        .projection_result_payload = .{ .term = beam.make(null, .{ .env = private_env }) },
+        .projection_result_payload = .{
+            .term = beam.make(null, .{ .env = private_env }),
+            .env = private_env,
+        },
         .request_ref = beam.copy(private_env, request_ref),
         .owner = owner,
         .kind = kind,
@@ -3330,7 +3360,31 @@ pub fn threaded_stream_batch_fixture(
     projection: beam.term,
     sequence: u64,
 ) StreamBatchFixtureResult {
+    return executeStreamBatch(operation, cursor, projection, sequence, null);
+}
+
+/// The production pool already owns the environment used to encode and send
+/// the completed result. Constructing row terms in that environment avoids a
+/// redundant deep copy while retaining the separate operation environment for
+/// the legacy threaded qualification path.
+pub fn pool_stream_batch_execute(
+    operation: OperationResource,
+    cursor: StreamCursorResource,
+    projection: beam.term,
+    sequence: u64,
+) StreamBatchFixtureResult {
+    return executeStreamBatch(operation, cursor, projection, sequence, beam.context.env);
+}
+
+fn executeStreamBatch(
+    operation: OperationResource,
+    cursor: StreamCursorResource,
+    projection: beam.term,
+    sequence: u64,
+    pool_env: ?beam.env,
+) StreamBatchFixtureResult {
     const record = operation.unpack();
+    const output_env = pool_env orelse record.private_env;
     var result = StreamBatchFixtureResult{
         .status = .cursor_state,
         .kind = record.kind,
@@ -3415,7 +3469,7 @@ pub fn threaded_stream_batch_fixture(
         return result;
     };
     defer decoded.deinit();
-    var rows = beam.make_empty_list(.{ .env = record.private_env });
+    var rows = beam.make_empty_list(.{ .env = output_env });
     var row_index = batch.produced_rows;
     while (row_index > 0) {
         row_index -= 1;
@@ -3427,7 +3481,7 @@ pub fn threaded_stream_batch_fixture(
             result.ready_for_delivery = record.markReadyForDelivery();
             return result;
         };
-        var map = beam.term{ .v = e.enif_make_new_map(record.private_env) };
+        var map = beam.term{ .v = e.enif_make_new_map(output_env) };
         for (decoded.output_keys, 0..) |source_key, field_index| {
             const scalar = projection_plan.OwnedResults.scalarFromSlot(batch.slots[slot_index + field_index]) orelse {
                 _ = stream_cursor_demand_cancel(cursor);
@@ -3436,16 +3490,16 @@ pub fn threaded_stream_batch_fixture(
                 result.ready_for_delivery = record.markReadyForDelivery();
                 return result;
             };
-            const value = scalarTerm(record.private_env, scalar) catch {
+            const value = scalarTerm(output_env, scalar) catch {
                 _ = stream_cursor_demand_cancel(cursor);
                 worker_finished = true;
                 result.status = .out_of_memory;
                 result.ready_for_delivery = record.markReadyForDelivery();
                 return result;
             };
-            const key = beam.copy(record.private_env, source_key);
+            const key = beam.copy(output_env, source_key);
             var next_map: e.ErlNifTerm = undefined;
-            if (e.enif_make_map_put(record.private_env, map.v, key.v, value.v, &next_map) == 0) {
+            if (e.enif_make_map_put(output_env, map.v, key.v, value.v, &next_map) == 0) {
                 _ = stream_cursor_demand_cancel(cursor);
                 worker_finished = true;
                 result.status = .out_of_memory;
@@ -3461,9 +3515,10 @@ pub fn threaded_stream_batch_fixture(
             result.ready_for_delivery = record.markReadyForDelivery();
             return result;
         }
-        rows = .{ .v = e.enif_make_list_cell(record.private_env, map.v, rows.v) };
+        rows = .{ .v = e.enif_make_list_cell(output_env, map.v, rows.v) };
     }
     record.projection_result_payload.term = rows;
+    record.projection_result_payload.env = output_env;
     _ = stream_cursor_demand_complete(cursor, sequence, batch.done);
     result.status = .ok;
     result.produced_rows = batch.produced_rows;

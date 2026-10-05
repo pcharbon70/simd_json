@@ -1,5 +1,10 @@
 # Stream Execution and Lifecycle
 
+The release performance follow-up removes redundant term routing from public
+next-batch delivery. Production pool jobs build the bounded row list in their
+delivery environment and send it directly to the owner; the coordinator keeps
+cancellation and cleanup authority through a separate bounded terminal notice.
+
 Milestone 6 Phase 5 ships the qualified lazy streaming engine in the supported
 checksummed precompiled NIF. Consumer qualification exercises streaming
 without Zig or Zigler dependencies, while demand, bounds, cancellation,
@@ -107,6 +112,7 @@ decisions:
   - simd_json.lazy_stream_api_and_bounded_options
   - simd_json.owned_native_jobs_and_bounded_fifo
   - simd_json.monitored_delivery_and_resource_serialization
+  - simd_json.direct_stream_batch_delivery
 ```
 
 ## Requirements
@@ -163,9 +169,14 @@ decisions:
   stability: stable
 
 - id: simd_json.stream_execution.generation_and_retention
-  statement: Setup and batch operations shall retain cursor, parent document, input, parser, plan, batch, private term environment, cancellation state, and coordinator metadata and validate generation before native dereference and delivery until terminal cleanup completes.
+  statement: Setup and batch operations shall retain cursor, parent document, input, parser, plan, batch, the term environment that owns each pending result, cancellation state, and coordinator metadata and validate generation before native dereference and delivery until terminal cleanup completes.
   priority: must
   stability: stable
+
+- id: simd_json.stream_execution.single_delivery_handoff
+  statement: A production batch shall be materialized once in its native delivery environment and sent directly to the owner, while coordinator lifecycle completion uses a separate bounded notice that contains no row terms or selected values.
+  priority: must
+  stability: evolving
 
 - id: simd_json.stream_execution.early_halt_cleanup
   statement: Enum.take, Enum.find, reducer halt, consumer exception, and consumer death shall cancel in-flight work if needed, deterministically close the cursor, and release its native graph without parsing the unconsumed target-array or enclosing-document remainder.
@@ -340,6 +351,7 @@ baseline, scheduler, and frozen end-to-end Jason ETL evidence.
     - simd_json.stream_execution.single_in_flight_batch
     - simd_json.stream_execution.no_prefetch
     - simd_json.stream_execution.generation_and_retention
+    - simd_json.stream_execution.single_delivery_handoff
     - simd_json.stream_execution.early_halt_cleanup
     - simd_json.stream_execution.cancellation_boundaries
     - simd_json.stream_execution.close_shutdown_interlock

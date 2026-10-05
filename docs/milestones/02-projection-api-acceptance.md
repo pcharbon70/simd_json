@@ -118,8 +118,11 @@ make that deliberately scoped estimate reviewable.
 
 ## Million-row projection supplement
 
-The cumulative projection runtime gate also selects the first, middle, and
-last scalar values from the exact Milestone 3 million-row fixture. That source
+The cumulative projection runtime gate also selects three scalar paths
+distributed across the first, middle, and final rows of the exact Milestone 3
+million-row fixture. Each flat row has only `id`, `value`, and `ignored`; the
+supplement therefore proves long forward traversal and sparse allocation, not
+scaling with the number of fields selected from a wide row. That source
 is 45,666,793 bytes with SHA-256
 `2171d30d6e247aede4318ba732e60e41af513be04b3d148cd26b92f218042ea7`.
 Reaching index 999,999 and completing successfully verifies full forward
@@ -132,6 +135,32 @@ gauge to baseline. Its isolated worker-process peak was 8,864 bytes versus
 process-heap comparison deliberately excludes the already-loaded source binary
 and native allocations; it demonstrates avoidance of a full BEAM result tree,
 not file/socket streaming or zero total-memory input handling.
+
+## Million-row wide projection supplement
+
+The field-scaling supplement answers a different question with a frozen
+208,223,036-byte document containing 1,000,000 rows and sixteen numeric fields
+per row. It holds zero-based row 499,999 constant and selects 1, 2, 4, 8, and 16
+fields from that row. Jason 1.4.5 fully decodes the same document before
+performing identical lookups; fixture decompression is outside both timed
+regions. Three measured samples follow one warmup for each workflow and width.
+
+The 2026-10-03 development-host run recorded:
+
+| Selected fields | `SimdJson.select/2` p50 | Jason decode + lookup p50 | SimdJson speedup | SimdJson caller peak | Jason caller peak |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 853.012 ms | 6,844.343 ms | 8.02× | 2,840 bytes | 1,686,173,040 bytes |
+| 2 | 828.896 ms | 6,871.798 ms | 8.29× | 2,840 bytes | 1,686,173,040 bytes |
+| 4 | 837.444 ms | 6,960.506 ms | 8.31× | 5,848 bytes | 1,686,978,672 bytes |
+| 8 | 884.845 ms | 6,982.081 ms | 7.89× | 10,736 bytes | 1,687,090,296 bytes |
+| 16 | 882.013 ms | 7,169.779 ms | 8.13× | 16,768 bytes | 1,686,173,040 bytes |
+
+Latency remained effectively flat as the selected width grew, while result
+construction increased the isolated SimdJson caller peak from 2,840 to 16,768
+bytes. Caller-process memory is intentionally scoped: it demonstrates avoided
+BEAM materialization but excludes the shared input binary and native parser
+memory. Whole-VM RSS remains in the generated report as allocator- and
+host-contextual evidence rather than a library-exclusive measurement.
 
 ## Scheduler and lifetime criteria
 

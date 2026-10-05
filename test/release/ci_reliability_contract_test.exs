@@ -81,7 +81,7 @@ defmodule SimdJson.CIReliabilityContractTest do
     assert source =~ "pool_lifecycle_mutex"
     assert source =~ "enif_mutex_destroy(lifecycle_mutex)"
     assert source =~ "pool_lifecycle_mutex.swap(null, .acq_rel)"
-    assert length(guarded_functions) == 19
+    assert length(guarded_functions) == 20
   end
 
   # covers: simd_json.native_pool.owned_jobs simd_json.native_pool.cancellation simd_json.release.ci_native_reliability

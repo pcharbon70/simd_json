@@ -1,6 +1,13 @@
 const std = @import("std");
 pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type, comptime ops: type) type {
     return struct {
+        fn monotonicNanoseconds() i128 {
+            var timestamp: std.posix.timespec = undefined;
+            if (std.posix.errno(std.posix.system.clock_gettime(std.posix.CLOCK.MONOTONIC, &timestamp)) != .SUCCESS)
+                return 0;
+            return @as(i128, timestamp.sec) * std.time.ns_per_s + timestamp.nsec;
+        }
+
         pub const JobKind = enum(u8) {
             fixture,
             document_open,
@@ -27,11 +34,12 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             resource_object: std.atomic.Value(?*anyopaque),
             monitor: beam.monitor,
             caller: beam.pid,
+            observer: ?beam.pid,
             private_env: beam.env,
             request_ref: e.ErlNifTerm,
             terminal: std.atomic.Value(u8),
 
-            fn create(allocator: std.mem.Allocator, caller: beam.pid) !*RequestControl {
+            fn create(allocator: std.mem.Allocator, caller: beam.pid, observer: ?beam.pid) !*RequestControl {
                 const control = try allocator.create(RequestControl);
                 const private_env = e.enif_alloc_env() orelse {
                     allocator.destroy(control);
@@ -45,6 +53,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                     .resource_object = .init(null),
                     .monitor = undefined,
                     .caller = caller,
+                    .observer = observer,
                     .private_env = private_env,
                     .request_ref = e.enif_make_ref(private_env),
                     .terminal = .init(@intFromEnum(TerminalState.pending)),
@@ -71,7 +80,45 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 return !self.cancelled.swap(true, .acq_rel);
             }
 
-            fn deliver(self: *RequestControl, checksum: u64) DeliveryOutcome {
+            fn notifyObserver(
+                self: *RequestControl,
+                outcome: DeliveryOutcome,
+                queue_duration: u64,
+                execution_duration: u64,
+            ) void {
+                var observer = self.observer orelse return;
+                const env = e.enif_alloc_env() orelse return;
+                defer e.enif_free_env(env);
+                const outcome_atom = switch (outcome) {
+                    .delivered => e.enif_make_atom(env, "delivered"),
+                    .discarded => e.enif_make_atom(env, "discarded"),
+                    .cancelled => e.enif_make_atom(env, "cancelled"),
+                };
+                const completion_parts = [_]e.ErlNifTerm{
+                    e.enif_make_atom(env, "direct_complete"),
+                    outcome_atom,
+                };
+                const completion = e.enif_make_tuple_from_array(env, &completion_parts, completion_parts.len);
+                const measurements = beam.make(.{
+                    .queue_duration = queue_duration,
+                    .execution_duration = execution_duration,
+                }, .{ .env = env });
+                const message_parts = [_]e.ErlNifTerm{
+                    e.enif_make_atom(env, "Elixir.SimdJson.Native"),
+                    e.enif_make_copy(env, self.request_ref),
+                    completion,
+                    measurements.v,
+                };
+                const message = e.enif_make_tuple_from_array(env, &message_parts, message_parts.len);
+                _ = e.enif_send(null, &observer, env, message);
+            }
+
+            fn deliver(
+                self: *RequestControl,
+                checksum: u64,
+                queue_duration: u64,
+                execution_duration: u64,
+            ) DeliveryOutcome {
                 if (self.cancelled.load(.acquire)) {
                     _ = self.terminal.cmpxchgStrong(
                         @intFromEnum(TerminalState.pending),
@@ -79,6 +126,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                         .acq_rel,
                         .acquire,
                     );
+                    self.notifyObserver(.cancelled, queue_duration, execution_duration);
                     return .cancelled;
                 }
                 if (self.terminal.cmpxchgStrong(
@@ -106,7 +154,9 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                     @intFromEnum(if (delivered) TerminalState.delivered else TerminalState.discarded),
                     .release,
                 );
-                return if (delivered) .delivered else .discarded;
+                const outcome: DeliveryOutcome = if (delivered) .delivered else .discarded;
+                self.notifyObserver(outcome, queue_duration, execution_duration);
+                return outcome;
             }
 
             fn deliverTerm(
@@ -123,6 +173,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                         .acq_rel,
                         .acquire,
                     );
+                    self.notifyObserver(.cancelled, queue_duration, execution_duration);
                     return .cancelled;
                 }
                 if (self.terminal.cmpxchgStrong(
@@ -151,7 +202,9 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                     @intFromEnum(if (delivered) TerminalState.delivered else TerminalState.discarded),
                     .release,
                 );
-                return if (delivered) .delivered else .discarded;
+                const outcome: DeliveryOutcome = if (delivered) .delivered else .discarded;
+                self.notifyObserver(outcome, queue_duration, execution_duration);
+                return outcome;
             }
 
             fn demonitor(self: *RequestControl) void {
@@ -312,7 +365,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             kind: JobKind,
             state: std.atomic.Value(u8),
             cancelled: std.atomic.Value(bool),
-            enqueued_at: i64,
+            enqueued_at: i128,
             bytes: []u8,
             env: ?beam.env,
             operation: ?ops.OperationResource,
@@ -331,7 +384,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 const job = try allocator.create(Job);
                 errdefer allocator.destroy(job);
                 const bytes = try allocator.dupe(u8, input);
-                job.* = .{ .allocator = allocator, .request_id = request_id, .kind = .fixture, .state = .init(@intFromEnum(JobState.queued)), .cancelled = .init(false), .enqueued_at = e.enif_monotonic_time(e.ERL_NIF_USEC), .bytes = bytes, .env = null, .operation = null, .document = null, .cursor = null, .projection = null, .target = null, .row_limit = 0, .byte_limit = 0, .sequence = 0, .request = null, .serialization = null, .next = null };
+                job.* = .{ .allocator = allocator, .request_id = request_id, .kind = .fixture, .state = .init(@intFromEnum(JobState.queued)), .cancelled = .init(false), .enqueued_at = monotonicNanoseconds(), .bytes = bytes, .env = null, .operation = null, .document = null, .cursor = null, .projection = null, .target = null, .row_limit = 0, .byte_limit = 0, .sequence = 0, .request = null, .serialization = null, .next = null };
                 return job;
             }
 
@@ -522,7 +575,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
             pub fn submitMonitored(self: *Runtime, input: []const u8) !MonitoredSubmission {
                 if (input.len > 1_048_576) return error.input_too_large;
                 const owner = try beam.self(.{});
-                const control = try RequestControl.create(self.allocator, owner);
+                const control = try RequestControl.create(self.allocator, owner, null);
                 const request = RequestResource.create(control, .{}) catch |reason| {
                     control.release();
                     return reason;
@@ -566,7 +619,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 errdefer resource.__payload.releaseReservation();
                 if (input.len > 1_048_576) return error.input_too_large;
                 const owner = try beam.self(.{});
-                const control = try RequestControl.create(self.allocator, owner);
+                const control = try RequestControl.create(self.allocator, owner, null);
                 const request = RequestResource.create(control, .{}) catch |reason| {
                     control.release();
                     return reason;
@@ -615,14 +668,72 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 sequence: u64,
             ) !MonitoredSubmission {
                 const owner = try beam.self(.{});
-                const control = try RequestControl.create(self.allocator, owner);
+                return self.submitOperationTo(
+                    kind,
+                    operation,
+                    document,
+                    cursor,
+                    projection,
+                    target,
+                    row_limit,
+                    byte_limit,
+                    sequence,
+                    owner,
+                    null,
+                );
+            }
+
+            pub fn submitOperationDirect(
+                self: *Runtime,
+                kind: JobKind,
+                operation: ops.OperationResource,
+                document: ?ops.DocumentResource,
+                cursor: ?ops.StreamCursorResource,
+                projection: ?beam.term,
+                target: ?beam.term,
+                row_limit: u64,
+                byte_limit: u64,
+                sequence: u64,
+                recipient: beam.pid,
+            ) !MonitoredSubmission {
+                const observer = try beam.self(.{});
+                return self.submitOperationTo(
+                    kind,
+                    operation,
+                    document,
+                    cursor,
+                    projection,
+                    target,
+                    row_limit,
+                    byte_limit,
+                    sequence,
+                    recipient,
+                    observer,
+                );
+            }
+
+            fn submitOperationTo(
+                self: *Runtime,
+                kind: JobKind,
+                operation: ops.OperationResource,
+                document: ?ops.DocumentResource,
+                cursor: ?ops.StreamCursorResource,
+                projection: ?beam.term,
+                target: ?beam.term,
+                row_limit: u64,
+                byte_limit: u64,
+                sequence: u64,
+                recipient: beam.pid,
+                observer: ?beam.pid,
+            ) !MonitoredSubmission {
+                const control = try RequestControl.create(self.allocator, recipient, observer);
                 const request = RequestResource.create(control, .{}) catch |reason| {
                     control.release();
                     return reason;
                 };
                 errdefer request.release();
                 control.resource_object.store(@ptrCast(request.__payload), .release);
-                var monitored_owner = owner;
+                var monitored_owner = recipient;
                 if (e.enif_monitor_process(beam.context.env, @ptrCast(request.__payload), &monitored_owner, &control.monitor) != 0)
                     return error.monitor_failed;
                 control.monitored.store(true, .release);
@@ -711,7 +822,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 }
                 while (runtime.pause_workers and !runtime.stopping) e.enif_cond_wait(runtime.condition, runtime.mutex);
                 e.enif_mutex_unlock(runtime.mutex);
-                const execution_started = e.enif_monotonic_time(e.ERL_NIF_USEC);
+                const execution_started = monotonicNanoseconds();
                 var checksum: u64 = 0;
                 var native_result: ?beam.term = null;
                 if (!job.?.isCancelled()) switch (job.?.kind) {
@@ -738,7 +849,7 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                             .stream_binary_setup => encodeResult(job.?.env.?, ops.threaded_stream_binary_setup_fixture(job.?.operation.?, job.?.projection.?, job.?.target.?, job.?.row_limit, job.?.byte_limit)),
                             .stream_document_setup => encodeResult(job.?.env.?, ops.threaded_stream_setup_fixture(job.?.operation.?, job.?.document.?, job.?.projection.?, job.?.target.?, job.?.row_limit, job.?.byte_limit)),
                             .stream_file_setup => encodeResult(job.?.env.?, ops.threaded_stream_file_setup(job.?.operation.?, job.?.projection.?, job.?.target.?, job.?.row_limit, job.?.byte_limit)),
-                            .stream_batch => encodeResult(job.?.env.?, ops.threaded_stream_batch_fixture(job.?.operation.?, job.?.cursor.?, job.?.projection.?, job.?.sequence)),
+                            .stream_batch => encodeResult(job.?.env.?, ops.pool_stream_batch_execute(job.?.operation.?, job.?.cursor.?, job.?.projection.?, job.?.sequence)),
                             .fixture => unreachable,
                         };
                     },
@@ -750,13 +861,19 @@ pub fn Implementation(comptime beam: type, comptime e: type, comptime root: type
                 var delivery: ?DeliveryOutcome = null;
                 if (job.?.request) |request| {
                     if (cancelled) _ = request.cancel();
-                    const execution_finished = e.enif_monotonic_time(e.ERL_NIF_USEC);
-                    const queue_duration: u64 = @intCast(@max(0, execution_started - job.?.enqueued_at));
-                    const execution_duration: u64 = @intCast(@max(0, execution_finished - execution_started));
+                    const execution_finished = monotonicNanoseconds();
+                    const queue_duration: u64 = @intCast(@divTrunc(
+                        @max(0, execution_started - job.?.enqueued_at),
+                        std.time.ns_per_us,
+                    ));
+                    const execution_duration: u64 = @intCast(@divTrunc(
+                        @max(0, execution_finished - execution_started),
+                        std.time.ns_per_us,
+                    ));
                     delivery = if (native_result) |result|
                         request.deliverTerm(job.?.env.?, result, queue_duration, execution_duration)
                     else
-                        request.deliver(checksum);
+                        request.deliver(checksum, queue_duration, execution_duration);
                     cancelled = delivery.? == .cancelled;
                 }
                 job.?.state.store(@intFromEnum(if (cancelled) JobState.cancelled else JobState.completed), .release);

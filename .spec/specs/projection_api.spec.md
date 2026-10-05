@@ -1,5 +1,9 @@
 # Projection API
 
+The release stream-performance follow-up changes only private stream-batch
+delivery. Projection grammar, scalar results, public entry points, and errors
+remain unchanged.
+
 Milestone 6 Phase 7 adds `select_file/2` as a path-backed entry to the same
 closed projection grammar and scalar result contract. It validates the complete
 projection before file access, maps the source below the BEAM boundary, copies

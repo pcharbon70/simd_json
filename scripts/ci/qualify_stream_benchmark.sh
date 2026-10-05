@@ -13,4 +13,14 @@ MIX_ENV=test SIMD_JSON_QUALIFICATION_DIR="${evidence_root}" \
 
 test -s "${evidence_root}/stream-etl.json"
 test -s "${evidence_root}/stream-etl.md"
+
+for required_text in \
+  '# Stream ETL benchmark: SimdJson vs Jason' \
+  '## Side-by-side measurements' \
+  'Worker process peak (MiB)' \
+  'Whole-VM RSS peak (MiB)' \
+  '## Measurement definitions'; do
+  grep -Fq "${required_text}" "${evidence_root}/stream-etl.md"
+done
+
 printf 'Milestone 3 stream ETL benchmark passed\n' | tee "${evidence_root}/summary.txt"

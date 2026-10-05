@@ -88,11 +88,17 @@ defmodule SimdJson.Native.OperationCoordinator do
   end
 
   def stream_batch(operation, cursor, projection, sequence) do
-    GenServer.call(
-      __MODULE__,
-      {:stream_public, operation, {:batch, cursor, projection, sequence}},
-      :infinity
-    )
+    case GenServer.call(
+           __MODULE__,
+           {:stream_public, operation, {:batch, cursor, projection, sequence}},
+           :infinity
+         ) do
+      {:direct, request_ref, started_at} ->
+        await_direct_stream_batch(operation, request_ref, started_at)
+
+      response ->
+        response
+    end
   end
 
   def decode(operation) do
@@ -467,6 +473,22 @@ defmodule SimdJson.Native.OperationCoordinator do
   end
 
   def handle_info(
+        {SimdJson.Native, request_ref, {:direct_complete, outcome}, _measurements},
+        state
+      )
+      when outcome in [:delivered, :discarded, :cancelled] do
+    case Map.fetch(state.requests, request_ref) do
+      {:ok, %{kind: :stream_batch} = request} ->
+        terminal = if outcome == :delivered, do: :delivered, else: :discarded
+        _ = BuildSmoke.operation_finish(request.operation.resource, terminal)
+        {:noreply, remove_request(state, request_ref, request)}
+
+      _ ->
+        {:noreply, state}
+    end
+  end
+
+  def handle_info(
         {@completion_tag, kind, request_ref, generation, cursor_generation, batch_sequence,
          worker, result},
         state
@@ -552,36 +574,41 @@ defmodule SimdJson.Native.OperationCoordinator do
 
     if not legacy? and not legacy_request_active?(state) and
          pool_submission?(kind, payload, reject_submission?, open_failure_for_test) do
-      case ThreadedOperation.submit_to_pool(operation, payload) do
+      case ThreadedOperation.submit_to_pool(operation, payload, caller) do
         {:ok, submission} ->
+          started_at = System.monotonic_time()
+          direct? = kind == :stream_batch
+
           request = %{
             kind: kind,
             operation: operation,
-            from: from,
+            from: if(direct?, do: nil, else: from),
             caller: caller,
             caller_monitor: caller_monitor,
             worker: nil,
             worker_monitor: nil,
             pool_request: submission.request,
-            started_at: System.monotonic_time(),
+            started_at: started_at,
             document_target: document_target,
             diagnostics?: diagnostics?,
             orphaned?: false
           }
 
-          %{
+          next_state = %{
             state
             | requests: Map.put(state.requests, submission.request_ref, request),
               caller_monitors:
                 Map.put(state.caller_monitors, caller_monitor, submission.request_ref)
           }
-          |> tap(fn _state ->
-            Telemetry.start(
-              operation_name(kind),
-              operation.input_bytes,
-              BuildSmoke.native_pool_snapshot()
-            )
-          end)
+
+          Telemetry.start(
+            operation_name(kind),
+            operation.input_bytes,
+            BuildSmoke.native_pool_snapshot()
+          )
+
+          if direct?, do: GenServer.reply(from, {:direct, submission.request_ref, started_at})
+          next_state
 
         {:error, reason} ->
           capacity = BuildSmoke.native_pool_snapshot()
@@ -818,6 +845,33 @@ defmodule SimdJson.Native.OperationCoordinator do
 
     defp default_stream_projection,
       do: {:simd_json_projection_v1, [{0, :value, 0}], [{0, ["value"]}]}
+  end
+
+  defp await_direct_stream_batch(operation, request_ref, started_at) do
+    receive do
+      {SimdJson.Native, ^request_ref, {:ok, native_result}, measurements}
+      when is_map(native_result) and is_map(measurements) ->
+        conversion_started = System.monotonic_time()
+
+        response =
+          if native_result.kind == :stream_batch and
+               native_result.generation == operation.generation and
+               Map.get(native_result, :worker_context) == :threaded and
+               ThreadedOperation.correlated?(operation, native_result) do
+            normalize_result(native_result, false)
+          else
+            native_error(:completion_mismatch)
+          end
+
+        conversion_duration = System.monotonic_time() - conversion_started
+        Telemetry.stop(:next_batch, started_at, measurements, conversion_duration, response)
+        response
+
+      {SimdJson.Native, ^request_ref, _unexpected, measurements} when is_map(measurements) ->
+        response = native_error(:completion_mismatch)
+        Telemetry.stop(:next_batch, started_at, measurements, 0, response)
+        response
+    end
   end
 
   defp complete_request(state, request_ref, request, {:ok, native_result}) do

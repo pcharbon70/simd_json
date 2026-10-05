@@ -1,5 +1,10 @@
 # Native Worker Pool and Admission
 
+The release performance follow-up sends each completed stream batch directly
+from its native pool job to the monitored consumer. The coordinator receives
+only a bounded terminal notice for cleanup and telemetry, while native queue
+and execution timings now come from a monotonic worker-thread clock.
+
 Milestone 6 Phase 6 release-candidate qualification treats native job
 completion and result delivery as separately published terminal counters. Public
 operation tests wait for both counters and a quiescent queue before asserting
@@ -65,6 +70,7 @@ decisions:
   - simd_json.monitored_delivery_and_resource_serialization
   - simd_json.production_native_pool_routing_and_telemetry
   - simd_json.native_pool_qualification_and_activation
+  - simd_json.direct_stream_batch_delivery
 ```
 
 ## Requirements
@@ -112,6 +118,11 @@ decisions:
 
 - id: simd_json.native_pool.telemetry
   statement: Elixir shall emit bounded telemetry for queue, execution, conversion, sizes, capacity, operation, outcome, rejection, and cancellation without user content or high-cardinality identities.
+  priority: must
+  stability: evolving
+
+- id: simd_json.native_pool.direct_stream_delivery
+  statement: A production next-batch job shall construct its transactional row list in its delivery environment, send that bounded result exactly once to the monitored consumer, and notify the coordinator separately with bounded correlation, outcome, and timing metadata rather than forwarding row terms through the coordinator.
   priority: must
   stability: evolving
 
@@ -178,6 +189,21 @@ decisions:
   then:
     - Measurements explain capacity and latency with bounded metadata
     - JSON, caller paths, selected values, PIDs, and request references are absent
+
+- id: simd_json.native_pool.direct_stream_result
+  covers:
+    - simd_json.native_pool.direct_stream_delivery
+    - simd_json.native_pool.cancellation
+    - simd_json.native_pool.telemetry
+  given:
+    - A monitored stream owner requests a bounded native batch
+  when:
+    - The pool completes, cancels, or loses the result recipient
+  then:
+    - A successful complete row list is sent only to the owner
+    - The coordinator receives only bounded terminal metadata
+    - One terminal path releases monitoring and operation state
+    - Native queue and execution durations use a monotonic clock
 ```
 
 ## Verification
@@ -230,6 +256,7 @@ decisions:
     - simd_json.native_pool.cancellation
     - simd_json.native_pool.resource_serialization
     - simd_json.native_pool.telemetry
+    - simd_json.native_pool.direct_stream_delivery
     - simd_json.native_pool.shutdown
     - simd_json.native_pool.saturation
     - simd_json.native_pool.cancel_close_shutdown_races

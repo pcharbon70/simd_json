@@ -35,6 +35,7 @@ SIMD_JSON_QUALIFICATION_DIR="${evidence_root}" \
   run_step benchmark bash scripts/ci/qualify_decode_benchmark.sh
 
 test -s "${evidence_root}/decode-benchmark.json"
+test -s "${evidence_root}/decode-benchmark.md"
 test -s "${evidence_root}/decode-scheduler.json"
 printf 'Milestone 5 decode compatibility and runtime qualification passed\n' \
   | tee "${evidence_root}/summary.txt"

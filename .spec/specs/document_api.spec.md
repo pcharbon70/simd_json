@@ -1,5 +1,9 @@
 # Document API and Errors
 
+The release stream-performance follow-up changes only private next-batch
+delivery and native timing. Document functions, errors, ownership, and public
+terms are unchanged.
+
 Milestone 6 Phase 5 follow-up qualification waits for shared native operation
 and retained-input gauges before recording the fresh-document projection
 baseline. This is a test-only ordering guarantee and changes no document API,
