@@ -1,5 +1,9 @@
 # Streaming API
 
+Consumer documentation teaches the lazy Enumerable API by feature and example
+and excludes internal roadmap, phase, milestone, acceptance, and release-process
+language.
+
 Milestone 6 Phase 2 strengthens the lifecycle-neutral construction proof by
 waiting for completed native operation resources before comparison. The
 public option grammar and lazy Enumerable API are unchanged.

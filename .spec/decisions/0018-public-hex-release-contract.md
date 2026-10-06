@@ -3,9 +3,20 @@ id: simd_json.public_hex_release_contract
 status: accepted
 date: 2026-09-05
 affects:
+  - simd_json.benchmark_reporting
+  - simd_json.document_api
+  - simd_json.document_resource
+  - simd_json.file_input
   - simd_json.native_build_and_abi
+  - simd_json.native_execution
+  - simd_json.native_pool
   - simd_json.package
+  - simd_json.projection_api
+  - simd_json.projection_execution
   - simd_json.release
+  - simd_json.stream_cursor
+  - simd_json.stream_execution
+  - simd_json.streaming_api
 ---
 
 # Public Hex Release Contract
@@ -45,6 +56,12 @@ retains the exact archive, source commit and tree, dependency lock, toolchain,
 target, native qualification fingerprint, complete source manifest, and
 transitive dependency/license inventory in a commit-qualified CI artifact for
 30 days. That provenance identifies a candidate but never authorizes it.
+
+Published narrative documentation is a consumer surface. README, HexDocs, and
+the Hex archive include concise feature-oriented guides and benchmark reports,
+but exclude internal roadmap, phase, acceptance, qualification-history, and
+release-process documents. Internal records remain available to maintainers in
+the repository and must not be linked from consumer diagnostics.
 
 The intended first publisher and pre-publication recovery owner are the
 confirmed Hex account `pcharbon70`, with the private contact already published

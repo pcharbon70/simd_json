@@ -1,5 +1,8 @@
 # Document API and Errors
 
+Consumer documentation describes the active document API by feature and omits
+internal roadmap, phase, milestone, acceptance, and release-process language.
+
 The release stream-performance follow-up changes only private next-batch
 delivery and native timing. Document functions, errors, ownership, and public
 terms are unchanged.

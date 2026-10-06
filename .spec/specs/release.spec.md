@@ -125,6 +125,8 @@ surface:
   - CHANGELOG.md
   - SECURITY.md
   - CONTRIBUTING.md
+  - docs/guides/*.md
+  - docs/benchmarks/**/*.md
   - docs/releases/*.md
   - .github/workflows/*.yml
   - scripts/ci/validate_exdoc_links.exs
@@ -194,7 +196,7 @@ bootstrap:
   stability: evolving
 
 - id: simd_json.release.consumer_documentation
-  statement: README and HexDocs shall provide accurate precompiled installation, optional source-build prerequisites, supported environments, public API behavior, limits, security contact, changelog, and troubleshooting guidance.
+  statement: README and HexDocs shall provide concise, feature-oriented user guidance for precompiled installation, optional source-build prerequisites, supported environments, public API behavior, limits, security contact, changelog, and troubleshooting, and shall exclude internal roadmap, phase, milestone, acceptance, qualification-history, and release-process language from the published documentation and Hex archive.
   priority: must
   stability: evolving
 

@@ -1,11 +1,12 @@
 defmodule Mix.Tasks.SimdJson.VerifyTraceability do
   @moduledoc """
-  Verifies executable Milestone 1 and 2 requirement and scenario traceability.
+  Verifies executable native and projection requirement and scenario
+  traceability.
   """
 
   use Mix.Task
 
-  @shortdoc "Verifies Milestone 1 and 2 executable traceability"
+  @shortdoc "Verifies native and projection executable traceability"
   @subjects [
     "simd_json.native_build_and_abi",
     "simd_json.document_resource",
@@ -36,7 +37,7 @@ defmodule Mix.Tasks.SimdJson.VerifyTraceability do
       )
     end)
 
-    Mix.shell().info("Milestone 1 and 2 executable traceability is complete")
+    Mix.shell().info("Native and projection executable traceability is complete")
   end
 
   defp inventory_subject!(index, subject_id) do
@@ -168,7 +169,7 @@ defmodule Mix.Tasks.SimdJson.VerifyTraceability do
       end)
 
     if weak != [] do
-      fail!("Milestone 1 or 2 retains non-executed SpecLed claims: #{inspect(weak)}")
+      fail!("Native or projection subjects retain non-executed SpecLed claims: #{inspect(weak)}")
     end
   end
 

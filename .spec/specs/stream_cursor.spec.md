@@ -1,5 +1,8 @@
 # Stream Cursor and Batch Engine
 
+Consumer documentation describes batching and bounds as active behavior and
+does not publish internal roadmap or acceptance-history documents.
+
 Milestone 6 Phase 2 makes native-free stream construction wait for operation
 resources and retained inputs, not only queued/running work, before recording
 its baseline. Cursor and batch behavior are unchanged.

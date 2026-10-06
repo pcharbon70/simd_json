@@ -28,9 +28,20 @@ defmodule SimdJson.PackageDocumentationContractTest do
     assert docs[:source_ref] == "v0.1.0"
 
     groups = Keyword.fetch!(docs, :groups_for_extras)
-    assert groups[:"Milestone guides"]
-    assert groups[:"Operations guides"]
-    assert groups[:"Acceptance records"]
+
+    assert groups[:"User guides"] == [
+             "docs/guides/getting-started.md",
+             "docs/guides/decoding-json.md",
+             "docs/guides/selecting-fields.md",
+             "docs/guides/streaming-large-files.md",
+             "docs/guides/deployment.md",
+             "docs/guides/errors-limits-performance.md"
+           ]
+
+    refute Keyword.has_key?(groups, :"Milestone guides")
+    refute Keyword.has_key?(groups, :"Operations guides")
+    refute Keyword.has_key?(groups, :"Acceptance records")
+    refute Keyword.has_key?(groups, :"Release policies")
     assert groups[:"Release notes"] == ["CHANGELOG.md"]
     assert groups[:Security] == ["SECURITY.md"]
     assert groups[:Contributing] == ["CONTRIBUTING.md"]
@@ -84,7 +95,7 @@ defmodule SimdJson.PackageDocumentationContractTest do
   # covers: simd_json.release.consumer_documentation simd_json.release.qualified_support
   test "documents a copyable precompiled installation and explicit source-build contract" do
     readme = File.read!("README.md")
-    installation = File.read!("docs/releases/installation.md")
+    installation = File.read!("docs/guides/deployment.md")
 
     for document <- [readme, installation] do
       assert document =~ ~s({:simd_json, "~> 0.1.0"})
@@ -92,7 +103,7 @@ defmodule SimdJson.PackageDocumentationContractTest do
       assert document =~ "mix compile"
     end
 
-    [installation_section | _rest] = String.split(readme, "## Public API", parts: 2)
+    [installation_section | _rest] = String.split(readme, "## Quick examples", parts: 2)
     refute installation_section =~ "mix zig.get --version 0.16.0"
     assert installation =~ "Ordinary consumers do not need Zig"
     assert installation =~ "SIMD_JSON_BUILD_FROM_SOURCE=1"
@@ -105,7 +116,7 @@ defmodule SimdJson.PackageDocumentationContractTest do
     assert installation =~ "system simdjson package"
     assert installation =~ "ZIG_GLOBAL_CACHE_DIR"
     assert installation =~ "Unsupported native target"
-    assert installation =~ "experimental or\nunsupported"
+    assert installation =~ "experimental or unsupported"
   end
 
   # covers: simd_json.release.consumer_documentation
@@ -131,13 +142,12 @@ defmodule SimdJson.PackageDocumentationContractTest do
     security = File.read!("SECURITY.md")
     contributing = File.read!("CONTRIBUTING.md")
 
-    assert readme =~ "Milestones 1–5 are active"
-    assert readme =~ "File-backed APIs instead"
-    assert readme =~ "simdjson owns the memory map"
+    assert readme =~ "The qualified target is Ubuntu 24.04 x86-64"
+    assert readme =~ "File-backed APIs pass only"
+    assert readme =~ "bounded-parser-memory path"
     assert readme =~ "stream_file/2"
-    assert readme =~ "pool operations guide"
-    assert readme =~ "telemetry runbook"
-    assert readme =~ "decode acceptance record"
+    assert readme =~ "Getting started"
+    refute readme =~ ~r/milestone/i
 
     assert changelog =~ "## 0.1.0"
     assert changelog =~ "### Known limitations"
@@ -153,6 +163,25 @@ defmodule SimdJson.PackageDocumentationContractTest do
     assert contributing =~ "mix test"
     assert contributing =~ "mix spec.next"
     assert contributing =~ "mix spec.check --base origin/main"
+  end
+
+  # covers: simd_json.release.consumer_documentation simd_json.package.documentation_layout
+  test "publishes only feature-oriented user documentation" do
+    docs = Mix.Project.config() |> Keyword.fetch!(:docs)
+    extras = Keyword.fetch!(docs, :extras)
+
+    published_markdown =
+      ["README.md"] ++
+        for extra <- extras,
+            path = if(is_tuple(extra), do: elem(extra, 0), else: extra),
+            Path.extname(path) == ".md",
+            do: path
+
+    for path <- published_markdown do
+      refute File.read!(path) =~ ~r/milestone/i, "#{path} contains internal roadmap language"
+    end
+
+    refute module_doc(SimdJson) =~ ~r/milestone/i
   end
 
   # covers: simd_json.release.archive_integrity simd_json.release.consumer_documentation
@@ -179,5 +208,10 @@ defmodule SimdJson.PackageDocumentationContractTest do
              System.cmd("bash", ["-n", "scripts/ci/verify_package_documentation.sh"],
                stderr_to_stdout: true
              )
+  end
+
+  defp module_doc(module) do
+    {:docs_v1, _, _, _, %{"en" => module_doc}, _, _} = Code.fetch_docs(module)
+    module_doc
   end
 end

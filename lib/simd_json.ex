@@ -36,12 +36,9 @@ defmodule SimdJson do
   default-field policy, public compiled plan, raw
   cursor/batch operation, ownership transfer, or native-handle operation.
 
-  All native execution uses the fixed bounded worker pool established in
-  Milestone 4. Queue saturation returns a redacted `:busy` error.
-
-  Milestone 2 is active on the qualified Ubuntu 24.04 x86-64 target. Its
-  package, sanitizer, scheduler, lifecycle, and sparse-allocation evidence are
-  indexed in the Milestone 2 acceptance record.
+  All native execution uses a fixed bounded worker pool. Queue saturation
+  returns a redacted `:busy` error. The qualified target is Ubuntu 24.04
+  x86-64.
 
   ## Examples
 

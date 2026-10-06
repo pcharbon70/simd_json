@@ -163,10 +163,10 @@ defmodule SimdJson.PublicSurfaceTest do
     for text <- [
           module_doc(SimdJson),
           File.read!("README.md"),
-          File.read!("docs/milestones/01-native-foundation.md")
+          File.read!("docs/guides/errors-limits-performance.md")
         ] do
-      assert text =~ "Milestone 4"
       assert text =~ "bounded worker pool"
+      refute text =~ ~r/milestone/i
     end
   end
 
@@ -228,45 +228,41 @@ defmodule SimdJson.PublicSurfaceTest do
   end
 
   # covers: simd_json.package.documentation_layout simd_json.projection_api.select_contract simd_json.projection_api.fresh_string_results simd_json.projection_api.milestone_scope simd_json.projection_execution.preproduction_boundary
-  test "publishes the projection contract and limits in README, module, milestone, and ExDoc" do
+  test "publishes the projection contract and limits in user guides and ExDoc" do
     docs = Mix.Project.config() |> Keyword.fetch!(:docs)
     extras = Keyword.fetch!(docs, :extras)
-    assert "docs/milestones/02-projection-api.md" in extras
+    assert "docs/guides/selecting-fields.md" in extras
 
     readme = File.read!("README.md")
-    milestone = File.read!("docs/milestones/02-projection-api.md")
+    guide = File.read!("docs/guides/selecting-fields.md")
     root_doc = module_doc(SimdJson)
 
-    for text <- [readme, milestone, root_doc] do
+    for text <- [readme, guide, root_doc] do
       assert text =~ "SimdJson.select"
       assert text =~ "scalar"
-      assert text =~ "Milestone 4"
+      refute text =~ ~r/milestone/i
     end
 
-    assert readme =~ "first occurrence"
-    assert readme =~ "fresh result binary"
-    assert readme =~ "no transparent rewind"
-    assert milestone =~ "No compiled projection is public"
-    assert milestone =~ "does not rewind"
+    assert guide =~ "first occurrence"
+    assert guide =~ "fresh binary"
+    assert guide =~ "one-shot"
     assert root_doc =~ "no projection bang variant"
     assert root_doc =~ "public compiled plan"
   end
 
   # covers: simd_json.package.documentation_layout simd_json.decode_api.binary_input simd_json.decode_api.closed_options simd_json.decode_api.complete_values simd_json.decode_api.binary_keys simd_json.decode_api.exact_numbers simd_json.decode_api.iterative_limits simd_json.decode_api.pool_execution simd_json.decode_api.shared_errors
-  test "publishes the accepted decode contract and qualification boundary" do
+  test "publishes the decode contract in a user guide" do
     extras = Mix.Project.config() |> Keyword.fetch!(:docs) |> Keyword.fetch!(:extras)
 
-    assert "docs/milestones/05-compatible-decode-api.md" in extras
-    assert "docs/milestones/05-compatible-decode-api-acceptance.md" in extras
+    assert "docs/guides/decoding-json.md" in extras
 
-    acceptance = File.read!("docs/milestones/05-compatible-decode-api-acceptance.md")
+    guide = File.read!("docs/guides/decoding-json.md")
     decode_spec = File.read!(".spec/specs/decode_api.spec.md")
     workflow = File.read!(".github/workflows/ci.yml")
 
-    assert acceptance =~ "Jason 1.4.5"
-    assert acceptance =~ "last value"
-    assert acceptance =~ "bounded worker pool"
-    assert acceptance =~ "qualify_milestone_5.sh"
+    assert guide =~ "last value"
+    assert guide =~ "complete Elixir tree"
+    refute guide =~ ~r/milestone/i
     assert decode_spec =~ "status: active"
     refute decode_spec =~ "bootstrap:"
     assert workflow =~ "bash scripts/ci/qualify_release_candidate.sh"

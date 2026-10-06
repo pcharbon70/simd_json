@@ -230,9 +230,20 @@
       },
       {
         "affects": [
+          "simd_json.benchmark_reporting",
+          "simd_json.document_api",
+          "simd_json.document_resource",
+          "simd_json.file_input",
           "simd_json.native_build_and_abi",
+          "simd_json.native_execution",
+          "simd_json.native_pool",
           "simd_json.package",
-          "simd_json.release"
+          "simd_json.projection_api",
+          "simd_json.projection_execution",
+          "simd_json.release",
+          "simd_json.stream_cursor",
+          "simd_json.stream_execution",
+          "simd_json.streaming_api"
         ],
         "date": "2026-09-05",
         "file": ".spec/decisions/0018-public-hex-release-contract.md",
@@ -897,7 +908,7 @@
         "id": "simd_json.package.documentation_layout",
         "priority": "must",
         "stability": "evolving",
-        "statement": "Architecture research shall live under .spec/research, while actionable wrapper milestone documents shall live under docs/milestones and reference the supporting research.",
+        "statement": "HexDocs and packaged narrative documentation shall be feature-oriented user guidance under docs/guides with no internal roadmap, phase, milestone, or acceptance-record language; architecture, planning, acceptance, and release-process records shall remain repository-internal and excluded from the Hex archive and ExDoc navigation.",
         "subject_id": "simd_json.package"
       },
       {
@@ -1257,7 +1268,7 @@
         "id": "simd_json.release.consumer_documentation",
         "priority": "must",
         "stability": "evolving",
-        "statement": "README and HexDocs shall provide accurate precompiled installation, optional source-build prerequisites, supported environments, public API behavior, limits, security contact, changelog, and troubleshooting guidance.",
+        "statement": "README and HexDocs shall provide concise, feature-oriented user guidance for precompiled installation, optional source-build prerequisites, supported environments, public API behavior, limits, security contact, changelog, and troubleshooting, and shall exclude internal roadmap, phase, milestone, acceptance, qualification-history, and release-process language from the published documentation and Hex archive.",
         "subject_id": "simd_json.release"
       },
       {
@@ -3924,6 +3935,8 @@
             "native/README.md",
             "native/vendor/simdjson/**",
             "test/**/*.exs",
+            "docs/guides/*.md",
+            "docs/benchmarks/**/*.md",
             "docs/milestones/*.md",
             ".spec/decisions/*.md",
             ".spec/planning/**/*.md",
@@ -4034,6 +4047,8 @@
             "CHANGELOG.md",
             "SECURITY.md",
             "CONTRIBUTING.md",
+            "docs/guides/*.md",
+            "docs/benchmarks/**/*.md",
             "docs/releases/*.md",
             ".github/workflows/*.yml",
             "scripts/ci/validate_exdoc_links.exs",
@@ -4631,7 +4646,7 @@
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
         "subject_id": "simd_json.package",
-        "target": "docs/milestones/README.md"
+        "target": "docs/guides/getting-started.md"
       },
       {
         "covers": [
@@ -4640,7 +4655,16 @@
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
         "subject_id": "simd_json.package",
-        "target": "docs/milestones/02-projection-api.md"
+        "target": "docs/guides/selecting-fields.md"
+      },
+      {
+        "covers": [
+          "simd_json.package.documentation_layout"
+        ],
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "subject_id": "simd_json.package",
+        "target": "docs/guides/streaming-large-files.md"
       },
       {
         "covers": [
@@ -5065,7 +5089,7 @@
     "requirements": 190,
     "scenarios": 93,
     "subjects": 17,
-    "verifications": 62
+    "verifications": 63
   },
   "verification": {
     "claims": [
@@ -6936,7 +6960,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": "docs/milestones/README.md",
+        "target": "docs/guides/getting-started.md",
         "verification_index": 9
       },
       {
@@ -6947,7 +6971,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": "docs/milestones/02-projection-api.md",
+        "target": "docs/guides/selecting-fields.md",
         "verification_index": 10
       },
       {
@@ -6958,7 +6982,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": ".spec/planning/milestone_02_projection_api/README.md",
+        "target": "docs/guides/streaming-large-files.md",
         "verification_index": 11
       },
       {
@@ -6969,7 +6993,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": ".spec/planning/milestone_03_batched_array_streaming/README.md",
+        "target": ".spec/planning/milestone_02_projection_api/README.md",
         "verification_index": 12
       },
       {
@@ -6980,7 +7004,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": ".spec/research/simdjson_beam_nif_architecture.md",
+        "target": ".spec/planning/milestone_03_batched_array_streaming/README.md",
         "verification_index": 13
       },
       {
@@ -6991,8 +7015,19 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": ".spec/research/zigler_0_16_threaded_qualification.md",
+        "target": ".spec/research/simdjson_beam_nif_architecture.md",
         "verification_index": 14
+      },
+      {
+        "cover_id": "simd_json.package.documentation_layout",
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.package",
+        "target": ".spec/research/zigler_0_16_threaded_qualification.md",
+        "verification_index": 15
       },
       {
         "cover_id": "simd_json.package.mix_library",
@@ -7003,7 +7038,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.package",
         "target": "mix test",
-        "verification_index": 15
+        "verification_index": 16
       },
       {
         "cover_id": "simd_json.package.native_build_tooling",
@@ -7014,7 +7049,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.package",
         "target": "bash scripts/ci/qualify_native_release.sh",
-        "verification_index": 16
+        "verification_index": 17
       },
       {
         "cover_id": "simd_json.package.native_source_distribution",
@@ -7025,7 +7060,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.package",
         "target": "bash scripts/ci/qualify_native_release.sh",
-        "verification_index": 16
+        "verification_index": 17
       },
       {
         "cover_id": "simd_json.projection_api.all_scalar_types",
@@ -8936,7 +8971,7 @@
     "strength_summary": {
       "claimed": 16,
       "executed": 314,
-      "linked": 21
+      "linked": 22
     },
     "threshold_failures": 0
   },

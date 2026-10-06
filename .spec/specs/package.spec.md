@@ -244,6 +244,8 @@ surface:
   - native/README.md
   - native/vendor/simdjson/**
   - test/**/*.exs
+  - docs/guides/*.md
+  - docs/benchmarks/**/*.md
   - docs/milestones/*.md
   - .spec/decisions/*.md
   - .spec/planning/**/*.md
@@ -275,7 +277,7 @@ surface:
   stability: stable
 
 - id: simd_json.package.documentation_layout
-  statement: Architecture research shall live under .spec/research, while actionable wrapper milestone documents shall live under docs/milestones and reference the supporting research.
+  statement: HexDocs and packaged narrative documentation shall be feature-oriented user guidance under docs/guides with no internal roadmap, phase, milestone, or acceptance-record language; architecture, planning, acceptance, and release-process records shall remain repository-internal and excluded from the Hex archive and ExDoc navigation.
   priority: must
   stability: evolving
 ```
@@ -332,12 +334,17 @@ surface:
     - simd_json.package.mix_library
 
 - kind: source_file
-  target: docs/milestones/README.md
+  target: docs/guides/getting-started.md
   covers:
     - simd_json.package.documentation_layout
 
 - kind: source_file
-  target: docs/milestones/02-projection-api.md
+  target: docs/guides/selecting-fields.md
+  covers:
+    - simd_json.package.documentation_layout
+
+- kind: source_file
+  target: docs/guides/streaming-large-files.md
   covers:
     - simd_json.package.documentation_layout
 

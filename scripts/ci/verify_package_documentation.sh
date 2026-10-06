@@ -68,19 +68,12 @@ required_package_files=(
   README.md
   SECURITY.md
   THIRD_PARTY_NOTICES.md
-  docs/milestones/README.md
-  docs/milestones/01-native-foundation.md
-  docs/milestones/01-native-foundation-operations.md
-  docs/milestones/01-native-foundation-acceptance.md
-  docs/milestones/02-projection-api.md
-  docs/milestones/02-projection-api-operations.md
-  docs/milestones/02-projection-api-acceptance.md
-  docs/milestones/03-batched-array-streaming.md
-  docs/milestones/03-batched-array-streaming-operations.md
-  docs/milestones/03-batched-array-streaming-acceptance.md
-  docs/milestones/04-worker-pool-and-operations.md
-  docs/milestones/05-compatible-decode-api.md
-  docs/milestones/05-compatible-decode-api-acceptance.md
+  docs/guides/getting-started.md
+  docs/guides/decoding-json.md
+  docs/guides/selecting-fields.md
+  docs/guides/streaming-large-files.md
+  docs/guides/deployment.md
+  docs/guides/errors-limits-performance.md
   docs/benchmarks/README.md
   docs/benchmarks/reports/eager-decode/decode-benchmark.json
   docs/benchmarks/reports/eager-decode/decode-benchmark.md
@@ -90,14 +83,6 @@ required_package_files=(
   docs/benchmarks/reports/stream-etl/stream-etl.md
   docs/benchmarks/reports/wide-projection/wide-projection.json
   docs/benchmarks/reports/wide-projection/wide-projection.md
-  docs/releases/ci-policy.md
-  docs/releases/candidate-review.md
-  docs/releases/installation.md
-  docs/releases/preflight.md
-  docs/releases/provenance.md
-  docs/releases/publishing.md
-  docs/releases/recovery.md
-  docs/releases/support.md
   lib/simd_json.ex
   lib/simd_json/application.ex
   lib/simd_json/decode_options.ex
@@ -117,7 +102,6 @@ required_package_files=(
   lib/simd_json/stream_options.ex
   mix.exs
   mix.lock
-  native/README.md
   native/manifest.exs
   native/precompiled/checksums.exs
   native/qualification/milestone_1.exs
@@ -155,13 +139,19 @@ for relative_path in "${required_package_files[@]}"; do
   fi
 done
 
-for forbidden_directory in test bench scripts .spec .github lib/mix native/test; do
+for forbidden_directory in \
+  test bench scripts .spec .github lib/mix native/test docs/milestones docs/releases; do
   if [[ -e "${package_root}/${forbidden_directory}" ]]; then
     printf 'package contains forbidden development directory: %s\n' \
       "${forbidden_directory}" >&2
     exit 1
   fi
 done
+
+if [[ -e "${package_root}/native/README.md" ]]; then
+  printf 'package contains internal native documentation: native/README.md\n' >&2
+  exit 1
+fi
 
 for forbidden_file in .formatter.exs .env .env.production credentials secrets; do
   if [[ -e "${package_root}/${forbidden_file}" ]]; then

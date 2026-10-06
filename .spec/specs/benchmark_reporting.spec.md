@@ -4,6 +4,9 @@ Current-truth contract for the repository's reproducible performance evidence. T
 benchmark families retain independent measurement logic while one command refreshes a
 canonical, documented report set.
 
+Published benchmark reports are user-facing HexDocs extras; internal planning,
+acceptance, and release-process records are not part of that navigation or archive.
+
 ## Intent
 
 Performance claims must remain traceable to their workload, raw samples, source revision,
