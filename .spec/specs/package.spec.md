@@ -1,5 +1,8 @@
 # SimdJson Package
 
+The packaged API and guides use the unambiguous file-stream format atom
+`:comma_delimited_json`; the former unreleased spelling is rejected.
+
 Release traceability treats an executed `mix run` benchmark harness as
 behavioral proof when its qualification script also validates the retained
 benchmark artifacts. This keeps the million-row wide-projection evidence

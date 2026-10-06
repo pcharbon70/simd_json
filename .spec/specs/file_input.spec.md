@@ -59,7 +59,7 @@ decisions:
   stability: evolving
 
 - id: simd_json.file_input.batched_formats
-  statement: File streaming shall require one explicit format from json_array, ndjson, json_sequence, or comma_delimited, map it to simdjson iterate_many, and reject nested target paths or implicit whole-document scans.
+  statement: File streaming shall require one explicit format from json_array, ndjson, json_sequence, or comma_delimited_json, map it to simdjson iterate_many, and reject nested target paths or implicit whole-document scans.
   priority: must
   stability: evolving
 

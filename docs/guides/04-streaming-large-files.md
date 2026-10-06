@@ -80,7 +80,7 @@ mapping. It does not continue parsing in the background.
 | `:ndjson` | one JSON document per line |
 | `:json_array` | one top-level JSON array |
 | `:json_sequence` | RFC 7464-style record-separated documents |
-| `:comma_delimited` | top-level documents separated by commas |
+| `:comma_delimited_json` | top-level JSON documents separated by commas |
 
 File streams operate on top-level documents and do not accept a nested
 `:path`.

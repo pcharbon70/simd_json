@@ -1,5 +1,8 @@
 # First Public Hex Release
 
+Release documentation, types, validation, and tests consistently publish
+`:comma_delimited_json` as the comma-delimited top-level document format.
+
 Release traceability recognizes executed `mix run` benchmark harnesses as
 behavioral proof. The qualifying script must retain and validate its concrete
 report artifacts, and a release regression contract binds that policy to the

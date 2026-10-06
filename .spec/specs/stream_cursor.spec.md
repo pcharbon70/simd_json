@@ -1,5 +1,8 @@
 # Stream Cursor and Batch Engine
 
+The public format spelling `:comma_delimited_json` maps to the existing cursor
+mode and changes no cursor state, framing, demand, or cleanup semantics.
+
 Consumer documentation describes batching and bounds as active behavior and
 does not publish internal roadmap or acceptance-history documents.
 

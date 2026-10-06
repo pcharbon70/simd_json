@@ -170,7 +170,7 @@ defmodule SimdJson do
           | {:max_batch_bytes, 1..67_108_864}
 
   @typedoc "An explicit top-level file format supported by native batching."
-  @type file_stream_format :: :json_array | :ndjson | :json_sequence | :comma_delimited
+  @type file_stream_format :: :json_array | :ndjson | :json_sequence | :comma_delimited_json
 
   @typedoc "Options for native file-backed document streaming."
   @type file_stream_option ::
@@ -263,7 +263,7 @@ defmodule SimdJson do
   Constructs a lazy, owner-bound stream over top-level documents in a file.
 
   `:format` and `:fields` are required. Supported formats are `:json_array`,
-  `:ndjson`, `:json_sequence`, and `:comma_delimited`. The JSON bytes remain
+  `:ndjson`, `:json_sequence`, and `:comma_delimited_json`. The JSON bytes remain
   in a native memory map; simdjson parses bounded windows and returns only the
   copied projected scalars for each demanded batch.
   """

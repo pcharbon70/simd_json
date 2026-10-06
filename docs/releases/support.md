@@ -50,7 +50,7 @@ only part of a large document is required.
 `select_file/2` avoids both the BEAM source binary and the padded native source
 copy, but simdjson structural indexes may still scale with input size.
 `stream_file/2` is the bounded-parser-memory path: it supports explicit
-top-level `:json_array`, `:ndjson`, `:json_sequence`, and `:comma_delimited`
+top-level `:json_array`, `:ndjson`, `:json_sequence`, and `:comma_delimited_json`
 formats, uses a fixed 1 MiB parser window, applies bounded result batches, and
 stops immediately on early halt. The source must remain immutable. Nested-path
 file streaming, sockets, devices, and iodata are not supported.

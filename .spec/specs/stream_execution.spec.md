@@ -1,5 +1,8 @@
 # Stream Execution and Lifecycle
 
+The public spelling `:comma_delimited_json` selects the existing native
+comma-delimited execution mode without changing batching or delivery.
+
 Consumer documentation explains demand, cancellation, cleanup, and memory
 bounds without exposing internal roadmap, qualification, or release records.
 
