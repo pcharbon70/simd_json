@@ -163,7 +163,7 @@ defmodule SimdJson.PublicSurfaceTest do
     for text <- [
           module_doc(SimdJson),
           File.read!("README.md"),
-          File.read!("docs/guides/errors-limits-performance.md")
+          File.read!("docs/guides/05-errors-limits-performance.md")
         ] do
       assert text =~ "bounded worker pool"
       refute text =~ ~r/milestone/i
@@ -231,10 +231,10 @@ defmodule SimdJson.PublicSurfaceTest do
   test "publishes the projection contract and limits in user guides and ExDoc" do
     docs = Mix.Project.config() |> Keyword.fetch!(:docs)
     extras = Keyword.fetch!(docs, :extras)
-    assert "docs/guides/selecting-fields.md" in extras
+    assert "docs/guides/03-selecting-fields.md" in extras
 
     readme = File.read!("README.md")
-    guide = File.read!("docs/guides/selecting-fields.md")
+    guide = File.read!("docs/guides/03-selecting-fields.md")
     root_doc = module_doc(SimdJson)
 
     for text <- [readme, guide, root_doc] do
@@ -254,9 +254,9 @@ defmodule SimdJson.PublicSurfaceTest do
   test "publishes the decode contract in a user guide" do
     extras = Mix.Project.config() |> Keyword.fetch!(:docs) |> Keyword.fetch!(:extras)
 
-    assert "docs/guides/decoding-json.md" in extras
+    assert "docs/guides/02-decoding-json.md" in extras
 
-    guide = File.read!("docs/guides/decoding-json.md")
+    guide = File.read!("docs/guides/02-decoding-json.md")
     decode_spec = File.read!(".spec/specs/decode_api.spec.md")
     workflow = File.read!(".github/workflows/ci.yml")
 

@@ -6,12 +6,12 @@ defmodule SimdJson.MixProject do
   @source_url "https://github.com/pcharbon70/simd_json"
 
   @user_guides [
-    "docs/guides/getting-started.md",
-    "docs/guides/decoding-json.md",
-    "docs/guides/selecting-fields.md",
-    "docs/guides/streaming-large-files.md",
-    "docs/guides/deployment.md",
-    "docs/guides/errors-limits-performance.md"
+    "docs/guides/01-getting-started.md",
+    "docs/guides/02-decoding-json.md",
+    "docs/guides/03-selecting-fields.md",
+    "docs/guides/04-streaming-large-files.md",
+    "docs/guides/05-errors-limits-performance.md",
+    "docs/guides/06-deployment.md"
   ]
 
   @benchmark_guides [

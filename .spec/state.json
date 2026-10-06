@@ -4646,7 +4646,7 @@
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
         "subject_id": "simd_json.package",
-        "target": "docs/guides/getting-started.md"
+        "target": "docs/guides/01-getting-started.md"
       },
       {
         "covers": [
@@ -4655,7 +4655,7 @@
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
         "subject_id": "simd_json.package",
-        "target": "docs/guides/selecting-fields.md"
+        "target": "docs/guides/03-selecting-fields.md"
       },
       {
         "covers": [
@@ -4664,7 +4664,7 @@
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
         "subject_id": "simd_json.package",
-        "target": "docs/guides/streaming-large-files.md"
+        "target": "docs/guides/04-streaming-large-files.md"
       },
       {
         "covers": [
@@ -6960,7 +6960,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": "docs/guides/getting-started.md",
+        "target": "docs/guides/01-getting-started.md",
         "verification_index": 9
       },
       {
@@ -6971,7 +6971,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": "docs/guides/selecting-fields.md",
+        "target": "docs/guides/03-selecting-fields.md",
         "verification_index": 10
       },
       {
@@ -6982,7 +6982,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": "docs/guides/streaming-large-files.md",
+        "target": "docs/guides/04-streaming-large-files.md",
         "verification_index": 11
       },
       {

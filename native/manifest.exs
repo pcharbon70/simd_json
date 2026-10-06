@@ -93,7 +93,7 @@
     expected_simdjson_implementations: ["haswell", "westmere", "fallback"]
   ],
   unsupported_target_diagnostic:
-    "unsupported native target %{target}; see docs/guides/deployment.md#supported-target",
+    "unsupported native target %{target}; see docs/guides/06-deployment.md#supported-target",
   cache_inputs: [
     ".tool-versions",
     "mix.exs",

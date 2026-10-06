@@ -30,12 +30,12 @@ defmodule SimdJson.PackageDocumentationContractTest do
     groups = Keyword.fetch!(docs, :groups_for_extras)
 
     assert groups[:"User guides"] == [
-             "docs/guides/getting-started.md",
-             "docs/guides/decoding-json.md",
-             "docs/guides/selecting-fields.md",
-             "docs/guides/streaming-large-files.md",
-             "docs/guides/deployment.md",
-             "docs/guides/errors-limits-performance.md"
+             "docs/guides/01-getting-started.md",
+             "docs/guides/02-decoding-json.md",
+             "docs/guides/03-selecting-fields.md",
+             "docs/guides/04-streaming-large-files.md",
+             "docs/guides/05-errors-limits-performance.md",
+             "docs/guides/06-deployment.md"
            ]
 
     refute Keyword.has_key?(groups, :"Milestone guides")
@@ -95,7 +95,7 @@ defmodule SimdJson.PackageDocumentationContractTest do
   # covers: simd_json.release.consumer_documentation simd_json.release.qualified_support
   test "documents a copyable precompiled installation and explicit source-build contract" do
     readme = File.read!("README.md")
-    installation = File.read!("docs/guides/deployment.md")
+    installation = File.read!("docs/guides/06-deployment.md")
 
     for document <- [readme, installation] do
       assert document =~ ~s({:simd_json, "~> 0.1.0"})
@@ -146,7 +146,7 @@ defmodule SimdJson.PackageDocumentationContractTest do
     assert readme =~ "File-backed APIs pass only"
     assert readme =~ "bounded-parser-memory path"
     assert readme =~ "stream_file/2"
-    assert readme =~ "Getting started"
+    assert readme =~ "Getting Started"
     refute readme =~ ~r/milestone/i
 
     assert changelog =~ "## 0.1.0"

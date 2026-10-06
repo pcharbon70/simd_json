@@ -26,7 +26,7 @@ mix compile
 
 On Ubuntu 24.04 x86-64, compilation downloads and verifies the versioned NIF.
 Ordinary package consumers do not need Zig, Zigler, a C++ compiler, or a system
-simdjson installation. See the [deployment guide](docs/guides/deployment.md)
+simdjson installation. See the [deployment guide](docs/guides/06-deployment.md)
 for supported environments, offline installs, and the optional source build.
 
 ## Quick examples
@@ -66,12 +66,12 @@ Enum.take(rows, 10)
 
 ## Guides
 
-- [Getting started](docs/guides/getting-started.md)
-- [Decoding JSON](docs/guides/decoding-json.md)
-- [Selecting fields](docs/guides/selecting-fields.md)
-- [Streaming large files](docs/guides/streaming-large-files.md)
-- [Deployment and native delivery](docs/guides/deployment.md)
-- [Errors, limits, and performance](docs/guides/errors-limits-performance.md)
+1. [01 — Getting Started](docs/guides/01-getting-started.md)
+2. [02 — Decoding JSON](docs/guides/02-decoding-json.md)
+3. [03 — Selecting Fields](docs/guides/03-selecting-fields.md)
+4. [04 — Streaming Large Files](docs/guides/04-streaming-large-files.md)
+5. [05 — Errors, Limits, and Performance](docs/guides/05-errors-limits-performance.md)
+6. [06 — Deployment and Native Delivery](docs/guides/06-deployment.md)
 - [Benchmark reports](docs/benchmarks/README.md)
 
 The public API consists of `decode/1,2`, `decode!/1,2`, `open/1`,
@@ -94,7 +94,7 @@ a BEAM binary but may retain input-size-dependent simdjson structural indexes.
 byte-bounded result batches on demand. Eager decoding still materializes the
 complete Elixir value.
 
-See [Errors, limits, and performance](docs/guides/errors-limits-performance.md)
+See [Errors, limits, and performance](docs/guides/05-errors-limits-performance.md)
 for the complete boundary and [SECURITY.md](SECURITY.md) for private security
 reporting.
 
