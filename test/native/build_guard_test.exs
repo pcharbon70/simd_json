@@ -15,7 +15,7 @@ defmodule SimdJson.Native.BuildGuardTest do
   test "rejects an unsupported target with the documented diagnostic" do
     assert_raise BuildError,
                  "unsupported native target riscv64-linux-gnu; see " <>
-                   "native/README.md#target-and-cpu-dispatch-matrix",
+                   "docs/guides/06-deployment.md#supported-target",
                  fn ->
                    BuildGuard.validate!(target: "riscv64-linux-gnu")
                  end

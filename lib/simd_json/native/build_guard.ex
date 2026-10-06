@@ -99,7 +99,7 @@ defmodule SimdJson.Native.BuildGuard do
       fail!(
         "native qualification evidence is stale: " <>
           "expected=#{expected_fingerprint} actual=#{actual_fingerprint}; " <>
-          "rerun the complete Phase 6 qualification matrix"
+          "rerun the complete native qualification matrix"
       )
     end
 

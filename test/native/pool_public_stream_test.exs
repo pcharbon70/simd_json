@@ -15,6 +15,7 @@ defmodule SimdJson.Native.PoolPublicStreamTest do
 
     before = BuildSmoke.native_pool_snapshot()
     assert Enum.to_list(stream) == [%{id: 1}, %{id: 2}, %{id: 3}]
+    await_completion(before, 3)
     after_stream = BuildSmoke.native_pool_snapshot()
 
     assert after_stream.worker_count == before.worker_count
@@ -58,6 +59,24 @@ defmodule SimdJson.Native.PoolPublicStreamTest do
     else
       Process.sleep(1)
       await_pool_quiescence(attempts - 1)
+    end
+  end
+
+  defp await_completion(before, count, attempts \\ 1_000)
+
+  defp await_completion(_before, _count, 0),
+    do: flunk("native pool did not publish the expected completed stream jobs")
+
+  defp await_completion(before, count, attempts) do
+    snapshot = BuildSmoke.native_pool_snapshot()
+
+    if snapshot.completed_jobs == before.completed_jobs + count and
+         snapshot.delivered_jobs == before.delivered_jobs + count and
+         snapshot.queued_jobs == 0 and snapshot.running_jobs == 0 do
+      :ok
+    else
+      Process.sleep(1)
+      await_completion(before, count, attempts - 1)
     end
   end
 end

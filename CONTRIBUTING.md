@@ -36,12 +36,15 @@ do not commit generated NIFs, Zigler intermediates, caches, qualification
 outputs, credentials, or private data.
 
 Changes to native code, toolchain pins, ABI, worker lifecycle, supported
-targets, package inventory, or release inputs also require the applicable
-native and release qualification commands documented in
-[native/README.md](native/README.md) and the
-[CI policy](docs/releases/ci-policy.md). A stale qualification fingerprint is a
-required failure until the complete matrix has passed and its evidence is
-refreshed.
+targets, package inventory, or release inputs also require the complete release
+candidate check:
+
+```console
+bash scripts/ci/qualify_release_candidate.sh
+```
+
+A stale qualification fingerprint is a required failure until the complete
+matrix has passed and its evidence is refreshed.
 
 Security reports must follow [SECURITY.md](SECURITY.md), not the public issue or
 pull-request workflow.

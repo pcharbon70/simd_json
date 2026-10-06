@@ -1,5 +1,11 @@
 # Projection API
 
+The file-backed streaming format atom is exposed as
+`:comma_delimited_json`. Projection field and path grammars are unchanged.
+
+Consumer documentation teaches selection by feature and example and excludes
+internal roadmap, phase, milestone, acceptance, and release-process language.
+
 The release stream-performance follow-up changes only private stream-batch
 delivery. Projection grammar, scalar results, public entry points, and errors
 remain unchanged.

@@ -83,7 +83,6 @@ defmodule SimdJson.Native.BuildPolicyTest do
     for entry <- [
           "lib/simd_json.ex",
           "lib/simd_json",
-          "native/README.md",
           "native/manifest.exs",
           "native/qualification/milestone_1.exs",
           "native/include",
@@ -91,7 +90,8 @@ defmodule SimdJson.Native.BuildPolicyTest do
           "native/symbols",
           "native/vendor",
           "native/zig",
-          "docs",
+          "docs/guides",
+          "docs/benchmarks",
           "LICENSE",
           "THIRD_PARTY_NOTICES.md",
           "CHANGELOG.md",

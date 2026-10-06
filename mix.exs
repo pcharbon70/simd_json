@@ -5,38 +5,13 @@ defmodule SimdJson.MixProject do
   @version "0.1.0"
   @source_url "https://github.com/pcharbon70/simd_json"
 
-  @milestone_guides [
-    "docs/milestones/README.md",
-    "docs/milestones/01-native-foundation.md",
-    "docs/milestones/02-projection-api.md",
-    "docs/milestones/03-batched-array-streaming.md",
-    "docs/milestones/04-worker-pool-and-operations.md",
-    "docs/milestones/05-compatible-decode-api.md",
-    "docs/milestones/06-file-backed-input.md"
-  ]
-
-  @operations_guides [
-    "docs/milestones/01-native-foundation-operations.md",
-    "docs/milestones/02-projection-api-operations.md",
-    "docs/milestones/03-batched-array-streaming-operations.md"
-  ]
-
-  @acceptance_records [
-    "docs/milestones/01-native-foundation-acceptance.md",
-    "docs/milestones/02-projection-api-acceptance.md",
-    "docs/milestones/03-batched-array-streaming-acceptance.md",
-    "docs/milestones/05-compatible-decode-api-acceptance.md"
-  ]
-
-  @release_guides [
-    "docs/releases/preflight.md",
-    "docs/releases/provenance.md",
-    "docs/releases/publishing.md",
-    "docs/releases/recovery.md",
-    "docs/releases/installation.md",
-    "docs/releases/support.md",
-    "docs/releases/ci-policy.md",
-    "docs/releases/candidate-review.md"
+  @user_guides [
+    "docs/guides/01-getting-started.md",
+    "docs/guides/02-decoding-json.md",
+    "docs/guides/03-selecting-fields.md",
+    "docs/guides/04-streaming-large-files.md",
+    "docs/guides/05-errors-limits-performance.md",
+    "docs/guides/06-deployment.md"
   ]
 
   @benchmark_guides [
@@ -118,7 +93,6 @@ defmodule SimdJson.MixProject do
       files: [
         "lib/simd_json.ex",
         "lib/simd_json",
-        "native/README.md",
         "native/manifest.exs",
         "native/qualification/milestone_1.exs",
         "native/precompiled",
@@ -127,7 +101,8 @@ defmodule SimdJson.MixProject do
         "native/symbols",
         "native/vendor",
         "native/zig",
-        "docs",
+        "docs/guides",
+        "docs/benchmarks",
         "LICENSE",
         "THIRD_PARTY_NOTICES.md",
         "CHANGELOG.md",
@@ -154,19 +129,13 @@ defmodule SimdJson.MixProject do
           {"CONTRIBUTING.md", filename: "contributing", title: "Contributing"},
           {"LICENSE", filename: "license", title: "License"},
           {"THIRD_PARTY_NOTICES.md",
-           filename: "third-party-notices", title: "Third-Party Notices"},
-          {"docs/milestones/README.md", filename: "milestones", title: "Milestone Roadmap"}
-        ] ++
-          List.delete(@milestone_guides, "docs/milestones/README.md") ++
-          @operations_guides ++ @acceptance_records ++ @release_guides ++ @benchmark_extras,
+           filename: "third-party-notices", title: "Third-Party Notices"}
+        ] ++ @user_guides ++ @benchmark_extras,
       groups_for_extras: [
-        "Milestone guides": @milestone_guides,
-        "Operations guides": @operations_guides,
-        "Acceptance records": @acceptance_records,
+        "User guides": @user_guides,
         "Release notes": ["CHANGELOG.md"],
         Security: ["SECURITY.md"],
         Contributing: ["CONTRIBUTING.md"],
-        "Release policies": @release_guides,
         Benchmarks: @benchmark_guides
       ]
     ]

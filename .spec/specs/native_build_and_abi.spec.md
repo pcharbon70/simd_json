@@ -1,5 +1,9 @@
 # Native Build and ABI
 
+Consumer installation and deployment guidance describes supported artifacts
+and source builds without publishing internal roadmap or qualification-history
+documents; maintainer evidence remains repository-internal.
+
 The stream-performance follow-up adds grouped HexDocs benchmark extras and
 version-bound report links through `mix.exs`. Those documentation settings do
 not change the pinned toolchain, native build profiles, cache inputs, ABI v6,

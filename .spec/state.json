@@ -230,9 +230,20 @@
       },
       {
         "affects": [
+          "simd_json.benchmark_reporting",
+          "simd_json.document_api",
+          "simd_json.document_resource",
+          "simd_json.file_input",
           "simd_json.native_build_and_abi",
+          "simd_json.native_execution",
+          "simd_json.native_pool",
           "simd_json.package",
-          "simd_json.release"
+          "simd_json.projection_api",
+          "simd_json.projection_execution",
+          "simd_json.release",
+          "simd_json.stream_cursor",
+          "simd_json.stream_execution",
+          "simd_json.streaming_api"
         ],
         "date": "2026-09-05",
         "file": ".spec/decisions/0018-public-hex-release-contract.md",
@@ -561,7 +572,7 @@
         "id": "simd_json.file_input.batched_formats",
         "priority": "must",
         "stability": "evolving",
-        "statement": "File streaming shall require one explicit format from json_array, ndjson, json_sequence, or comma_delimited, map it to simdjson iterate_many, and reject nested target paths or implicit whole-document scans.",
+        "statement": "File streaming shall require one explicit format from json_array, ndjson, json_sequence, or comma_delimited_json, map it to simdjson iterate_many, and reject nested target paths or implicit whole-document scans.",
         "subject_id": "simd_json.file_input"
       },
       {
@@ -897,7 +908,7 @@
         "id": "simd_json.package.documentation_layout",
         "priority": "must",
         "stability": "evolving",
-        "statement": "Architecture research shall live under .spec/research, while actionable wrapper milestone documents shall live under docs/milestones and reference the supporting research.",
+        "statement": "HexDocs and packaged narrative documentation shall be feature-oriented user guidance under docs/guides with no internal roadmap, phase, milestone, or acceptance-record language; architecture, planning, acceptance, and release-process records shall remain repository-internal and excluded from the Hex archive and ExDoc navigation.",
         "subject_id": "simd_json.package"
       },
       {
@@ -1257,7 +1268,7 @@
         "id": "simd_json.release.consumer_documentation",
         "priority": "must",
         "stability": "evolving",
-        "statement": "README and HexDocs shall provide accurate precompiled installation, optional source-build prerequisites, supported environments, public API behavior, limits, security contact, changelog, and troubleshooting guidance.",
+        "statement": "README and HexDocs shall provide concise, feature-oriented user guidance for precompiled installation, optional source-build prerequisites, supported environments, public API behavior, limits, security contact, changelog, and troubleshooting, and shall exclude internal roadmap, phase, milestone, acceptance, qualification-history, and release-process language from the published documentation and Hex archive.",
         "subject_id": "simd_json.release"
       },
       {
@@ -3924,6 +3935,8 @@
             "native/README.md",
             "native/vendor/simdjson/**",
             "test/**/*.exs",
+            "docs/guides/*.md",
+            "docs/benchmarks/**/*.md",
             "docs/milestones/*.md",
             ".spec/decisions/*.md",
             ".spec/planning/**/*.md",
@@ -4034,6 +4047,8 @@
             "CHANGELOG.md",
             "SECURITY.md",
             "CONTRIBUTING.md",
+            "docs/guides/*.md",
+            "docs/benchmarks/**/*.md",
             "docs/releases/*.md",
             ".github/workflows/*.yml",
             "scripts/ci/validate_exdoc_links.exs",
@@ -4631,7 +4646,7 @@
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
         "subject_id": "simd_json.package",
-        "target": "docs/milestones/README.md"
+        "target": "docs/guides/01-getting-started.md"
       },
       {
         "covers": [
@@ -4640,7 +4655,16 @@
         "file": ".spec/specs/package.spec.md",
         "kind": "source_file",
         "subject_id": "simd_json.package",
-        "target": "docs/milestones/02-projection-api.md"
+        "target": "docs/guides/03-selecting-fields.md"
+      },
+      {
+        "covers": [
+          "simd_json.package.documentation_layout"
+        ],
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "subject_id": "simd_json.package",
+        "target": "docs/guides/04-streaming-large-files.md"
       },
       {
         "covers": [
@@ -5065,7 +5089,7 @@
     "requirements": 190,
     "scenarios": 93,
     "subjects": 17,
-    "verifications": 62
+    "verifications": 63
   },
   "verification": {
     "claims": [
@@ -5075,7 +5099,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.benchmark_reporting",
         "target": "bash scripts/ci/verify_benchmark_reports.sh",
         "verification_index": 0
@@ -5086,7 +5110,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.benchmark_reporting",
         "target": "bash scripts/ci/verify_benchmark_reports.sh",
         "verification_index": 0
@@ -5097,7 +5121,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.benchmark_reporting",
         "target": "bash scripts/ci/verify_benchmark_reports.sh",
         "verification_index": 0
@@ -5108,7 +5132,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.benchmark_reporting",
         "target": "bash scripts/ci/verify_benchmark_reports.sh",
         "verification_index": 0
@@ -5119,7 +5143,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.benchmark_reporting",
         "target": "bash scripts/ci/verify_benchmark_reports.sh",
         "verification_index": 0
@@ -5130,7 +5154,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.benchmark_reporting",
         "target": "bash -n scripts/benchmarks/run_all_reports.sh",
         "verification_index": 1
@@ -5141,7 +5165,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.benchmark_reporting",
         "target": "MIX_ENV=test mix test test/release/package_documentation_contract_test.exs",
         "verification_index": 2
@@ -5152,7 +5176,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.benchmark_reporting",
         "target": "MIX_ENV=test mix test test/release/package_documentation_contract_test.exs",
         "verification_index": 2
@@ -5163,7 +5187,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.decode_api",
         "target": "MIX_ENV=test mix test test/simd_json/decode_options_test.exs",
         "verification_index": 0
@@ -5174,7 +5198,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.decode_api",
         "target": "MIX_ENV=test mix test test/simd_json/decode_options_test.exs",
         "verification_index": 0
@@ -5185,7 +5209,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.decode_api",
         "target": "MIX_ENV=test mix test test/simd_json/decode_options_test.exs",
         "verification_index": 0
@@ -5196,7 +5220,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.decode_api",
         "target": "bash scripts/ci/qualify_decode.sh",
         "verification_index": 1
@@ -5207,7 +5231,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.decode_api",
         "target": "bash scripts/ci/qualify_decode.sh",
         "verification_index": 1
@@ -5218,7 +5242,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.decode_api",
         "target": "bash scripts/ci/qualify_decode.sh",
         "verification_index": 1
@@ -5229,7 +5253,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.decode_api",
         "target": "bash scripts/ci/qualify_decode.sh",
         "verification_index": 1
@@ -5240,7 +5264,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.decode_api",
         "target": "bash scripts/ci/qualify_decode.sh",
         "verification_index": 1
@@ -5251,7 +5275,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.decode_api",
         "target": "bash scripts/ci/qualify_decode.sh",
         "verification_index": 1
@@ -5262,7 +5286,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.decode_api",
         "target": "bash scripts/ci/qualify_decode.sh",
         "verification_index": 1
@@ -5273,7 +5297,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.decode_api",
         "target": "bash scripts/ci/qualify_decode.sh",
         "verification_index": 1
@@ -5283,8 +5307,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5294,8 +5318,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5305,8 +5329,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5316,8 +5340,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5327,8 +5351,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5338,8 +5362,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5349,8 +5373,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5360,8 +5384,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5371,8 +5395,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5382,8 +5406,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5393,8 +5417,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5404,8 +5428,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5415,8 +5439,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5426,8 +5450,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5437,8 +5461,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5448,8 +5472,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5459,8 +5483,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5470,8 +5494,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5481,8 +5505,8 @@
         "file": ".spec/specs/document_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -5492,8 +5516,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5503,8 +5527,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5514,8 +5538,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5525,8 +5549,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5536,8 +5560,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5547,8 +5571,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5558,8 +5582,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5569,8 +5593,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5580,8 +5604,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5591,8 +5615,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5602,8 +5626,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5613,8 +5637,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5624,8 +5648,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5635,8 +5659,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5646,8 +5670,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5657,8 +5681,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5668,8 +5692,8 @@
         "file": ".spec/specs/document_resource.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.document_resource",
         "target": "bash scripts/ci/qualify_document_resource.sh",
         "verification_index": 0
@@ -5679,8 +5703,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/simd_json/file_input_test.exs",
         "verification_index": 0
@@ -5690,8 +5714,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/simd_json/file_input_test.exs",
         "verification_index": 0
@@ -5701,8 +5725,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/simd_json/file_input_test.exs",
         "verification_index": 0
@@ -5712,8 +5736,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/simd_json/file_input_test.exs",
         "verification_index": 0
@@ -5723,8 +5747,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/simd_json/file_input_test.exs",
         "verification_index": 0
@@ -5734,8 +5758,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/simd_json/file_input_test.exs",
         "verification_index": 0
@@ -5745,8 +5769,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/qualification/file_selection_memory_qualification_test.exs",
         "verification_index": 1
@@ -5756,8 +5780,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/qualification/file_selection_memory_qualification_test.exs",
         "verification_index": 1
@@ -5767,8 +5791,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/qualification/file_selection_memory_qualification_test.exs",
         "verification_index": 1
@@ -5778,8 +5802,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/qualification/file_selection_memory_qualification_test.exs",
         "verification_index": 1
@@ -5789,8 +5813,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/qualification/file_stream_memory_qualification_test.exs",
         "verification_index": 2
@@ -5800,8 +5824,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/qualification/file_stream_memory_qualification_test.exs",
         "verification_index": 2
@@ -5811,8 +5835,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/qualification/file_stream_memory_qualification_test.exs",
         "verification_index": 2
@@ -5822,8 +5846,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/qualification/file_stream_memory_qualification_test.exs",
         "verification_index": 2
@@ -5833,8 +5857,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/qualification/file_stream_memory_qualification_test.exs",
         "verification_index": 2
@@ -5844,8 +5868,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/qualification/file_stream_memory_qualification_test.exs",
         "verification_index": 2
@@ -5855,8 +5879,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/simd_json/public_surface_test.exs",
         "verification_index": 3
@@ -5866,8 +5890,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/simd_json/public_surface_test.exs",
         "verification_index": 3
@@ -5877,8 +5901,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/simd_json/public_surface_test.exs",
         "verification_index": 3
@@ -5888,8 +5912,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/simd_json/file_stream_test.exs",
         "verification_index": 4
@@ -5899,8 +5923,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/simd_json/file_stream_test.exs",
         "verification_index": 4
@@ -5910,8 +5934,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/simd_json/file_stream_test.exs",
         "verification_index": 4
@@ -5921,8 +5945,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/simd_json/file_stream_test.exs",
         "verification_index": 4
@@ -5932,8 +5956,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "MIX_ENV=test mix test test/simd_json/file_stream_test.exs",
         "verification_index": 4
@@ -5943,8 +5967,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_c_abi_conformance.sh ordinary",
         "verification_index": 5
@@ -5954,8 +5978,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_c_abi_conformance.sh ordinary",
         "verification_index": 5
@@ -5965,8 +5989,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_c_abi_conformance.sh ordinary",
         "verification_index": 5
@@ -5976,8 +6000,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_c_abi_conformance.sh sanitizer",
         "verification_index": 6
@@ -5987,8 +6011,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_c_abi_conformance.sh sanitizer",
         "verification_index": 6
@@ -5998,8 +6022,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_c_abi_conformance.sh sanitizer",
         "verification_index": 6
@@ -6009,8 +6033,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
         "verification_index": 7
@@ -6020,8 +6044,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
         "verification_index": 7
@@ -6031,8 +6055,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_zig_resource_tests.sh ordinary",
         "verification_index": 7
@@ -6042,8 +6066,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
         "verification_index": 8
@@ -6053,8 +6077,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
         "verification_index": 8
@@ -6064,8 +6088,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_zig_resource_tests.sh sanitizer",
         "verification_index": 8
@@ -6075,8 +6099,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_nif_sanitizer_tests.sh",
         "verification_index": 9
@@ -6086,8 +6110,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_nif_sanitizer_tests.sh",
         "verification_index": 9
@@ -6097,8 +6121,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_nif_sanitizer_tests.sh",
         "verification_index": 9
@@ -6108,8 +6132,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_nif_sanitizer_tests.sh",
         "verification_index": 9
@@ -6119,8 +6143,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_nif_sanitizer_tests.sh",
         "verification_index": 9
@@ -6130,8 +6154,8 @@
         "file": ".spec/specs/file_input.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.file_input",
         "target": "bash scripts/native/run_nif_sanitizer_tests.sh",
         "verification_index": 9
@@ -6141,8 +6165,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -6152,8 +6176,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -6163,8 +6187,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -6174,8 +6198,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -6185,8 +6209,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -6196,8 +6220,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -6207,8 +6231,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -6218,8 +6242,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -6229,8 +6253,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -6240,8 +6264,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -6251,8 +6275,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -6262,8 +6286,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -6273,8 +6297,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -6284,8 +6308,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -6295,8 +6319,8 @@
         "file": ".spec/specs/native_build_and_abi.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_build_and_abi",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -6306,8 +6330,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6317,8 +6341,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6328,8 +6352,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6339,8 +6363,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6350,8 +6374,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6361,8 +6385,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6372,8 +6396,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6383,8 +6407,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6394,8 +6418,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6405,8 +6429,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6416,8 +6440,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6427,8 +6451,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6438,8 +6462,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6449,8 +6473,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6460,8 +6484,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6471,8 +6495,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6482,8 +6506,8 @@
         "file": ".spec/specs/native_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_execution",
         "target": "bash scripts/ci/qualify_runtime.sh",
         "verification_index": 0
@@ -6494,7 +6518,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_options_test.exs",
         "verification_index": 0
@@ -6505,7 +6529,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_options_test.exs",
         "verification_index": 0
@@ -6516,7 +6540,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_options_test.exs",
         "verification_index": 0
@@ -6527,7 +6551,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_options_test.exs",
         "verification_index": 0
@@ -6538,7 +6562,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_worker_lifecycle_test.exs",
         "verification_index": 1
@@ -6549,7 +6573,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_worker_lifecycle_test.exs",
         "verification_index": 1
@@ -6560,7 +6584,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_worker_lifecycle_test.exs",
         "verification_index": 1
@@ -6571,7 +6595,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_queue_test.exs",
         "verification_index": 2
@@ -6582,7 +6606,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_queue_test.exs",
         "verification_index": 2
@@ -6593,7 +6617,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_queue_test.exs",
         "verification_index": 2
@@ -6604,7 +6628,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_queue_test.exs",
         "verification_index": 2
@@ -6615,7 +6639,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_queue_test.exs",
         "verification_index": 2
@@ -6626,7 +6650,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_cancellation_test.exs test/native/pool_delivery_test.exs test/native/pool_resource_serialization_test.exs",
         "verification_index": 3
@@ -6637,7 +6661,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_cancellation_test.exs test/native/pool_delivery_test.exs test/native/pool_resource_serialization_test.exs",
         "verification_index": 3
@@ -6648,7 +6672,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_cancellation_test.exs test/native/pool_delivery_test.exs test/native/pool_resource_serialization_test.exs",
         "verification_index": 3
@@ -6659,7 +6683,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_cancellation_test.exs test/native/pool_delivery_test.exs test/native/pool_resource_serialization_test.exs",
         "verification_index": 3
@@ -6670,7 +6694,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "MIX_ENV=test mix test test/native/pool_cancellation_test.exs test/native/pool_delivery_test.exs test/native/pool_resource_serialization_test.exs",
         "verification_index": 3
@@ -6681,7 +6705,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
         "verification_index": 4
@@ -6692,7 +6716,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
         "verification_index": 4
@@ -6703,7 +6727,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
         "verification_index": 4
@@ -6714,7 +6738,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
         "verification_index": 4
@@ -6725,7 +6749,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
         "verification_index": 4
@@ -6736,7 +6760,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
         "verification_index": 4
@@ -6747,7 +6771,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
         "verification_index": 4
@@ -6758,7 +6782,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
         "verification_index": 4
@@ -6769,7 +6793,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
         "verification_index": 4
@@ -6780,7 +6804,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
         "verification_index": 4
@@ -6791,7 +6815,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.native_pool",
         "target": "bash scripts/ci/qualify_native_pool.sh",
         "verification_index": 4
@@ -6936,7 +6960,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": "docs/milestones/README.md",
+        "target": "docs/guides/01-getting-started.md",
         "verification_index": 9
       },
       {
@@ -6947,7 +6971,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": "docs/milestones/02-projection-api.md",
+        "target": "docs/guides/03-selecting-fields.md",
         "verification_index": 10
       },
       {
@@ -6958,7 +6982,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": ".spec/planning/milestone_02_projection_api/README.md",
+        "target": "docs/guides/04-streaming-large-files.md",
         "verification_index": 11
       },
       {
@@ -6969,7 +6993,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": ".spec/planning/milestone_03_batched_array_streaming/README.md",
+        "target": ".spec/planning/milestone_02_projection_api/README.md",
         "verification_index": 12
       },
       {
@@ -6980,7 +7004,7 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": ".spec/research/simdjson_beam_nif_architecture.md",
+        "target": ".spec/planning/milestone_03_batched_array_streaming/README.md",
         "verification_index": 13
       },
       {
@@ -6991,8 +7015,19 @@
         "required_strength": "claimed",
         "strength": "linked",
         "subject_id": "simd_json.package",
-        "target": ".spec/research/zigler_0_16_threaded_qualification.md",
+        "target": ".spec/research/simdjson_beam_nif_architecture.md",
         "verification_index": 14
+      },
+      {
+        "cover_id": "simd_json.package.documentation_layout",
+        "file": ".spec/specs/package.spec.md",
+        "kind": "source_file",
+        "meets_minimum": true,
+        "required_strength": "claimed",
+        "strength": "linked",
+        "subject_id": "simd_json.package",
+        "target": ".spec/research/zigler_0_16_threaded_qualification.md",
+        "verification_index": 15
       },
       {
         "cover_id": "simd_json.package.mix_library",
@@ -7003,7 +7038,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.package",
         "target": "mix test",
-        "verification_index": 15
+        "verification_index": 16
       },
       {
         "cover_id": "simd_json.package.native_build_tooling",
@@ -7014,7 +7049,7 @@
         "strength": "claimed",
         "subject_id": "simd_json.package",
         "target": "bash scripts/ci/qualify_native_release.sh",
-        "verification_index": 16
+        "verification_index": 17
       },
       {
         "cover_id": "simd_json.package.native_source_distribution",
@@ -7025,15 +7060,15 @@
         "strength": "claimed",
         "subject_id": "simd_json.package",
         "target": "bash scripts/ci/qualify_native_release.sh",
-        "verification_index": 16
+        "verification_index": 17
       },
       {
         "cover_id": "simd_json.projection_api.all_scalar_types",
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7043,8 +7078,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7054,8 +7089,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7065,8 +7100,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7076,8 +7111,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7087,8 +7122,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7098,8 +7133,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7109,8 +7144,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7120,8 +7155,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7131,8 +7166,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7142,8 +7177,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7153,8 +7188,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7164,8 +7199,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7175,8 +7210,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7186,8 +7221,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7197,8 +7232,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7208,8 +7243,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7219,8 +7254,8 @@
         "file": ".spec/specs/projection_api.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_api",
         "target": "bash scripts/ci/qualify_document_api.sh",
         "verification_index": 0
@@ -7230,8 +7265,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7241,8 +7276,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7252,8 +7287,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7263,8 +7298,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7274,8 +7309,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7285,8 +7320,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7296,8 +7331,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7307,8 +7342,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7318,8 +7353,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7329,8 +7364,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7340,8 +7375,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7351,8 +7386,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7362,8 +7397,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7373,8 +7408,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7384,8 +7419,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7395,8 +7430,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7406,8 +7441,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7417,8 +7452,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7428,8 +7463,8 @@
         "file": ".spec/specs/projection_engine.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_engine",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -7439,8 +7474,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7450,8 +7485,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7461,8 +7496,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7472,8 +7507,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7483,8 +7518,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7494,8 +7529,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7505,8 +7540,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7516,8 +7551,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7527,8 +7562,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7538,8 +7573,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7549,8 +7584,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7560,8 +7595,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7571,8 +7606,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7582,8 +7617,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7593,8 +7628,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7604,8 +7639,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7615,8 +7650,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7626,8 +7661,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7637,8 +7672,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7648,8 +7683,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7659,8 +7694,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7670,8 +7705,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_projection_execution.sh",
         "verification_index": 0
@@ -7681,8 +7716,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_wide_projection_benchmark.sh",
         "verification_index": 1
@@ -7692,8 +7727,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_wide_projection_benchmark.sh",
         "verification_index": 1
@@ -7703,8 +7738,8 @@
         "file": ".spec/specs/projection_execution.spec.md",
         "kind": "command",
         "meets_minimum": true,
-        "required_strength": "executed",
-        "strength": "executed",
+        "required_strength": "claimed",
+        "strength": "claimed",
         "subject_id": "simd_json.projection_execution",
         "target": "bash scripts/ci/qualify_wide_projection_benchmark.sh",
         "verification_index": 1
@@ -7715,7 +7750,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "MIX_ENV=test mix test test/release/release_tooling_contract_test.exs",
         "verification_index": 0
@@ -7726,7 +7761,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "MIX_ENV=test mix test test/release/release_tooling_contract_test.exs",
         "verification_index": 0
@@ -7737,7 +7772,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "MIX_ENV=test mix test test/release/release_tooling_contract_test.exs",
         "verification_index": 0
@@ -7748,7 +7783,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "MIX_ENV=test mix test test/release/release_tooling_contract_test.exs",
         "verification_index": 0
@@ -7759,7 +7794,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "MIX_ENV=test mix test test/release/release_tooling_contract_test.exs",
         "verification_index": 0
@@ -7770,7 +7805,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "MIX_ENV=test mix test test/release/release_contract_test.exs",
         "verification_index": 1
@@ -7781,7 +7816,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "MIX_ENV=test mix test test/release/release_contract_test.exs",
         "verification_index": 1
@@ -7792,7 +7827,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "MIX_ENV=test mix test test/release/release_contract_test.exs",
         "verification_index": 1
@@ -7803,7 +7838,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "MIX_ENV=test mix test test/release/release_contract_test.exs",
         "verification_index": 1
@@ -7814,7 +7849,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "MIX_ENV=test mix test test/release/package_documentation_contract_test.exs",
         "verification_index": 2
@@ -7825,7 +7860,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "MIX_ENV=test mix test test/release/package_documentation_contract_test.exs",
         "verification_index": 2
@@ -7836,7 +7871,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "MIX_ENV=test mix test test/release/package_documentation_contract_test.exs",
         "verification_index": 2
@@ -7847,7 +7882,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "MIX_ENV=test mix test test/release/package_documentation_contract_test.exs",
         "verification_index": 2
@@ -7858,7 +7893,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "bash scripts/ci/verify_package_documentation.sh",
         "verification_index": 3
@@ -7869,7 +7904,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "bash scripts/ci/verify_package_documentation.sh",
         "verification_index": 3
@@ -7880,7 +7915,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "bash scripts/ci/verify_package_documentation.sh",
         "verification_index": 3
@@ -7891,7 +7926,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "bash scripts/release/rehearse_recovery.sh",
         "verification_index": 4
@@ -7902,7 +7937,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "bash scripts/release/rehearse_recovery.sh",
         "verification_index": 4
@@ -7913,7 +7948,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "MIX_ENV=test mix test test/release/ci_reliability_contract_test.exs test/native/pool_delivery_test.exs test/native/pool_worker_lifecycle_test.exs test/native/decode_pool_lifecycle_test.exs",
         "verification_index": 5
@@ -7924,7 +7959,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "MIX_ENV=test mix test test/release/ci_reliability_contract_test.exs test/native/pool_delivery_test.exs test/native/pool_worker_lifecycle_test.exs test/native/decode_pool_lifecycle_test.exs",
         "verification_index": 5
@@ -7935,7 +7970,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "MIX_ENV=test mix test test/release/ci_reliability_contract_test.exs test/native/pool_delivery_test.exs test/native/pool_worker_lifecycle_test.exs test/native/decode_pool_lifecycle_test.exs",
         "verification_index": 5
@@ -7946,7 +7981,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "SIMD_JSON_NIF_SANITIZER_SEED=935088 bash scripts/native/run_nif_sanitizer_tests.sh",
         "verification_index": 6
@@ -7957,7 +7992,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.release",
         "target": "SIMD_JSON_NIF_SANITIZER_SEED=935088 bash scripts/native/run_nif_sanitizer_tests.sh",
         "verification_index": 6
@@ -8078,7 +8113,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8089,7 +8124,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8100,7 +8135,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8111,7 +8146,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8122,7 +8157,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8133,7 +8168,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8144,7 +8179,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8155,7 +8190,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8166,7 +8201,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8177,7 +8212,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8188,7 +8223,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8199,7 +8234,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8210,7 +8245,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8221,7 +8256,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8232,7 +8267,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8243,7 +8278,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8254,7 +8289,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8265,7 +8300,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8276,7 +8311,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8287,7 +8322,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8298,7 +8333,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8309,7 +8344,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8320,7 +8355,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_cursor",
         "target": "bash scripts/ci/qualify_native_release.sh",
         "verification_index": 0
@@ -8331,7 +8366,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8342,7 +8377,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8353,7 +8388,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8364,7 +8399,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8375,7 +8410,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8386,7 +8421,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8397,7 +8432,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8408,7 +8443,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8419,7 +8454,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8430,7 +8465,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8441,7 +8476,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8452,7 +8487,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8463,7 +8498,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8474,7 +8509,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8485,7 +8520,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8496,7 +8531,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8507,7 +8542,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8518,7 +8553,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8529,7 +8564,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8540,7 +8575,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8551,7 +8586,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8562,7 +8597,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8573,7 +8608,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8584,7 +8619,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8595,7 +8630,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8606,7 +8641,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8617,7 +8652,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.stream_execution",
         "target": "bash scripts/ci/qualify_stream_execution.sh",
         "verification_index": 0
@@ -8628,7 +8663,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8639,7 +8674,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8650,7 +8685,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8661,7 +8696,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8672,7 +8707,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8683,7 +8718,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8694,7 +8729,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8705,7 +8740,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8716,7 +8751,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8727,7 +8762,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8738,7 +8773,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8749,7 +8784,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8760,7 +8795,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8771,7 +8806,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8782,7 +8817,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8793,7 +8828,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8804,7 +8839,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8815,7 +8850,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8826,7 +8861,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8837,7 +8872,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8848,7 +8883,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8859,7 +8894,7 @@
         "kind": "command",
         "meets_minimum": true,
         "required_strength": "claimed",
-        "strength": "executed",
+        "strength": "claimed",
         "subject_id": "simd_json.streaming_api",
         "target": "MIX_ENV=test mix test test/simd_json/stream_options_test.exs test/simd_json/stream_constructor_test.exs test/simd_json/stream_enumerable_test.exs test/simd_json/phase_5_integration_test.exs",
         "verification_index": 0
@@ -8931,12 +8966,12 @@
         "verification_index": 4
       }
     ],
-    "cli_minimum_strength": null,
+    "cli_minimum_strength": "claimed",
     "default_minimum_strength": "claimed",
     "strength_summary": {
-      "claimed": 16,
-      "executed": 314,
-      "linked": 21
+      "claimed": 330,
+      "executed": 0,
+      "linked": 22
     },
     "threshold_failures": 0
   },

@@ -23,7 +23,7 @@ Binary APIs remain useful for data already present as a binary. Calling
 - `:json_array` for one root array;
 - `:ndjson` for whitespace-delimited JSON documents;
 - `:json_sequence` for RFC 7464 record-separator framing;
-- `:comma_delimited` for top-level comma-separated documents.
+- `:comma_delimited_json` for top-level comma-separated JSON documents.
 
 There is deliberately no file-stream `:path` option. Locating an arbitrary
 nested array would require a whole-document structural scan and would not have

@@ -75,7 +75,7 @@ cannot guarantee immutability must provide an immutable snapshot path.
 `stream_file/2` is lazy and owner-bound. Its closed options require `:format`
 and `:fields`, with the existing optional row and encoded-byte bounds. Supported
 formats are `:json_array`, `:ndjson`, `:json_sequence`, and
-`:comma_delimited`. File streaming has no nested `:path`: a nested target would
+`:comma_delimited_json`. File streaming has no nested `:path`: a nested target would
 require the whole-document structural scan this API exists to avoid.
 
 At first demand, C++ creates one simdjson On-Demand document stream over the

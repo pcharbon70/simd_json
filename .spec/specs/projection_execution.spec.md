@@ -1,5 +1,12 @@
 # Projection Execution and Lifecycle
 
+Renaming the public file-stream selector to `:comma_delimited_json` preserves
+the existing projection plan, traversal, and result-construction paths.
+
+Consumer documentation presents projection execution, memory, and benchmark
+behavior directly while keeping internal planning and qualification records out
+of the Hex archive and ExDoc navigation.
+
 The release stream-performance follow-up reuses the existing per-row compiled
 projection inside stream batches while eliminating an extra result copy.
 Standalone projection admission, delivery, and one-shot lifecycle are

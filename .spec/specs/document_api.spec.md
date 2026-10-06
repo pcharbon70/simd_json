@@ -1,5 +1,12 @@
 # Document API and Errors
 
+Consumer documentation describes the active document API by feature and omits
+internal roadmap, phase, milestone, acceptance, and release-process language.
+
+The file-stream format atom is named `:comma_delimited_json` consistently
+across the public types, validation, tests, and consumer documentation. This
+clarification does not change document ownership, lifecycle, or errors.
+
 The release stream-performance follow-up changes only private next-batch
 delivery and native timing. Document functions, errors, ownership, and public
 terms are unchanged.

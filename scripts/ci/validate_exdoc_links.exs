@@ -3,15 +3,19 @@ defmodule SimdJson.ValidateExDocLinks do
   @release_source_prefix "#{@source_prefix}v0.1.0/lib/"
 
   @required_pages %{
-    "readme.html" => "Support and operational limits",
+    "readme.html" => "The qualified target is Ubuntu 24.04 x86-64",
     "SimdJson.html" => "Decodes complete JSON values",
     "changelog.html" => "Known limitations",
     "security.html" => "Report a vulnerability privately",
     "contributing.html" => "Before opening a pull request",
     "license.html" => "MIT License",
     "third-party-notices.html" => "simdjson 5.0.1",
-    "installation.html" => "Installation and Native Delivery",
-    "support.html" => "Input and memory boundary",
+    "01-getting-started.html" => "Choose an API",
+    "02-decoding-json.html" => "Understand the result types",
+    "03-selecting-fields.html" => "Select directly from a file",
+    "04-streaming-large-files.html" => "Construct the stream",
+    "05-errors-limits-performance.html" => "Understand where memory lives",
+    "06-deployment.html" => "Start with the precompiled package",
     "benchmarks.html" => "Benchmark reports",
     "benchmark-sparse-projection.html" => "Sparse projection benchmark",
     "benchmark-stream-etl.html" => "Stream ETL benchmark: SimdJson vs Jason",

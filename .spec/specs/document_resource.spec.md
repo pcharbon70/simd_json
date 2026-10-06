@@ -1,5 +1,11 @@
 # Document Resource
 
+Consumer documentation explains document ownership and cleanup as current API
+behavior and excludes internal roadmap and qualification-history terminology.
+
+The public file-stream format spelling `:comma_delimited_json` changes no
+document resource, mapped-input ownership, retention, or cleanup behavior.
+
 The release stream-performance follow-up changes only private next-batch
 delivery. Parent retention, document state, close ordering, and cleanup remain
 unchanged and are requalified with the direct consumer handoff.

@@ -1,5 +1,11 @@
 # Stream Execution and Lifecycle
 
+The public spelling `:comma_delimited_json` selects the existing native
+comma-delimited execution mode without changing batching or delivery.
+
+Consumer documentation explains demand, cancellation, cleanup, and memory
+bounds without exposing internal roadmap, qualification, or release records.
+
 The release performance follow-up removes redundant term routing from public
 next-batch delivery. Production pool jobs build the bounded row list in their
 delivery environment and send it directly to the owner; the coordinator keeps

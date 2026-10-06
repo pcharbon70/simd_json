@@ -1,5 +1,8 @@
 # Native File-Backed Input
 
+Consumer documentation presents file-backed memory behavior, limits, and
+deployment directly, without exposing internal roadmap or acceptance records.
+
 Milestone 6 Phase 7 corrects the release-blocking resident-binary design by
 making simdjson own file mapping, On-Demand traversal, and batched document
 streams. The native, public, memory, sanitizer, and packaged-consumer evidence
@@ -56,7 +59,7 @@ decisions:
   stability: evolving
 
 - id: simd_json.file_input.batched_formats
-  statement: File streaming shall require one explicit format from json_array, ndjson, json_sequence, or comma_delimited, map it to simdjson iterate_many, and reject nested target paths or implicit whole-document scans.
+  statement: File streaming shall require one explicit format from json_array, ndjson, json_sequence, or comma_delimited_json, map it to simdjson iterate_many, and reject nested target paths or implicit whole-document scans.
   priority: must
   stability: evolving
 

@@ -1,5 +1,11 @@
 # Stream Cursor and Batch Engine
 
+The public format spelling `:comma_delimited_json` maps to the existing cursor
+mode and changes no cursor state, framing, demand, or cleanup semantics.
+
+Consumer documentation describes batching and bounds as active behavior and
+does not publish internal roadmap or acceptance-history documents.
+
 Milestone 6 Phase 2 makes native-free stream construction wait for operation
 resources and retained inputs, not only queued/running work, before recording
 its baseline. Cursor and batch behavior are unchanged.

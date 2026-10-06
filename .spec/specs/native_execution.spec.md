@@ -1,5 +1,11 @@
 # Native Execution
 
+The public spelling `:comma_delimited_json` continues to select the existing
+native comma-delimited document mode and changes no worker or scheduler path.
+
+Consumer documentation describes bounded off-scheduler execution as current
+behavior and omits internal roadmap, acceptance, and release-process records.
+
 The release stream-performance follow-up retains the fixed native executor but
 constructs stream row terms in the pool delivery environment, sends them
 directly to the monitored consumer, and records worker timings with a monotonic

@@ -12,7 +12,7 @@ defmodule SimdJson.FileStreamTest do
       {:json_sequence,
        <<0x1E, ~s({"value":1})::binary, ?\n, 0x1E, ~s({"value":2})::binary, ?\n, 0x1E,
          ~s({"value":3})::binary, ?\n>>},
-      {:comma_delimited, ~s({"value":1},{"value":2},{"value":3})}
+      {:comma_delimited_json, ~s({"value":1},{"value":2},{"value":3})}
     ]
 
     for {format, contents} <- cases do
@@ -84,6 +84,10 @@ defmodule SimdJson.FileStreamTest do
 
     assert_raise ArgumentError, fn ->
       SimdJson.stream_file("file.json", format: :unknown, fields: [v: ["v"]])
+    end
+
+    assert_raise ArgumentError, fn ->
+      SimdJson.stream_file("file.json", format: :comma_delimited, fields: [v: ["v"]])
     end
 
     assert_raise ArgumentError, fn ->

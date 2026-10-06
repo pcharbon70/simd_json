@@ -280,7 +280,7 @@ defmodule SimdJson.StreamOptions do
   defp validate_format(:json_array), do: 0
   defp validate_format(:ndjson), do: 1
   defp validate_format(:json_sequence), do: 2
-  defp validate_format(:comma_delimited), do: 3
+  defp validate_format(:comma_delimited_json), do: 3
   defp validate_format(_format), do: raise(ArgumentError, @invalid_format_message)
 
   defp invalid_source!, do: raise(ArgumentError, @invalid_source_message)

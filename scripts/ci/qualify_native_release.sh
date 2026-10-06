@@ -67,20 +67,13 @@ required_package_files=(
   README.md
   SECURITY.md
   THIRD_PARTY_NOTICES.md
-  docs/milestones/README.md
-  docs/milestones/01-native-foundation.md
-  docs/milestones/01-native-foundation-operations.md
-  docs/milestones/01-native-foundation-acceptance.md
-  docs/milestones/02-projection-api.md
-  docs/milestones/02-projection-api-operations.md
-  docs/milestones/02-projection-api-acceptance.md
-  docs/milestones/03-batched-array-streaming.md
-  docs/milestones/05-compatible-decode-api.md
-  docs/milestones/05-compatible-decode-api-acceptance.md
-  docs/milestones/06-file-backed-input.md
-  docs/releases/installation.md
-  docs/releases/support.md
-  docs/releases/ci-policy.md
+  docs/guides/01-getting-started.md
+  docs/guides/02-decoding-json.md
+  docs/guides/03-selecting-fields.md
+  docs/guides/04-streaming-large-files.md
+  docs/guides/05-errors-limits-performance.md
+  docs/guides/06-deployment.md
+  docs/benchmarks/README.md
   lib/simd_json.ex
   lib/simd_json/decode_options.ex
   lib/simd_json/document.ex
@@ -92,7 +85,6 @@ required_package_files=(
   lib/simd_json/native/threaded_operation.ex
   mix.exs
   mix.lock
-  native/README.md
   native/manifest.exs
   native/qualification/milestone_1.exs
   native/include/simd_json_abi.h
