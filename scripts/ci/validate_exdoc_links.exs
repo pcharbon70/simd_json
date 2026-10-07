@@ -1,6 +1,6 @@
 defmodule SimdJson.ValidateExDocLinks do
   @source_prefix "https://github.com/pcharbon70/simd_json/blob/"
-  @release_source_prefix "#{@source_prefix}v0.1.0/lib/"
+  @release_source_prefix "#{@source_prefix}v1.0.0/lib/"
 
   @required_pages %{
     "readme.html" => "The qualified target is Ubuntu 24.04 x86-64",
@@ -102,7 +102,7 @@ defmodule SimdJson.ValidateExDocLinks do
     if String.starts_with?(href, @source_prefix) and
          String.contains?(href, "/lib/") and
          not String.starts_with?(href, @release_source_prefix) do
-      ["project API source link does not use v0.1.0: #{href}"]
+      ["project API source link does not use v1.0.0: #{href}"]
     else
       []
     end

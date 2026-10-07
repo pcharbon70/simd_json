@@ -2,7 +2,7 @@
 # The first entry is populated only after the final production artifact is
 # reproduced from the release candidate and before that candidate is approved.
 %{
-  "0.1.0" => %{
-    "x86_64-linux-gnu" => "5e982511fb5b7974113bddccab1290692358eba4ec4a074a2f4012c714f1ddbc"
+  "1.0.0" => %{
+    "x86_64-linux-gnu" => "e214624d6493ff15274d7a24411c16cefaa193ec4e9539e0c80dc1f2c17b6bc7"
   }
 }

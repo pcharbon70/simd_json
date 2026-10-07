@@ -3,6 +3,9 @@
 Consumer documentation explains fixed capacity, `:busy`, and cleanup as current
 behavior without exposing internal roadmap or qualification-history language.
 
+The package version promotion to `1.0.0` changes no worker count, queue bound,
+admission, cancellation, delivery, telemetry, or cleanup semantics.
+
 The release performance follow-up sends each completed stream batch directly
 from its native pool job to the monitored consumer. The coordinator receives
 only a bounded terminal notice for cleanup and telemetry, while native queue

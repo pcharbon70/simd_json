@@ -7,10 +7,10 @@ repository_root="$(git rev-parse --show-toplevel)"
 default_evidence_root="${repository_root}/_build/qualification/package-documentation"
 evidence_root="${SIMD_JSON_PACKAGE_EVIDENCE_DIR:-${default_evidence_root}}"
 scratch_root="$(mktemp -d "${TMPDIR:-/tmp}/simd-json-package-docs.XXXXXX")"
-archive_path="${scratch_root}/first/simd_json-0.1.0.tar"
-repeated_archive_path="${scratch_root}/second/simd_json-0.1.0.tar"
-package_root="${scratch_root}/first/simd_json-0.1.0"
-repeated_package_root="${scratch_root}/second/simd_json-0.1.0"
+archive_path="${scratch_root}/first/simd_json-1.0.0.tar"
+repeated_archive_path="${scratch_root}/second/simd_json-1.0.0.tar"
+package_root="${scratch_root}/first/simd_json-1.0.0"
+repeated_package_root="${scratch_root}/second/simd_json-1.0.0"
 docs_root="${scratch_root}/docs"
 package_compressed_limit=$((8 * 1024 * 1024))
 package_uncompressed_limit=$((64 * 1024 * 1024))
@@ -177,7 +177,7 @@ tar -xOf "${archive_path}" metadata.config >"${metadata_path}"
 
 for required_metadata in \
   '{<<"name">>,<<"simd_json">>}' \
-  '{<<"version">>,<<"0.1.0">>}' \
+  '{<<"version">>,<<"1.0.0">>}' \
   '<<"zigler">>' \
   '<<"telemetry">>' \
   '<<"MIT">>' \
@@ -318,12 +318,12 @@ if [[ "${archive_sha256}" != "${repeated_archive_sha256}" ]]; then
   exit 1
 fi
 
-cp "${archive_path}" "${evidence_root}/simd_json-0.1.0.tar"
-printf '%s  simd_json-0.1.0.tar\n' "${archive_sha256}" \
+cp "${archive_path}" "${evidence_root}/simd_json-1.0.0.tar"
+printf '%s  simd_json-1.0.0.tar\n' "${archive_sha256}" \
   >"${evidence_root}/package.sha256"
-printf '%s  first/simd_json-0.1.0.tar\n' "${archive_sha256}" \
+printf '%s  first/simd_json-1.0.0.tar\n' "${archive_sha256}" \
   >"${evidence_root}/package-builds.sha256"
-printf '%s  second/simd_json-0.1.0.tar\n' "${repeated_archive_sha256}" \
+printf '%s  second/simd_json-1.0.0.tar\n' "${repeated_archive_sha256}" \
   >>"${evidence_root}/package-builds.sha256"
 
 (
@@ -354,8 +354,8 @@ qualification_input_sha256="$(
 {
   printf 'schema_version=1\n'
   printf 'package=simd_json\n'
-  printf 'version=0.1.0\n'
-  printf 'tag=v0.1.0\n'
+  printf 'version=1.0.0\n'
+  printf 'tag=v1.0.0\n'
   printf 'source_revision=%s\n' "$(git rev-parse HEAD)"
   printf 'source_tree=%s\n' "$(git rev-parse 'HEAD^{tree}')"
   printf 'source_state=%s\n' "${source_state}"

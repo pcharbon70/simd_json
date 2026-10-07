@@ -30,6 +30,8 @@ defmodule SimdJson.CIReliabilityContractTest do
     benchmark = File.read!(@wide_projection_qualification)
 
     assert verifier =~ "hex\\.build|run|test"
+    assert verifier =~ ~s(claim["strength"] == "executed" and claim["meets_minimum"] == true)
+    refute verifier =~ ~s(claim["required_strength"] == "executed")
     assert benchmark =~ "mix run scripts/benchmarks/run_wide_projection.exs"
     assert benchmark =~ "test -s \"${evidence_root}/wide-projection.json\""
     assert benchmark =~ "test -s \"${evidence_root}/wide-projection.md\""

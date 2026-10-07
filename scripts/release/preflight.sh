@@ -5,7 +5,7 @@ set -euo pipefail
 
 usage() {
   printf 'usage: %s VERSION TAG\n' "${0##*/}" >&2
-  printf 'example: %s 0.1.0 v0.1.0\n' "${0##*/}" >&2
+  printf 'example: %s 1.0.0 v1.0.0\n' "${0##*/}" >&2
 }
 
 if [[ $# -ne 2 ]]; then

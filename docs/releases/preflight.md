@@ -19,7 +19,7 @@ publication key before running it:
 
 ~~~console
 unset HEX_API_KEY
-bash scripts/release/preflight.sh 0.1.0 v0.1.0
+bash scripts/release/preflight.sh 1.0.0 v1.0.0
 ~~~
 
 The positional values are mandatory. The tag must be exactly `vVERSION`. The

@@ -3,6 +3,9 @@
 Consumer documentation explains document ownership and cleanup as current API
 behavior and excludes internal roadmap and qualification-history terminology.
 
+The `1.0.0` stable release identity changes no resource layout, mapped-input
+ownership, parent retention, synchronization, or cleanup behavior.
+
 The public file-stream format spelling `:comma_delimited_json` changes no
 document resource, mapped-input ownership, retention, or cleanup behavior.
 

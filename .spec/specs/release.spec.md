@@ -63,7 +63,7 @@ boundary, precompiled and optional source-native behavior, cache and download
 expectations, and diagnostic recovery commands. Phase 5 supersedes its earlier
 source-only delivery decision.
 Section 3.3 reconciles README memory, compatibility, operations, saturation,
-telemetry, and acceptance links; publishes complete 0.1.0 release notes and
+telemetry, and acceptance links; publishes complete 1.0.0 release notes and
 known limits; selects private email reporting and newest-patch-only security
 support; and documents the contributor bootstrap, test, SpecLed, and native
 qualification workflow.
@@ -71,7 +71,7 @@ Section 3.4 replaces broad package directories with an explicit runtime,
 native-source, provenance, license, and documentation allowlist. One executable
 gate runs Hex's no-publish checks, deterministic secret-pattern inventory,
 archive metadata/size/checksums, strict HTML generation, rendered-page markers,
-local links, and v0.1.0 API source links while rejecting development and
+local links, and v1.0.0 API source links while rejecting development and
 generated files.
 Phase 4 Section 4.1 adds one credential-free preflight command. It requires a
 clean main branch whose HEAD matches both local and live remote origin/main,
@@ -119,7 +119,7 @@ authorized repository-owner action.
 id: simd_json.release
 kind: feature
 status: planned
-summary: Milestone 6 will publish the MIT-licensed simd_json 0.1.0 source package to public Hex after cold-cache CI, exact-archive qualification, and explicit owner approval.
+summary: Milestone 6 will publish the MIT-licensed simd_json 1.0.0 source package to public Hex after cold-cache CI, exact-archive qualification, and explicit owner approval.
 surface:
   - mix.exs
   - LICENSE
@@ -169,7 +169,7 @@ bootstrap:
 
 ```spec-requirements
 - id: simd_json.release.public_identity
-  statement: The first release shall consistently identify public Hex package simd_json, OTP application :simd_json, SimdJson modules, semantic version 0.1.0, and one exact Git commit and tag.
+  statement: The first release shall consistently identify public Hex package simd_json, OTP application :simd_json, SimdJson modules, semantic version 1.0.0, and one exact Git commit and tag.
   priority: must
   stability: stable
 

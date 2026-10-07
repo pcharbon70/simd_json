@@ -9,7 +9,7 @@ defmodule SimdJson.PackageDocumentationContractTest do
 
     assert project[:app] == :simd_json
     assert project[:name] == "SimdJson"
-    assert project[:version] == "0.1.0"
+    assert project[:version] == "1.0.0"
     assert project[:source_url] == "https://github.com/pcharbon70/simd_json"
     assert project[:homepage_url] == "https://github.com/pcharbon70/simd_json"
 
@@ -25,7 +25,7 @@ defmodule SimdJson.PackageDocumentationContractTest do
            }
 
     assert docs[:source_url] == "https://github.com/pcharbon70/simd_json"
-    assert docs[:source_ref] == "v0.1.0"
+    assert docs[:source_ref] == "v1.0.0"
 
     groups = Keyword.fetch!(docs, :groups_for_extras)
 
@@ -98,7 +98,7 @@ defmodule SimdJson.PackageDocumentationContractTest do
     installation = File.read!("docs/guides/06-deployment.md")
 
     for document <- [readme, installation] do
-      assert document =~ ~s({:simd_json, "~> 0.1.0"})
+      assert document =~ ~s({:simd_json, "~> 1.0.0"})
       assert document =~ "mix deps.get"
       assert document =~ "mix compile"
     end
@@ -149,13 +149,13 @@ defmodule SimdJson.PackageDocumentationContractTest do
     assert readme =~ "Getting Started"
     refute readme =~ ~r/milestone/i
 
-    assert changelog =~ "## 0.1.0"
+    assert changelog =~ "## 1.0.0"
     assert changelog =~ "### Known limitations"
     assert changelog =~ "consumers install without Zig or Zigler"
     assert changelog =~ "one-million-row fixture"
     assert changelog =~ "A full queue returns `:busy`"
 
-    assert security =~ "Only the newest published patch in the `0.1.x` series"
+    assert security =~ "Only the newest published patch in the `1.0.x` series"
     assert security =~ "pcharbon70@gmail.com"
     assert security =~ "Do not open a public issue"
 

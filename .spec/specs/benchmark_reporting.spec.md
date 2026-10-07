@@ -7,6 +7,9 @@ canonical, documented report set.
 Published benchmark reports are user-facing HexDocs extras; internal planning,
 acceptance, and release-process records are not part of that navigation or archive.
 
+The first stable package identity is `1.0.0`, so published benchmark source
+links bind to `v1.0.0` without changing any workload, sample, or claim.
+
 ## Intent
 
 Performance claims must remain traceable to their workload, raw samples, source revision,

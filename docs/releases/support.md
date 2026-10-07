@@ -1,6 +1,6 @@
 # Supported Environments and Compatibility
 
-SimdJson 0.1.x has one qualified target. “Supported” means the exact
+SimdJson 1.0.x has one qualified target. “Supported” means the exact
 environment has passed package reconstruction, ABI and symbol checks,
 ordinary and sanitizer native tests, scheduler and lifecycle qualification,
 large-input profiles, and the complete public test suite.
@@ -13,7 +13,7 @@ large-input profiles, and the complete public test suite.
 | ABI and architecture | glibc 2.39, `x86_64-linux-gnu` |
 | BEAM | OTP 27.3 |
 | Elixir | 1.18.4 |
-| Precompiled NIF | SHA-256-pinned `v0.1.0` GitHub release asset |
+| Precompiled NIF | SHA-256-pinned `v1.0.0` GitHub release asset |
 | Source-build Zig | 0.16.0; maintainer/audit path only |
 | Source-build Zigler | 0.16.0; optional and not resolved for ordinary consumers |
 | simdjson | Vendored 5.0.1 |

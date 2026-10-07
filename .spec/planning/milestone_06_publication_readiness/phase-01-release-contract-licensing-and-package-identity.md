@@ -13,7 +13,7 @@ Back to plan: [README](./README.md)
     - [x] 1.1.1.2 Subtask - Recheck that `simd_json` is unclaimed immediately before reserving or publishing it.
     - [x] 1.1.1.3 Subtask - Keep OTP application `:simd_json`, Hex package `simd_json`, and `SimdJson.*` module ownership aligned.
   - [x] 1.1.2 Task - Freeze the first-version policy.
-    - [x] 1.1.2.1 Subtask - Confirm `0.1.0` as the first public version or record an owner-selected alternative.
+    - [x] 1.1.2.1 Subtask - Confirm `1.0.0` as the first public version or record an owner-selected alternative.
     - [x] 1.1.2.2 Subtask - Require semantic versioning and minor-version increments for breaking changes while major version is zero.
     - [x] 1.1.2.3 Subtask - Define whether release candidates use Git tags only or a separate prerelease version.
 
