@@ -43,14 +43,14 @@ write_checksums() {
 
 baseline="${scratch_root}/baseline"
 mkdir -p "${baseline}"
-printf 'synthetic candidate archive\n' >"${baseline}/simd_json-0.1.0.tar"
-printf 'synthetic precompiled NIF\n' >"${baseline}/simd_json-v0.1.0-x86_64-linux-gnu.so"
+printf 'synthetic candidate archive\n' >"${baseline}/simd_json-1.0.0.tar"
+printf 'synthetic precompiled NIF\n' >"${baseline}/simd_json-v1.0.0-x86_64-linux-gnu.so"
 printf 'index.html\nSimdJson.html\n' >"${baseline}/documentation-contents.txt"
 printf 'status=passed\n' >"${baseline}/native-compile.status"
 {
-  printf 'asset=simd_json-v0.1.0-x86_64-linux-gnu.so\n'
+  printf 'asset=simd_json-v1.0.0-x86_64-linux-gnu.so\n'
   printf 'asset_sha256=%s\n' \
-    "$(sha256sum "${baseline}/simd_json-v0.1.0-x86_64-linux-gnu.so" | cut -d ' ' -f 1)"
+    "$(sha256sum "${baseline}/simd_json-v1.0.0-x86_64-linux-gnu.so" | cut -d ' ' -f 1)"
 } >"${baseline}/precompiled-provenance.env"
 {
   printf 'status=passed\n'
@@ -91,7 +91,7 @@ expect_failure broken_native_compile "${broken_native}"
 
 checksum_mismatch="${scratch_root}/checksum-mismatch"
 cp -a "${baseline}" "${checksum_mismatch}"
-printf 'corruption\n' >>"${checksum_mismatch}/simd_json-0.1.0.tar"
+printf 'corruption\n' >>"${checksum_mismatch}/simd_json-1.0.0.tar"
 expect_failure checksum_mismatch "${checksum_mismatch}"
 
 leaked_secret="${scratch_root}/leaked-secret"
@@ -102,14 +102,14 @@ expect_failure leaked_secret "${leaked_secret}"
 
 missing_precompiled_asset="${scratch_root}/missing-precompiled-asset"
 cp -a "${baseline}" "${missing_precompiled_asset}"
-rm -f -- "${missing_precompiled_asset}/simd_json-v0.1.0-x86_64-linux-gnu.so"
+rm -f -- "${missing_precompiled_asset}/simd_json-v1.0.0-x86_64-linux-gnu.so"
 write_checksums "${missing_precompiled_asset}"
 expect_failure missing_precompiled_asset "${missing_precompiled_asset}"
 
 replaced_precompiled_asset="${scratch_root}/replaced-precompiled-asset"
 cp -a "${baseline}" "${replaced_precompiled_asset}"
 printf 'replacement bytes\n' \
-  >"${replaced_precompiled_asset}/simd_json-v0.1.0-x86_64-linux-gnu.so"
+  >"${replaced_precompiled_asset}/simd_json-v1.0.0-x86_64-linux-gnu.so"
 write_checksums "${replaced_precompiled_asset}"
 expect_failure replaced_precompiled_asset "${replaced_precompiled_asset}"
 

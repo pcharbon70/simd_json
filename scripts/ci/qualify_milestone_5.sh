@@ -108,7 +108,7 @@ SIMD_JSON_PACKAGE_EVIDENCE_DIR="${qualification_root}/release-candidate" \
 SIMD_JSON_REQUIRE_CLEAN_CANDIDATE=1 \
   run_step package_provenance bash scripts/ci/verify_package_documentation.sh
 
-cp _build/precompiled/simd_json-v0.1.0-x86_64-linux-gnu.so \
+cp _build/precompiled/simd_json-v1.0.0-x86_64-linux-gnu.so \
   "${qualification_root}/release-candidate/"
 cp _build/precompiled/provenance.env \
   "${qualification_root}/release-candidate/precompiled-provenance.env"
@@ -148,8 +148,8 @@ for evidence in \
   "${qualification_root}/release-candidate/native-compile.status" \
   "${qualification_root}/release-candidate/precompiled-provenance.env" \
   "${qualification_root}/release-candidate/precompiled-consumer.status" \
-  "${qualification_root}/release-candidate/simd_json-v0.1.0-x86_64-linux-gnu.so" \
-  "${qualification_root}/release-candidate/simd_json-0.1.0.tar" \
+  "${qualification_root}/release-candidate/simd_json-v1.0.0-x86_64-linux-gnu.so" \
+  "${qualification_root}/release-candidate/simd_json-1.0.0.tar" \
   "${qualification_root}/release-candidate/SHA256SUMS"; do
   test -s "${evidence}"
 done

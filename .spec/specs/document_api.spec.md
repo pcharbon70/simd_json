@@ -3,6 +3,9 @@
 Consumer documentation describes the active document API by feature and omits
 internal roadmap, phase, milestone, acceptance, and release-process language.
 
+Promoting the unreleased package identity to `1.0.0` changes no document
+function, type, ownership rule, lifecycle, or error contract.
+
 The file-stream format atom is named `:comma_delimited_json` consistently
 across the public types, validation, tests, and consumer documentation. This
 clarification does not change document ownership, lifecycle, or errors.

@@ -1,6 +1,6 @@
 # Installation and Native Delivery
 
-SimdJson 0.1.0 ships its Elixir code and native sources through Hex and one
+SimdJson 1.0.0 ships its Elixir code and native sources through Hex and one
 qualified production NIF as an immutable GitHub release asset. On the supported
 target, Mix downloads that asset and verifies its committed SHA-256 digest
 before installing or loading it. Ordinary consumers do not need Zig, Zigler, a
@@ -13,7 +13,7 @@ Add the first-release series to the consumer project's `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:simd_json, "~> 0.1.0"}
+    {:simd_json, "~> 1.0.0"}
   ]
 end
 ```
@@ -28,7 +28,7 @@ mix compile
 Dependency fetching requires access to Hex. The first native compile also
 requires HTTPS access to the matching GitHub release unless the verified asset
 is supplied through the documented local override. The NIF is named
-`simd_json-v0.1.0-x86_64-linux-gnu.so`; its expected digest is shipped in
+`simd_json-v1.0.0-x86_64-linux-gnu.so`; its expected digest is shipped in
 `native/precompiled/checksums.exs`. A missing release, failed download,
 unsupported target, or checksum mismatch stops compilation before native code
 is installed or loaded.
@@ -143,7 +143,7 @@ sha256sum _build/*/lib/simd_json/priv/lib/Elixir.SimdJson.Native.BuildSmoke.so
 
 Common diagnostics have direct remedies:
 
-- **Release asset unavailable:** verify HTTPS access to the exact `v0.1.0`
+- **Release asset unavailable:** verify HTTPS access to the exact `v1.0.0`
   GitHub release and retry `mix deps.compile simd_json --force`; for an
   approved mirror, supply both local override variables above.
 - **Checksum mismatch:** stop and compare the downloaded asset with

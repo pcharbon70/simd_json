@@ -10,10 +10,11 @@ defmodule SimdJson.ReleaseContractTest do
     decision = File.read!(@decision)
 
     assert project[:app] == :simd_json
-    assert project[:version] == "0.1.0"
+    assert project[:version] == "1.0.0"
     assert decision =~ "public `hexpm` repository"
     assert decision =~ "Hex package `simd_json`"
-    assert decision =~ "backward-incompatible public changes increment the minor version"
+    assert decision =~ "backward-incompatible public changes increment the major version"
+    assert decision =~ "features increment the minor version"
     assert decision =~ "must be rechecked immediately before publication"
   end
 

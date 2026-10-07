@@ -2,7 +2,7 @@ defmodule SimdJson.MixProject do
   # covers: simd_json.package.mix_library simd_json.package.specled_tooling simd_json.package.native_build_tooling simd_json.package.native_source_distribution simd_json.native_build_and_abi.pinned_toolchain simd_json.release.public_identity simd_json.release.project_license simd_json.release.consumer_documentation simd_json.release.precompiled_delivery
   use Mix.Project
 
-  @version "0.1.0"
+  @version "1.0.0"
   @source_url "https://github.com/pcharbon70/simd_json"
 
   @user_guides [

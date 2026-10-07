@@ -1,11 +1,12 @@
 # Changelog
 
 All notable changes to SimdJson are documented here. The project follows
-[Semantic Versioning](https://semver.org/spec/v2.0.0.html); while the major
-version is zero, backward-incompatible public changes increment the minor
-version and compatible fixes increment the patch version.
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html). Beginning with
+`1.0.0`, backward-incompatible public changes increment the major version,
+compatible features increment the minor version, and compatible fixes
+increment the patch version.
 
-## 0.1.0
+## 1.0.0
 
 First public release candidate.
 

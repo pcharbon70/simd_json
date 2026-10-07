@@ -4,6 +4,10 @@ Consumer installation and deployment guidance describes supported artifacts
 and source builds without publishing internal roadmap or qualification-history
 documents; maintainer evidence remains repository-internal.
 
+The stable release identity is `1.0.0`; its versioned precompiled asset and
+qualification fingerprint must be rebuilt without changing ABI v6, the target
+matrix, toolchain pins, or release symbol surface.
+
 The stream-performance follow-up adds grouped HexDocs benchmark extras and
 version-bound report links through `mix.exs`. Those documentation settings do
 not change the pinned toolchain, native build profiles, cache inputs, ABI v6,

@@ -53,7 +53,7 @@ defmodule SimdJson.ReleaseToolingContractTest do
     assert invalid_version =~ "not a plain semantic version"
 
     {credential_guard, 64} =
-      System.cmd("/bin/bash", [@preflight, "0.1.0", "v0.1.0"],
+      System.cmd("/bin/bash", [@preflight, "1.0.0", "v1.0.0"],
         env: [{"HEX_API_KEY", "must-not-be-printed"}],
         stderr_to_stdout: true
       )
@@ -85,7 +85,7 @@ defmodule SimdJson.ReleaseToolingContractTest do
     assert verifier =~ "package-files.normalized.tsv"
     assert verifier =~ "cmp -s"
     assert verifier =~ "repeated_archive_sha256"
-    assert verifier =~ "simd_json-0.1.0.tar"
+    assert verifier =~ "simd_json-1.0.0.tar"
     assert verifier =~ "dependency-licenses.tsv"
     assert verifier =~ "provenance.env"
     assert verifier =~ "qualification_input_sha256"

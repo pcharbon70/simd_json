@@ -79,12 +79,12 @@ source-build dependency; Jason and the commit-pinned SpecLed tooling remain
 development/test-only.
 
 Milestone 6 Phase 3 Section 3.2 packages the consumer installation and native
-build guide. It binds the `~> 0.1.0` dependency tuple and smoke workflows to the
+build guide. It binds the `~> 1.0.0` dependency tuple and smoke workflows to the
 qualified BEAM, precompiled NIF, optional Zig/Zigler source-build, C++17,
 glibc, simdjson, CPU-dispatch, cache, offline-asset, and troubleshooting
 contract.
 
-Milestone 6 Phase 3 Section 3.3 packages complete 0.1.0 release notes, private
+Milestone 6 Phase 3 Section 3.3 packages complete 1.0.0 release notes, private
 security reporting and supported-version policy, and contributor/test
 instructions. README now consolidates accepted memory semantics, compatibility,
 operations, saturation, telemetry, and qualification links without broadening
@@ -123,7 +123,7 @@ Milestone 6 Phase 2 Section 2.1 packages deterministic CI failure seeds,
 failure provenance, and executable release-reliability contracts without
 changing the public API or Hex archive identity.
 
-Milestone 6 Phase 1 targets public Hex package `simd_json` version `0.1.0`
+Milestone 6 Phase 1 targets public Hex package `simd_json` version `1.0.0`
 with matching `:simd_json` application and `SimdJson.*` module ownership.
 Section 1.2 licenses wrapper code under MIT and packages separate, unmodified
 simdjson Apache-2.0 and MIT notices with provenance.

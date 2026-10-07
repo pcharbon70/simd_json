@@ -31,9 +31,10 @@ promise. Repository success alone is not authorization to publish.
 
 The first release targets the public `hexpm` repository with OTP application
 `:simd_json`, Hex package `simd_json`, and public modules under `SimdJson.*`.
-The intended first version is `0.1.0`. While the major version is zero,
-backward-incompatible public changes increment the minor version and compatible
-fixes increment the patch version.
+The intended first version is `1.0.0`. Beginning with that stable release,
+backward-incompatible public changes increment the major version, compatible
+features increment the minor version, and compatible fixes increment the patch
+version.
 
 Release-candidate qualification uses the final numeric package version and
 commit identity; it does not publish a separate prerelease package. The public
@@ -152,7 +153,7 @@ consistent. Any change after approval invalidates the candidate.
 
 Hex metadata names Pascal Charbonneau as maintainer and links the public source,
 homepage, issue tracker, and HexDocs pages. ExDoc source links bind to the
-matching `v0.1.0` release tag and group milestone guides, operations guides,
+matching `v1.0.0` release tag and group milestone guides, operations guides,
 acceptance records, release notes, security guidance, and release policies.
 Telemetry enters ordinary consumer resolution; Zigler is optional and enters
 only the explicit source-build path. Jason and the commit-pinned SpecLed tool
@@ -162,7 +163,7 @@ matrix is accepted.
 
 Private vulnerability reports go to `pcharbon70@gmail.com`; suspected security
 issues must not be disclosed first through a public issue or pull request. Only
-the newest published patch in the 0.1 series receives security fixes, so a fix
+the newest published patch in the 1.0 series receives security fixes, so a fix
 may require upgrading. Public release notes enumerate the first version's
 supported surface, qualification, and known limitations rather than implying
 compatibility beyond the accepted target and APIs.

@@ -12,7 +12,7 @@ Add `simd_json` to your dependencies:
 ```elixir
 def deps do
   [
-    {:simd_json, "~> 0.1.0"}
+    {:simd_json, "~> 1.0.0"}
   ]
 end
 ```

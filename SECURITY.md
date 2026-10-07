@@ -2,15 +2,15 @@
 
 ## Supported versions
 
-Only the newest published patch in the `0.1.x` series receives security fixes.
-Unreleased revisions, superseded patch releases, and versions older than 0.1.0
+Only the newest published patch in the `1.0.x` series receives security fixes.
+Unreleased revisions, superseded patch releases, and versions older than 1.0.0
 are not supported. A security fix may require upgrading to the newest patch.
 
 | Version | Supported |
 | --- | --- |
-| Latest `0.1.x` patch | Yes |
-| Superseded `0.1.x` patches | No |
-| `< 0.1.0` | No |
+| Latest `1.0.x` patch | Yes |
+| Superseded `1.0.x` patches | No |
+| `< 1.0.0` | No |
 
 ## Report a vulnerability privately
 

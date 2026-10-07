@@ -13,7 +13,7 @@ SIMD_JSON_REQUIRE_CLEAN_CANDIDATE=1 \
   bash scripts/ci/verify_package_documentation.sh
 ```
 
-The gate builds `simd_json-0.1.0.tar` twice in separate temporary directories.
+The gate builds `simd_json-1.0.0.tar` twice in separate temporary directories.
 It requires both unpacked file manifests and both complete archive SHA-256
 digests to match. The normalized manifest records each path, file mode, byte
 size, and content digest. Exact archive equality means there are currently no

@@ -11,7 +11,7 @@ fi
 evidence_root="$1"
 
 for required_file in \
-  simd_json-0.1.0.tar \
+  simd_json-1.0.0.tar \
   documentation-contents.txt \
   native-compile.status \
   precompiled-provenance.env \
@@ -28,7 +28,7 @@ done
 precompiled_asset="$(sed -n 's/^asset=//p' "${evidence_root}/precompiled-provenance.env")"
 precompiled_sha256="$(sed -n 's/^asset_sha256=//p' "${evidence_root}/precompiled-provenance.env")"
 
-if [[ "${precompiled_asset}" != "simd_json-v0.1.0-x86_64-linux-gnu.so" ]] ||
+if [[ "${precompiled_asset}" != "simd_json-v1.0.0-x86_64-linux-gnu.so" ]] ||
   [[ ! "${precompiled_sha256}" =~ ^[0-9a-f]{64}$ ]]; then
   printf 'candidate precompiled provenance has an invalid asset identity\n' >&2
   exit 1
