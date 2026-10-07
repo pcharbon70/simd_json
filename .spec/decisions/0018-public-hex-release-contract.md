@@ -64,6 +64,13 @@ but exclude internal roadmap, phase, acceptance, qualification-history, and
 release-process documents. Internal records remain available to maintainers in
 the repository and must not be linked from consumer diagnostics.
 
+The README opens with workload-selection guidance grounded in the checked-in
+benchmark reports. It presents the measured sparse wide-document projection
+advantage separately from eager full decoding, where Jason is generally
+faster, and from row streaming, where early delivery and lower peak memory can
+come with lower aggregate throughput. No workload-specific result may be
+presented as universal parser superiority.
+
 The intended first publisher and pre-publication recovery owner are the
 confirmed Hex account `pcharbon70`, with the private contact already published
 in `SECURITY.md`. A read-only identity check must refuse loaded publication

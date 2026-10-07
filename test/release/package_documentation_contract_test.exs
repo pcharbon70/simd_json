@@ -119,6 +119,21 @@ defmodule SimdJson.PackageDocumentationContractTest do
     assert installation =~ "experimental or unsupported"
   end
 
+  # covers: simd_json.release.consumer_documentation simd_json.package.documentation_layout
+  test "leads with measured workload-selection guidance" do
+    readme = File.read!("README.md")
+
+    assert readme =~ "## Choose SimdJson for selective work"
+    assert readme =~ "7.59× to 8.05× faster"
+    assert readme =~ "Jason is generally the better choice"
+    assert readme =~ "took 1.87× as long overall as Jason"
+    assert readme =~ "used 40% of Jason's"
+    assert readme =~ "worker-process peak"
+
+    assert position(readme, "## Choose SimdJson for selective work") <
+             position(readme, "## Installation")
+  end
+
   # covers: simd_json.release.consumer_documentation
   test "documented decode, select, and stream smoke workflows execute" do
     assert {:ok, %{"ready" => true}} = SimdJson.decode(~s({"ready":true}))
@@ -213,5 +228,10 @@ defmodule SimdJson.PackageDocumentationContractTest do
   defp module_doc(module) do
     {:docs_v1, _, _, _, %{"en" => module_doc}, _, _} = Code.fetch_docs(module)
     module_doc
+  end
+
+  defp position(document, text) do
+    {position, _length} = :binary.match(document, text)
+    position
   end
 end

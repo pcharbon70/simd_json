@@ -7,6 +7,11 @@ canonical, documented report set.
 Published benchmark reports are user-facing HexDocs extras; internal planning,
 acceptance, and release-process records are not part of that navigation or archive.
 
+The README summarizes the checked-in reports at the point of product choice:
+it confines the measured 7.59×–8.05× speedup to sparse wide-document
+projection, notes Jason's eager-decode advantage, and presents streaming as an
+early-delivery and peak-memory tradeoff rather than a universal throughput win.
+
 The first stable package identity is `1.0.0`, so published benchmark source
 links bind to `v1.0.0` without changing any workload, sample, or claim.
 
@@ -51,7 +56,7 @@ surface:
   stability: evolving
 
 - id: simd_json.benchmark_reporting.interpretation
-  statement: The benchmark index and reports shall distinguish workloads, timed regions, worker memory, whole-VM RSS, and performance evidence from release qualification.
+  statement: The README, benchmark index, and reports shall distinguish sparse projection, eager decode, and row streaming; identify timed regions, worker memory, whole-VM RSS, and performance evidence separately from release qualification; and bind every comparative claim to its measured workload rather than imply universal superiority.
   priority: must
   stability: evolving
 

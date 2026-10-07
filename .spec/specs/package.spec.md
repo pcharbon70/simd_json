@@ -3,6 +3,11 @@
 The packaged API and guides use the unambiguous file-stream format atom
 `:comma_delimited_json`; the former unreleased spelling is rejected.
 
+The packaged README opens with benchmark-bound workload guidance: sparse
+selection is the primary throughput and worker-memory advantage, eager full
+decode generally favors Jason, and row streaming trades maximum aggregate
+throughput for earlier delivery and lower peak memory.
+
 Release traceability treats an executed `mix run` benchmark harness as
 behavioral proof when its qualification script also validates the retained
 benchmark artifacts. This keeps the million-row wide-projection evidence
@@ -280,7 +285,7 @@ surface:
   stability: stable
 
 - id: simd_json.package.documentation_layout
-  statement: HexDocs and packaged narrative documentation shall be feature-oriented user guidance under docs/guides with no internal roadmap, phase, milestone, or acceptance-record language; architecture, planning, acceptance, and release-process records shall remain repository-internal and excluded from the Hex archive and ExDoc navigation.
+  statement: HexDocs and packaged narrative documentation shall be feature-oriented user guidance under docs/guides, and the README shall lead with benchmark-bound guidance distinguishing sparse selection, eager full decode, and row-streaming tradeoffs; published documentation shall contain no internal roadmap, phase, milestone, or acceptance-record language, while architecture, planning, acceptance, and release-process records remain repository-internal and excluded from the Hex archive and ExDoc navigation.
   priority: must
   stability: evolving
 ```
