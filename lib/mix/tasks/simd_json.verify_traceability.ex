@@ -164,8 +164,7 @@ defmodule Mix.Tasks.SimdJson.VerifyTraceability do
 
     weak =
       Enum.reject(claims, fn claim ->
-        claim["strength"] == "executed" and claim["required_strength"] == "executed" and
-          claim["meets_minimum"] == true
+        claim["strength"] == "executed" and claim["meets_minimum"] == true
       end)
 
     if weak != [] do
