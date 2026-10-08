@@ -95,6 +95,7 @@ Enum.take(rows, 10)
 4. [04 — Streaming Large Files](docs/guides/04-streaming-large-files.md)
 5. [05 — Errors, Limits, and Performance](docs/guides/05-errors-limits-performance.md)
 6. [06 — Deployment and Native Delivery](docs/guides/06-deployment.md)
+7. [07 — Explore with Livebook](docs/guides/07-explore-with-livebook.livemd)
 - [Benchmark reports](docs/benchmarks/README.md)
 
 The public API consists of `decode/1,2`, `decode!/1,2`, `open/1`,

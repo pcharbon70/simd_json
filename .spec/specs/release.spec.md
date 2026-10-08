@@ -9,6 +9,10 @@ case, Jason as generally faster for eager full decoding, and streaming as an
 early-delivery and memory-peak tradeoff. Public comparisons name memory peaks
 explicitly rather than referring to an ambiguous peak.
 
+HexDocs publishes a numbered, executable Livebook tutorial in the User guides
+group. The package contract evaluates every Elixir cell in document order and
+requires the notebook to clean up its generated fixtures.
+
 Release traceability recognizes executed `mix run` benchmark harnesses as
 behavioral proof. The qualifying script must retain and validate its concrete
 report artifacts, and a release regression contract binds that policy to the
@@ -135,6 +139,7 @@ surface:
   - SECURITY.md
   - CONTRIBUTING.md
   - docs/guides/*.md
+  - docs/guides/*.livemd
   - docs/benchmarks/**/*.md
   - docs/releases/*.md
   - .github/workflows/*.yml

@@ -72,6 +72,11 @@ come with lower aggregate throughput. No workload-specific result may be
 presented as universal parser superiority, and every cited peak must name its
 memory scope explicitly.
 
+HexDocs may publish numbered `.livemd` tutorials alongside Markdown guides
+when every cell is executable in order without an additional runtime
+dependency, generated fixtures are cleaned up, and the notebook does not turn
+example observations into benchmark claims.
+
 The intended first publisher and pre-publication recovery owner are the
 confirmed Hex account `pcharbon70`, with the private contact already published
 in `SECURITY.md`. A read-only identity check must refuse loaded publication

@@ -8,6 +8,9 @@ partial results and Jason for typical eager full decoding. This is usage
 guidance only and changes no document function, type, ownership, lifecycle, or
 error contract; every cited peak is explicitly identified as a memory peak.
 
+The packaged Livebook exercises the existing decode, selection, and streaming
+APIs without adding a function, type, ownership rule, lifecycle, or error.
+
 Promoting the unreleased package identity to `1.0.0` changes no document
 function, type, ownership rule, lifecycle, or error contract.
 

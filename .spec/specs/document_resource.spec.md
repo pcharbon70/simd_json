@@ -8,6 +8,9 @@ case from eager decoding and streaming. Its benchmark measurements change no
 resource layout, source retention, ownership, synchronization, or cleanup
 behavior.
 
+The Livebook's file-backed examples use public owner-scoped operations and
+remove their temporary files; they introduce no new native resource behavior.
+
 The `1.0.0` stable release identity changes no resource layout, mapped-input
 ownership, parent retention, synchronization, or cleanup behavior.
 

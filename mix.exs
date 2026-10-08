@@ -11,7 +11,8 @@ defmodule SimdJson.MixProject do
     "docs/guides/03-selecting-fields.md",
     "docs/guides/04-streaming-large-files.md",
     "docs/guides/05-errors-limits-performance.md",
-    "docs/guides/06-deployment.md"
+    "docs/guides/06-deployment.md",
+    "docs/guides/07-explore-with-livebook.livemd"
   ]
 
   @benchmark_guides [

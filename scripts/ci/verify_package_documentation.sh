@@ -74,6 +74,7 @@ required_package_files=(
   docs/guides/04-streaming-large-files.md
   docs/guides/05-errors-limits-performance.md
   docs/guides/06-deployment.md
+  docs/guides/07-explore-with-livebook.livemd
   docs/benchmarks/README.md
   docs/benchmarks/reports/eager-decode/decode-benchmark.json
   docs/benchmarks/reports/eager-decode/decode-benchmark.md

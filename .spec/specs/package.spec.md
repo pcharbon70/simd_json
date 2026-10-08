@@ -8,6 +8,10 @@ selection is the primary throughput and worker-process memory-peak advantage, ea
 decode generally favors Jason, and row streaming trades maximum aggregate
 throughput for earlier delivery and lower peak memory.
 
+The package includes one numbered Livebook tutorial under `docs/guides`. Its
+cells execute without Kino, generate and remove their own fixtures, and teach
+decode, sparse selection, file-backed selection, and bounded row streaming.
+
 Release traceability treats an executed `mix run` benchmark harness as
 behavioral proof when its qualification script also validates the retained
 benchmark artifacts. This keeps the million-row wide-projection evidence
@@ -253,6 +257,7 @@ surface:
   - native/vendor/simdjson/**
   - test/**/*.exs
   - docs/guides/*.md
+  - docs/guides/*.livemd
   - docs/benchmarks/**/*.md
   - docs/milestones/*.md
   - .spec/decisions/*.md
