@@ -3,6 +3,11 @@
 Release documentation, types, validation, and tests consistently publish
 `:comma_delimited_json` as the comma-delimited top-level document format.
 
+The public README leads with measured workload guidance rather than a generic
+parser-speed claim: it identifies sparse projection as the strong throughput
+case, Jason as generally faster for eager full decoding, and streaming as an
+early-delivery and peak-memory tradeoff.
+
 Release traceability recognizes executed `mix run` benchmark harnesses as
 behavioral proof. The qualifying script must retain and validate its concrete
 report artifacts, and a release regression contract binds that policy to the
@@ -199,7 +204,7 @@ bootstrap:
   stability: evolving
 
 - id: simd_json.release.consumer_documentation
-  statement: README and HexDocs shall provide concise, feature-oriented user guidance for precompiled installation, optional source-build prerequisites, supported environments, public API behavior, limits, security contact, changelog, and troubleshooting, and shall exclude internal roadmap, phase, milestone, acceptance, qualification-history, and release-process language from the published documentation and Hex archive.
+  statement: README and HexDocs shall provide concise, feature-oriented user guidance for workload selection, precompiled installation, optional source-build prerequisites, supported environments, public API behavior, limits, security contact, changelog, and troubleshooting; the README opening shall distinguish measured sparse-projection advantages from eager-decode and row-streaming tradeoffs, and published documentation shall exclude internal roadmap, phase, milestone, acceptance, qualification-history, and release-process language from the Hex archive.
   priority: must
   stability: evolving
 
