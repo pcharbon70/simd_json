@@ -4,9 +4,16 @@ The packaged API and guides use the unambiguous file-stream format atom
 `:comma_delimited_json`; the former unreleased spelling is rejected.
 
 The packaged README opens with benchmark-bound workload guidance: sparse
-selection is the primary throughput and worker-memory advantage, eager full
+selection is the primary throughput and worker-process memory-peak advantage, eager full
 decode generally favors Jason, and row streaming trades maximum aggregate
 throughput for earlier delivery and lower peak memory.
+
+The package includes one numbered Livebook tutorial under `docs/guides`. Its
+cells execute without Kino, generate and remove their own fixtures, and teach
+decode, sparse selection, file-backed selection, and bounded row streaming.
+
+The packaged README includes the five-width wide-row benchmark table and puts
+the canonical benchmark-index link directly beneath it.
 
 Release traceability treats an executed `mix run` benchmark harness as
 behavioral proof when its qualification script also validates the retained
@@ -253,6 +260,7 @@ surface:
   - native/vendor/simdjson/**
   - test/**/*.exs
   - docs/guides/*.md
+  - docs/guides/*.livemd
   - docs/benchmarks/**/*.md
   - docs/milestones/*.md
   - .spec/decisions/*.md

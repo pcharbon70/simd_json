@@ -6,7 +6,15 @@ Release documentation, types, validation, and tests consistently publish
 The public README leads with measured workload guidance rather than a generic
 parser-speed claim: it identifies sparse projection as the strong throughput
 case, Jason as generally faster for eager full decoding, and streaming as an
-early-delivery and peak-memory tradeoff.
+early-delivery and memory-peak tradeoff. Public comparisons name memory peaks
+explicitly rather than referring to an ambiguous peak.
+
+HexDocs publishes a numbered, executable Livebook tutorial in the User guides
+group. The package contract evaluates every Elixir cell in document order and
+requires the notebook to clean up its generated fixtures.
+
+The HexDocs overview renders all five wide-row benchmark results with explicit
+worker memory-peak columns and a directly adjacent benchmark-index link.
 
 Release traceability recognizes executed `mix run` benchmark harnesses as
 behavioral proof. The qualifying script must retain and validate its concrete
@@ -134,6 +142,7 @@ surface:
   - SECURITY.md
   - CONTRIBUTING.md
   - docs/guides/*.md
+  - docs/guides/*.livemd
   - docs/benchmarks/**/*.md
   - docs/releases/*.md
   - .github/workflows/*.yml

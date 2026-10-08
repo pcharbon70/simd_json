@@ -35,7 +35,8 @@ defmodule SimdJson.PackageDocumentationContractTest do
              "docs/guides/03-selecting-fields.md",
              "docs/guides/04-streaming-large-files.md",
              "docs/guides/05-errors-limits-performance.md",
-             "docs/guides/06-deployment.md"
+             "docs/guides/06-deployment.md",
+             "docs/guides/07-explore-with-livebook.livemd"
            ]
 
     refute Keyword.has_key?(groups, :"Milestone guides")
@@ -128,7 +129,9 @@ defmodule SimdJson.PackageDocumentationContractTest do
     assert readme =~ "Jason is generally the better choice"
     assert readme =~ "took 1.87× as long overall as Jason"
     assert readme =~ "used 40% of Jason's"
-    assert readme =~ "worker-process peak"
+    assert readme =~ "worker-process memory peak"
+    assert readme =~ "| 16 | 830.824 ms | 6,674.651 ms | 8.03× | 0.02 MiB | 1,608.06 MiB |"
+    assert readme =~ "[See the complete benchmark reports](docs/benchmarks/README.md)"
 
     assert position(readme, "## Choose SimdJson for selective work") <
              position(readme, "## Installation")
@@ -148,6 +151,25 @@ defmodule SimdJson.PackageDocumentationContractTest do
                batch_size: 1
              )
              |> Enum.to_list()
+  end
+
+  # covers: simd_json.release.consumer_documentation simd_json.package.documentation_layout
+  test "Livebook tutorial executes from top to bottom" do
+    livebook = File.read!("docs/guides/07-explore-with-livebook.livemd")
+
+    blocks =
+      ~r/```elixir\n(.*?)```/s
+      |> Regex.scan(livebook, capture: :all_but_first)
+      |> List.flatten()
+
+    assert length(blocks) == 8
+
+    Enum.reduce(blocks, [], fn block, binding ->
+      {_result, next_binding} =
+        Code.eval_string(block, binding, file: "07-explore-with-livebook.livemd")
+
+      next_binding
+    end)
   end
 
   # covers: simd_json.release.consumer_documentation simd_json.release.qualified_support
@@ -189,7 +211,7 @@ defmodule SimdJson.PackageDocumentationContractTest do
       ["README.md"] ++
         for extra <- extras,
             path = if(is_tuple(extra), do: elem(extra, 0), else: extra),
-            Path.extname(path) == ".md",
+            Path.extname(path) in [".md", ".livemd"],
             do: path
 
     for path <- published_markdown do

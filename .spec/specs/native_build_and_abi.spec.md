@@ -1,5 +1,9 @@
 # Native Build and ABI
 
+The packaged Livebook adds consumer documentation only. It uses the existing
+precompiled delivery path and changes no build input, ABI, symbol, target, or
+toolchain contract.
+
 Consumer installation and deployment guidance describes supported artifacts
 and source builds without publishing internal roadmap or qualification-history
 documents; maintainer evidence remains repository-internal.

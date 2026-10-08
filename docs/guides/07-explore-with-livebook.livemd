@@ -1,0 +1,149 @@
+# 07 — Explore SimdJson with Livebook
+
+This interactive tutorial helps you choose between complete decoding, sparse
+selection, and bounded file streaming. Run the cells from top to bottom. The
+examples create temporary JSON files on your machine and remove them in the
+last section.
+
+## Setup
+
+When this notebook runs outside the SimdJson repository, the first cell
+installs the published package. Inside the repository it reuses the project
+dependency already on the code path.
+
+```elixir
+unless Code.ensure_loaded?(SimdJson) do
+  Mix.install([{:simd_json, "~> 1.0"}])
+end
+
+:ok
+```
+
+## Decode a complete document
+
+Use `decode/1` when you need the entire JSON value as ordinary Elixir terms.
+
+```elixir
+json = ~s({"customer":{"id":42,"name":"Ada"},"active":true,"tags":["trial","north"]})
+
+{:ok, decoded} = SimdJson.decode(json)
+decoded
+```
+
+Complete decoding materializes the complete tree. For conventional documents
+where you need most values, Jason is generally faster according to the
+checked-in eager-decode benchmark.
+
+## Select only the fields you need
+
+Use `select/2` when the source is already a binary but the result needs only a
+few scalar values.
+
+```elixir
+{:ok, selected} =
+  SimdJson.select(json,
+    customer_id: ["customer", "id"],
+    customer_name: ["customer", "name"],
+    active: ["active"]
+  )
+
+selected
+```
+
+Only selected scalars cross into the result map. The entire JSON input is
+still validated.
+
+## Select directly from a file
+
+`select_file/2` passes a validated path through the BEAM boundary instead of
+requiring `File.read/1` first.
+
+```elixir
+workspace = Path.join(System.tmp_dir!(), "simd_json_livebook_#{System.unique_integer([:positive])}")
+File.mkdir_p!(workspace)
+
+document_path = Path.join(workspace, "customer.json")
+File.write!(document_path, json)
+
+SimdJson.select_file(document_path,
+  id: ["customer", "id"],
+  name: ["customer", "name"]
+)
+```
+
+## Stream selected fields from rows
+
+The next cell creates an NDJSON fixture. Each line is one JSON document.
+
+```elixir
+events_path = Path.join(workspace, "events.ndjson")
+
+events =
+  1..10_000
+  |> Stream.map(fn id ->
+    ~s({"id":#{id},"kind":"#{if rem(id, 2) == 0, do: "even", else: "odd"}","ignored":"payload-#{id}"})
+  end)
+  |> Enum.intersperse("\n")
+
+File.write!(events_path, events)
+File.stat!(events_path).size
+```
+
+`stream_file/2` returns a lazy Enumerable. `Enum.take/2` demands only enough
+batches to produce the requested rows.
+
+```elixir
+stream =
+  SimdJson.stream_file(events_path,
+    format: :ndjson,
+    fields: [id: ["id"], kind: ["kind"]],
+    batch_size: 128,
+    max_batch_bytes: 1_048_576
+  )
+
+Enum.take(stream, 5)
+```
+
+Now consume every projected row without constructing a complete decoded list:
+
+```elixir
+summary =
+  SimdJson.stream_file(events_path,
+    format: :ndjson,
+    fields: [id: ["id"], kind: ["kind"]],
+    batch_size: 1_000,
+    max_batch_bytes: 8_388_608
+  )
+  |> Enum.reduce(%{count: 0, id_sum: 0, kinds: %{}}, fn row, acc ->
+    %{
+      count: acc.count + 1,
+      id_sum: acc.id_sum + row.id,
+      kinds: Map.update(acc.kinds, row.kind, 1, &(&1 + 1))
+    }
+  end)
+
+summary
+```
+
+## Choose the right operation
+
+| Need | Start with |
+| --- | --- |
+| Complete Elixir value | `decode/1` |
+| A few scalar fields from a binary | `select/2` |
+| A few scalar fields without `File.read/1` | `select_file/2` |
+| Lazy row processing with bounded batches | `stream_file/2` |
+
+The published benchmark results are workload-specific. Sparse selection is
+the strong throughput case. Streaming emphasizes earlier delivery and lower
+memory peaks, while eager full decoding generally favors Jason.
+
+## Clean up
+
+```elixir
+File.rm_rf!(workspace)
+:ok
+```
+
+Continue with the [deployment guide](06-deployment.md) before using SimdJson in
+production.

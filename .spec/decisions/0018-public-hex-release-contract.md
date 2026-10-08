@@ -67,9 +67,19 @@ the repository and must not be linked from consumer diagnostics.
 The README opens with workload-selection guidance grounded in the checked-in
 benchmark reports. It presents the measured sparse wide-document projection
 advantage separately from eager full decoding, where Jason is generally
-faster, and from row streaming, where early delivery and lower peak memory can
+faster, and from row streaming, where early delivery and lower memory peaks can
 come with lower aggregate throughput. No workload-specific result may be
-presented as universal parser superiority.
+presented as universal parser superiority, and every cited peak must name its
+memory scope explicitly.
+
+HexDocs may publish numbered `.livemd` tutorials alongside Markdown guides
+when every cell is executable in order without an additional runtime
+dependency, generated fixtures are cleaned up, and the notebook does not turn
+example observations into benchmark claims.
+
+When the overview presents benchmark values, it reproduces the complete
+comparison slice, names each memory scope, and links directly to the canonical
+report index instead of leaving an isolated headline claim.
 
 The intended first publisher and pre-publication recovery owner are the
 confirmed Hex account `pcharbon70`, with the private contact already published
