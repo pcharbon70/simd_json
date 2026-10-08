@@ -4,7 +4,7 @@ The packaged API and guides use the unambiguous file-stream format atom
 `:comma_delimited_json`; the former unreleased spelling is rejected.
 
 The packaged README opens with benchmark-bound workload guidance: sparse
-selection is the primary throughput and worker-memory advantage, eager full
+selection is the primary throughput and worker-process memory-peak advantage, eager full
 decode generally favors Jason, and row streaming trades maximum aggregate
 throughput for earlier delivery and lower peak memory.
 

@@ -6,7 +6,8 @@ Release documentation, types, validation, and tests consistently publish
 The public README leads with measured workload guidance rather than a generic
 parser-speed claim: it identifies sparse projection as the strong throughput
 case, Jason as generally faster for eager full decoding, and streaming as an
-early-delivery and peak-memory tradeoff.
+early-delivery and memory-peak tradeoff. Public comparisons name memory peaks
+explicitly rather than referring to an ambiguous peak.
 
 Release traceability recognizes executed `mix run` benchmark harnesses as
 behavioral proof. The qualifying script must retain and validate its concrete

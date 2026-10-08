@@ -10,7 +10,7 @@ acceptance, and release-process records are not part of that navigation or archi
 The README summarizes the checked-in reports at the point of product choice:
 it confines the measured 7.59×–8.05× speedup to sparse wide-document
 projection, notes Jason's eager-decode advantage, and presents streaming as an
-early-delivery and peak-memory tradeoff rather than a universal throughput win.
+early-delivery and memory-peak tradeoff rather than a universal throughput win.
 
 The first stable package identity is `1.0.0`, so published benchmark source
 links bind to `v1.0.0` without changing any workload, sample, or claim.

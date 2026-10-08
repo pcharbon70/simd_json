@@ -128,7 +128,7 @@ defmodule SimdJson.PackageDocumentationContractTest do
     assert readme =~ "Jason is generally the better choice"
     assert readme =~ "took 1.87× as long overall as Jason"
     assert readme =~ "used 40% of Jason's"
-    assert readme =~ "worker-process peak"
+    assert readme =~ "worker-process memory peak"
 
     assert position(readme, "## Choose SimdJson for selective work") <
              position(readme, "## Installation")

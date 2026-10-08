@@ -11,7 +11,7 @@ simdjson.
 the checked-in one-million-row wide-document benchmark, selecting 1 to 16
 fields from one row was **7.59× to 8.05× faster** than fully decoding the same
 document with Jason and then performing equivalent lookups. The measured
-incremental worker-process peak (not total VM memory) rounded to 0 to 0.02 MiB
+incremental worker-process memory peak (not total VM memory) rounded to 0 to 0.02 MiB
 for `SimdJson.select/2`, compared with about 1,608 MiB for Jason.
 
 That is a sparse-projection result, not a claim that every SimdJson operation
@@ -23,7 +23,7 @@ For row-oriented large files, `SimdJson.stream_file/2` prioritizes bounded
 batch memory and early delivery. In the related million-row binary-stream
 benchmark—which measures `stream/2`, not `stream_file/2`—the batch-size-1,000
 SimdJson workflow took 1.87× as long overall as Jason, but used 40% of Jason's
-worker-process peak, about 48% of its whole-VM RSS peak, and delivered the first
+worker-process memory peak, about 48% of its whole-VM RSS peak, and delivered the first
 row about 40× sooner. See the
 [benchmark reports](docs/benchmarks/README.md) for workload definitions, raw
 measurements, and interpretation limits.

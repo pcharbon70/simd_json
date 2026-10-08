@@ -6,7 +6,7 @@ internal roadmap, phase, milestone, acceptance, and release-process language.
 README workload guidance recommends selective operations for large-document
 partial results and Jason for typical eager full decoding. This is usage
 guidance only and changes no document function, type, ownership, lifecycle, or
-error contract.
+error contract; every cited peak is explicitly identified as a memory peak.
 
 Promoting the unreleased package identity to `1.0.0` changes no document
 function, type, ownership rule, lifecycle, or error contract.
