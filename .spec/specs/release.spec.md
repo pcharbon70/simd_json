@@ -13,6 +13,9 @@ HexDocs publishes a numbered, executable Livebook tutorial in the User guides
 group. The package contract evaluates every Elixir cell in document order and
 requires the notebook to clean up its generated fixtures.
 
+The HexDocs overview renders all five wide-row benchmark results with explicit
+worker memory-peak columns and a directly adjacent benchmark-index link.
+
 Release traceability recognizes executed `mix run` benchmark harnesses as
 behavioral proof. The qualifying script must retain and validate its concrete
 report artifacts, and a release regression contract binds that policy to the

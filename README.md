@@ -11,8 +11,19 @@ simdjson.
 the checked-in one-million-row wide-document benchmark, selecting 1 to 16
 fields from one row was **7.59× to 8.05× faster** than fully decoding the same
 document with Jason and then performing equivalent lookups. The measured
-incremental worker-process memory peak (not total VM memory) rounded to 0 to 0.02 MiB
-for `SimdJson.select/2`, compared with about 1,608 MiB for Jason.
+incremental worker-process memory peak (not total VM memory) rounded to 0 to
+0.02 MiB for `SimdJson.select/2`, compared with about 1,608 MiB for Jason.
+
+| Selected fields | SimdJson p50 | Jason p50 | Speedup | SimdJson worker memory peak | Jason worker memory peak |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 857.583 ms | 6,505.887 ms | 7.59× | 0.00 MiB | 1,608.89 MiB |
+| 2 | 816.765 ms | 6,578.194 ms | 8.05× | 0.00 MiB | 1,608.83 MiB |
+| 4 | 828.998 ms | 6,590.206 ms | 7.95× | 0.01 MiB | 1,608.06 MiB |
+| 8 | 813.908 ms | 6,496.388 ms | 7.98× | 0.01 MiB | 1,608.88 MiB |
+| 16 | 830.824 ms | 6,674.651 ms | 8.03× | 0.02 MiB | 1,608.06 MiB |
+
+[See the complete benchmark reports](docs/benchmarks/README.md), including
+workload definitions, raw measurements, and interpretation limits.
 
 That is a sparse-projection result, not a claim that every SimdJson operation
 is faster. If you need a complete Elixir representation of an ordinary JSON
@@ -23,10 +34,8 @@ For row-oriented large files, `SimdJson.stream_file/2` prioritizes bounded
 batch memory and early delivery. In the related million-row binary-stream
 benchmark—which measures `stream/2`, not `stream_file/2`—the batch-size-1,000
 SimdJson workflow took 1.87× as long overall as Jason, but used 40% of Jason's
-worker-process memory peak, about 48% of its whole-VM RSS peak, and delivered the first
-row about 40× sooner. See the
-[benchmark reports](docs/benchmarks/README.md) for workload definitions, raw
-measurements, and interpretation limits.
+worker-process memory peak, about 48% of its whole-VM RSS peak, and delivered
+the first row about 40× sooner.
 
 ## Installation
 

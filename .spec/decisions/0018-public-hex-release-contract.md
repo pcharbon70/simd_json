@@ -77,6 +77,10 @@ when every cell is executable in order without an additional runtime
 dependency, generated fixtures are cleaned up, and the notebook does not turn
 example observations into benchmark claims.
 
+When the overview presents benchmark values, it reproduces the complete
+comparison slice, names each memory scope, and links directly to the canonical
+report index instead of leaving an isolated headline claim.
+
 The intended first publisher and pre-publication recovery owner are the
 confirmed Hex account `pcharbon70`, with the private contact already published
 in `SECURITY.md`. A read-only identity check must refuse loaded publication

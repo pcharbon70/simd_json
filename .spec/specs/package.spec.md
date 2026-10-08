@@ -12,6 +12,9 @@ The package includes one numbered Livebook tutorial under `docs/guides`. Its
 cells execute without Kino, generate and remove their own fixtures, and teach
 decode, sparse selection, file-backed selection, and bounded row streaming.
 
+The packaged README includes the five-width wide-row benchmark table and puts
+the canonical benchmark-index link directly beneath it.
+
 Release traceability treats an executed `mix run` benchmark harness as
 behavioral proof when its qualification script also validates the retained
 benchmark artifacts. This keeps the million-row wide-projection evidence
